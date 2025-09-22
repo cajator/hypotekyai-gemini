@@ -1,4 +1,6 @@
 [build]
+  command = "# No build command needed for static site"
+  publish = "."
   functions = "netlify/functions"
   publish = "."
 
@@ -6,7 +8,13 @@
   node_bundler = "esbuild"
 
 [dev]
-  command = "echo 'Starting Netlify Dev Server'"
-  port = 8888
+  command = "echo 'Starting local dev server'"
+  targetPort = 8888
   publish = "."
+  framework = "#static"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
 

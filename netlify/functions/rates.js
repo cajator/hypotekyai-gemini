@@ -35,14 +35,14 @@ const handler = async (event) => {
                 loanAmount = constructionBudget;
                 break;
             case 'rekonstrukce':
-                finalPropertyValue = propertyValue;
+                finalPropertyValue = propertyValue + constructionBudget; // Value after reconstruction
                 loanAmount = constructionBudget;
                 break;
             case 'refinancování':
                 finalPropertyValue = propertyValue;
                 loanAmount = loanBalance;
                 break;
-            default:
+            default: // koupě
                 const ownResources = parseInt(params.ownResources) || 0;
                 loanAmount = propertyValue - ownResources;
                 break;
@@ -97,7 +97,7 @@ const handler = async (event) => {
             dsti: finalDsti < 35 ? 40 : (finalDsti > 45 ? 10 : 25),
             age: age > 25 && age < 45 ? 25 : 15,
         };
-        score.total = Math.min(99, score.ltv + score.dsti + score.age);
+        score.total = Math.min(99, Math.round(score.ltv + score.dsti + score.age));
 
         return {
             statusCode: 200,
@@ -115,4 +115,3 @@ const handler = async (event) => {
 };
 
 export { handler };
-

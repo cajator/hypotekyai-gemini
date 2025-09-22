@@ -11,6 +11,7 @@ const ALL_OFFERS = {
 const calculateMonthlyPayment = (p, r, t) => {
     const monthlyRate = r / 100 / 12;
     const numberOfPayments = t * 12;
+    if (monthlyRate === 0) return p / numberOfPayments;
     return (p * monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
 };
 
@@ -26,7 +27,6 @@ const handler = async (event) => {
         const liabilities = parseInt(p.liabilities) || 0;
         const term = parseInt(p.loanTerm) || 25;
         const fixation = parseInt(p.fixation) || 5;
-        const incomeSources = p.incomeSources?.split(',') || [];
 
         if (loanAmount <= 0 || propertyValue <= 0 || income <= 0) {
             return { statusCode: 200, headers, body: JSON.stringify({ offers: [] }) };
@@ -44,17 +44,13 @@ const handler = async (event) => {
                 let rate = rateInfo.base;
                 if (ltv <= 70) rate = rateInfo.min;
                 else if (ltv > 80) rate = rateInfo.max;
-
                 const monthlyPayment = calculateMonthlyPayment(loanAmount, rate, term);
                 const dsti = ((monthlyPayment + liabilities) / income) * 100;
-                
                 if (dsti > 50) return null;
-
                 return { id: o.id, rate: parseFloat(rate.toFixed(2)), monthlyPayment: Math.round(monthlyPayment), type: o.type, dsti };
             }).filter(Boolean);
 
         const getBestOffer = (type) => allQualifiedOffers.filter(o => o.type === type).sort((a,b) => a.rate - b.rate)[0];
-
         const finalOffers = [
             {...getBestOffer('best-rate'), title: "Nejlepší úrok", description: "Absolutně nejnižší úrok pro maximální úsporu. Ideální, pokud máte silnou bonitu."},
             {...getBestOffer('standard'), title: "Zlatá střední cesta", description: "Skvělá sazba v kombinaci s mírnějšími požadavky. Pro většinu klientů nejlepší volba."},
@@ -68,17 +64,16 @@ const handler = async (event) => {
         
         const bestOfferDsti = uniqueOffers[0].dsti;
         const score = {
-            ltv: Math.max(10, Math.min(95, 100 - ltv)),
-            dsti: Math.max(10, Math.min(95, (48 - bestOfferDsti) / 48 * 100)),
-            bonita: Math.max(10, Math.min(95, (income / 35000) * 50 + (incomeSources.includes('zamestnanec') ? 25 : 10)))
+            ltv: Math.round(Math.max(10, Math.min(95, 100 - ltv))),
+            dsti: Math.round(Math.max(10, Math.min(95, (48 - bestOfferDsti) / 48 * 100))),
+            bonita: Math.round(Math.max(10, Math.min(95, (income / 35000) * 50)))
         };
         score.total = Math.round((score.ltv * 0.4) + (score.dsti * 0.4) + (score.bonita * 0.2));
 
-        // Smart Tip Logic
         let smartTip = null;
         if (term < 30) {
             const payment30 = calculateMonthlyPayment(loanAmount, uniqueOffers[0].rate, 30);
-            if (payment30 < uniqueOffers[0].monthlyPayment * 0.95) { // If it's at least 5% lower
+            if (payment30 < uniqueOffers[0].monthlyPayment * 0.95) {
                 const diff = Math.round(uniqueOffers[0].monthlyPayment - payment30);
                 smartTip = {
                     title: "Chytrý tip!",

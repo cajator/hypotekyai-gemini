@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.5">
+    <link rel="stylesheet" href="style.css?v=1.6">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💡</text></svg>">
 </head>
 <body class="bg-gray-50 text-gray-800 antialiased">
@@ -42,18 +42,21 @@
             <p class="text-lg text-gray-600 max-w-3xl mx-auto">Srovnejte nabídky bank na jednom místě. Naše chytrá kalkulačka a AI asistent vám pomohou najít tu nejlepší cestu k vlastnímu bydlení.</p>
         </section>
 
-        <section id="kalkulacka" class="mb-16">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8 mx-auto max-w-4xl mb-8">
-                <div class="mode-card active" data-mode="calculator">
-                    <div class="badge badge-blue">Doporučeno</div>
-                    <h3 class="font-bold text-xl mb-2">Hypoteční kalkulačka</h3>
-                    <p class="text-gray-600 text-sm">Spočítejte si splátku a zjistěte vaši šanci na schválení hypotéky.</p>
-                </div>
-                <div class="mode-card mode-card-dark" data-mode="ai">
-                    <div class="badge badge-purple">Inovace</div>
-                    <h3 class="font-bold text-xl mb-2 text-white">AI Hypoteční stratég</h3>
-                    <p class="text-gray-300 text-sm">Máte specifický dotaz? Náš AI asistent vám poradí a pomůže.</p>
-                </div>
+        <section id="kalkulacka" class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16 items-start">
+            <div class="mode-card" data-mode="express">
+                <div class="badge badge-yellow">Rychlá orientace</div>
+                <h3 class="font-bold text-xl mb-2">Expresní scoring</h3>
+                <p class="text-gray-600 text-sm">Zadejte pár údajů a během několika sekund získáte první nástřel a přehled trhu.</p>
+            </div>
+            <div class="mode-card active" data-mode="guided">
+                <div class="badge badge-blue">Doporučeno</div>
+                <h3 class="font-bold text-xl mb-2">Profesionální analýza</h3>
+                <p class="text-gray-600 text-sm">Detailní průvodce vás provede všemi klíčovými otázkami pro co nejpřesnější výsledek.</p>
+            </div>
+            <div class="mode-card mode-card-dark" data-mode="ai">
+                <div class="badge badge-purple">Inovace</div>
+                <h3 class="font-bold text-xl mb-2 text-white">AI Hypoteční stratég</h3>
+                <p class="text-gray-300 text-sm">Máte specifický dotaz? Náš AI asistent vám poradí a pomůže s nejasnostmi.</p>
             </div>
         </section>
 
@@ -93,6 +96,6 @@
         </div>
     </footer>
 
-    <script src="script.js?v=1.5" defer></script>
+    <script src="script.js?v=1.6" defer></script>
 </body>
 </html>

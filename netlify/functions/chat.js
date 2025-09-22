@@ -34,7 +34,6 @@ const handler = async (event) => {
             return { statusCode: 200, headers, body: JSON.stringify({ response: responseText }) };
         }
     } catch (error) {
-        console.error('Gemini API Error:', error);
         return { statusCode: 500, headers, body: JSON.stringify({ error: `Došlo k chybě při komunikaci s AI: ${error.message}` }) };
     }
 };

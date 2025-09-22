@@ -2,17 +2,12 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const handler = async (event) => {
-    // Standard CORS headers
     const headers = { 
         'Access-Control-Allow-Origin': '*', 
         'Access-Control-Allow-Headers': 'Content-Type', 
         'Access-Control-Allow-Methods': 'POST, OPTIONS' 
     };
-
-    // Handle CORS preflight requests
-    if (event.httpMethod === 'OPTIONS') {
-        return { statusCode: 204, headers };
-    }
+    if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers };
 
     if (event.httpMethod !== 'POST') {
         return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method Not Allowed' }) };
@@ -20,8 +15,8 @@ const handler = async (event) => {
 
     try {
         const { message, context } = JSON.parse(event.body);
-        
         const apiKey = process.env.GEMINI_API_KEY;
+
         if (!apiKey) {
             console.error('CRITICAL ERROR: GEMINI_API_KEY environment variable is not set.');
             return { 
@@ -44,7 +39,6 @@ const handler = async (event) => {
             headers,
             body: JSON.stringify({ response: result.response.text() }),
         };
-
     } catch (error) {
         console.error('Gemini API Error:', error);
         return { 

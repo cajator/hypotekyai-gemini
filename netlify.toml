@@ -2,7 +2,6 @@
   command = "# No build command needed for static site"
   publish = "."
   functions = "netlify/functions"
-  publish = "."
 
 [functions]
   node_bundler = "esbuild"

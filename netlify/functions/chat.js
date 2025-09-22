@@ -2,71 +2,72 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const handler = async (event) => {
-    const headers = { 
-        'Access-Control-Allow-Origin': '*', 
-        'Access-Control-Allow-Headers': 'Content-Type', 
-        'Access-Control-Allow-Methods': 'POST, OPTIONS' 
-    };
+    const headers = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type', 'Access-Control-Allow-Methods': 'POST, OPTIONS' };
     if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers };
-
-    if (event.httpMethod !== 'POST') {
-        return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method Not Allowed' }) };
-    }
+    if (event.httpMethod !== 'POST') return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method Not Allowed' }) };
 
     try {
-        const { message, context } = JSON.parse(event.body);
+        const { message } = JSON.parse(event.body);
         const apiKey = process.env.GEMINI_API_KEY;
-
-        if (!apiKey) {
-            console.error('CRITICAL ERROR: GEMINI_API_KEY environment variable is not set.');
-            return { 
-                statusCode: 500, 
-                headers, 
-                body: JSON.stringify({ error: 'Konfigurace AI na serveru chybí. API klíč nebyl nalezen. Kontaktujte prosím správce webu.' }) 
-            };
-        }
+        if (!apiKey) throw new Error('Konfigurace AI na serveru chybí. API klíč nebyl nalezen.');
 
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-        const systemPrompt = createSystemPrompt(context);
-        const fullPrompt = `${systemPrompt}\n\nUŽIVATELŮV DOTAZ: "${message}"`;
+        const result = await model.generateContent(createSystemPrompt(message));
+        const responseText = result.response.text();
         
-        const result = await model.generateContent(fullPrompt);
-        
-        return {
-            statusCode: 200,
-            headers,
-            body: JSON.stringify({ response: result.response.text() }),
-        };
+        // Try to parse the response as JSON (tool call)
+        try {
+            const jsonResponse = JSON.parse(responseText);
+            return { statusCode: 200, headers, body: JSON.stringify(jsonResponse) };
+        } catch (e) {
+            // If parsing fails, it's a regular text response
+            return { statusCode: 200, headers, body: JSON.stringify({ response: responseText }) };
+        }
+
     } catch (error) {
         console.error('Gemini API Error:', error);
-        return { 
-            statusCode: 500, 
-            headers, 
-            body: JSON.stringify({ error: `Došlo k chybě při komunikaci s AI: ${error.message}` }) 
-        };
+        return { statusCode: 500, headers, body: JSON.stringify({ error: `Došlo k chybě při komunikaci s AI: ${error.message}` }) };
     }
 };
 
-function createSystemPrompt(context) {
-    const hasContext = context && context.calculation && (context.calculation.loanAmount > 0 || (context.formData && context.formData.propertyValue > 0));
-    
-    return `Jsi přátelský a profesionální hypoteční poradce jménem Hypoteky Ai. Tvůj cíl je pomoci uživateli s hypotékou. Vždy jednej, jako bys měl přístup k interním metodikám bank, ale nikdy nezmiňuj jména konkrétních bank. Používej Markdown pro formátování (odrážky, tučný text).
+function createSystemPrompt(userMessage) {
+    return `Jsi přátelský a profesionální hypoteční AI asistent. Tvým úkolem je pomoci uživatelům s jejich dotazy a plynule je navést k výpočtu hypotéky nebo ke kontaktu se specialistou.
 
-    KLÍČOVÉ POKYNY PRO ODPOVĚĎ:
-    1.  **BUĎ EXTRÉMNĚ STRUČNÝ:** Odpovídej maximálně ve 2-3 krátkých větách. Uživatelé chtějí rychlé a jasné odpovědi.
-    2.  **POUŽIJ KONTEXT:** Pokud máš data z kalkulačky, VŽDY je použij. Neodpovídej obecně, pokud můžeš být konkrétní.
-        * ŠPATNĚ: "LTV je poměr úvěru k hodnotě nemovitosti."
-        * SPRÁVNĚ: "LTV je poměr úvěru k hodnotě nemovitosti. **Vaše LTV teď vychází na 85 %**, což je pro banky stále v pořádku."
-    3.  **POKLÁDEJ OTÁZKY:** Každou odpověď zakonči otázkou, abys udržel konverzaci. Např. "Pomohlo vám to takto?", "Chcete se podívat na něco dalšího?"
-    4.  **CÍL JE LEAD:** Vždy směřuj konverzaci k tomu, že finální a nejlepší nabídku zajistí až lidský kolega-specialista. Podporuj uživatele v dokončení kalkulačky.
+    Máš k dispozici dva nástroje:
+    1.  \`calculateMortgage\`: Použij tento nástroj, když uživatel projeví zájem o výpočet splátky. Aktivně se ptej na chybějící parametry (částka, doba splatnosti). Jakmile máš dostatek informací, odpověz POUZE JSON objektem ve formátu:
+        \`\`\`json
+        {
+          "tool": "calculateMortgage",
+          "params": {
+            "propertyValue": 5000000,
+            "ownResources": 1000000,
+            "income": 60000,
+            "loanTerm": 25
+          }
+        }
+        \`\`\`
+        Extrahuj číselné hodnoty z textu uživatele. Pro `propertyValue` a `ownResources` odvozuj hodnoty z požadované výše úvěru (např. "půjčka 3M" -> propertyValue=3.75M, ownResources=750k pro 80% LTV). Pokud hodnoty nelze odvodit, neuváděj je.
+        Příklad konverzace:
+        Uživatel: "kolik bude splátka na 3 miliony na 25 let?"
+        Ty: \`{"tool": "calculateMortgage", "params": {"propertyValue": 3750000, "ownResources": 750000, "loanTerm": 25}}\`
 
-    AKTUÁLNÍ KONTEXT Z KALKULAČKY:
-    ${hasContext ? JSON.stringify(context.formData, null, 2) : 'Uživatel zatím nic nezadal do kalkulačky.'}
+    2.  \`redirectToContact\`: Použij tento nástroj, když uživatel explicitně souhlasí s konzultací nebo spojením se specialistou (např. odpoví "ano" na dotaz, zda chce domluvit konzultaci). Odpověz POUZE JSON objektem ve formátu:
+        \`\`\`json
+        {
+          "tool": "redirectToContact",
+          "response": "Výborně! Níže můžete vyplnit své kontaktní údaje a kolega specialista se vám brzy ozve."
+        }
+        \`\`\`
 
-    Odpověz na dotaz uživatele.`;
+    PRAVIDLA:
+    -   Pokud nevoláš nástroj, odpovídej stručně (1-3 věty) a přátelsky.
+    -   Vždy zakonči odpověď otázkou, aby konverzace pokračovala.
+    -   NIKDY neodpovídej JSONem a textem zároveň. Buď jedno, nebo druhé.
+    -   Buď proaktivní. Pokud se uživatel ptá obecně, zeptej se, jestli chce rovnou spočítat konkrétní příklad.
+
+    UŽIVATELŮV DOTAZ: "${userMessage}"`;
 }
 
 export { handler };
-

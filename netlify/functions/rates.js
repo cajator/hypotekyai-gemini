@@ -8,109 +8,92 @@ const ALL_OFFERS = {
     'offer-6': { id: 'offer-6', rates: { 3: { base: 4.89, min: 4.69, max: 5.39 }, 5: { base: 4.79, min: 4.59, max: 5.29 }, 7: { base: 4.89, min: 4.69, max: 5.39 }, 10: { base: 4.99, min: 4.79, max: 5.49 } }, requirements: { minIncome: 18000, minLoan: 200000, maxLTV: 95 }, type: "approvability" }
 };
 
-const calculateMonthlyPayment = (p, r, t) => (p * (r/100/12) * Math.pow(1 + (r/100/12), t*12)) / (Math.pow(1 + (r/100/12), t*12) - 1);
+const calculateMonthlyPayment = (p, r, t) => {
+    const monthlyRate = r / 100 / 12;
+    const numberOfPayments = t * 12;
+    return (p * monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
+};
 
 const handler = async (event) => {
     const headers = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
     if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers };
 
     try {
-        const params = event.queryStringParameters;
-        const purpose = params.purpose || 'koupě';
-        let propertyValue = parseInt(params.propertyValue) || 0;
-        const income = parseInt(params.income) || 0;
-        const liabilities = parseInt(params.liabilities) || 0;
-        const fixation = parseInt(params.fixation) || 5;
-        const term = parseInt(params.loanTerm) || 25;
-        const age = parseInt(params.age) || 35;
-        const landValue = parseInt(params.landValue) || 0;
-        const constructionBudget = parseInt(params.constructionBudget) || 0;
-        const loanBalance = parseInt(params.loanBalance) || 0;
-        let finalPropertyValue = propertyValue;
-        let loanAmount = 0;
+        const p = event.queryStringParameters;
+        const loanAmount = parseInt(p.loanAmount) || 0;
+        const propertyValue = parseInt(p.propertyValue) || 0;
+        const income = parseInt(p.income) || 0;
+        const liabilities = parseInt(p.liabilities) || 0;
+        const term = parseInt(p.loanTerm) || 25;
+        const fixation = parseInt(p.fixation) || 5;
+        const incomeSources = p.incomeSources?.split(',') || [];
 
-        switch(purpose) {
-            case 'výstavba':
-                finalPropertyValue = landValue + constructionBudget;
-                loanAmount = constructionBudget;
-                break;
-            case 'rekonstrukce':
-                finalPropertyValue = propertyValue + constructionBudget; // Value after reconstruction
-                loanAmount = constructionBudget;
-                break;
-            case 'refinancování':
-                finalPropertyValue = propertyValue;
-                loanAmount = loanBalance;
-                break;
-            default: // koupě
-                const ownResources = parseInt(params.ownResources) || 0;
-                loanAmount = propertyValue - ownResources;
-                break;
-        }
-        
-        if (loanAmount <= 0 || finalPropertyValue <= 0 || income <=0) {
-            return { statusCode: 200, headers, body: JSON.stringify({ offers: [], approvability: { total: 0, ltv: 0, dsti: 0, age: 0 }, dsti: 0 }) };
+        if (loanAmount <= 0 || propertyValue <= 0 || income <= 0) {
+            return { statusCode: 200, headers, body: JSON.stringify({ offers: [] }) };
         }
 
-        const ltv = (loanAmount / finalPropertyValue) * 100;
+        const ltv = (loanAmount / propertyValue) * 100;
 
         const allQualifiedOffers = Object.values(ALL_OFFERS)
-            .filter(offer => {
-                const req = offer.requirements;
-                return ltv <= req.maxLTV && loanAmount >= req.minLoan && income >= req.minIncome && offer.rates[fixation];
+            .filter(o => {
+                const r = o.requirements;
+                return ltv <= r.maxLTV && loanAmount >= r.minLoan && income >= r.minIncome && o.rates[fixation];
             })
-            .map(offer => {
-                const rateInfo = offer.rates[fixation];
-                let calculatedRate = rateInfo.base;
-                if (ltv <= 70) calculatedRate = rateInfo.min;
-                else if (ltv > 80 && ltv <= 90) calculatedRate = Math.min(rateInfo.max, rateInfo.base + 0.3);
-                else if (ltv > 90) calculatedRate = rateInfo.max;
+            .map(o => {
+                const rateInfo = o.rates[fixation];
+                let rate = rateInfo.base;
+                if (ltv <= 70) rate = rateInfo.min;
+                else if (ltv > 80) rate = rateInfo.max;
 
-                const monthlyPayment = calculateMonthlyPayment(loanAmount, calculatedRate, term);
+                const monthlyPayment = calculateMonthlyPayment(loanAmount, rate, term);
                 const dsti = ((monthlyPayment + liabilities) / income) * 100;
+                
                 if (dsti > 50) return null;
 
-                return {
-                    id: offer.id, rate: parseFloat(calculatedRate.toFixed(2)),
-                    monthlyPayment: Math.round(monthlyPayment), type: offer.type, dsti: dsti,
-                };
-            })
-            .filter(Boolean);
+                return { id: o.id, rate: parseFloat(rate.toFixed(2)), monthlyPayment: Math.round(monthlyPayment), type: o.type, dsti };
+            }).filter(Boolean);
 
-        const bestRateOffer = allQualifiedOffers.filter(o => o.type === 'best-rate').sort((a,b) => a.rate - b.rate)[0];
-        const standardOffer = allQualifiedOffers.filter(o => o.type === 'standard').sort((a,b) => a.rate - b.rate)[0];
-        const approvabilityOffer = allQualifiedOffers.filter(o => o.type === 'approvability').sort((a,b) => a.rate - b.rate)[0];
+        const getBestOffer = (type) => allQualifiedOffers.filter(o => o.type === type).sort((a,b) => a.rate - b.rate)[0];
 
-        const finalOffers = [];
-        if(bestRateOffer) finalOffers.push({...bestRateOffer, title: "Nejnižší splátka", description: "Absolutně nejnižší úrok. Ideální, pokud máte silnou bonitu a prioritou je pro vás co nejnižší splátka."});
-        if(standardOffer) finalOffers.push({...standardOffer, title: "Vyvážený kompromis", description: "Skvělá sazba v kombinaci s mírnějšími požadavky. Pro většinu klientů ta nejrozumnější volba."});
-        if(approvabilityOffer) finalOffers.push({...approvabilityOffer, title: "Jistota schválení", description: "Tato varianta má nejbenevolentnější podmínky. Vhodná, pokud si nejste jistí svými příjmy."});
+        const finalOffers = [
+            {...getBestOffer('best-rate'), title: "Nejlepší úrok", description: "Absolutně nejnižší úrok pro maximální úsporu. Ideální, pokud máte silnou bonitu."},
+            {...getBestOffer('standard'), title: "Zlatá střední cesta", description: "Skvělá sazba v kombinaci s mírnějšími požadavky. Pro většinu klientů nejlepší volba."},
+            {...getBestOffer('approvability'), title: "Maximální šance", description: "Nejbenevolentnější podmínky pro případy, kdy si nejste jistí svými příjmy nebo registry."}
+        ].filter(o => o.id);
 
-        const uniqueOffers = [...new Map(finalOffers.map(item => [item['id'], item])).values()].slice(0,3);
-
-        const bestOffer = uniqueOffers[0];
-        const finalDsti = bestOffer ? bestOffer.dsti : 0;
+        const uniqueOffers = [...new Map(finalOffers.map(item => [item.id, item])).values()].slice(0,3);
+        if (uniqueOffers.length === 0) {
+            return { statusCode: 200, headers, body: JSON.stringify({ offers: [] }) };
+        }
         
-        // Detailed approvability score
+        const bestOfferDsti = uniqueOffers[0].dsti;
         const score = {
-            ltv: ltv < 80 ? 30 : (ltv > 90 ? 5 : 15),
-            dsti: finalDsti < 35 ? 40 : (finalDsti > 45 ? 10 : 25),
-            age: age > 25 && age < 45 ? 25 : 15,
+            ltv: Math.max(10, Math.min(95, 100 - ltv)),
+            dsti: Math.max(10, Math.min(95, (48 - bestOfferDsti) / 48 * 100)),
+            bonita: Math.max(10, Math.min(95, (income / 35000) * 50 + (incomeSources.includes('zamestnanec') ? 25 : 10)))
         };
-        score.total = Math.min(99, Math.round(score.ltv + score.dsti + score.age));
+        score.total = Math.round((score.ltv * 0.4) + (score.dsti * 0.4) + (score.bonita * 0.2));
 
+        // Smart Tip Logic
+        let smartTip = null;
+        if (term < 30) {
+            const payment30 = calculateMonthlyPayment(loanAmount, uniqueOffers[0].rate, 30);
+            if (payment30 < uniqueOffers[0].monthlyPayment * 0.95) { // If it's at least 5% lower
+                const diff = Math.round(uniqueOffers[0].monthlyPayment - payment30);
+                smartTip = {
+                    title: "Chytrý tip!",
+                    message: `Zvažte prodloužení splatnosti na 30 let. Vaše splátka by klesla na cca ${Math.round(payment30).toLocaleString('cs-CZ')} Kč a ušetřili byste tak ${diff.toLocaleString('cs-CZ')} Kč měsíčně.`
+                };
+            }
+        }
+        
         return {
             statusCode: 200,
             headers,
-            body: JSON.stringify({
-                offers: uniqueOffers,
-                approvability: uniqueOffers.length > 0 ? score : { total: 0, ltv: 0, dsti: 0, age: 0 },
-                dsti: finalDsti, loanAmount, ltv
-            }),
+            body: JSON.stringify({ offers: uniqueOffers, approvability: score, smartTip })
         };
     } catch (error) {
-        console.error('Rates function error:', error);
-        return { statusCode: 500, headers, body: JSON.stringify({ error: `Internal server error: ${error.message}` }) };
+        return { statusCode: 500, headers, body: JSON.stringify({ error: error.message }) };
     }
 };
 

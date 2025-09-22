@@ -51,7 +51,7 @@ function createSystemPrompt(userMessage, context) {
     \`\`\`
 
     PRAVIDLA:
-    - Vždy využij kontext pro co nejrelevantnější odpovědi! Např. na dotaz "Co je LTV?" vysvětli LTV a doplň: "Vaše LTV aktuálně vychází na ${context?.calculation?.approvability?.ltv || 'X'} %."
+    - Vždy využij kontext pro co nejrelevantnější odpovědi! Např. na dotaz "Co je LTV?" vysvětli LTV a doplň: "Vaše LTV aktuálně vychází na ${context?.calculation?.approvability?.ltv || 'X'} %." Pokud má uživatel v kontextu tipy (tips), proaktivně je vysvětli.
     - Odpovídej stručně (1-3 věty) a vždy zakonči otázkou.
     - NIKDY neodpovídej JSONem a textem zároveň.
 

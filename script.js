@@ -63,8 +63,10 @@ document.addEventListener('DOMContentLoaded', () => {
             scrollToAndShow(this.getAttribute('href'));
         }));
         DOMElements.leadForm.addEventListener('submit', handleFormSubmit);
+
+        // Delegated event listeners for dynamic content
         DOMElements.contentContainer.addEventListener('click', handleContainerClick);
-        DOMElements.contentContainer.addEventListener('input', handleContainerInput);
+        DOMElements.contentContainer.addEventListener('input', handleContainerInput); // Debouncing is handled inside
         DOMElements.contentContainer.addEventListener('change', handleContainerChange);
     };
 
@@ -89,6 +91,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     // --- HTML TEMPLATES & UI RENDERING ---
+    // This section remains identical to the previous correct version, so it's omitted for brevity.
+    // Functions: getModeHTML, getGuidedModeHTML, getGuidedStepHTML, getExpressModeHTML, getAiModeHTML, 
+    // updateGuidedUI, updateExpressUI, renderResults, renderRepaymentChart, addChatMessage, generateAISuggestions
     const getModeHTML = (mode) => {
         switch (mode) {
             case 'guided': return getGuidedModeHTML();
@@ -323,6 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
         container.innerHTML = html;
     };
 
+
     // --- EVENT HANDLERS ---
     const handleContainerClick = (e) => {
         const target = e.target.closest('[data-action], .offer-card, .suggestion-btn, #chat-send');
@@ -352,24 +358,37 @@ document.addEventListener('DOMContentLoaded', () => {
             renderRepaymentChart();
         }
     };
-
-    const debounceCalculation = debounce(() => {
-        if (state.calculation.offers.length > 0) calculateRates();
+    
+    // Debounced function for recalculation
+    const debouncedCalculation = debounce(() => {
+        if (state.calculation.offers.length > 0 || state.mode === 'express') {
+            calculateRates();
+        }
     }, CONFIG.DEBOUNCE_DELAY);
 
+    // --- CRITICAL FIX: The Main Handler for Inputs ---
     const handleContainerInput = (e) => {
-        const { id, value, type } = e.target;
-        if (id in state.formData) {
+        const { id, value } = e.target;
+        const baseId = id.replace('-input', '');
+
+        if (state.formData.hasOwnProperty(baseId)) {
             const parsedValue = parseNumber(value);
-            const isSliderInput = type === 'range';
-            const valueDisplay = isSliderInput ? document.querySelector(`input[data-value-for="${id}"]`) : document.getElementById(id.replace('-input', ''));
 
-            state.formData[isSliderInput ? id : id.replace('-input', '')] = parsedValue;
-            
-            if (isSliderInput && valueDisplay) valueDisplay.value = formatNumber(parsedValue, false);
-            else if (!isSliderInput && valueDisplay) valueDisplay.value = parsedValue;
+            // Update state
+            state.formData[baseId] = parsedValue;
 
-            debounceCalculation();
+            // Update the other corresponding element (two-way binding)
+            const isTextInput = id.endsWith('-input');
+            if (isTextInput) {
+                const slider = document.getElementById(baseId);
+                if (slider) slider.value = parsedValue;
+            } else { // It's a slider
+                const textInput = document.getElementById(`${baseId}-input`);
+                if (textInput) textInput.value = formatNumber(parsedValue, false);
+            }
+
+            // If we are on a page with results, or in express mode, trigger recalculation
+            debouncedCalculation();
         }
     };
 
@@ -432,8 +451,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (button) { button.disabled = true; if(spinner) spinner.classList.remove('hidden'); }
         
         const resultsContainer = document.getElementById('results-container');
-        resultsContainer.innerHTML = `<div class="text-center p-8"><div class="loading-spinner-blue"></div><p>Počítám nejlepší nabídky...</p></div>`;
-        resultsContainer.classList.remove('hidden');
+        if (resultsContainer) {
+            resultsContainer.innerHTML = `<div class="text-center p-8"><div class="loading-spinner-blue"></div><p>Počítám nejlepší nabídky...</p></div>`;
+            resultsContainer.classList.remove('hidden');
+        }
         
         try {
             const response = await fetch(`${CONFIG.API_RATES_ENDPOINT}?${new URLSearchParams(state.formData).toString()}`);
@@ -443,7 +464,9 @@ document.addEventListener('DOMContentLoaded', () => {
             renderResults();
         } catch (error) {
             console.error('Error fetching rates:', error);
-            resultsContainer.innerHTML = `<div class="text-center bg-red-50 p-8 rounded-lg"><h3 class="text-2xl font-bold text-red-800 mb-2">Chyba při výpočtu</h3><p class="text-red-700">Nepodařilo se načíst sazby. Zkuste to znovu.</p></div>`;
+            if (resultsContainer) {
+                resultsContainer.innerHTML = `<div class="text-center bg-red-50 p-8 rounded-lg"><h3 class="text-2xl font-bold text-red-800 mb-2">Chyba při výpočtu</h3><p class="text-red-700">Nepodařilo se načíst sazby. Zkuste to znovu.</p></div>`;
+            }
         } finally {
             if (button) { button.disabled = false; if(spinner) spinner.classList.add('hidden'); }
         }
@@ -460,6 +483,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let yearlyInterest = 0;
             let yearlyPrincipal = 0;
             for (let month = 1; month <= 12; month++) {
+                if (balance <= 0) break;
                 const interest = balance * monthlyRate;
                 const principalPayment = monthlyPayment - interest;
                 balance -= principalPayment;
@@ -482,7 +506,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3500);
     };
 
-    const parseNumber = (s) => parseFloat(String(s).replace(/\s/g, '')) || 0;
+    const parseNumber = (s) => parseFloat(String(s).replace(/[^0-9]/g, '')) || 0;
     const formatNumber = (n, currency = true) => n.toLocaleString('cs-CZ', currency ? { style: 'currency', currency: 'CZK', maximumFractionDigits: 0 } : { maximumFractionDigits: 0 });
     const debounce = (func, wait) => {
         let timeout;
@@ -500,13 +524,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const createSlider = (id, label, value, min, max) => {
         const step = CONFIG.SLIDER_STEPS[id] || 1;
         const isCurrency = ['propertyValue', 'ownResources', 'income', 'liabilities', 'landValue', 'constructionBudget', 'loanBalance'].includes(id);
-        const suffix = id === 'loanTerm' ? ' let' : (id === 'age' ? ' let' : (isCurrency ? ' Kč' : ''));
+        const suffix = id === 'loanTerm' || id === 'age' ? ' let' : (isCurrency ? ' Kč' : '');
         
         return `<div class="slider-group">
                 <div class="flex justify-between items-center mb-1">
                     <label for="${id}" class="form-label mb-0">${label}</label>
                     <div class="flex items-center">
-                        <input type="text" id="${id}-input" data-value-for="${id}" value="${formatNumber(value, false)}" class="slider-value-input">
+                        <input type="text" id="${id}-input" value="${formatNumber(value, false)}" class="slider-value-input">
                         <span class="font-semibold">${suffix}</span>
                     </div>
                 </div>

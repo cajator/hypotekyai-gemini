@@ -34,6 +34,7 @@ const handler = async (event) => {
             return { statusCode: 200, headers, body: JSON.stringify({ response: responseText }) };
         }
     } catch (error) {
+        console.error('Gemini API Error:', error);
         return { statusCode: 500, headers, body: JSON.stringify({ error: `Došlo k chybě při komunikaci s AI: ${error.message}` }) };
     }
 };
@@ -45,15 +46,9 @@ function createSystemPrompt(userMessage, context) {
     return `Jsi přátelský a profesionální hypoteční AI asistent.
     AKTUÁLNÍ KONTEXT: ${contextString}
 
-    Máš k dispozici nástroj \`calculateMortgage\`. Použij ho, když uživatel chce výpočet splátky a specifikuje částku a dobu. Odpověz POUZE JSON objektem:
-    \`\`\`json
-    { "tool": "calculateMortgage", "params": { "loanAmount": 3000000, "propertyValue": 3750000, "loanTerm": 25 } }
-    \`\`\`
-
     PRAVIDLA:
-    - Vždy využij kontext pro co nejrelevantnější odpovědi! Např. na dotaz "Co je LTV?" vysvětli LTV a doplň: "Vaše LTV aktuálně vychází na ${context?.calculation?.approvability?.ltv || 'X'} %." Pokud má uživatel v kontextu tipy (tips), proaktivně je vysvětli.
+    - Vždy využij kontext pro co nejrelevantnější odpovědi! Např. na dotaz "Co je LTV?" vysvětli LTV a doplň: "Vaše LTV aktuálně vychází na ${context?.calculation?.approvability?.ltv || 'X'} %." Pokud má uživatel v kontextu tipy (tips), proaktivně je vysvětli a nabídni řešení.
     - Odpovídej stručně (1-3 věty) a vždy zakonči otázkou.
-    - NIKDY neodpovídej JSONem a textem zároveň.
 
     UŽIVATELŮV DOTAZ: "${userMessage}"`;
 }

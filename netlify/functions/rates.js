@@ -1,4 +1,4 @@
-// netlify/functions/rates.js - v12.0 - Final Build
+// netlify/functions/rates.js - v13.0 - Final Build
 const ALL_OFFERS = {
     'offer-1': { id: 'offer-1', rates: { 3: { base: 4.59, min: 4.39, max: 5.09 }, 5: { base: 4.39, min: 4.19, max: 4.89 }, 7: { base: 4.49, min: 4.29, max: 4.99 }, 10: { base: 4.69, min: 4.49, max: 5.19 } }, requirements: { minIncome: 25000, minLoan: 300000, maxLTV: 90 }, type: "standard" },
     'offer-2': { id: 'offer-2', rates: { 3: { base: 4.49, min: 4.29, max: 4.99 }, 5: { base: 4.29, min: 4.09, max: 4.79 }, 7: { base: 4.39, min: 4.19, max: 4.89 }, 10: { base: 4.59, min: 4.39, max: 5.09 } }, requirements: { minIncome: 20000, minLoan: 200000, maxLTV: 100 }, type: "best-rate" },
@@ -29,7 +29,6 @@ const handler = async (event) => {
         let finalPropertyValue = propertyValue;
         let loanAmount = 0;
 
-        // Adjust values based on purpose
         switch(purpose) {
             case 'výstavba':
                 finalPropertyValue = landValue + constructionBudget;
@@ -43,7 +42,7 @@ const handler = async (event) => {
                 finalPropertyValue = propertyValue;
                 loanAmount = loanBalance;
                 break;
-            default: // koupě
+            default:
                 const ownResources = parseInt(params.ownResources) || 0;
                 loanAmount = propertyValue - ownResources;
                 break;
@@ -72,11 +71,8 @@ const handler = async (event) => {
                 if (dsti > 50) return null;
 
                 return {
-                    id: offer.id,
-                    rate: parseFloat(calculatedRate.toFixed(2)),
-                    monthlyPayment: Math.round(monthlyPayment),
-                    type: offer.type,
-                    dsti: dsti,
+                    id: offer.id, rate: parseFloat(calculatedRate.toFixed(2)),
+                    monthlyPayment: Math.round(monthlyPayment), type: offer.type, dsti: dsti,
                 };
             })
             .filter(Boolean);
@@ -86,9 +82,9 @@ const handler = async (event) => {
         const approvabilityOffer = allQualifiedOffers.filter(o => o.type === 'approvability').sort((a,b) => a.rate - b.rate)[0];
 
         const finalOffers = [];
-        if(bestRateOffer) finalOffers.push({...bestRateOffer, title: "Nejnižší splátka", description: "Absolutně nejnižší úrok, který jsme na trhu našli. Ideální, pokud máte silnou bonitu a prioritou je pro vás co nejnižší splátka."});
-        if(standardOffer) finalOffers.push({...standardOffer, title: "Vyvážený kompromis", description: "Skvělá sazba v kombinaci s mírnějšími požadavky na schválení. Pro většinu klientů ta nejrozumnější a nejpopulárnější volba."});
-        if(approvabilityOffer) finalOffers.push({...approvabilityOffer, title: "Jistota schválení", description: "Tato varianta má nejbenevolentnější podmínky. Vhodná, pokud si nejste jistí svými příjmy nebo máte jiné závazky."});
+        if(bestRateOffer) finalOffers.push({...bestRateOffer, title: "Nejnižší splátka", description: "Absolutně nejnižší úrok. Ideální, pokud máte silnou bonitu a prioritou je pro vás co nejnižší splátka."});
+        if(standardOffer) finalOffers.push({...standardOffer, title: "Vyvážený kompromis", description: "Skvělá sazba v kombinaci s mírnějšími požadavky. Pro většinu klientů ta nejrozumnější volba."});
+        if(approvabilityOffer) finalOffers.push({...approvabilityOffer, title: "Jistota schválení", description: "Tato varianta má nejbenevolentnější podmínky. Vhodná, pokud si nejste jistí svými příjmy."});
 
         const uniqueOffers = [...new Map(finalOffers.map(item => [item['id'], item])).values()].slice(0,3);
 
@@ -109,9 +105,7 @@ const handler = async (event) => {
             body: JSON.stringify({
                 offers: uniqueOffers,
                 approvability: uniqueOffers.length > 0 ? approvability : 0,
-                dsti: finalDsti,
-                loanAmount,
-                ltv
+                dsti: finalDsti, loanAmount, ltv
             }),
         };
     } catch (error) {

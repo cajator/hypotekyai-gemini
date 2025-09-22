@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hypotéka AI - Chytrá hypoteční kalkulačka</title>
+    <title>Hypotéka AI - Vaše brána k nejlepší hypotéce</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -54,26 +54,26 @@
     <main class="container mx-auto px-6 py-12 md:py-20">
         <!-- Main Title -->
         <section class="text-center mb-16">
-            <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">Chytrá hypoteční analýza</h2>
-            <p class="text-lg text-gray-600">Spojení umělé inteligence a zkušených profesionálů pro vaši nejlepší hypotéku.</p>
+            <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">Vaše brána k nejlepší hypotéce</h2>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">Unikátní spojení AI a zkušených profesionálů, které vám šetří čas i peníze.</p>
         </section>
 
         <!-- Mode Selection -->
-        <section id="kalkulacka" class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
+        <section id="kalkulacka" class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16 items-start">
             <div class="mode-card" data-mode="express">
-                <div class="badge badge-yellow">Rychlé</div>
+                <div class="badge badge-yellow">Rychlá orientace</div>
                 <h3 class="font-bold text-xl mb-2">Expresní scoring</h3>
-                <p class="text-gray-600 text-sm mb-4">Okamžitý výpočet napříč bankami pro rychlou orientaci.</p>
+                <p class="text-gray-600 text-sm">Znáte základní parametry a chcete si udělat rychlou představu o měsíční splátce? Toto je volba pro vás. Zadejte pár údajů a během několika sekund získáte první nástřel.</p>
             </div>
-            <div class="mode-card active" data-mode="guided">
+            <div class="mode-card active lg:scale-105" data-mode="guided">
                 <div class="badge badge-blue">Doporučeno</div>
                 <h3 class="font-bold text-xl mb-2">Profesionální analýza</h3>
-                <p class="text-gray-600 text-sm mb-4">Detailní průvodce scoringem podle reálných bankovních metodik.</p>
+                <p class="text-gray-600 text-sm">Náš detailní průvodce vás provede všemi klíčovými otázkami, stejně jako by to udělal zkušený hypoteční specialista. Výsledkem je přesnější odhad a lepší pochopení vaší situace.</p>
             </div>
             <div class="mode-card mode-card-dark" data-mode="ai">
-                 <div class="badge badge-purple">Premium</div>
+                 <div class="badge badge-purple">Inovace</div>
                 <h3 class="font-bold text-xl mb-2 text-white">AI Hypoteční stratég</h3>
-                <p class="text-gray-300 text-sm mb-4">Nechte si poradit od umělé inteligence trénované na desítkách tisíc případů.</p>
+                <p class="text-gray-300 text-sm">Máte specifické dotazy? Chcete probrat různé scénáře? Náš AI asistent, trénovaný na desítkách tisíc reálných případů, je vám plně k dispozici. Zeptejte se na cokoliv.</p>
             </div>
         </section>
 
@@ -93,14 +93,14 @@
         <!-- Partners -->
         <section id="partneri" class="my-24">
             <h3 class="text-2xl font-bold mb-8 text-gray-800 text-center">Naši partneři</h3>
-            <div class="grid grid-cols-4 md:grid-cols-8 gap-8 items-center">
-                <!-- 16 Bank logos will be injected by JS -->
+            <div id="partner-logos" class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-9 gap-8 items-center">
+                <!-- 17 Partner logos will be injected by JS -->
             </div>
         </section>
 
         <!-- Lead Generation Form -->
-        <section id="kontakt" class="my-24 bg-white p-8 md:p-12 rounded-2xl shadow-xl border">
-            <!-- Hidden by default, shown on demand -->
+        <section id="kontakt" class="my-24">
+             <!-- Hidden by default, shown on demand -->
         </section>
     </main>
 

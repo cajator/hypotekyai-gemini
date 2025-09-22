@@ -1,4 +1,4 @@
-// netlify/functions/chat.js - v12.0 - Final Build
+// netlify/functions/chat.js - v13.0 - Final Build
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const handler = async (event) => {

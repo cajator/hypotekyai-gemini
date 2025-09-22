@@ -1,4 +1,4 @@
-// Hypotéka AI - v14.0 - Final Build
+// Hypoteky Ai - v14.0 - Final Build
 'use strict';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         ui.sendBtn.addEventListener('click', () => sendChatMessage(ui));
         ui.input.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendChatMessage(ui); });
-        addChatMessage('Dobrý den! Jsem Hypotéka AI. Ptejte se na cokoliv, nebo si vyberte z témat níže.', 'ai', ui.window);
+        addChatMessage('Dobrý den! Jsem Hypoteky Ai. Ptejte se na cokoliv, nebo si vyberte z témat níže.', 'ai', ui.window);
         generateAISuggestions(ui);
     };
 
@@ -650,5 +650,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     const calculateMonthlyPayment = (p, r, t) => p <= 0 ? 0 : (p * (r/100/12) * Math.pow(1 + (r/100/12), t*12)) / (Math.pow(1 + (r/100/12), t*12) - 1);
+    
+    // --- START THE APP ---
+    init();
 });
 

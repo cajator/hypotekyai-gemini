@@ -1,0 +1,12 @@
+[build]
+  functions = "netlify/functions"
+  publish = "."
+
+[functions]
+  node_bundler = "esbuild"
+
+[dev]
+  command = "echo 'Starting Netlify Dev Server'"
+  port = 8888
+  publish = "."
+

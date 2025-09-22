@@ -1,75 +1,161 @@
-/* Hypoteky Ai - v14.0 - Final Build */
-body { font-family: 'Inter', sans-serif; }
+<!DOCTYPE html>
+<html lang="cs" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hypoteky Ai - Vaše brána k nejlepší hypotéce</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💡</text></svg>">
+</head>
+<body class="bg-gray-50 text-gray-800 antialiased">
 
-/* General Components */
-.badge { padding: 4px 12px; border-radius: 9999px; font-weight: 600; font-size: 0.75rem; display: inline-block; }
-.badge-yellow { background-color: #fef9c3; color: #ca8a04; }
-.badge-blue { background-color: #dbeafe; color: #2563eb; }
-.badge-purple { background-color: rgba(255,255,255,0.1); color: #e0e7ff;}
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-30 border-b border-gray-200">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" class="flex items-center space-x-2">
+                <span class="text-2xl">💡</span>
+                <h1 class="text-xl font-bold text-gray-800">Hypoteky Ai</h1>
+            </a>
+            <div class="hidden md:flex items-center space-x-6 text-sm font-semibold">
+                <a href="#kalkulacka" class="nav-link">Kalkulačka</a>
+                <a href="#o-projektu" class="nav-link">O projektu</a>
+                <a href="#partneri" class="nav-link">Partneři</a>
+                <a href="#kontakt" class="nav-btn">Kontaktovat specialistu</a>
+            </div>
+             <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-gray-600 focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </button>
+            </div>
+        </nav>
+    </header>
 
-.modern-input, .modern-select { width: 100%; background: #f9fafb; border: 1px solid #d1d5db; color: #111827; padding: 12px 16px; border-radius: 8px; transition: all 0.3s; font-size: 1rem;}
-.modern-input::placeholder { color: #9ca3af; }
-.modern-input:focus, .modern-select:focus { background: white; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); outline: none; }
-.modern-select { appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-position: right 1rem center; background-repeat: no-repeat; background-size: 1.2em; }
+    <div class="bg-blue-600 text-white text-sm py-2">
+        <div class="container mx-auto px-6 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <span class="hidden sm:inline">✅ Zabezpečeno SSL</span>
+                <span class="hidden sm:inline">✅ GDPR Compliant</span>
+            </div>
+            <div class="flex items-center space-x-2">
+                <span class="relative flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span></span>
+                <span id="live-users-counter">147 lidí právě počítá hypotéku</span>
+            </div>
+        </div>
+    </div>
 
-.nav-btn { background-color: #2563eb; color: white; font-weight: bold; padding: 12px 28px; border-radius: 8px; transition: all 0.3s ease; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
-.nav-btn:hover { background-color: #1d4ed8; transform: translateY(-2px); }
-.nav-btn:disabled { background-color: #9ca3af; cursor: not-allowed; transform: none; }
+    <main class="container mx-auto px-6 py-12 md:py-20">
+        <section class="text-center mb-16">
+            <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">Vaše brána k nejlepší hypotéce</h2>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">Naše unikátní platforma kombinuje bleskovou analýzu umělé inteligence s osobním přístupem a vyjednávací silou zkušených finančních profesionálů. Získejte přehled během minuty, my se postaráme o zbytek.</p>
+        </section>
 
-/* Main layout & Mode Selection */
-.mode-card { border: 1px solid #e5e7eb; padding: 24px; border-radius: 16px; text-align: left; cursor: pointer; transition: all 0.3s ease; display: flex; flex-direction: column; }
-.mode-card:hover { transform: translateY(-8px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
-.mode-card.active { border-color: #2563eb; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3); }
-.mode-card-dark { background: linear-gradient(135deg, #4f46e5, #1e293b); }
+        <section id="kalkulacka" class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16 items-start">
+            <div class="mode-card" data-mode="express">
+                <div class="badge badge-yellow">Rychlá orientace</div>
+                <h3 class="font-bold text-xl mb-2">Expresní scoring</h3>
+                <p class="text-gray-600 text-sm">Znáte základní parametry a chcete si udělat rychlou představu o měsíční splátce? Toto je volba pro vás. Zadejte pár údajů a během několika sekund získáte první nástřel.</p>
+            </div>
+            <div class="mode-card active" data-mode="guided">
+                <div class="badge badge-blue">Doporučeno</div>
+                <h3 class="font-bold text-xl mb-2">Profesionální analýza</h3>
+                <p class="text-gray-600 text-sm">Náš detailní průvodce vás provede všemi klíčovými otázkami, stejně jako by to udělal zkušený hypoteční specialista. Výsledkem je přesnější odhad a lepší pochopení vaší situace.</p>
+            </div>
+            <div class="mode-card mode-card-dark" data-mode="ai">
+                <div class="badge badge-purple">Inovace</div>
+                <h3 class="font-bold text-xl mb-2 text-white">AI Hypoteční stratég</h3>
+                <p class="text-gray-300 text-sm">Máte specifické dotazy? Chcete probrat různé scénáře? Náš AI asistent, trénovaný na desítkách tisíc reálných případů, je vám plně k dispozici. Zeptejte se na cokoliv.</p>
+            </div>
+        </section>
 
-/* Partner Logos */
-.partner-logo { max-height: 40px; width: 100%; object-fit: contain; filter: grayscale(100%); opacity: 0.6; transition: all 0.3s ease; }
-.partner-logo:hover { filter: grayscale(0%); opacity: 1; }
+        <section id="content-container" class="bg-white p-6 md:p-12 rounded-2xl shadow-xl border min-h-[500px]"></section>
 
-/* Timeline */
-.timeline { display: flex; justify-content: space-between; position: relative; margin-bottom: 2rem; }
-.timeline-line { position: absolute; top: 1.25rem; left: 0; right: 0; height: 4px; background: #e5e7eb; border-radius: 2px; transform: translateY(-50%); }
-#timeline-progress { height: 100%; background: #2563eb; transition: width 0.5s ease-in-out; border-radius: 2px; }
-.timeline-step { flex: 1; text-align: center; z-index: 1; }
-.timeline-step .step-circle { margin: auto; width: 2.5rem; height: 2.5rem; border-radius: 50%; border-width: 2px; display: flex; align-items: center; justify-content: center; font-weight: bold; transition: all 0.3s ease; border-color: #d1d5db; background-color: #fff; color: #9ca3af; }
-.timeline-step p { margin-top: 0.5rem; font-size: 0.875rem; color: #6b7280; transition: all 0.3s ease; }
-.timeline-step.active .step-circle { border-color: #2563eb; background-color: #2563eb; color: white; transform: scale(1.1); }
-.timeline-step.completed .step-circle { border-color: #16a34a; background-color: #16a34a; color: white; }
-.timeline-step.active p { color: #111827; font-weight: 600; }
+        <section id="o-projektu" class="my-24 bg-blue-50 p-12 rounded-2xl">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">O projektu Hypoteky Ai</h2>
+                <p class="text-gray-600 max-w-3xl mx-auto">Nejsme jen další srovnávač. Jsme váš partner na cestě k vlastnímu bydlení. Kombinujeme sílu umělé inteligence s empatií a zkušenostmi našich certifikovaných specialistů. Naše AI vám poskytne okamžitý, datově podložený přehled trhu a identifikuje nejlepší možné varianty. Následně se vás ujme náš lidský expert, který převezme veškerou komunikaci s bankami, vyjedná finální podmínky a zajistí, že celý proces proběhne hladce a bez stresu.</p>
+            </div>
+        </section>
 
-/* Form Elements */
-.form-section { display: none; }
-.form-section.active { display: block; animation: fadeIn 0.5s forwards; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-.form-label { font-weight: 600; font-size: 0.875rem; color: #374151; margin-bottom: 0.5rem; display: block; }
-.radio-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; }
-.radio-label { padding: 1rem; border: 1px solid #d1d5db; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.2s ease; }
-.radio-label input { display: none; }
-.radio-label span { font-weight: 500; }
-.radio-label input:checked + span { color: #2563eb; }
-.radio-label:has(input:checked) { border-color: #2563eb; background-color: #eff6ff; box-shadow: 0 0 0 2px #bfdbfe; }
-.slider-container .range-labels { display: flex; justify-content: space-between; font-size: 0.75rem; color: #6b7280; padding: 0 4px; }
-input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 8px; background: #e5e7eb; border-radius: 5px; outline: none; opacity: 0.9; transition: opacity .2s; }
-input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; background: #2563eb; cursor: pointer; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.2); }
-input[type=range]::-moz-range-thumb { width: 20px; height: 20px; background: #2563eb; cursor: pointer; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.2); }
+        <section id="partneri" class="my-24">
+            <h3 class="text-2xl font-bold mb-8 text-gray-800 text-center">Naši partneři</h3>
+            <div class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-9 gap-8 items-center">
+                <img src="https://www.penize.cz/images/f/5/22532-cs-logo.svg" alt="Česká spořitelna" class="partner-logo">
+                <img src="https://www.penize.cz/images/f/5/22533-csob-logo.svg" alt="ČSOB" class="partner-logo">
+                <img src="https://www.penize.cz/images/f/5/22535-kb-logo.svg" alt="Komerční banka" class="partner-logo">
+                <img src="https://www.penize.cz/images/f/5/22543-rb-logo.svg" alt="Raiffeisenbank" class="partner-logo">
+                <img src="https://www.penize.cz/images/f/5/22547-unicredit-logo.svg" alt="UniCredit Bank" class="partner-logo">
+                <img src="https://www.penize.cz/images/f/5/22539-moneta-logo.svg" alt="Moneta" class="partner-logo">
+                <img src="https://www.penize.cz/images/f/5/22538-mbank-logo.svg" alt="mBank" class="partner-logo">
+                <img src="https://www.penize.cz/images/f/5/22534-fio-logo.svg" alt="Fio Banka" class="partner-logo">
+                <img src="https://www.penize.cz/images/f/5/22531-airbank-logo.svg" alt="Air Bank" class="partner-logo">
+                <img src="https://www.penize.cz/images/f/5/22537-maxbanka-logo.svg" alt="Max Banka" class="partner-logo">
+                <img src="https://www.penize.cz/images/f/5/22546-trinity-logo.svg" alt="Trinity Bank" class="partner-logo">
+                <img src="https://www.penize.cz/images/f/5/22536-creditas-logo.svg" alt="Banka Creditas" class="partner-logo">
+                <img src="https://www.penize.cz/images/f/5/22548-cmss-logo.svg" alt="ČMSS" class="partner-logo">
+                <img src="https://www.penize.cz/images/f/5/22550-rsts-logo.svg" alt="Raiffeisen Stavební Spořitelna" class="partner-logo">
+                <img src="https://www.penize.cz/images/f/5/22549-sscs-logo.svg" alt="Stavební spořitelna České spořitelny" class="partner-logo">
+                <img src="https://www.penize.cz/images/f/5/22551-moneta-ss-logo.svg" alt="Moneta Stavební Spořitelna" class="partner-logo">
+                <div class="text-gray-500 font-semibold text-center col-span-2 md:col-span-1">+ Další</div>
+            </div>
+        </section>
+        
+        <section id="kontakt" class="hidden my-16 bg-gradient-to-r from-blue-50 to-indigo-50 p-8 rounded-2xl border-blue-200 border">
+             <div class="text-center max-w-2xl mx-auto">
+                <div class="mx-auto bg-white p-4 rounded-full w-16 h-16 flex items-center justify-center shadow-md mb-4">
+                    <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                </div>
+                <h2 class="text-3xl font-bold mb-2">Získejte osobní nabídku od specialisty</h2>
+                <p class="text-gray-600 mb-8">Náš specialista vám zavolá do 24 hodin a připraví nabídky na míru.</p>
+                <form id="lead-form" class="space-y-4 text-left" name="lead-form" method="POST" data-netlify="true">
+                    <input type="hidden" name="form-name" value="lead-form" />
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="name" class="form-label">Jméno a příjmení *</label>
+                            <input type="text" id="name" name="name" required class="modern-input">
+                        </div>
+                        <div>
+                            <label for="phone" class="form-label">Telefon *</label>
+                            <input type="tel" id="phone" name="phone" required class="modern-input">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="email" class="form-label">E-mail *</label>
+                        <input type="email" id="email" name="email" required class="modern-input">
+                    </div>
+                    <div>
+                        <label for="contactTime" class="form-label">Preferovaný čas kontaktu</label>
+                        <select id="contactTime" name="contactTime" class="modern-select">
+                            <option>Kdykoliv</option>
+                            <option>Dopoledne (9-12h)</option>
+                            <option>Odpoledne (13-17h)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="note" class="form-label">Poznámka</label>
+                        <textarea id="note" name="note" rows="3" class="modern-input" placeholder="Máte specifický dotaz? Napište nám ho sem..."></textarea>
+                    </div>
+                    <div class="pt-2">
+                        <button type="submit" id="submit-lead-btn" class="w-full nav-btn bg-green-600 hover:bg-green-700 text-lg">
+                            Odeslat nezávazně
+                        </button>
+                    </div>
+                </form>
+                <div id="form-success" class="hidden mt-6 text-center p-4 bg-green-100 text-green-800 rounded-lg">
+                    Děkujeme! Brzy se vám ozveme.
+                </div>
+             </div>
+        </section>
+    </main>
+    
+    <footer class="bg-gray-800 text-white">
+        <div class="container mx-auto px-6 py-8 text-center text-sm text-gray-400">
+            <p>&copy; 2025 Hypoteky Ai. Všechna práva vyhrazena. Výpočty jsou orientační a nenahrazují finální nabídku od banky.</p>
+        </div>
+    </footer>
 
-/* Analysis Results */
-.offer-card { background-color: #ffffff; border: 1px solid #e5e7eb; transition: all 0.3s ease; cursor: pointer; }
-.offer-card:hover { border-color: #93c5fd; transform: translateY(-4px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-.offer-card.selected { border-color: #2563eb; background-color: #eff6ff; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2); }
-
-/* AI Chat */
-.chat-bubble-ai, .chat-bubble-ai-typing { background: #f3f4f6; color: #1f2937; border-radius: 20px 20px 20px 5px; padding: 12px 16px; max-width: 80%; width: fit-content; line-height: 1.5; }
-.chat-bubble-user { background: #2563eb; color: white; border-radius: 20px 20px 5px 20px; padding: 12px 16px; max-width: 80%; width: fit-content; align-self: flex-end; line-height: 1.5; }
-.chat-bubble-ai p { margin: 0 0 0.5em 0; }
-.chat-bubble-ai ul { margin: 0.5em 0; padding-left: 1.5em; }
-.chat-bubble-ai li { margin-bottom: 0.25em; }
-
-.loading-spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255, 255, 255, 0.3); border-top-color: white; border-radius: 50%; animation: spin 1s linear infinite; }
-.loading-spinner-blue { display: inline-block; width: 24px; height: 24px; border: 4px solid rgba(59, 130, 246, 0.2); border-top-color: #2563eb; border-radius: 50%; animation: spin 1s linear infinite; vertical-align: middle; margin-left: 8px; }
-.typing-indicator span { height: 8px; width: 8px; background-color: #9ca3af; border-radius: 50%; display: inline-block; animation: wave 1.3s infinite; margin: 0 2px; }
-.typing-indicator span:nth-of-type(2) { animation-delay: 0.2s; }
-.typing-indicator span:nth-of-type(3) { animation-delay: 0.4s; }
-@keyframes wave { 0%, 60%, 100% { transform: initial; } 30% { transform: translateY(-8px); } }
-@keyframes spin { to { transform: rotate(360deg); } }
+    <script src="script.js"></script>
+</body>
+</html>
 

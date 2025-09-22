@@ -14,7 +14,6 @@ const handler = async (event) => {
         return { statusCode: 204, headers };
     }
 
-    // Ensure the request is a POST
     if (event.httpMethod !== 'POST') {
         return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method Not Allowed' }) };
     }
@@ -22,7 +21,6 @@ const handler = async (event) => {
     try {
         const { message, context } = JSON.parse(event.body);
         
-        // --- CRITICAL: API Key Check ---
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) {
             console.error('CRITICAL ERROR: GEMINI_API_KEY environment variable is not set.');

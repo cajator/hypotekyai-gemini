@@ -49,7 +49,7 @@ const handler = async (event) => {
         }
         
         if (loanAmount <= 0 || finalPropertyValue <= 0 || income <=0) {
-            return { statusCode: 200, headers, body: JSON.stringify({ offers: [], approvability: { total: 0, breakdown: {} }, dsti: 0 }) };
+            return { statusCode: 200, headers, body: JSON.stringify({ offers: [], approvability: { total: 0, ltv: 0, dsti: 0, age: 0 }, dsti: 0 }) };
         }
 
         const ltv = (loanAmount / finalPropertyValue) * 100;
@@ -70,7 +70,10 @@ const handler = async (event) => {
                 const dsti = ((monthlyPayment + liabilities) / income) * 100;
                 if (dsti > 50) return null;
 
-                return { id: offer.id, rate: parseFloat(calculatedRate.toFixed(2)), monthlyPayment: Math.round(monthlyPayment), type: offer.type, dsti: dsti };
+                return {
+                    id: offer.id, rate: parseFloat(calculatedRate.toFixed(2)),
+                    monthlyPayment: Math.round(monthlyPayment), type: offer.type, dsti: dsti,
+                };
             })
             .filter(Boolean);
 
@@ -88,20 +91,20 @@ const handler = async (event) => {
         const bestOffer = uniqueOffers[0];
         const finalDsti = bestOffer ? bestOffer.dsti : 0;
         
-        let breakdown = {
-            base: 50,
-            ltv: ltv < 80 ? 25 : (ltv > 90 ? -15 : 0),
-            dsti: finalDsti < 40 ? 25 : (finalDsti > 45 ? -15 : 0),
+        // Detailed approvability score
+        const score = {
+            ltv: ltv < 80 ? 30 : (ltv > 90 ? 5 : 15),
+            dsti: finalDsti < 35 ? 40 : (finalDsti > 45 ? 10 : 25),
+            age: age > 25 && age < 45 ? 25 : 15,
         };
-        let total = Object.values(breakdown).reduce((a, b) => a + b, 0);
-        total = Math.min(99, Math.max(10, Math.round(total)));
+        score.total = Math.min(99, score.ltv + score.dsti + score.age);
 
         return {
             statusCode: 200,
             headers,
             body: JSON.stringify({
                 offers: uniqueOffers,
-                approvability: { total: uniqueOffers.length > 0 ? total : 0, breakdown },
+                approvability: uniqueOffers.length > 0 ? score : { total: 0, ltv: 0, dsti: 0, age: 0 },
                 dsti: finalDsti, loanAmount, ltv
             }),
         };

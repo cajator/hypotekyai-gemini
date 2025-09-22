@@ -16,10 +16,8 @@ const handler = async (event) => {
 
     try {
         const params = event.queryStringParameters;
-        // Parse all params with defaults
         const purpose = params.purpose || 'koupě';
         let propertyValue = parseInt(params.propertyValue) || 0;
-        const ownResources = parseInt(params.ownResources) || 0;
         const income = parseInt(params.income) || 0;
         const liabilities = parseInt(params.liabilities) || 0;
         const fixation = parseInt(params.fixation) || 5;
@@ -38,7 +36,7 @@ const handler = async (event) => {
                 loanAmount = constructionBudget;
                 break;
             case 'rekonstrukce':
-                finalPropertyValue = propertyValue + constructionBudget;
+                finalPropertyValue = propertyValue;
                 loanAmount = constructionBudget;
                 break;
             case 'refinancování':
@@ -46,7 +44,7 @@ const handler = async (event) => {
                 loanAmount = loanBalance;
                 break;
             default: // koupě
-                finalPropertyValue = propertyValue;
+                const ownResources = parseInt(params.ownResources) || 0;
                 loanAmount = propertyValue - ownResources;
                 break;
         }
@@ -88,9 +86,9 @@ const handler = async (event) => {
         const approvabilityOffer = allQualifiedOffers.filter(o => o.type === 'approvability').sort((a,b) => a.rate - b.rate)[0];
 
         const finalOffers = [];
-        if(bestRateOffer) finalOffers.push({...bestRateOffer, bestFor: "Nejvýhodnější sazba"});
-        if(standardOffer) finalOffers.push({...standardOffer, bestFor: "Zlatá střední cesta"});
-        if(approvabilityOffer) finalOffers.push({...approvabilityOffer, bestFor: "Nejvyšší schvalitelnost"});
+        if(bestRateOffer) finalOffers.push({...bestRateOffer, title: "Nejnižší splátka", description: "Absolutně nejnižší úrok, který jsme na trhu našli. Ideální, pokud máte silnou bonitu a prioritou je pro vás co nejnižší splátka."});
+        if(standardOffer) finalOffers.push({...standardOffer, title: "Vyvážený kompromis", description: "Skvělá sazba v kombinaci s mírnějšími požadavky na schválení. Pro většinu klientů ta nejrozumnější a nejpopulárnější volba."});
+        if(approvabilityOffer) finalOffers.push({...approvabilityOffer, title: "Jistota schválení", description: "Tato varianta má nejbenevolentnější podmínky. Vhodná, pokud si nejste jistí svými příjmy nebo máte jiné závazky."});
 
         const uniqueOffers = [...new Map(finalOffers.map(item => [item['id'], item])).values()].slice(0,3);
 

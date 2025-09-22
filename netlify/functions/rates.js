@@ -1,4 +1,4 @@
-// netlify/functions/rates.js - v14.0 - Final Build
+// netlify/functions/rates.js - v15.0 - Final Build
 const ALL_OFFERS = {
     'offer-1': { id: 'offer-1', rates: { 3: { base: 4.59, min: 4.39, max: 5.09 }, 5: { base: 4.39, min: 4.19, max: 4.89 }, 7: { base: 4.49, min: 4.29, max: 4.99 }, 10: { base: 4.69, min: 4.49, max: 5.19 } }, requirements: { minIncome: 25000, minLoan: 300000, maxLTV: 90 }, type: "standard" },
     'offer-2': { id: 'offer-2', rates: { 3: { base: 4.49, min: 4.29, max: 4.99 }, 5: { base: 4.29, min: 4.09, max: 4.79 }, 7: { base: 4.39, min: 4.19, max: 4.89 }, 10: { base: 4.59, min: 4.39, max: 5.09 } }, requirements: { minIncome: 20000, minLoan: 200000, maxLTV: 100 }, type: "best-rate" },
@@ -49,7 +49,7 @@ const handler = async (event) => {
         }
         
         if (loanAmount <= 0 || finalPropertyValue <= 0 || income <=0) {
-            return { statusCode: 200, headers, body: JSON.stringify({ offers: [], approvability: 0, dsti: 0 }) };
+            return { statusCode: 200, headers, body: JSON.stringify({ offers: [], approvability: { total: 0, breakdown: {} }, dsti: 0 }) };
         }
 
         const ltv = (loanAmount / finalPropertyValue) * 100;
@@ -70,10 +70,7 @@ const handler = async (event) => {
                 const dsti = ((monthlyPayment + liabilities) / income) * 100;
                 if (dsti > 50) return null;
 
-                return {
-                    id: offer.id, rate: parseFloat(calculatedRate.toFixed(2)),
-                    monthlyPayment: Math.round(monthlyPayment), type: offer.type, dsti: dsti,
-                };
+                return { id: offer.id, rate: parseFloat(calculatedRate.toFixed(2)), monthlyPayment: Math.round(monthlyPayment), type: offer.type, dsti: dsti };
             })
             .filter(Boolean);
 
@@ -91,20 +88,20 @@ const handler = async (event) => {
         const bestOffer = uniqueOffers[0];
         const finalDsti = bestOffer ? bestOffer.dsti : 0;
         
-        let approvability = 50;
-        if (ltv < 80) approvability += 20; else if (ltv > 90) approvability -= 15;
-        if (ltv < 60) approvability += 5;
-        if (finalDsti < 40) approvability += 20; else if (finalDsti > 45) approvability -=15;
-        if (finalDsti < 30) approvability += 5;
-        if (age < 40 && age > 25) approvability += 5;
-        approvability = Math.min(99, Math.max(10, Math.round(approvability)));
+        let breakdown = {
+            base: 50,
+            ltv: ltv < 80 ? 25 : (ltv > 90 ? -15 : 0),
+            dsti: finalDsti < 40 ? 25 : (finalDsti > 45 ? -15 : 0),
+        };
+        let total = Object.values(breakdown).reduce((a, b) => a + b, 0);
+        total = Math.min(99, Math.max(10, Math.round(total)));
 
         return {
             statusCode: 200,
             headers,
             body: JSON.stringify({
                 offers: uniqueOffers,
-                approvability: uniqueOffers.length > 0 ? approvability : 0,
+                approvability: { total: uniqueOffers.length > 0 ? total : 0, breakdown },
                 dsti: finalDsti, loanAmount, ltv
             }),
         };

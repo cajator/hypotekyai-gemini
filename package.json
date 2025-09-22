@@ -1,16 +1,19 @@
 {
-  "name": "hypoteka-ai",
+  "name": "hypoteky-ai",
   "version": "1.0.0",
-  "description": "Hypotéka AI - Profesionální hypoteční analýza",
+  "description": "Profesionální hypoteční kalkulačka s AI",
   "main": "index.html",
   "scripts": {
     "start": "netlify dev",
     "dev": "netlify dev"
   },
-  "author": "Hypotéka AI",
-  "license": "MIT",
+  "author": "Hypoteky Ai Tým",
+  "license": "UNLICENSED",
   "dependencies": {
-    "@google/generative-ai": "^0.7.1"
+    "@google/generative-ai": "^0.2.1"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.0.0"
   }
 }
 

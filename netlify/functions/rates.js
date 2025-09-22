@@ -8,7 +8,7 @@ const ALL_OFFERS = {
     'offer-6': { id: 'offer-6', rates: { 3: { base: 4.89, min: 4.69, max: 5.39 }, 5: { base: 4.79, min: 4.59, max: 5.29 }, 7: { base: 4.89, min: 4.69, max: 5.39 }, 10: { base: 4.99, min: 4.79, max: 5.49 } }, requirements: { maxLTV: 95 }, type: "approvability" }
 };
 const calculateMonthlyPayment = (p, r, t) => { const mR=r/1200, n=t*12; if(mR===0)return p/n; return(p*mR*Math.pow(1+mR,n))/(Math.pow(1+mR,n)-1); };
-const formatNumber = n => n.toLocaleString('cs-CZ', { style: 'currency', currency: 'CZK', maximumFractionDigits: 0 });
+const formatNumber = (n) => n.toLocaleString('cs-CZ', { style: 'currency', currency: 'CZK', maximumFractionDigits: 0 });
 
 const handler = async (event) => {
     const headers = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };

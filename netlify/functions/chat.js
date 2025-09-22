@@ -24,15 +24,8 @@ const handler = async (event) => {
         }
         let responseText = response.text();
         
-        const jsonMatch = responseText.match(/```json\s*([\s\S]*?)\s*```/);
-        if (jsonMatch && jsonMatch[1]) responseText = jsonMatch[1];
+        return { statusCode: 200, headers, body: JSON.stringify({ response: responseText }) };
 
-        try {
-            const jsonResponse = JSON.parse(responseText);
-            return { statusCode: 200, headers, body: JSON.stringify(jsonResponse) };
-        } catch (e) {
-            return { statusCode: 200, headers, body: JSON.stringify({ response: responseText }) };
-        }
     } catch (error) {
         console.error('Gemini API Error:', error);
         return { statusCode: 500, headers, body: JSON.stringify({ error: `Došlo k chybě při komunikaci s AI: ${error.message}` }) };
@@ -43,12 +36,14 @@ function createSystemPrompt(userMessage, context) {
     const hasContext = context && context.calculation && context.calculation.offers && context.calculation.offers.length > 0;
     const contextString = hasContext ? `Uživatel si právě spočítal hypotéku s těmito parametry: ${JSON.stringify(context.calculation, null, 2)}` : 'Uživatel zatím nic nezadal do kalkulačky.';
 
-    return `Jsi přátelský a profesionální hypoteční AI asistent.
+    return `Jsi Hypoteční Ai, přátelský a profesionální asistent. Tvoje služby i služby našich lidských specialistů jsou pro klienta **zcela zdarma**. Naší odměnu platí banka, ne klient. Díky našemu objemu obchodů dokážeme klientům často vyjednat odpuštění poplatků, které by jinak platili. Tuto informaci VŽDY zdůrazni, pokud se uživatel ptá na cenu služeb. Nepoužívej fráze jako "základní služby", naše poradenství je komplexní a zdarma.
+
     AKTUÁLNÍ KONTEXT: ${contextString}
 
     PRAVIDLA:
     - Vždy využij kontext pro co nejrelevantnější odpovědi! Např. na dotaz "Co je LTV?" vysvětli LTV a doplň: "Vaše LTV aktuálně vychází na ${context?.calculation?.approvability?.ltv || 'X'} %." Pokud má uživatel v kontextu tipy (tips), proaktivně je vysvětli a nabídni řešení.
-    - Odpovídej stručně (1-3 věty) a vždy zakonči otázkou.
+    - Odpovídej stručně (1-3 věty) a vždy zakonči otázkou, abys udržel konverzaci.
+    - Buď proaktivní a nápomocný.
 
     UŽIVATELŮV DOTAZ: "${userMessage}"`;
 }

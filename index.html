@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=1.3">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💡</text></svg>">
 </head>
 <body class="bg-gray-50 text-gray-800 antialiased">
@@ -54,18 +54,24 @@
         <section id="kalkulacka" class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16 items-start">
             <div class="mode-card" data-mode="express">
                 <div class="badge badge-yellow">Rychlá orientace</div>
-                <h3 class="font-bold text-xl mb-2">Expresní scoring</h3>
-                <p class="text-gray-600 text-sm">Znáte základní parametry a chcete si udělat rychlou představu o měsíční splátce? Toto je volba pro vás. Zadejte pár údajů a během několika sekund získáte první nástřel.</p>
+                <div class="card-content">
+                    <h3 class="font-bold text-xl mb-2">Expresní scoring</h3>
+                    <p class="text-gray-600 text-sm">Znáte základní parametry a chcete si udělat rychlou představu o měsíční splátce? Toto je volba pro vás.</p>
+                </div>
             </div>
             <div class="mode-card active" data-mode="guided">
                 <div class="badge badge-blue">Doporučeno</div>
-                <h3 class="font-bold text-xl mb-2">Profesionální analýza</h3>
-                <p class="text-gray-600 text-sm">Náš detailní průvodce vás provede všemi klíčovými otázkami, stejně jako by to udělal zkušený hypoteční specialista. Výsledkem je přesnější odhad a lepší pochopení vaší situace.</p>
+                <div class="card-content">
+                    <h3 class="font-bold text-xl mb-2">Profesionální analýza</h3>
+                    <p class="text-gray-600 text-sm">Náš detailní průvodce vás provede všemi klíčovými otázkami, stejně jako by to udělal zkušený hypoteční specialista.</p>
+                </div>
             </div>
             <div class="mode-card mode-card-dark" data-mode="ai">
                 <div class="badge badge-purple">Inovace</div>
-                <h3 class="font-bold text-xl mb-2 text-white">AI Hypoteční stratég</h3>
-                <p class="text-gray-300 text-sm">Máte specifické dotazy? Chcete probrat různé scénáře? Náš AI asistent, trénovaný na desítkách tisíc reálných případů, je vám plně k dispozici. Zeptejte se na cokoliv.</p>
+                 <div class="card-content">
+                    <h3 class="font-bold text-xl mb-2 text-white">AI Hypoteční stratég</h3>
+                    <p class="text-gray-300 text-sm">Máte specifické dotazy? Náš AI asistent je vám plně k dispozici. Zeptejte se na cokoliv.</p>
+                </div>
             </div>
         </section>
 
@@ -93,11 +99,6 @@
                 <img src="https://www.penize.cz/images/f/5/22537-maxbanka-logo.svg" alt="Max Banka" class="partner-logo">
                 <img src="https://www.penize.cz/images/f/5/22546-trinity-logo.svg" alt="Trinity Bank" class="partner-logo">
                 <img src="https://www.penize.cz/images/f/5/22536-creditas-logo.svg" alt="Banka Creditas" class="partner-logo">
-                <img src="https://www.penize.cz/images/f/5/22548-cmss-logo.svg" alt="ČMSS" class="partner-logo">
-                <img src="https://www.penize.cz/images/f/5/22550-rsts-logo.svg" alt="Raiffeisen Stavební Spořitelna" class="partner-logo">
-                <img src="https://www.penize.cz/images/f/5/22549-sscs-logo.svg" alt="Stavební spořitelna České spořitelny" class="partner-logo">
-                <img src="https://www.penize.cz/images/f/5/22551-moneta-ss-logo.svg" alt="Moneta Stavební Spořitelna" class="partner-logo">
-                <div class="text-gray-500 font-semibold text-center col-span-2 md:col-span-1">+ Další</div>
             </div>
         </section>
         
@@ -111,50 +112,30 @@
                 <form id="lead-form" class="space-y-4 text-left" name="lead-form" method="POST" data-netlify="true">
                     <input type="hidden" name="form-name" value="lead-form" />
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="name" class="form-label">Jméno a příjmení *</label>
-                            <input type="text" id="name" name="name" required class="modern-input">
-                        </div>
-                        <div>
-                            <label for="phone" class="form-label">Telefon *</label>
-                            <input type="tel" id="phone" name="phone" required class="modern-input">
-                        </div>
+                        <div><label for="name" class="form-label">Jméno a příjmení *</label><input type="text" id="name" name="name" required class="modern-input"></div>
+                        <div><label for="phone" class="form-label">Telefon *</label><input type="tel" id="phone" name="phone" required class="modern-input"></div>
                     </div>
-                    <div>
-                        <label for="email" class="form-label">E-mail *</label>
-                        <input type="email" id="email" name="email" required class="modern-input">
-                    </div>
+                    <div><label for="email" class="form-label">E-mail *</label><input type="email" id="email" name="email" required class="modern-input"></div>
                     <div>
                         <label for="contactTime" class="form-label">Preferovaný čas kontaktu</label>
                         <select id="contactTime" name="contactTime" class="modern-select">
-                            <option>Kdykoliv</option>
-                            <option>Dopoledne (9-12h)</option>
-                            <option>Odpoledne (13-17h)</option>
+                            <option>Kdykoliv</option><option>Dopoledne (9-12h)</option><option>Odpoledne (13-17h)</option>
                         </select>
                     </div>
-                    <div>
-                        <label for="note" class="form-label">Poznámka</label>
-                        <textarea id="note" name="note" rows="3" class="modern-input" placeholder="Máte specifický dotaz? Napište nám ho sem..."></textarea>
-                    </div>
-                    <div class="pt-2">
-                        <button type="submit" id="submit-lead-btn" class="w-full nav-btn bg-green-600 hover:bg-green-700 text-lg">
-                            Odeslat nezávazně
-                        </button>
-                    </div>
+                    <div><label for="note" class="form-label">Poznámka</label><textarea id="note" name="note" rows="3" class="modern-input" placeholder="Máte specifický dotaz? Napište nám ho sem..."></textarea></div>
+                    <div class="pt-2"><button type="submit" id="submit-lead-btn" class="w-full nav-btn bg-green-600 hover:bg-green-700 text-lg">Odeslat nezávazně</button></div>
                 </form>
-                <div id="form-success" class="hidden mt-6 text-center p-4 bg-green-100 text-green-800 rounded-lg">
-                    Děkujeme! Brzy se vám ozveme.
-                </div>
+                <div id="form-success" class="hidden mt-6 text-center p-4 bg-green-100 text-green-800 rounded-lg">Děkujeme! Brzy se vám ozveme.</div>
              </div>
         </section>
     </main>
     
     <footer class="bg-gray-800 text-white">
         <div class="container mx-auto px-6 py-8 text-center text-sm text-gray-400">
-            <p>&copy; 2025 Hypoteky Ai. Všechna práva vyhrazena. Výpočty jsou orientační a nenahrazují finální nabídku od banky.</p>
+            <p>&copy; 2025 Hypoteky Ai. Všechna práva vyhrazena.</p>
         </div>
     </footer>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=1.3" defer></script>
 </body>
 </html>

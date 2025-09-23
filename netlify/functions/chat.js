@@ -24,15 +24,14 @@ const handler = async (event) => {
         }
         let responseText = response.text().trim();
         
-        // Check for tool usage
-        if (responseText.startsWith('<<TOOL>>')) {
-            try {
-                const toolCall = JSON.parse(responseText.replace('<<TOOL>>', ''));
-                return { statusCode: 200, headers, body: JSON.stringify(toolCall) };
-            } catch (e) {
-                // Fallback if JSON is malformed
-                return { statusCode: 200, headers, body: JSON.stringify({ response: "Omlouvám se, došlo k interní chybě při zpracování vašeho požadavku."}) };
+        try {
+            // Test if the response is a tool call (JSON)
+            const jsonResponse = JSON.parse(responseText);
+            if (jsonResponse.tool) {
+                 return { statusCode: 200, headers, body: JSON.stringify(jsonResponse) };
             }
+        } catch (e) {
+            // It's a regular text response, which is fine
         }
         
         return { statusCode: 200, headers, body: JSON.stringify({ response: responseText }) };
@@ -52,15 +51,17 @@ function createSystemPrompt(userMessage, context) {
     AKTUÁLNÍ KONTEXT: ${contextString}
 
     TVOJE ÚKOLY:
-    1.  **Běžná konverzace:** Pokud se uživatel ptá na obecné téma, odpověz stručně (1-3 věty) a přátelsky. Vždy využij kontext, pokud je k dispozici! Např. na dotaz "Co je LTV?" vysvětli LTV a doplň: "Vaše LTV aktuálně vychází na ${context?.calculation?.approvability?.ltv || 'X'} %." Pokud má uživatel v kontextu tipy (tips), proaktivně je vysvětli. Vždy zakonči otázkou.
+    1.  **Běžná konverzace:** Pokud se uživatel ptá na obecné téma, odpověz stručně (1-3 věty) a přátelsky. Vždy využij kontext! Např. na dotaz "Co je LTV?" vysvětli LTV a doplň: "Vaše LTV aktuálně vychází na ${context?.calculation?.approvability?.ltv || 'X'} %." Pokud má uživatel v kontextu tipy (tips), proaktivně je vysvětli. Vždy zakonči otázkou.
 
-    2.  **Rozpoznání žádosti o kalkulaci:** Pokud dotaz obsahuje klíčová slova jako "spočítat", "kolik bude splátka", "úvěr X milionů", "půjčka na X let", odpověz POUZE speciálním formátem, který začíná <<TOOL>> a obsahuje JSON. Příklad:
-        Uživatel: "chci spočítat hypotéku 4 miliony na 20 let"
-        Tvoje odpověď: <<TOOL>>{"tool":"goToCalculator","params":{"loanAmount":4000000,"loanTerm":20}}
+    2.  **Rozpoznání žádosti o kalkulaci:** Pokud dotaz obsahuje klíčová slova jako "spočítat", "chci kalkulaci", "přejít na kalkulačku", odpověz POUZE JSON objektem. Příklad:
+        Uživatel: "chci spočítat hypotéku"
+        Tvoje odpověď: {"tool":"goToCalculator","params":{}}
 
-    3.  **Rozpoznání žádosti o specialistu:** Pokud se uživatel ptá na "kontakt", "specialistu", "chci mluvit s člověkem", odpověz POUZE speciálním formátem:
+    3.  **Rozpoznání žádosti o specialistu:** Pokud se uživatel ptá na "kontakt", "specialistu", "chci mluvit s člověkem", odpověz POUZE JSON objektem:
         Uživatel: "chci to probrat s poradcem"
-        Tvoje odpověď: <<TOOL>>{"tool":"goToContact","response":"Rozumím. Rád vás spojím s naším specialistou. Níže najdete jednoduchý formulář."}
+        Tvoje odpověď: {"tool":"goToContact","response":"Rozumím. Rád vás spojím s naším specialistou. Níže najdete jednoduchý formulář."}
+    
+    Ve všech ostatních případech odpovídej běžným textem.
 
     UŽIVATELŮV AKTUÁLNÍ DOTAZ: "${userMessage}"`;
 }

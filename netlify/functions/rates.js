@@ -21,9 +21,7 @@ const handler = async (event) => {
         const term = parseInt(p.loanTerm) || 25, fixation = parseInt(p.fixation) || 5;
         const children = parseInt(p.children) || 0;
 
-        if (!loanAmount || !propertyValue || !income) {
-            return { statusCode: 200, headers, body: JSON.stringify({ offers: [] }) };
-        }
+        if (!loanAmount || !propertyValue || !income) { return { statusCode: 200, headers, body: JSON.stringify({ offers: [] }) }; }
 
         const ltv = (loanAmount / propertyValue) * 100;
         const livingMinimum = 10000 + (children * 2500);
@@ -49,16 +47,10 @@ const handler = async (event) => {
         ].filter(o => o.id);
 
         const uniqueOffers = [...new Map(finalOffers.map(item => [item.id, item])).values()].slice(0,3);
-        if (uniqueOffers.length === 0) {
-            return { statusCode: 200, headers, body: JSON.stringify({ offers: [] }) };
-        }
+        if (uniqueOffers.length === 0) { return { statusCode: 200, headers, body: JSON.stringify({ offers: [] }) }; }
         
         const bestOfferDsti = uniqueOffers[0].dsti;
-        const score = {
-            ltv: Math.round(Math.max(10, Math.min(95, 110 - ltv))),
-            dsti: Math.round(Math.max(10, Math.min(95, (48 - bestOfferDsti) / 48 * 100))),
-            bonita: Math.round(Math.max(10, Math.min(95, (disposableIncome / 20000) * 100)))
-        };
+        const score = { ltv: Math.round(Math.max(10, Math.min(95, 110 - ltv))), dsti: Math.round(Math.max(10, Math.min(95, (48 - bestOfferDsti) / 48 * 100))), bonita: Math.round(Math.max(10, Math.min(95, (disposableIncome / 20000) * 100))) };
         score.total = Math.round((score.ltv * 0.4) + (score.dsti * 0.4) + (score.bonita * 0.2));
 
         let smartTip = null;
@@ -70,12 +62,8 @@ const handler = async (event) => {
                 smartTip = { id: 'smart_term', title: "Chytrý tip!", message: `Zvažte prodloužení splatnosti na 30 let. Vaše splátka by klesla na cca ${formatNumber(payment30)} a ušetřili byste tak ${formatNumber(diff)} měsíčně.` };
             }
         }
-        if (score.dsti < 60) {
-            tips.push({ id: 'low_dsti', title: 'Tip pro lepší DSTI', message: 'Vaše DSTI je hraniční. Zkuste snížit jiné měsíční splátky, pokud je to možné, pro lepší podmínky.' });
-        }
-        if (score.ltv < 70 && ltv > 80) {
-             tips.push({ id: 'low_ltv', title: 'Tip pro lepší úrok', message: 'Pro nejlepší úrokové sazby zkuste navýšit vlastní zdroje, abyste snížili LTV pod 80 %.' });
-        }
+        if (score.dsti < 60) { tips.push({ id: 'low_dsti', title: 'Tip pro lepší DSTI', message: 'Vaše DSTI je hraniční. Zkuste snížit jiné měsíční splátky, pokud je to možné, pro lepší podmínky.' }); }
+        if (score.ltv < 70 && ltv > 80) { tips.push({ id: 'low_ltv', title: 'Tip pro lepší úrok', message: 'Pro nejlepší úrokové sazby zkuste navýšit vlastní zdroje, abyste snížili LTV pod 80 %.' }); }
         
         return { statusCode: 200, headers, body: JSON.stringify({ offers: uniqueOffers, approvability: score, smartTip, tips }) };
     } catch (error) {

@@ -3,33 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hypoteky Ai - Vaše brána k nejlepší hypotéce</title>
+    <title>Hypoteky Ai - Profesionální hypoteční analýza</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.17">
+    <link rel="stylesheet" href="style.css?v=1.19">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💡</text></svg>">
 </head>
 <body class="bg-gray-50 text-gray-800 antialiased">
 
     <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-30 border-b border-gray-200">
-        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
             <a href="#" class="flex items-center space-x-2">
                 <span class="text-2xl">💡</span>
                 <h1 class="text-xl font-bold text-gray-800">Hypoteky Ai</h1>
             </a>
-            <div class="hidden md:flex items-center space-x-6 text-sm font-semibold">
-                <a href="#kalkulacka" class="nav-link">Kalkulačka</a>
-                <a href="#o-projektu" class="nav-link">O projektu</a>
-                <a href="#kontakt" class="nav-btn">Kontaktovat specialistu</a>
+            <div class="hidden md:flex items-center space-x-6">
+                <div class="text-right">
+                    <div class="font-bold text-gray-800">19+</div>
+                    <div class="text-xs text-gray-500">Partnerů</div>
+                </div>
+                 <a href="#kontakt" class="nav-btn">Chci poradit</a>
             </div>
         </nav>
     </header>
 
-    <div class="bg-blue-600 text-white text-sm py-2">
+    <div class="bg-blue-50 border-b border-blue-200 text-sm py-2">
         <div class="container mx-auto px-6 flex justify-between items-center">
-            <span>✅ Zabezpečeno SSL & GDPR Compliant</span>
-            <div id="live-users-counter" class="flex items-center space-x-2">
+            <div class="flex items-center space-x-4 text-blue-800 font-medium">
+                <span>✅ Zabezpečeno SSL</span>
+                <span>✅ GDPR Compliant</span>
+                <span>✅ Real-time data</span>
+            </div>
+            <div id="live-users-counter" class="flex items-center space-x-2 font-medium">
                 <span class="relative flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span></span>
                 <span>147 lidí právě počítá hypotéku</span>
             </div>
@@ -38,57 +44,72 @@
 
     <main class="container mx-auto px-6 py-12 md:py-20">
         <section class="text-center mb-16">
-            <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">Vaše brána k nejlepší hypotéce</h2>
-            <p class="text-lg text-gray-600 max-w-3xl mx-auto">Srovnejte nabídky 9 bank na jednom místě. Naše chytrá kalkulačka a AI asistent vám pomohou najít tu nejlepší cestu k vlastnímu bydlení.</p>
+            <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">Profesionální hypoteční analýza</h2>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">Metodika 19+ partnerů | Aktuální sazby | Scoring v reálném čase</p>
         </section>
 
-        <section id="kalkulacka" class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16 items-stretch">
-            <div class="mode-card active" data-mode="express">
-                <div class="badge badge-yellow">Rychlá orientace</div>
-                <h3 class="font-bold text-xl mb-2">Expresní scoring</h3>
-                <p class="text-gray-600 text-sm">Zadejte 4 základní údaje a okamžitě získejte přehled o vašich možnostech.</p>
-            </div>
-            <div class="mode-card" data-mode="guided">
-                <div class="badge badge-blue">Doporučeno</div>
-                <h3 class="font-bold text-xl mb-2">Detailní kalkulačka</h3>
-                <p class="text-gray-600 text-sm">Vyplňte podrobnější informace pro co nejpřesnější srovnání a analýzu vaší situace.</p>
-            </div>
-            <div class="mode-card mode-card-dark" data-mode="ai">
-                <div class="badge badge-purple">Inovace</div>
-                <h3 class="font-bold text-xl mb-2 text-white">AI Hypoteční stratég</h3>
-                <p class="text-gray-300 text-sm">Máte specifický dotaz? Náš AI asistent vám poradí a pomůže s nejasnostmi.</p>
-            </div>
-        </section>
-
-        <section id="content-container" class="bg-white p-6 md:p-12 rounded-2xl shadow-xl border min-h-[500px]"></section>
-
-        <section id="o-projektu" class="my-24 bg-blue-50 p-12 rounded-2xl">
-            <div class="text-center">
-                <h2 class="text-3xl font-bold text-gray-800 mb-4">O projektu Hypoteky Ai</h2>
-                <p class="text-gray-600 max-w-3xl mx-auto">Kombinujeme sílu umělé inteligence s empatií a zkušenostmi našich certifikovaných specialistů. Naše AI vám poskytne okamžitý, datově podložený přehled trhu. Následně se vás ujme náš lidský expert, který převezme veškerou komunikaci s bankami, vyjedná finální podmínky a zajistí, že celý proces proběhne hladce a bez stresu.</p>
-            </div>
-        </section>
-
-        <section id="partneri" class="my-24">
-            <h3 class="text-2xl font-bold mb-8 text-gray-800 text-center">Spolupracujeme se všemi bankami na trhu</h3>
-            <div class="grid grid-cols-4 md:grid-cols-9 gap-8 items-center">
-                <img src="https://www.kurzy.cz/i/l/CSOB.svg" alt="ČSOB" class="partner-logo">
-                <img src="https://www.kurzy.cz/i/l/KB.svg" alt="Komerční banka" class="partner-logo">
-                <img src="https://www.kurzy.cz/i/l/CS.svg" alt="Česká spořitelna" class="partner-logo">
-                <img src="https://www.kurzy.cz/i/l/RB.svg" alt="Raiffeisenbank" class="partner-logo">
-                <img src="https://www.kurzy.cz/i/l/MONETA.svg" alt="Moneta" class="partner-logo">
-                <img src="https://www.kurzy.cz/i/l/UNI.svg" alt="UniCredit Bank" class="partner-logo">
-                <img src="https://www.kurzy.cz/i/l/AIR.svg" alt="Air Bank" class="partner-logo">
-                <img src="https://www.kurzy.cz/i/l/FIO.svg" alt="Fio Banka" class="partner-logo">
-                <img src="https://www.mbank.cz/pruvodce/nove-logo/logo-mbank.svg" alt="mBank" class="partner-logo">
-            </div>
-        </section>
-
-        <section class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center mb-24 py-8 bg-white rounded-2xl shadow-lg border">
+        <section class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center mb-16">
             <div><p class="text-3xl font-bold text-blue-600">8.4 mld Kč</p><p class="text-gray-500">Zprostředkováno</p></div>
             <div><p class="text-3xl font-bold text-blue-600">286 000 Kč</p><p class="text-gray-500">Průměrná úspora</p></div>
             <div><p class="text-3xl font-bold text-blue-600">12 847</p><p class="text-gray-500">Spokojených klientů</p></div>
             <div><p class="text-3xl font-bold text-blue-600">4.9 / 5.0</p><p class="text-gray-500">Hodnocení</p></div>
+        </section>
+
+        <section id="kalkulacka" class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12 items-stretch">
+            <div class="mode-card active" data-mode="express">
+                <div class="badge badge-yellow !text-yellow-800 !bg-yellow-200">Rychle <span class="hidden sm:inline">za 30 sekund</span></div>
+                <h3 class="font-bold text-xl mb-3">Expresní scoring</h3>
+                <ul class="space-y-2 text-sm text-gray-600 flex-grow">
+                    <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Okamžitý výpočet</li>
+                    <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Porovnání 19+ partnerů</li>
+                    <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Aktuální sazby a slevy</li>
+                </ul>
+            </div>
+            <div class="mode-card" data-mode="guided">
+                <div class="badge badge-blue">Doporučeno</div>
+                <h3 class="font-bold text-xl mb-3">Detailní analýza</h3>
+                <ul class="space-y-2 text-sm text-gray-600 flex-grow">
+                    <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Komplexní scoring podle metodik</li>
+                    <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Stress test ČNB a DSTI</li>
+                    <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Optimalizace a chytré tipy</li>
+                </ul>
+            </div>
+            <div class="mode-card mode-card-dark" data-mode="ai">
+                 <div class="badge badge-purple !text-purple-800 !bg-purple-200">AI Powered</div>
+                <h3 class="font-bold text-xl mb-3 text-white">AI Hypoteční stratég</h3>
+                <ul class="space-y-2 text-sm text-gray-300 flex-grow">
+                     <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-purple-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Interaktivní modelování splátek</li>
+                     <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-purple-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Predikce schválení 97%</li>
+                     <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-purple-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Konverzační formulář</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="content-container"></section>
+
+        <section id="partneri" class="my-24">
+            <h3 class="text-2xl font-bold mb-8 text-gray-800 text-center">Naši partneři</h3>
+            <div class="grid grid-cols-4 md:grid-cols-7 lg:grid-cols-10 gap-8 items-center">
+                <img src="https://www.kurzy.cz/i/l/CS.svg" alt="Česká spořitelna" class="partner-logo">
+                <img src="https://www.kurzy.cz/i/l/CSOB.svg" alt="ČSOB" class="partner-logo">
+                <img src="https://www.kurzy.cz/i/l/KB.svg" alt="Komerční banka" class="partner-logo">
+                <img src="https://www.kurzy.cz/i/l/RB.svg" alt="Raiffeisenbank" class="partner-logo">
+                <img src="https://www.kurzy.cz/i/l/UNI.svg" alt="UniCredit Bank" class="partner-logo">
+                <img src="https://www.kurzy.cz/i/l/MONETA.svg" alt="Moneta" class="partner-logo">
+                <img src="https://www.mbank.cz/pruvodce/nove-logo/logo-mbank.svg" alt="mBank" class="partner-logo">
+                <img src="https://www.kurzy.cz/i/l/FIO.svg" alt="Fio Banka" class="partner-logo">
+                <img src="https://www.oberbank.cz/-/media/Images/Header/logo_oberbank.svg" alt="Oberbank" class="partner-logo">
+                <img src="https://www.cmss.cz/img/logo-cmss.svg" alt="ČMSS" class="partner-logo">
+                <img src="https://www.rsts.cz/res/img/logo-rsts.svg" alt="Raiffeisen Stavební Spořitelna" class="partner-logo">
+                <img src="https://www.modrapyramida.cz/Files/logo-mp.svg" alt="Modrá pyramida" class="partner-logo">
+                <img src="https://www.burinka.cz/wp-content/themes/burinka/img/logo-burinka.svg" alt="Stavební spořitelna České spořitelny" class="partner-logo">
+                <img src="https://www.artesa.cz/wp-content/uploads/2021/05/logo.svg" alt="Artesa" class="partner-logo">
+                <img src="https://www.bidli.cz/assets/images/logo-bidli-black.svg" alt="Bidli" class="partner-logo">
+                <img src="https://www.cofidis.cz/images/logo-cofidis-new.svg" alt="Cofidis" class="partner-logo">
+                <img src="https://www.sfg.cz/wp-content/themes/sfg/img/logo_sfg.svg" alt="SFG" class="partner-logo">
+                <img src="https://www.tgimoney.cz/wp-content/uploads/2021/05/logo_blue.svg" alt="TGI Money" class="partner-logo">
+                <div class="font-semibold text-gray-500 text-center">+ další</div>
+            </div>
         </section>
         
         <section id="kontakt" class="hidden my-16 bg-gradient-to-r from-blue-50 to-indigo-50 p-8 rounded-2xl border-blue-200 border">
@@ -115,6 +136,6 @@
         </div>
     </footer>
 
-    <script src="script.js?v=1.17" defer></script>
+    <script src="script.js?v=1.19" defer></script>
 </body>
 </html>

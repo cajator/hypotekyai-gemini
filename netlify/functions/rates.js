@@ -1,12 +1,20 @@
-// netlify/functions/rates.js - v16.0 - Detailed Calculator Build
-const ALL_OFFERS = {
-    'offer-1': { id: 'offer-1', rates: { 3: { base: 4.59, min: 4.39, max: 5.09 }, 5: { base: 4.39, min: 4.19, max: 4.89 }, 7: { base: 4.49, min: 4.29, max: 4.99 }, 10: { base: 4.69, min: 4.49, max: 5.19 } }, requirements: { maxLTV: 90 }, type: "standard" },
-    'offer-2': { id: 'offer-2', rates: { 3: { base: 4.49, min: 4.29, max: 4.99 }, 5: { base: 4.29, min: 4.09, max: 4.79 }, 7: { base: 4.39, min: 4.19, max: 4.89 }, 10: { base: 4.59, min: 4.39, max: 5.09 } }, requirements: { maxLTV: 100 }, type: "best-rate" },
-    'offer-3': { id: 'offer-3', rates: { 3: { base: 4.69, min: 4.49, max: 5.19 }, 5: { base: 4.49, min: 4.29, max: 4.99 }, 7: { base: 4.59, min: 4.39, max: 5.09 }, 10: { base: 4.79, min: 4.59, max: 5.29 } }, requirements: { maxLTV: 85 }, type: "approvability" },
-    'offer-4': { id: 'offer-4', rates: { 3: { base: 4.39, min: 4.19, max: 4.89 }, 5: { base: 4.19, min: 3.99, max: 4.69 }, 7: { base: 4.29, min: 4.09, max: 4.79 }, 10: { base: 4.49, min: 4.29, max: 4.99 } }, requirements: { maxLTV: 80 }, type: "best-rate" },
-    'offer-5': { id: 'offer-5', rates: { 3: { base: 4.54, min: 4.34, max: 5.04 }, 5: { base: 4.34, min: 4.14, max: 4.84 }, 7: { base: 4.44, min: 4.24, max: 4.94 }, 10: { base: 4.64, min: 4.44, max: 5.14 } }, requirements: { maxLTV: 90 }, type: "standard" },
-    'offer-6': { id: 'offer-6', rates: { 3: { base: 4.89, min: 4.69, max: 5.39 }, 5: { base: 4.79, min: 4.59, max: 5.29 }, 7: { base: 4.89, min: 4.69, max: 5.39 }, 10: { base: 4.99, min: 4.79, max: 5.49 } }, requirements: { maxLTV: 95 }, type: "approvability" }
-};
+// netlify/functions/rates.js - v18.0 - Firestore Integration
+import admin from 'firebase-admin';
+
+// Initialize Firebase Admin SDK
+// Kontrola, zda již byla aplikace inicializována
+if (!admin.apps.length) {
+  try {
+    admin.initializeApp({
+      credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY))
+    });
+  } catch (e) {
+    console.error('Firebase Admin Initialization Error', e);
+  }
+}
+
+const db = admin.firestore();
+
 const calculateMonthlyPayment = (p, r, t) => { const mR=r/1200, n=t*12; if(mR===0)return p/n; return(p*mR*Math.pow(1+mR,n))/(Math.pow(1+mR,n)-1); };
 const formatNumber = (n) => n.toLocaleString('cs-CZ', { style: 'currency', currency: 'CZK', maximumFractionDigits: 0 });
 
@@ -15,12 +23,18 @@ const handler = async (event) => {
     if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers };
 
     try {
+        // Fetch offers from Firestore
+        const offersSnapshot = await db.collection('offers').get();
+        const ALL_OFFERS = offersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
         const p = event.queryStringParameters;
         const loanAmount = parseInt(p.loanAmount) || 0, propertyValue = parseInt(p.propertyValue) || 0;
+        const landValue = parseInt(p.landValue) || 0;
         const income = parseInt(p.income) || 0, liabilities = parseInt(p.liabilities) || 0;
         const term = parseInt(p.loanTerm) || 25;
         const children = parseInt(p.children) || 0;
         const employmentType = p.employmentType || 'zamestnanec';
+        const loanPurpose = p.loanPurpose || 'koupe';
         
         const fixationInput = parseInt(p.fixation) || 5;
         const validFixations = [3, 5, 7, 10];
@@ -28,15 +42,15 @@ const handler = async (event) => {
 
         if (!loanAmount || !propertyValue || !income) { return { statusCode: 200, headers, body: JSON.stringify({ offers: [] }) }; }
 
-        const ltv = (propertyValue > 0) ? (loanAmount / propertyValue) * 100 : 0;
+        const effectivePropertyValue = loanPurpose === 'vystavba' ? propertyValue + landValue : propertyValue;
+        const ltv = (effectivePropertyValue > 0) ? (loanAmount / effectivePropertyValue) * 100 : 0;
         
-        // Simplified income adjustment for self-employed (OSVČ)
         const adjustedIncome = employmentType === 'osvc' ? income * 0.7 : income;
 
         const livingMinimum = 10000 + (children * 2500);
         const disposableIncome = adjustedIncome - livingMinimum;
 
-        const allQualifiedOffers = Object.values(ALL_OFFERS)
+        const allQualifiedOffers = ALL_OFFERS
             .filter(o => ltv <= o.requirements.maxLTV && o.rates[fixation])
             .map(o => {
                 const rateInfo = o.rates[fixation];
@@ -78,9 +92,12 @@ const handler = async (event) => {
         if (score.dsti < 60) { tips.push({ id: 'low_dsti', title: 'Tip pro lepší DSTI', message: 'Vaše DSTI je hraniční. Zkuste snížit jiné měsíční splátky, pokud je to možné, pro lepší podmínky.' }); }
         if (score.ltv < 70 && ltv > 80) { tips.push({ id: 'low_ltv', title: 'Tip pro lepší úrok', message: 'Pro nejlepší úrokové sazby zkuste navýšit vlastní zdroje, abyste snížili LTV pod 80 %.' }); }
         
-        return { statusCode: 200, headers, body: JSON.stringify({ offers: uniqueOffers, approvability: { ...score, ltv: Math.round(ltv) }, smartTip, tips }) };
+        const finalLtv = Math.round(ltv);
+        return { statusCode: 200, headers, body: JSON.stringify({ offers: uniqueOffers, approvability: { ...score, ltv: finalLtv }, smartTip, tips }) };
     } catch (error) {
+        console.error("Rates function error:", error);
         return { statusCode: 500, headers, body: JSON.stringify({ error: error.message }) };
     }
 };
 export { handler };
+

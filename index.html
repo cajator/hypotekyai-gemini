@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.13">
+    <link rel="stylesheet" href="style.css?v=1.8">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💡</text></svg>">
 </head>
 <body class="bg-gray-50 text-gray-800 antialiased">
@@ -46,12 +46,12 @@
             <div class="mode-card" data-mode="express">
                 <div class="badge badge-yellow">Rychlá orientace</div>
                 <h3 class="font-bold text-xl mb-2">Expresní scoring</h3>
-                <p class="text-gray-600 text-sm">Zadejte 4 základní údaje a okamžitě získejte přehled o vašich možnostech.</p>
+                <p class="text-gray-600 text-sm">Zadejte pár údajů a během několika sekund získáte první nástřel a přehled trhu.</p>
             </div>
             <div class="mode-card active" data-mode="guided">
                 <div class="badge badge-blue">Doporučeno</div>
-                <h3 class="font-bold text-xl mb-2">Detailní kalkulačka</h3>
-                <p class="text-gray-600 text-sm">Vyplňte podrobnější informace pro co nejpřesnější srovnání a analýzu vaší situace.</p>
+                <h3 class="font-bold text-xl mb-2">Profesionální analýza</h3>
+                <p class="text-gray-600 text-sm">Detailní průvodce vás provede všemi klíčovými otázkami pro co nejpřesnější výsledek.</p>
             </div>
             <div class="mode-card mode-card-dark" data-mode="ai">
                 <div class="badge badge-purple">Inovace</div>
@@ -98,15 +98,6 @@
                         <div><label for="phone" class="form-label">Telefon *</label><input type="tel" id="phone" name="phone" required class="modern-input"></div>
                     </div>
                     <div><label for="email" class="form-label">E-mail *</label><input type="email" id="email" name="email" required class="modern-input"></div>
-                    <div>
-                        <label for="contactTime" class="form-label">Preferovaný čas kontaktu</label>
-                        <select id="contactTime" name="contactTime" class="modern-select">
-                            <option>Kdykoliv</option>
-                            <option>Dopoledne (9-12h)</option>
-                            <option>Odpoledne (13-17h)</option>
-                        </select>
-                    </div>
-                    <div><label for="note" class="form-label">Poznámka</label><textarea id="note" name="note" rows="3" class="modern-input" placeholder="Máte specifický dotaz? Napište nám ho sem..."></textarea></div>
                     <div class="pt-2"><button type="submit" id="submit-lead-btn" class="w-full nav-btn bg-green-600 hover:bg-green-700 text-lg">Odeslat nezávazně</button></div>
                 </form>
                 <div id="form-success" class="hidden mt-6 text-center p-4 bg-green-100 text-green-800 rounded-lg">Děkujeme! Brzy se vám ozveme.</div>
@@ -120,6 +111,6 @@
         </div>
     </footer>
 
-    <script src="script.js?v=1.13" defer></script>
+    <script src="script.js?v=1.8" defer></script>
 </body>
 </html>

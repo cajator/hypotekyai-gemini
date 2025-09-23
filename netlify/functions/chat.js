@@ -22,7 +22,18 @@ const handler = async (event) => {
              if (blockReason) throw new Error(`Požadavek byl zablokován z důvodu: ${blockReason}. Zkuste přeformulovat dotaz.`);
              throw new Error("AI nevrátila žádnou platnou odpověď.");
         }
-        let responseText = response.text();
+        let responseText = response.text().trim();
+        
+        // Check for tool usage
+        if (responseText.startsWith('<<TOOL>>')) {
+            try {
+                const toolCall = JSON.parse(responseText.replace('<<TOOL>>', ''));
+                return { statusCode: 200, headers, body: JSON.stringify(toolCall) };
+            } catch (e) {
+                // Fallback if JSON is malformed
+                return { statusCode: 200, headers, body: JSON.stringify({ response: "Omlouvám se, došlo k interní chybě při zpracování vašeho požadavku."}) };
+            }
+        }
         
         return { statusCode: 200, headers, body: JSON.stringify({ response: responseText }) };
 
@@ -36,16 +47,22 @@ function createSystemPrompt(userMessage, context) {
     const hasContext = context && context.calculation && context.calculation.offers && context.calculation.offers.length > 0;
     const contextString = hasContext ? `Uživatel si právě spočítal hypotéku s těmito parametry: ${JSON.stringify(context.calculation, null, 2)}` : 'Uživatel zatím nic nezadal do kalkulačky.';
 
-    return `Jsi Hypoteční Ai, přátelský a profesionální asistent. Tvoje služby i služby našich lidských specialistů jsou pro klienta **zcela zdarma**. Naší odměnu platí banka, ne klient. Díky našemu objemu obchodů dokážeme klientům často vyjednat odpuštění poplatků, které by jinak platili. Tuto informaci VŽDY zdůrazni, pokud se uživatel ptá na cenu služeb. Nepoužívej fráze jako "základní služby", naše poradenství je komplexní a zdarma.
+    return `Jsi Hypoteční Ai, přátelský a profesionální asistent. Tvoje služby i služby našich lidských specialistů jsou pro klienta **zcela zdarma**. Naší odměnu platí banka, ne klient. Díky našemu objemu obchodů dokážeme klientům často vyjednat odpuštění poplatků, které by jinak platili. Tuto informaci VŽDY zdůrazni, pokud se uživatel ptá na cenu služeb.
 
     AKTUÁLNÍ KONTEXT: ${contextString}
 
-    PRAVIDLA:
-    - Vždy využij kontext pro co nejrelevantnější odpovědi! Např. na dotaz "Co je LTV?" vysvětli LTV a doplň: "Vaše LTV aktuálně vychází na ${context?.calculation?.approvability?.ltv || 'X'} %." Pokud má uživatel v kontextu tipy (tips), proaktivně je vysvětli a nabídni řešení.
-    - Odpovídej stručně (1-3 věty) a vždy zakonči otázkou, abys udržel konverzaci.
-    - Buď proaktivní a nápomocný.
+    TVOJE ÚKOLY:
+    1.  **Běžná konverzace:** Pokud se uživatel ptá na obecné téma, odpověz stručně (1-3 věty) a přátelsky. Vždy využij kontext, pokud je k dispozici! Např. na dotaz "Co je LTV?" vysvětli LTV a doplň: "Vaše LTV aktuálně vychází na ${context?.calculation?.approvability?.ltv || 'X'} %." Pokud má uživatel v kontextu tipy (tips), proaktivně je vysvětli. Vždy zakonči otázkou.
 
-    UŽIVATELŮV DOTAZ: "${userMessage}"`;
+    2.  **Rozpoznání žádosti o kalkulaci:** Pokud dotaz obsahuje klíčová slova jako "spočítat", "kolik bude splátka", "úvěr X milionů", "půjčka na X let", odpověz POUZE speciálním formátem, který začíná <<TOOL>> a obsahuje JSON. Příklad:
+        Uživatel: "chci spočítat hypotéku 4 miliony na 20 let"
+        Tvoje odpověď: <<TOOL>>{"tool":"goToCalculator","params":{"loanAmount":4000000,"loanTerm":20}}
+
+    3.  **Rozpoznání žádosti o specialistu:** Pokud se uživatel ptá na "kontakt", "specialistu", "chci mluvit s člověkem", odpověz POUZE speciálním formátem:
+        Uživatel: "chci to probrat s poradcem"
+        Tvoje odpověď: <<TOOL>>{"tool":"goToContact","response":"Rozumím. Rád vás spojím s naším specialistou. Níže najdete jednoduchý formulář."}
+
+    UŽIVATELŮV AKTUÁLNÍ DOTAZ: "${userMessage}"`;
 }
 
 export { handler };

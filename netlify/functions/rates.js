@@ -18,8 +18,12 @@ const handler = async (event) => {
         const p = event.queryStringParameters;
         const loanAmount = parseInt(p.loanAmount) || 0, propertyValue = parseInt(p.propertyValue) || 0;
         const income = parseInt(p.income) || 0, liabilities = parseInt(p.liabilities) || 0;
-        const term = parseInt(p.loanTerm) || 25, fixation = parseInt(p.fixation) || 5;
+        const term = parseInt(p.loanTerm) || 25;
         const children = parseInt(p.children) || 0;
+        
+        const fixationInput = parseInt(p.fixation) || 5;
+        const validFixations = [3, 5, 7, 10];
+        const fixation = validFixations.reduce((prev, curr) => (Math.abs(curr - fixationInput) < Math.abs(prev - fixationInput) ? curr : prev));
 
         if (!loanAmount || !propertyValue || !income) { return { statusCode: 200, headers, body: JSON.stringify({ offers: [] }) }; }
 

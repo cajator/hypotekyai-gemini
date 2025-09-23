@@ -30,7 +30,7 @@ const handler = async (event) => {
                  return { statusCode: 200, headers, body: JSON.stringify(jsonResponse) };
             }
         } catch (e) {
-            // It's a regular text response, which is fine
+            // It's a regular text response
         }
         
         return { statusCode: 200, headers, body: JSON.stringify({ response: responseText }) };
@@ -45,7 +45,7 @@ function createSystemPrompt(userMessage, context) {
     const hasContext = context && context.calculation && context.calculation.offers && context.calculation.offers.length > 0;
     const contextString = hasContext ? `Uživatel má v panelu namodelovanou hypotéku s těmito výsledky: ${JSON.stringify(context.calculation, null, 2)}` : 'Uživatel zatím nic nepočítal.';
 
-    return `Jsi Hypoteční Ai, přátelský a profesionální asistent. Tvoje služby i služby našich lidských specialistů jsou pro klienta **zcela zdarma**. Naší odměnu platí banka. Díky našemu objemu obchodů dokážeme klientům často vyjednat odpuštění poplatků. Tuto informaci VŽDY zdůrazni, pokud se uživatel ptá na cenu služeb.
+    return `Jsi Hypoteční Ai, přátelský a profesionální asistent. Tvoje služby i služby našich lidských specialistů jsou pro klienta **zcela zdarma**. Naší odměnu platí banka, ne klient. Díky našemu objemu obchodů dokážeme klientům často vyjednat odpuštění poplatků, které by jinak platili. Tuto informaci VŽDY zdůrazni, pokud se uživatel ptá na cenu služeb.
 
     AKTUÁLNÍ KONTEXT: ${contextString}
 

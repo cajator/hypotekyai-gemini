@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.24">
+    <link rel="stylesheet" href="style.css?v=1.26">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💡</text></svg>">
 </head>
 <body class="bg-gray-50 text-gray-800 antialiased">
@@ -46,37 +46,87 @@
             <p class="text-lg text-gray-600 max-w-3xl mx-auto">Metodika 19+ partnerů | Aktuální sazby | Scoring v reálném čase</p>
         </section>
 
-        <section id="kalkulacka" class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12 items-stretch">
-            <div class="mode-card active" data-mode="express">
-                <div class="badge badge-yellow !text-yellow-800 !bg-yellow-200">Rychle <span class="hidden sm:inline">za 30 sekund</span></div>
-                <h3 class="font-bold text-xl mb-3">Expresní scoring</h3>
-                <ul class="space-y-2 text-sm text-gray-600 flex-grow">
-                    <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Okamžitý výpočet</li>
-                    <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Porovnání 19+ partnerů</li>
-                    <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Aktuální sazby a slevy</li>
-                </ul>
-            </div>
-            <div class="mode-card" data-mode="guided">
-                <div class="badge badge-blue">Doporučeno</div>
-                <h3 class="font-bold text-xl mb-3">Detailní analýza</h3>
-                <ul class="space-y-2 text-sm text-gray-600 flex-grow">
-                    <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Komplexní scoring podle metodik</li>
-                    <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Stress test ČNB a DSTI</li>
-                    <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Optimalizace a chytré tipy</li>
-                </ul>
-            </div>
-            <div class="mode-card mode-card-dark" data-mode="ai">
-                 <div class="badge badge-purple !text-purple-800 !bg-purple-200">AI Powered</div>
-                <h3 class="font-bold text-xl mb-3 text-white">AI Hypoteční stratég</h3>
-                <ul class="space-y-2 text-sm text-gray-300 flex-grow">
-                     <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-purple-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Interaktivní modelování splátek</li>
-                     <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-purple-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Predikce schválení 97%</li>
-                     <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-purple-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Konverzační formulář</li>
-                </ul>
+        <div id="kalkulacka-a-vysledky">
+            <section id="kalkulacka" class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12 items-stretch">
+                <div class="mode-card active" data-mode="express">
+                    <div class="badge badge-yellow !text-yellow-800 !bg-yellow-200">Rychle <span class="hidden sm:inline">za 30 sekund</span></div>
+                    <h3 class="font-bold text-xl mb-3">Expresní scoring</h3>
+                    <ul class="space-y-2 text-sm text-gray-600 flex-grow">
+                        <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Okamžitý výpočet</li>
+                        <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Porovnání 19+ partnerů</li>
+                        <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Aktuální sazby a slevy</li>
+                    </ul>
+                </div>
+                <div class="mode-card" data-mode="guided">
+                    <div class="badge badge-blue">Doporučeno</div>
+                    <h3 class="font-bold text-xl mb-3">Detailní analýza</h3>
+                    <ul class="space-y-2 text-sm text-gray-600 flex-grow">
+                        <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Komplexní scoring podle metodik</li>
+                        <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Stress test ČNB a DSTI</li>
+                        <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Optimalizace a chytré tipy</li>
+                    </ul>
+                </div>
+                <div class="mode-card mode-card-dark" data-mode="ai">
+                     <div class="badge badge-purple !text-purple-800 !bg-purple-200">AI Powered</div>
+                    <h3 class="font-bold text-xl mb-3 text-white">AI Hypoteční stratég</h3>
+                    <ul class="space-y-2 text-sm text-gray-300 flex-grow">
+                         <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-purple-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Interaktivní modelování splátek</li>
+                         <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-purple-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Predikce schválení 97%</li>
+                         <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-purple-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Konverzační formulář</li>
+                    </ul>
+                </div>
+            </section>
+    
+            <section id="content-container"></section>
+        </div>
+
+
+        <section id="proc-nas" class="py-16">
+            <div class="bg-white p-8 md:p-12 rounded-2xl shadow-xl border">
+                <h2 class="text-3xl font-bold text-center mb-10 px-6">Proč si vybrat naši platformu?</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 px-6">
+                    <div class="p-6 border border-gray-200 rounded-xl hover:shadow-xl transition-shadow fade-in">
+                        <h3 class="text-xl font-semibold mb-3">AI Analýza</h3>
+                        <p class="text-gray-600">Naše umělá inteligence porovná desítky nabídek bank a vybere tu nejvýhodnější pro vaši situaci během několika sekund.</p>
+                    </div>
+                    <div class="p-6 border border-gray-200 rounded-xl hover:shadow-xl transition-shadow fade-in" style="animation-delay: 0.1s;">
+                        <h3 class="text-xl font-semibold mb-3">Lidský přístup</h3>
+                        <p class="text-gray-600">Za každou nabídkou stojí reálný hypoteční specialista, který s vámi projde celý proces a zodpoví všechny vaše dotazy.</p>
+                    </div>
+                    <div class="p-6 border border-gray-200 rounded-xl hover:shadow-xl transition-shadow fade-in" style="animation-delay: 0.2s;">
+                        <h3 class="text-xl font-semibold mb-3">Vše zdarma</h3>
+                        <p class="text-gray-600">Služby naší platformy i našich specialistů jsou pro vás zcela zdarma. Odměnu nám platí banka.</p>
+                    </div>
+                </div>
             </div>
         </section>
-
-        <section id="content-container"></section>
+        
+        <section id="jak-to-funguje" class="py-16">
+            <h2 class="text-3xl font-bold text-center mb-10">Jak to celé funguje?</h2>
+            <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                <div class="relative px-6 py-8 fade-in">
+                    <div class="text-5xl font-bold text-blue-100 absolute top-0 left-4 z-0">01</div>
+                    <div class="relative z-10">
+                        <h3 class="text-xl font-semibold mt-6">Zadáte parametry</h3>
+                        <p class="text-gray-600 mt-2">Vyplníte jednoduchý formulář s představou o vaší hypotéce.</p>
+                    </div>
+                </div>
+                <div class="relative px-6 py-8 fade-in" style="animation-delay: 0.1s;">
+                    <div class="text-5xl font-bold text-blue-100 absolute top-0 left-4 z-0">02</div>
+                    <div class="relative z-10">
+                        <h3 class="text-xl font-semibold mt-6">AI vyhodnotí nabídky</h3>
+                        <p class="text-gray-600 mt-2">Náš systém okamžitě porovná aktuální sazby a podmínky bank.</p>
+                    </div>
+                </div>
+                <div class="relative px-6 py-8 fade-in" style="animation-delay: 0.2s;">
+                    <div class="text-5xl font-bold text-blue-100 absolute top-0 left-4 z-0">03</div>
+                    <div class="relative z-10">
+                        <h3 class="text-xl font-semibold mt-6">Spojíme vás se specialistou</h3>
+                        <p class="text-gray-600 mt-2">Předáme vám kontakt na nejvhodnějšího poradce pro vaši lokalitu a potřeby.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
 
         <section id="partneri" class="my-24">
             <h3 class="text-2xl font-bold mb-8 text-gray-800 text-center">Naši partneři</h3>
@@ -127,6 +177,7 @@
         </div>
     </footer>
 
-    <script src="script.js?v=1.25" defer></script>
+    <script src="script.js?v=1.26" defer></script>
 </body>
 </html>
+

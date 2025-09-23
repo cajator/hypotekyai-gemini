@@ -72,12 +72,58 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!container) return;
         container.classList.remove('hidden');
         if (!offers || offers.length === 0) { container.innerHTML = `<div class="text-center bg-red-50 p-8 rounded-lg mt-8"><h3 class="text-2xl font-bold text-red-800 mb-2">Dle zadaných parametrů to nevychází</h3><p class="text-red-700">Zkuste upravit parametry, nebo se <a href="#kontakt" class="font-bold underline nav-link" data-action="show-lead-form">spojte s naším specialistou</a>.</p></div>`; return; }
-        const offersHTML = offers.map(o => `<div class="offer-card p-6 rounded-xl" data-offer-id="${o.id}"><div class="flex-grow"><h4 class="text-lg font-bold text-blue-700">${o.title}</h4><p class="text-sm text-gray-600 mt-1">${o.description}</p></div><div class="text-right mt-4"><div class="text-2xl font-extrabold">${formatNumber(o.monthlyPayment)}</div><div class="text-sm font-semibold text-gray-500">Úrok ${o.rate.toFixed(2)} %</div></div></div>`).join('');
-        const scoreHTML = (label, value, color) => `<div class="flex justify-between items-center text-sm"><span class="font-semibold">${label}:</span><div class="flex items-center gap-2"><div class="w-24 h-2 rounded-full bg-gray-200"><div class="h-2 rounded-full ${color}" style="width: ${value}%"></div></div><span class="font-bold">${value}%</span></div></div>`;
-        const tipHTML = (tip) => `<div class="mt-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-r-lg"><p class="font-bold">${tip.title}</p><p class="text-sm">${tip.message}</p></div>`;
+        
+        const offersHTML = offers.map((o, index) => {
+            const badge = index === 0 ? `<div class="badge-offer">Nejlepší úrok</div>` : '';
+            return `<div class="offer-card p-6 rounded-xl" data-offer-id="${o.id}">
+                ${badge}
+                <div class="flex-grow">
+                    <h4 class="text-lg font-bold text-gray-800">${o.title}</h4>
+                    <p class="text-sm text-gray-500 mt-1">${o.description}</p>
+                </div>
+                <div class="text-right mt-4">
+                    <div class="text-3xl font-extrabold text-blue-600">${formatNumber(o.monthlyPayment)}</div>
+                    <div class="text-sm font-semibold text-gray-500">Úrok ${o.rate.toFixed(2)} %</div>
+                </div>
+            </div>`;
+        }).join('');
+
+        const scoreHTML = (label, value, color) => `<div class="flex justify-between items-center text-sm"><span class="font-semibold text-gray-600">${label}:</span><div class="flex items-center gap-2"><div class="w-24 h-2 rounded-full bg-gray-200"><div class="h-2 rounded-full ${color}" style="width: ${value}%"></div></div><span class="font-bold">${value}%</span></div></div>`;
+        const tipHTML = (tip) => `<div class="smart-tip"><p class="font-bold">${tip.title}</p><p class="text-sm">${tip.message}</p></div>`;
         const allTipsHTML = (smartTip ? [smartTip] : []).concat(tips || []).map(tipHTML).join('');
-        container.innerHTML = `<div class="grid grid-cols-1 lg:grid-cols-3 gap-8"><div class="lg:col-span-2 space-y-6"><div><h3 class="text-3xl font-bold mb-6">Našli jsme pro vás tyto nabídky:</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-6">${offersHTML}</div></div><div><h3 class="text-3xl font-bold mb-6">Vývoj splácení v čase</h3><div class="bg-gray-50 p-6 rounded-xl border"><div class="relative h-96"><canvas id="resultsChart"></canvas></div></div></div></div><div class="lg:sticky top-28"><div class="bg-blue-50 p-6 rounded-2xl border border-blue-200"><h4 class="text-xl font-bold mb-4">Přehled a skóre vaší žádosti</h4><div class="space-y-3">${scoreHTML('LTV', approvability.ltv, 'bg-green-500')}${scoreHTML('DSTI', approvability.dsti, 'bg-yellow-500')}${scoreHTML('Bonita', approvability.bonita, 'bg-green-500')}</div><h4 class="text-lg font-bold mt-6 mb-2">Celková šance: <span class="text-2xl font-bold text-green-600">${approvability.total}%</span></h4><div class="approvability-bar-bg"><div class="approvability-bar bg-green-500" style="width: ${approvability.total}%"></div></div>${allTipsHTML}</div><div class="text-center mt-6"><button class="nav-btn bg-green-600 hover:bg-green-700 text-lg w-full" data-action="show-lead-form">Chci nejlepší nabídku</button></div></div></div>`;
-        const firstCard = container.querySelector('.offer-card'); if (firstCard) { firstCard.classList.add('selected'); state.calculation.selectedOffer = offers.find(o => o.id === firstCard.dataset.offerId); }
+        
+        container.innerHTML = `<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 space-y-6">
+                <div>
+                    <h3 class="text-3xl font-bold mb-6">Našli jsme pro vás tyto nabídky:</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">${offersHTML}</div>
+                </div>
+                <div>
+                    <h3 class="text-3xl font-bold mb-6">Vývoj splácení v čase</h3>
+                    <div class="bg-white p-6 rounded-xl border"><div class="relative h-96"><canvas id="resultsChart"></canvas></div></div>
+                </div>
+            </div>
+            <div class="lg:sticky top-28">
+                <div class="summary-card">
+                    <h4 class="text-xl font-bold mb-4">Přehled a skóre vaší žádosti</h4>
+                    <div class="space-y-3">
+                        ${scoreHTML('LTV', approvability.ltv, 'bg-green-500')}
+                        ${scoreHTML('DSTI', approvability.dsti, 'bg-yellow-500')}
+                        ${scoreHTML('Bonita', approvability.bonita, 'bg-green-500')}
+                    </div>
+                    <h4 class="text-lg font-bold mt-6 mb-2">Celková šance: <span class="text-2xl font-bold text-green-600">${approvability.total}%</span></h4>
+                    <div class="approvability-bar-bg"><div class="approvability-bar bg-green-500" style="width: ${approvability.total}%"></div></div>
+                    ${allTipsHTML}
+                    <button class="nav-btn btn-green text-lg w-full mt-6" data-action="show-lead-form">Chci nejlepší nabídku</button>
+                </div>
+            </div>
+        </div>`;
+        
+        const firstCard = container.querySelector('.offer-card'); 
+        if (firstCard) { 
+            firstCard.classList.add('selected'); 
+            state.calculation.selectedOffer = offers.find(o => o.id === firstCard.dataset.offerId); 
+        }
         setTimeout(renderResultsChart, 50);
     };
     
@@ -118,7 +164,12 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (action === 'show-lead-form') scrollToAndShow('#kontakt');
         else if (action === 'discuss-with-ai') switchMode('ai');
         else if (action === 'send-chat' || suggestion) { const input = document.getElementById('chat-input'); const message = suggestion || input.value.trim(); if (!message || !input) return; addChatMessage(message, 'user'); input.value = ''; handleChatMessageSend(message); }
-        else if (target.matches('.offer-card')) { document.querySelectorAll('.offer-card').forEach(c => c.classList.remove('selected')); target.classList.add('selected'); state.calculation.selectedOffer = state.calculation.offers.find(o => o.id === target.dataset.offerId); setTimeout(renderResultsChart, 0); }
+        else if (target.matches('.offer-card')) { 
+            document.querySelectorAll('.offer-card').forEach(c => c.classList.remove('selected')); 
+            target.classList.add('selected'); 
+            state.calculation.selectedOffer = state.calculation.offers.find(o => o.id === target.dataset.offerId); 
+            setTimeout(renderResultsChart, 0); 
+        }
     };
     const handleFormSubmit = async (e) => { e.preventDefault(); const form = e.target, btn = form.querySelector('button'); btn.disabled = true; btn.textContent = 'Odesílám...'; try { await fetch("/", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams(new FormData(form)).toString() }); form.style.display = 'none'; document.getElementById('form-success').style.display = 'block'; } catch (error) { alert('Odeslání se nezdařilo.'); btn.disabled = false; btn.textContent = 'Odeslat nezávazně'; } };
     const handleChatMessageSend = async (message) => {

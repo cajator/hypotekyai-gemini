@@ -25,13 +25,12 @@ const handler = async (event) => {
         let responseText = response.text().trim();
         
         try {
-            // Test if the response is a tool call (JSON)
             const jsonResponse = JSON.parse(responseText);
             if (jsonResponse.tool) {
                  return { statusCode: 200, headers, body: JSON.stringify(jsonResponse) };
             }
         } catch (e) {
-            // It's a regular text response, which is fine
+            // This is expected for regular text responses
         }
         
         return { statusCode: 200, headers, body: JSON.stringify({ response: responseText }) };

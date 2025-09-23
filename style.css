@@ -4,7 +4,7 @@ body { font-family: 'Inter', sans-serif; }
 
 .nav-link { color: #4b5563; transition: color 0.2s ease-in-out; }
 .nav-link:hover { color: var(--accent-color); }
-.nav-btn { background-color: var(--accent-color); color: white; font-weight: bold; padding: 10px 20px; border-radius: 8px; transition: all 0.2s ease; border: none; cursor: pointer; display: inline-flex; align-items-center; justify-content: center; }
+.nav-btn { background-color: var(--accent-color); color: white; font-weight: bold; padding: 10px 20px; border-radius: 8px; transition: all 0.2s ease; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
 .nav-btn:hover { background-color: #1d4ed8; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 .nav-btn:disabled { background-color: #9ca3af; cursor: not-allowed; transform: none; box-shadow: none; }
 

@@ -1,4 +1,4 @@
-// netlify/functions/chat.js - v20.0 - Final Polish & Robust Parsing
+// netlify/functions/chat.js - v25.0 - Final Polish & Robust AI Logic
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const handler = async (event) => {
@@ -9,7 +9,7 @@ const handler = async (event) => {
     try {
         const { message, context } = JSON.parse(event.body);
         const apiKey = process.env.GEMINI_API_KEY;
-        if (!apiKey) throw new Error('Konfigurace AI na serveru chybí. API klíč nebyl nalezen.');
+        if (!apiKey) throw new Error('API klíč pro AI nebyl nalezen.');
 
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -19,64 +19,59 @@ const handler = async (event) => {
         const response = result.response;
         const responseText = response.text();
 
-        if (!response.candidates || response.candidates.length === 0 || !responseText) {
-             const blockReason = response.promptFeedback?.blockReason;
-             if (blockReason) throw new Error(`Požadavek byl zablokován z důvodu: ${blockReason}. Zkuste přeformulovat dotaz.`);
-             throw new Error("AI nevrátila žádnou platnou odpověď.");
+        if (!response.candidates || !responseText) {
+             return { statusCode: 200, headers, body: JSON.stringify({ response: "Omlouvám se, momentálně nemohu odpovědět. Zkuste to prosím později." }) };
         }
         
-        // Try to find a JSON object within the response text
         const jsonMatch = responseText.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
             try {
                 const jsonResponse = JSON.parse(jsonMatch[0]);
                 if (jsonResponse.tool) {
-                    // It's a pure tool call, return it directly
                     return { statusCode: 200, headers, body: JSON.stringify(jsonResponse) };
                 }
-            } catch (e) {
-                // Not a valid JSON, or not a tool call. Fall through to send as plain text.
-            }
+            } catch (e) { /* Not a valid JSON, fall through */ }
         }
         
-        // If no valid tool call was found, send the whole response as text.
         return { statusCode: 200, headers, body: JSON.stringify({ response: responseText }) };
 
     } catch (error) {
         console.error('Gemini API Error:', error);
-        return { statusCode: 500, headers, body: JSON.stringify({ error: `Došlo k chybě při komunikaci s AI: ${error.message}` }) };
+        return { statusCode: 500, headers, body: JSON.stringify({ error: `Došlo k chybě: ${error.message}` }) };
     }
 };
 
 function createSystemPrompt(userMessage, context) {
     const hasContext = context && context.calculation && context.calculation.offers && context.calculation.offers.length > 0;
-    const contextString = hasContext ? `Uživatel MÁ namodelovanou hypotéku. Jeho data: ${JSON.stringify(context.calculation, null, 2)}` : 'Uživatel zatím nic nepočítal a nemá žádná data.';
+    const contextString = hasContext ? `Uživatel MÁ namodelovanou hypotéku. Jeho data: ${JSON.stringify(context.calculation, null, 2)}` : 'Uživatel zatím nic nepočítal.';
 
-    let prompt = `Jsi Hypoteční Ai, přátelský a profesionální asistent. Tvoje odpovědi jsou **stručné, jasné a věcné**. 
+    let prompt = `Jsi Hypoteční Ai, přátelský, stručný a profesionální asistent.
+    
+    PRAVIDLA:
+    - TVOJE ODPOVĚDI JSOU VŽDY EXTRÉMNĚ STRUČNÉ (MAX 1-2 VĚTY).
+    - Vždy dodržuj formát odpovědi (JSON nebo text).
+    - Pokud je dotaz nesmyslný nebo mimo téma hypoték, odpověz jednou z těchto frází: "Tomuto dotazu bohužel nerozumím. Zkuste to prosím jinak." nebo "Specializuji se pouze na hypotéky. Rád vám pomohu s financováním bydlení."
     
     AKTUÁLNÍ KONTEXT: ${contextString}
     UŽIVATELŮV DOTAZ: "${userMessage}"`;
 
     if (userMessage === "Proveď úvodní analýzu mé situace.") {
-        return `Uživatel si zobrazil výsledky hypotéky a chce úvodní analýzu do panelu. Vytvoř krátké shrnutí.
-        - Titulek: **Analýza vaší situace**
-        - Zhodnoť celkové skóre ("approvability.total") jednou větou.
-        - Okometuj nejlepší nabídku ("selectedOffer") jednou větou.
-        - Pokud existuje chytrý tip ("smartTip"), stručně ho vysvětli.
-        - Odpověz POUZE JSON objektem: {"tool":"initialAnalysis","response":"Tvůj vygenerovaný text."}`;
+        return `Uživatel si zobrazil výsledky a chce úvodní analýzu. Vytvoř **velmi stručné** shrnutí na **MAXIMÁLNĚ dvě věty**.
+        Příklad: "Vaše celkové skóre je velmi dobré. Našli jsme pro vás nabídku s výbornou sazbou a měsíční splátkou 21 535 Kč."
+        Odpověz POUZE JSON objektem: {"tool":"initialAnalysis","response":"Tvůj vygenerovaný text."}`;
     }
 
     if (userMessage === "přepočítej hypotéku") {
-        return `Uživatel změnil parametry v mini-kalkulačce a chce tichý přepočet. Odpověz POUZE JSON: {"tool":"modelScenario"}`;
+        return `Odpověz POUZE JSON: {"tool":"modelScenario"}`;
     }
 
     prompt += `
         TVOJE ÚKOLY:
-        1.  **Běžná konverzace:** Pokud se uživatel ptá na obecné téma, odpověz stručně (1-2 věty). Pokud nemá data, povzbuď ho, ať si hypotéku namodeluje v panelu vpravo.
-        2.  **Rozpoznání modelování:** Pokud dotaz obsahuje parametry hypotéky (např. "splátka na 5 mega na 20 let"), ale UŽIVATEL NEMÁ ŽÁDNÁ DATA, odpověz textem: "Ráda vám s výpočtem pomohu! Nejprve ale potřebovala bych znát některé podrobnosti, například výši úvěru, délku splatnosti a případně úrokovou sazbu.". Pokud UŽIVATEL MÁ DATA, odpověz POUZE JSON objektem pro přepočet. Příklad: {"tool":"modelScenario","params":{"loanAmount":5000000,"propertyValue":6250000,"loanTerm":20}}
-        3.  **Rozpoznání žádosti o specialistu:** Pokud se uživatel ptá na "kontakt", "specialistu", odpověz POUZE JSON: {"tool":"startContactForm","response":"Ráda vás spojím s naším specialistou. Naše služby jsou pro vás zcela zdarma. Můžete mi prosím napsat vaše celé jméno a telefonní číslo? <br><br> (Nebo můžete využít <a href='#kontakt' data-action='show-lead-form' class='font-bold text-blue-600 underline'>standardní formulář</a>.)"}
+        1.  **Běžná konverzace:** Pokud uživatel nemá data, povzbuď ho, ať si hypotéku namodeluje v panelu vpravo. Příklad: "Jistě. Nejprve prosím zadejte základní parametry do panelu vpravo."
+        2.  **Rozpoznání modelování:** Pokud dotaz obsahuje parametry hypotéky (např. "splátka na 5 mega na 20 let"), odpověz POUZE JSON pro přepočet. Příklad: {"tool":"modelScenario","params":{"loanAmount":5000000,"propertyValue":6250000,"loanTerm":20}}
+        3.  **Rozpoznání žádosti o specialistu:** Pokud se uživatel ptá na "kontakt", "specialistu", odpověz POUZE JSON: {"tool":"startContactForm","response":"Rád vás spojím s naším specialistou. Můžete mi prosím napsat vaše celé jméno a telefonní číslo? <br><br> (Nebo můžete využít <a href='#kontakt' data-action='show-lead-form' class='font-bold text-blue-600 underline'>standardní formulář</a>.)"}
         
-        Ve všech ostatních případech odpovídej běžným textem.`;
+        Ve všech ostatních případech odpovídej běžným textem dle pravidel výše.`;
     
     return prompt;
 }

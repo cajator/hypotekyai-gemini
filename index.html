@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.28">
+    <link rel="stylesheet" href="style.css?v=1.29">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💡</text></svg>">
 </head>
 <body class="bg-gray-50 text-gray-800 antialiased">
@@ -85,19 +85,30 @@
 
         <section id="proc-nas" class="py-16">
             <div class="bg-white p-8 md:p-12 rounded-2xl shadow-xl border">
-                <h2 class="text-3xl font-bold text-center mb-10 px-6">Proč si vybrat naši platformu?</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 px-6">
-                    <div class="p-6 border border-gray-200 rounded-xl hover:shadow-xl transition-shadow fade-in">
-                        <h3 class="text-xl font-semibold mb-3">AI Analýza</h3>
-                        <p class="text-gray-600">Naše umělá inteligence porovná desítky nabídek bank a vybere tu nejvýhodnější pro vaši situaci během několika sekund.</p>
+                <h2 class="text-3xl font-bold text-center mb-12">Proč si vybrat naši platformu?</h2>
+                <div class="max-w-5xl mx-auto">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mb-12">
+                        <div class="fade-in">
+                            <h3 class="text-2xl font-semibold mb-4 text-blue-600">Naše vize: Hypotéka dostupná pro každého</h3>
+                            <p class="text-gray-600 leading-relaxed">Věříme, že cesta k vlastnímu bydlení by měla být co nejjednodušší. Naším cílem je demystifikovat svět hypoték a poskytnout každému nástroje a podporu, kterou potřebuje k informovanému rozhodnutí. Spojujeme nejmodernější technologie s osobním přístupem zkušených profesionálů.</p>
+                        </div>
+                        <div class="fade-in" style="animation-delay: 0.1s;">
+                            <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600" alt="Happy family in their new home" class="rounded-xl shadow-lg">
+                        </div>
                     </div>
-                    <div class="p-6 border border-gray-200 rounded-xl hover:shadow-xl transition-shadow fade-in" style="animation-delay: 0.1s;">
-                        <h3 class="text-xl font-semibold mb-3">Lidský přístup</h3>
-                        <p class="text-gray-600">Za každou nabídkou stojí reálný hypoteční specialista, který s vámi projde celý proces a zodpoví všechny vaše dotazy.</p>
-                    </div>
-                    <div class="p-6 border border-gray-200 rounded-xl hover:shadow-xl transition-shadow fade-in" style="animation-delay: 0.2s;">
-                        <h3 class="text-xl font-semibold mb-3">Vše zdarma</h3>
-                        <p class="text-gray-600">Služby naší platformy i našich specialistů jsou pro vás zcela zdarma. Odměnu nám platí banka.</p>
+                     <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                        <div class="p-6 border border-gray-200 rounded-xl hover:shadow-lg transition-shadow fade-in" style="animation-delay: 0.2s;">
+                            <h3 class="text-xl font-semibold mb-3">AI Analýza</h3>
+                            <p class="text-gray-600">Naše umělá inteligence porovná desítky nabídek bank a vybere tu nejvýhodnější pro vaši situaci během několika sekund.</p>
+                        </div>
+                        <div class="p-6 border border-gray-200 rounded-xl hover:shadow-lg transition-shadow fade-in" style="animation-delay: 0.3s;">
+                            <h3 class="text-xl font-semibold mb-3">Lidský přístup</h3>
+                            <p class="text-gray-600">Za každou nabídkou stojí reálný hypoteční specialista, který s vámi projde celý proces a zodpoví všechny vaše dotazy.</p>
+                        </div>
+                        <div class="p-6 border border-gray-200 rounded-xl hover:shadow-lg transition-shadow fade-in" style="animation-delay: 0.4s;">
+                            <h3 class="text-xl font-semibold mb-3">Vše zdarma</h3>
+                            <p class="text-gray-600">Služby naší platformy i našich specialistů jsou pro vás zcela zdarma. Odměnu nám platí banka.</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -162,10 +173,15 @@
                 <form id="lead-form" class="space-y-4 text-left" name="lead-form" method="POST" data-netlify="true">
                     <input type="hidden" name="form-name" value="lead-form" />
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div><label for="name" class="form-label">Jméno a příjmení *</label><input type="text" id="name" name="name" required class="modern-input"></div>
-                        <div><label for="phone" class="form-label">Telefon *</label><input type="tel" id="phone" name="phone" required class="modern-input"></div>
+                        <div><label for="name" class="form-label">Jméno a příjmení *</label><input type="text" id="name" name="name" required class="modern-input !max-w-full"></div>
+                        <div><label for="phone" class="form-label">Telefon *</label><input type="tel" id="phone" name="phone" required class="modern-input !max-w-full"></div>
                     </div>
-                    <div><label for="email" class="form-label">E-mail *</label><input type="email" id="email" name="email" required class="modern-input"></div>
+                    <div><label for="email" class="form-label">E-mail *</label><input type="email" id="email" name="email" required class="modern-input !max-w-full"></div>
+                    <div><label for="note" class="form-label">Poznámka (volitelné)</label><textarea id="note" name="note" rows="3" class="modern-input !max-w-full"></textarea></div>
+                    <div class="flex items-start">
+                        <input id="gdpr" name="gdpr" type="checkbox" required class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mt-1">
+                        <label for="gdpr" class="ml-2 block text-sm text-gray-700">Souhlasím se zpracováním osobních údajů pro účely kontaktování a vytvoření nabídky.</label>
+                    </div>
                     <div class="pt-2"><button type="submit" id="submit-lead-btn" class="w-full nav-btn bg-green-600 hover:bg-green-700 text-lg">Odeslat nezávazně</button></div>
                 </form>
                 <div id="form-success" class="hidden mt-6 text-center p-4 bg-green-100 text-green-800 rounded-lg">Děkujeme! Brzy se vám ozveme.</div>
@@ -179,7 +195,7 @@
         </div>
     </footer>
 
-    <script src="script.js?v=1.28" defer></script>
+    <script src="script.js?v=1.29" defer></script>
 </body>
 </html>
 

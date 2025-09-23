@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
         chatFormState: 'idle',
         chatFormData: {},
         formData: {
-            propertyValue: 5000000, loanAmount: 4000000,
+            propertyValue: 5000000, loanAmount: 4000000, landValue: 0,
             income: 60000, liabilities: 0, age: 35, children: 0,
             loanTerm: 25, fixation: 5,
             loanPurpose: 'koupe', propertyType: 'byt',
@@ -43,14 +43,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- UTILITIES ---
     const parseNumber = (s) => parseFloat(String(s).replace(/[^0-9]/g, '')) || 0;
     const formatNumber = (n, currency = true) => n.toLocaleString('cs-CZ', currency ? { style: 'currency', currency: 'CZK', maximumFractionDigits: 0 } : { maximumFractionDigits: 0 });
-    const scrollToAndShow = (targetId) => { const el = document.querySelector(targetId); if (el) { if (targetId === '#kontakt') el.classList.remove('hidden'); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } };
+    const scrollToAndShow = (targetId, block = 'center') => { const el = document.querySelector(targetId); if (el) { if (targetId === '#kontakt') el.classList.remove('hidden'); el.scrollIntoView({ behavior: 'smooth', block }); } };
     
     // --- COMPONENT FACTORIES ---
-    const createSlider = (id, label, value, min, max, step) => {
-        const suffix = id.includes('Term') || id.includes('age') || id.includes('children') ? ' let' : ' Kč';
-        const isWide = id.includes('Value') || id.includes('Amount');
-        const containerClass = isWide ? 'md:col-span-2' : '';
-        return `<div class="form-group ${containerClass}"><div class="flex justify-between items-center mb-1"><label for="${id}" class="form-label mb-0">${label}</label><div class="flex items-center"><input type="text" id="${id}-input" value="${formatNumber(value, false)}" class="slider-value-input"><span class="font-semibold">${suffix}</span></div></div><div class="slider-container ${isWide ? '!max-w-full' : ''}"><input type="range" id="${id}" name="${id}" min="${min}" max="${max}" value="${value}" step="${step}" class="slider-input"></div></div>`;
+    const createSlider = (id, label, value, min, max, step, options = {}) => {
+        const { suffix = ' Kč', containerClass = '', sliderContainerClass = '', isSidebar = false } = options;
+        const finalContainerClass = isSidebar ? '' : containerClass;
+        return `<div class="form-group ${finalContainerClass}"><div class="flex justify-between items-center mb-1"><label for="${id}" class="form-label mb-0">${label}</label><div class="flex items-center"><input type="text" id="${id}-input" value="${formatNumber(value, false)}" class="slider-value-input"><span class="font-semibold">${suffix}</span></div></div><div class="slider-container ${sliderContainerClass}"><input type="range" id="${id}" name="${id}" min="${min}" max="${max}" value="${value}" step="${step}" class="slider-input"></div></div>`;
     };
     const createSelect = (id, label, options) => {
         const optionsHTML = Object.entries(options).map(([value, text]) => `<option value="${value}" ${state.formData[id] === value ? 'selected' : ''}>${text}</option>`).join('');
@@ -59,29 +58,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- DYNAMIC CONTENT & LAYOUTS ---
     const getCalculatorLayout = (formHTML) => `<div class="bg-white p-6 md:p-12 rounded-2xl shadow-xl border">${formHTML}</div>`;
-    const getAiLayout = (chatHTML) => `<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start"><div class="lg:col-span-2 bg-white rounded-2xl shadow-xl border">${chatHTML}</div><div id="sidebar-container" class="lg:sticky top-28 space-y-6">${getSidebarHTML()}</div></div>`;
+    const getAiLayout = (chatHTML) => `<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start"><div class="lg:col-span-2 bg-white rounded-2xl shadow-xl border">${chatHTML}</div><div id="sidebar-container" class="lg:sticky top-28 space-y-6"></div></div>`;
     
     const getSidebarHTML = () => { 
         const calc = state.calculation;
         const hasCalc = calc && calc.offers && calc.offers.length > 0;
         
+        const sidebarCalcHTML = `<div id="ai-sidebar-calculator" class="bg-white p-4 rounded-xl border space-y-3">
+            ${createSlider('loanAmount', 'Výše úvěru', state.formData.loanAmount, 200000, 20000000, 100000, { isSidebar: true })}
+            ${createSlider('propertyValue', 'Hodnota nemovitosti', state.formData.propertyValue, 500000, 30000000, 100000, { isSidebar: true })}
+             <div class="text-center bg-gray-50 p-2 rounded-lg">LTV: <strong id="ltv-display-sidebar" class="text-lg">${state.calculation.approvability.ltv}%</strong></div>
+            ${createSlider('loanTerm', 'Splatnost', state.formData.loanTerm, 5, 30, 1, { suffix: ' let', isSidebar: true })}
+        </div>`;
+
         if (!hasCalc) {
-            return `<div class="bg-blue-50 p-6 rounded-2xl border border-blue-200 text-center"><h3 class="text-xl font-bold mb-2">Interaktivní modelování</h3><p class="text-gray-600">Zadejte do chatu, co chcete spočítat (např. "splátka na 5 mil na 20 let"), a já zde zobrazím výsledky a graf.</p></div>`;
+            return `<div class="bg-blue-50 p-6 rounded-2xl border border-blue-200 text-center space-y-4">
+                        <h3 class="text-xl font-bold mb-2">Interaktivní modelování</h3>
+                        <p class="text-gray-600 text-sm">Zadejte do chatu, co chcete spočítat (např. "splátka na 5 mil na 20 let"), nebo si pohrajte s parametry níže.</p>
+                        ${sidebarCalcHTML}
+                    </div>`;
         }
         
-        const payment = formatNumber(calc.selectedOffer.monthlyPayment); 
-        const rate = `${calc.selectedOffer.rate.toFixed(2)} %`; 
-        const ltv = (state.calculation.approvability.ltv || 0);
-        
         return `
-            <div class="bg-blue-50 p-6 rounded-2xl border border-blue-200">
-                <h3 class="text-xl font-bold mb-4">Souhrn vaší hypotéky</h3>
-                <div class="space-y-3">
-                    <div class="flex justify-between text-lg"><span class="text-gray-600">Měsíční splátka</span><strong id="sidebar-payment">${payment}</strong></div>
-                    <div class="flex justify-between"><span class="text-gray-600">Úroková sazba</span><strong id="sidebar-rate">${rate}</strong></div>
-                    <div class="flex justify-between"><span class="text-gray-600">LTV</span><strong>${ltv} %</strong></div>
-                </div>
-            </div>
+            ${sidebarCalcHTML}
             <div id="ai-analysis-box">
                 <div class="text-center p-4">
                     <div class="loading-spinner-blue"></div>
@@ -97,9 +96,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const getExpressHTML = () => {
         const ltvValue = state.calculation.approvability.ltv;
         const ltvColor = ltvValue > 90 ? 'text-red-600' : ltvValue > 80 ? 'text-yellow-600' : 'text-green-600';
-        return getCalculatorLayout(`<div id="express-form" class="space-y-6">
-            ${createSlider('propertyValue','Hodnota nemovitosti',state.formData.propertyValue,500000,30000000,100000)}
-            ${createSlider('loanAmount','Chci si půjčit',state.formData.loanAmount,200000,20000000,100000)}
+        return getCalculatorLayout(`<div id="express-form" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+            ${createSlider('propertyValue','Hodnota nemovitosti',state.formData.propertyValue,500000,30000000,100000, {containerClass: 'md:col-span-2', sliderContainerClass: '!max-w-full'})}
+            ${createSlider('loanAmount','Chci si půjčit',state.formData.loanAmount,200000,20000000,100000, {containerClass: 'md:col-span-2', sliderContainerClass: '!max-w-full'})}
             <div class="md:col-span-2 text-center bg-gray-50 p-3 rounded-lg">
                 Aktuální LTV: <strong id="ltv-display" class="text-xl ${ltvColor}">${ltvValue}%</strong>
             </div>
@@ -117,14 +116,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 <h3 class="form-section-heading">Parametry úvěru a nemovitosti</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                     ${createSelect('loanPurpose', 'Účel hypotéky', {'koupe': 'Koupě', 'vystavba': 'Výstavba', 'rekonstrukce': 'Rekonstrukce', 'refinancovani': 'Refinancování'})}
-                    ${createSelect('propertyType', 'Typ nemovitosti', {'byt': 'Byt', 'dum': 'Rodinný dům'})}
-                    ${createSlider('propertyValue','Hodnota nemovitosti',state.formData.propertyValue,500000,30000000,100000)}
-                    ${createSlider('loanAmount','Požadovaná výše úvěru',state.formData.loanAmount,200000,20000000,100000)}
+                    ${createSelect('propertyType', 'Typ nemovitosti', {'byt': 'Byt', 'dum': 'Rodinný dům', 'pozemek': 'Pozemek'})}
+                    ${createSlider('propertyValue','Hodnota nemovitosti po dokončení',state.formData.propertyValue,500000,30000000,100000, {containerClass: 'md:col-span-2', sliderContainerClass: '!max-w-full'})}
+                    ${createSlider('landValue','Hodnota pozemku (u výstavby)',state.formData.landValue,0,10000000,50000, {containerClass: 'md:col-span-2', sliderContainerClass: '!max-w-full'})}
+                    ${createSlider('loanAmount','Požadovaná výše úvěru',state.formData.loanAmount,200000,20000000,100000, {containerClass: 'md:col-span-2', sliderContainerClass: '!max-w-full'})}
                     <div class="md:col-span-2 text-center bg-gray-50 p-3 rounded-lg">
                         Aktuální LTV: <strong id="ltv-display" class="text-xl ${ltvColor}">${ltvValue}%</strong>
                     </div>
-                    ${createSlider('loanTerm','Délka splatnosti',state.formData.loanTerm,5,30,1)}
-                    ${createSlider('fixation','Délka fixace',state.formData.fixation,3,10,1)}
+                    ${createSlider('loanTerm','Délka splatnosti',state.formData.loanTerm,5,30,1, {suffix: ' let'})}
+                    ${createSlider('fixation','Délka fixace',state.formData.fixation,3,10,1, {suffix: ' let'})}
                 </div>
             </div>
             <div>
@@ -134,21 +134,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${createSelect('education', 'Nejvyšší dosažené vzdělání', {'zakladni': 'Základní', 'stredoskolske': 'Středoškolské', 'vysokoskolske': 'Vysokoškolské'})}
                     ${createSlider('income','Čistý měsíční příjem',state.formData.income,15000,300000,1000)}
                     ${createSlider('liabilities','Měsíční splátky jiných úvěrů',state.formData.liabilities,0,100000,500)}
-                    ${createSlider('age','Věk nejstaršího žadatele',state.formData.age,18,70,1)}
-                    ${createSlider('children','Počet dětí',state.formData.children,0,10,1)}
+                    ${createSlider('age','Věk nejstaršího žadatele',state.formData.age,18,70,1, {suffix: ' let'})}
+                    ${createSlider('children','Počet dětí',state.formData.children,0,10,1, {suffix: ' dětí'})}
                 </div>
             </div>
             <div class="flex justify-center pt-4"><button class="nav-btn text-lg w-full md:w-auto" data-action="calculate"><span class="mr-2">Spočítat a najít nabídky</span><div class="loading-spinner-white hidden ml-2"></div></button></div>
         </div><div id="results-container" class="hidden mt-12"></div>`);
     };
 
-    const getAiModeHTML = () => getAiLayout(`<div class="flex flex-col h-[70vh]"><div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4"></div><div id="ai-suggestions" class="p-4 border-t"></div><div class="p-4 border-t flex items-center space-x-2"><input type="text" id="chat-input" class="modern-input !max-w-full" placeholder="Zadejte svůj dotaz..."><button id="chat-send" class="nav-btn" data-action="send-chat">Odeslat</button></div></div>`);
+    const getAiModeHTML = () => getAiLayout(`<div class="flex flex-col h-[75vh]"><div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4"></div><div id="ai-suggestions" class="p-4 border-t"></div><div class="p-4 border-t flex items-center space-x-2"><input type="text" id="chat-input" class="modern-input !max-w-full" placeholder="Zadejte svůj dotaz..."><button id="chat-send" class="nav-btn" data-action="send-chat">Odeslat</button></div></div>`);
     
     const renderResults = () => {
         const { offers, approvability, smartTip } = state.calculation;
         const container = document.getElementById('results-container');
         if (!container) return;
+        
+        scrollToAndShow('#results-container', 'start');
         container.classList.remove('hidden');
+
         if (!offers || offers.length === 0) { container.innerHTML = `<div class="text-center bg-red-50 p-8 rounded-lg mt-8"><h3 class="text-2xl font-bold text-red-800 mb-2">Dle zadaných parametrů to nevychází</h3><p class="text-red-700">Zkuste upravit parametry, nebo se <a href="#kontakt" class="font-bold underline nav-link" data-action="show-lead-form">spojte s naším specialistou</a>.</p></div>`; return; }
         
         const offersHTML = offers.map((o, index) => {
@@ -193,11 +196,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderSidebarChart = () => renderChart('sidebarChart', state.calculation);
     const addChatMessage = (message, sender) => { const container = document.getElementById('chat-messages'); if (!container) return; const bubble = document.createElement('div'); if (sender === 'ai-typing') { bubble.className = 'chat-bubble-ai-typing'; bubble.innerHTML = `<div class="typing-indicator"><span></span><span></span><span></span></div>`; bubble.id = 'typing-indicator'; } else { bubble.className = sender === 'ai' ? 'chat-bubble-ai' : 'chat-bubble-user'; bubble.innerHTML = message.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); } container.appendChild(bubble); container.scrollTop = container.scrollHeight; };
     const generateAISuggestions = () => { const container = document.getElementById('ai-suggestions'); if (!container) return; const tips = state.calculation.tips || []; let suggestions = [...CONFIG.AI_SUGGESTIONS.initial, ...CONFIG.AI_SUGGESTIONS.actions]; if (state.calculation.offers && state.calculation.offers.length > 0) { suggestions = [...CONFIG.AI_SUGGESTIONS.contextual.base, ...CONFIG.AI_SUGGESTIONS.actions]; if (tips.some(t => t.id === 'low_dsti')) suggestions.push(...CONFIG.AI_SUGGESTIONS.contextual.low_dsti); if (tips.some(t => t.id === 'low_ltv')) suggestions.push(...CONFIG.AI_SUGGESTIONS.contextual.low_ltv); } container.innerHTML = `<div class="flex flex-wrap gap-2">${suggestions.map(s => `<button class="suggestion-btn" data-suggestion="${s}">${s}</button>`).join('')}</div>`; };
-    const updateLTVDisplay = () => {
-        const { propertyValue, loanAmount } = state.formData;
-        const ltv = (propertyValue > 0 && loanAmount > 0) ? Math.round((loanAmount / propertyValue) * 100) : 0;
+    
+    const updateLTVDisplay = (isSidebar = false) => {
+        const { propertyValue, loanAmount, loanPurpose, landValue } = state.formData;
+        const effectivePropertyValue = loanPurpose === 'vystavba' ? propertyValue + landValue : propertyValue;
+        const ltv = (effectivePropertyValue > 0 && loanAmount > 0) ? Math.round((loanAmount / effectivePropertyValue) * 100) : 0;
         state.calculation.approvability.ltv = ltv;
-        const display = document.getElementById('ltv-display');
+        
+        const displayId = isSidebar ? 'ltv-display-sidebar' : 'ltv-display';
+        const display = document.getElementById(displayId);
+        
         if (display) {
             display.textContent = `${ltv}%`;
             display.classList.remove('text-red-600', 'text-yellow-600', 'text-green-600');
@@ -208,19 +216,20 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const calculateAmortization = (p, r, t, year) => { if (t <= 0) return { year, interest: 0, principal: 0 }; const mR = r / 100 / 12, n = t * 12, mP = (p * mR * Math.pow(1 + mR, n)) / (Math.pow(1 + mR, n) - 1); let bal = p, yI = 0, yP = 0; for (let i = 0; i < year * 12; i++) { const int = bal * mR, pP = mP - int; if (i >= (year - 1) * 12) { yI += int; yP += pP; } bal -= pP; } return { year, interest: yI, principal: yP }; };
+    
     const calculateRates = async (button = null, isSilent = false) => {
         if (!isSilent) {
             const spinner = button?.querySelector('.loading-spinner-white');
             if (button) { button.disabled = true; spinner?.classList.remove('hidden'); }
             const container = document.getElementById('results-container');
-            if(container) { container.innerHTML = `<div class="text-center p-8"><div class="loading-spinner-blue"></div><p>Počítám nejlepší nabídky...</p></div>`; container.classList.remove('hidden'); scrollToAndShow('#content-container'); }
+            if(container) { container.innerHTML = `<div class="text-center p-8"><div class="loading-spinner-blue"></div><p>Počítám nejlepší nabídky...</p></div>`; container.classList.remove('hidden'); }
         }
         try {
             const response = await fetch(`${CONFIG.API_RATES_ENDPOINT}?${new URLSearchParams(state.formData).toString()}`);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const data = await response.json();
             state.calculation = { ...state.calculation, ...data };
-            state.calculation.approvability.ltv = (state.formData.propertyValue > 0) ? Math.round((state.formData.loanAmount / state.formData.propertyValue) * 100) : 0;
+            updateLTVDisplay(); // Update LTV based on the final data
             if (!isSilent) renderResults();
         } catch (error) {
             console.error('Chyba při načítání sazeb:', error);
@@ -243,8 +252,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const slider = document.getElementById(baseId);
                 if(slider) slider.value = parsedValue;
             }
-            if (baseId === 'propertyValue' || baseId === 'loanAmount') {
+            if (['propertyValue', 'loanAmount', 'landValue', 'loanPurpose'].includes(baseId)) {
                 updateLTVDisplay();
+                updateLTVDisplay(true); // Update sidebar as well
+            }
+            if(e.target.closest('#ai-sidebar-calculator')) {
+                // Debounce recalculation
+                clearTimeout(state.recalcTimeout);
+                state.recalcTimeout = setTimeout(() => handleChatMessageSend(`přepočítej pro ${state.formData.loanAmount} na ${state.formData.loanTerm} let`, false), 1000);
             }
         }
     };
@@ -254,7 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const { action, mode, suggestion } = target.dataset;
         if (mode) switchMode(mode);
         else if (action === 'calculate') calculateRates(target);
-        else if (action === 'show-lead-form') scrollToAndShow('#kontakt');
+        else if (action === 'show-lead-form') scrollToAndShow('#kontakt', 'center');
         else if (action === 'discuss-with-ai') switchMode('ai');
         else if (action === 'send-chat' || suggestion) { const input = document.getElementById('chat-input'); const message = suggestion || input.value.trim(); if (!message || !input) return; addChatMessage(message, 'user'); input.value = ''; handleChatMessageSend(message); }
         else if (target.matches('.offer-card')) { 
@@ -281,19 +296,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const handleToolCall = async (toolData) => {
                 if (toolData.tool === 'modelScenario') {
                     state.formData = { ...state.formData, ...toolData.params };
-                    addChatMessage('Rozumím, moment. Počítám nový scénář a aktualizuji data vpravo.', 'ai');
+                    if (!isSilent) addChatMessage('Rozumím, moment. Počítám nový scénář a aktualizuji data vpravo.', 'ai');
                     await calculateRates(null, true);
                     const sidebarContainer = document.getElementById('sidebar-container');
                     if (state.calculation.offers.length > 0) {
                         state.calculation.selectedOffer = state.calculation.offers[0];
                         if (sidebarContainer) {
                             sidebarContainer.innerHTML = getSidebarHTML();
+                            updateLTVDisplay(true);
                             renderSidebarChart();
                             await handleChatMessageSend("Proveď úvodní analýzu mé situace.", true);
                         }
                     } else {
                         if (sidebarContainer) sidebarContainer.innerHTML = getSidebarHTML();
-                        addChatMessage('Bohužel pro tento scénář nemáme vhodnou nabídku.', 'ai');
+                        if (!isSilent) addChatMessage('Bohužel pro tento scénář nemáme vhodnou nabídku.', 'ai');
                     }
                 } else if (toolData.tool === 'startContactForm') {
                     addChatMessage(toolData.response.replace(/\n/g, '<br>'), 'ai');
@@ -304,7 +320,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             };
             
-            if (data.tool) { handleToolCall(data); }
+            if (data.tool) { await handleToolCall(data); }
             else if (data.response) {
                 if (isSilent) { 
                     const analysisBox = document.getElementById('ai-analysis-box');
@@ -314,7 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 let responseMessage = data.response;
                 try {
                     const nestedData = JSON.parse(responseMessage);
-                    if (nestedData.tool) { handleToolCall(nestedData); } else { addChatMessage(responseMessage, 'ai'); }
+                    if (nestedData.tool) { await handleToolCall(nestedData); } else { addChatMessage(responseMessage, 'ai'); }
                 } catch (e) { addChatMessage(responseMessage, 'ai'); }
             }
         } catch (error) {
@@ -338,23 +354,27 @@ document.addEventListener('DOMContentLoaded', () => {
         if (mode === 'express') { container.innerHTML = getExpressHTML(); updateLTVDisplay(); }
         else if (mode === 'guided') { container.innerHTML = getGuidedHTML(); updateLTVDisplay(); }
         else if (mode === 'ai') {
-            container.innerHTML = getAiModeHTML();
             const hasCalc = state.calculation && state.calculation.offers && state.calculation.offers.length > 0;
+            container.innerHTML = getAiModeHTML();
+            
+            const sidebarContainer = document.getElementById('sidebar-container');
+            sidebarContainer.innerHTML = getSidebarHTML();
+
             if (hasCalc) {
-                const sidebarContainer = document.getElementById('sidebar-container');
-                if (sidebarContainer) {
-                    sidebarContainer.innerHTML = getSidebarHTML();
-                    renderSidebarChart();
-                    addChatMessage("Dobrý den, připravil jsem pro Vás osobní analýzu vaší situace, kterou vidíte v panelu vpravo. Můžeme se na ni podívat podrobněji.", 'ai');
-                    await handleChatMessageSend("Proveď úvodní analýzu mé situace.", true);
-                }
+                renderSidebarChart();
+                addChatMessage("Dobrý den, připravil jsem pro Vás osobní analýzu vaší situace, kterou vidíte v panelu vpravo. Můžeme se na ni podívat podrobněji.", 'ai');
+                await handleChatMessageSend("Proveď úvodní analýzu mé situace.", true);
             } else {
-                addChatMessage('Dobrý den! Jsem Hypoteční stratég. Zeptejte se na cokoliv, nebo mi napište parametry a já Vám je namodeluji v panelu vpravo.', 'ai');
+                addChatMessage('Dobrý den! Jsem Hypoteční stratég. Zeptejte se na cokoliv, nebo si namodelujte hypotéku v panelu vpravo.', 'ai');
             }
             generateAISuggestions();
             document.getElementById('chat-input')?.addEventListener('keydown', handleChatEnter);
+            updateLTVDisplay(true);
         }
-        if (mode !== 'express' && mode !== 'guided') scrollToAndShow('#content-container');
+        
+        if (mode === 'ai') {
+            scrollToAndShow('#content-container', 'start');
+        }
     };
 
     const init = () => {

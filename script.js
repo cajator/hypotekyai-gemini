@@ -74,13 +74,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!hasCalc) {
             return `<div class="bg-blue-50 p-6 rounded-2xl border border-blue-200 text-center space-y-4">
                         <h3 class="text-xl font-bold mb-2">Interaktivní modelování</h3>
-                        <p class="text-gray-600 text-sm">Zadejte do chatu, co chcete spočítat (např. "splátka na 5 mil na 20 let"), nebo si pohrajte s parametry níže.</p>
+                        <p class="text-gray-600 text-sm">Zadejte do chatu, co chcete spočítat, nebo si pohrajte s parametry níže. Já to okamžitě propočítám.</p>
                         ${sidebarCalcHTML}
                     </div>`;
         }
         
         return `
-            ${sidebarCalcHTML}
             <div id="ai-analysis-box">
                 <div class="text-center p-4">
                     <div class="loading-spinner-blue"></div>
@@ -257,9 +256,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateLTVDisplay(true); // Update sidebar as well
             }
             if(e.target.closest('#ai-sidebar-calculator')) {
-                // Debounce recalculation
                 clearTimeout(state.recalcTimeout);
-                state.recalcTimeout = setTimeout(() => handleChatMessageSend(`přepočítej pro ${state.formData.loanAmount} na ${state.formData.loanTerm} let`, false), 1000);
+                state.recalcTimeout = setTimeout(() => handleChatMessageSend(`přepočítej hypotéku`, true), 800);
             }
         }
     };
@@ -293,48 +291,60 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const data = await response.json();
             
+            // Centralized function to handle all AI tool calls
             const handleToolCall = async (toolData) => {
-                if (toolData.tool === 'modelScenario') {
-                    state.formData = { ...state.formData, ...toolData.params };
+                if (toolData.tool === 'modelScenario' || message === 'přepočítej hypotéku') {
+                    if(toolData.params) state.formData = { ...state.formData, ...toolData.params };
                     if (!isSilent) addChatMessage('Rozumím, moment. Počítám nový scénář a aktualizuji data vpravo.', 'ai');
-                    await calculateRates(null, true);
+                    
+                    await calculateRates(null, true); // Perform silent calculation
+                    
                     const sidebarContainer = document.getElementById('sidebar-container');
                     if (state.calculation.offers.length > 0) {
                         state.calculation.selectedOffer = state.calculation.offers[0];
                         if (sidebarContainer) {
-                            sidebarContainer.innerHTML = getSidebarHTML();
-                            updateLTVDisplay(true);
-                            renderSidebarChart();
-                            await handleChatMessageSend("Proveď úvodní analýzu mé situace.", true);
+                            sidebarContainer.innerHTML = getSidebarHTML(); // Re-render sidebar with analysis box
+                            updateLTVDisplay(true); // update LTV in sidebar
+                            renderSidebarChart(); // Render chart in sidebar
+                            await handleChatMessageSend("Proveď úvodní analýzu mé situace.", true); // Silently fetch analysis
                         }
                     } else {
+                        // No offers found, show calculator in sidebar
                         if (sidebarContainer) sidebarContainer.innerHTML = getSidebarHTML();
                         if (!isSilent) addChatMessage('Bohužel pro tento scénář nemáme vhodnou nabídku.', 'ai');
                     }
                 } else if (toolData.tool === 'startContactForm') {
                     addChatMessage(toolData.response.replace(/\n/g, '<br>'), 'ai');
                     state.chatFormState = 'awaiting_name';
-                } else if (toolData.tool === 'initialAnalysis') {
-                    const analysisBox = document.getElementById('ai-analysis-box');
-                    if(analysisBox) analysisBox.innerHTML = toolData.response.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<h3>$1</h3>');
                 }
             };
             
             if (data.tool) { await handleToolCall(data); }
             else if (data.response) {
-                if (isSilent) { 
-                    const analysisBox = document.getElementById('ai-analysis-box');
-                    if(analysisBox) analysisBox.innerHTML = data.response.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<h3>$1</h3>');
-                    return; 
+                 // The main response is text, but it might CONTAIN a JSON tool call for analysis
+                const analysisMatch = data.response.match(/\{[\s\S]*\}/);
+                let mainMessage = data.response;
+
+                if (analysisMatch) {
+                    try {
+                        const nestedData = JSON.parse(analysisMatch[0]);
+                        if (nestedData.tool === 'initialAnalysis') {
+                             const analysisBox = document.getElementById('ai-analysis-box');
+                             if(analysisBox) {
+                                analysisBox.innerHTML = nestedData.response.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<h3>$1</h3>');
+                             }
+                             // Remove the JSON part from the message to user
+                             mainMessage = mainMessage.replace(analysisMatch[0], '').trim();
+                        }
+                    } catch (e) { /* It's not a valid JSON, ignore */ }
                 }
-                let responseMessage = data.response;
-                try {
-                    const nestedData = JSON.parse(responseMessage);
-                    if (nestedData.tool) { await handleToolCall(nestedData); } else { addChatMessage(responseMessage, 'ai'); }
-                } catch (e) { addChatMessage(responseMessage, 'ai'); }
+                
+                if (mainMessage && !isSilent) {
+                    addChatMessage(mainMessage, 'ai');
+                }
             }
         } catch (error) {
-            document.getElementById('typing-indicator')?.remove();
+            if (!isSilent) document.getElementById('typing-indicator')?.remove();
             addChatMessage(`Omlouvám se, došlo k chybě: ${error.message}`, 'ai');
         }
     };
@@ -373,7 +383,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         if (mode === 'ai') {
-            scrollToAndShow('#content-container', 'start');
+            scrollToAndShow('#kalkulacka-a-vysledky', 'start');
         }
     };
 

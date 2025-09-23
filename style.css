@@ -1,4 +1,4 @@
-/* Hypoteky Ai - v18.0 - Final Polish Build */
+/* Hypoteky Ai - v20.0 - Final Polish Build */
 :root { 
     --accent-color: #2563eb; 
     --green-color: #22c55e;
@@ -69,8 +69,8 @@ body { font-family: 'Inter', sans-serif; }
 #ai-analysis-box strong { color: #1e40af; }
 #ai-analysis-box ul { list-style-type: disc; padding-left: 1.25rem; margin-bottom: 1rem; }
 
-.chat-bubble-ai, .chat-bubble-ai-typing { background: #f3f4f6; color: #1f2937; border-radius: 1.25rem 1.25rem 1.25rem 0.25rem; padding: 12px 16px; max-width: 85%; width: fit-content; line-height: 1.5; }
-.chat-bubble-user { background: var(--accent-color); color: white; border-radius: 1.25rem 1.25rem 0.25rem 1.25rem; padding: 12px 16px; max-width: 85%; width: fit-content; align-self: flex-end; line-height: 1.5; }
+.chat-bubble-ai, .chat-bubble-ai-typing { background: #f3f4f6; color: #1f2937; border-radius: 1.25rem 1.25rem 1.25rem 0.25rem; padding: 12px 16px; max-width: 90%; width: fit-content; line-height: 1.5; }
+.chat-bubble-user { background: var(--accent-color); color: white; border-radius: 1.25rem 1.25rem 0.25rem 1.25rem; padding: 12px 16px; max-width: 90%; width: fit-content; align-self: flex-end; line-height: 1.5; }
 .loading-spinner-blue { margin: 1rem auto; display: inline-block; width: 24px; height: 24px; border: 3px solid rgba(59, 130, 246, 0.2); border-top-color: var(--accent-color); border-radius: 50%; animation: spin 1s linear infinite; }
 .loading-spinner-white { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255, 255, 255, 0.3); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }

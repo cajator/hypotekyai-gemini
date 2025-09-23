@@ -1,8 +1,7 @@
-// netlify/functions/rates.js - v18.0 - Firestore Integration
+// netlify/functions/rates.js - v19.0 - Multi-offer fix
 import admin from 'firebase-admin';
 
 // Initialize Firebase Admin SDK
-// Kontrola, zda již byla aplikace inicializována
 if (!admin.apps.length) {
   try {
     admin.initializeApp({
@@ -23,7 +22,6 @@ const handler = async (event) => {
     if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers };
 
     try {
-        // Fetch offers from Firestore
         const offersSnapshot = await db.collection('offers').get();
         const ALL_OFFERS = offersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
@@ -59,20 +57,29 @@ const handler = async (event) => {
                 const monthlyPayment = calculateMonthlyPayment(loanAmount, rate, term);
                 const dsti = ((monthlyPayment + liabilities) / adjustedIncome) * 100;
                 if (dsti > 48 || monthlyPayment + liabilities > disposableIncome) return null;
-                return { id: o.id, rate: parseFloat(rate.toFixed(2)), monthlyPayment: Math.round(monthlyPayment), type: o.type, dsti };
+                
+                let title = "Hypotéka";
+                if(o.type === 'best-rate') title = "Nejlepší úrok";
+                if(o.type === 'standard') title = "Zlatá střední cesta";
+                if(o.type === 'approvability') title = "Maximální šance";
+
+                return { 
+                    id: o.id, 
+                    rate: parseFloat(rate.toFixed(2)), 
+                    monthlyPayment: Math.round(monthlyPayment), 
+                    type: o.type, 
+                    dsti,
+                    title: o.title || title, // Použij název z DB, pokud existuje
+                    description: o.description || "Standardní nabídka od našich partnerů."
+                };
             }).filter(Boolean);
 
-        const getBestOffer = (type) => allQualifiedOffers.filter(o => o.type === type).sort((a,b) => a.rate - b.rate)[0];
-        const finalOffers = [
-            {...getBestOffer('best-rate'), title: "Nejlepší úrok", description: "Absolutně nejnižší úrok pro maximální úsporu. Ideální, pokud máte silnou bonitu."},
-            {...getBestOffer('standard'), title: "Zlatá střední cesta", description: "Skvělá sazba v kombinaci s mírnějšími požadavky. Pro většinu klientů nejlepší volba."},
-            {...getBestOffer('approvability'), title: "Maximální šance", description: "Nejbenevolentnější podmínky pro případy, kdy si nejste jistí svými příjmy nebo registry."}
-        ].filter(o => o.id);
-
-        const uniqueOffers = [...new Map(finalOffers.map(item => [item.id, item])).values()].slice(0,3);
-        if (uniqueOffers.length === 0) { return { statusCode: 200, headers, body: JSON.stringify({ offers: [] }) }; }
+        // ZMĚNA LOGIKY: Seřadíme všechny kvalifikované nabídky podle sazby a vezmeme první tři.
+        const finalOffers = allQualifiedOffers.sort((a, b) => a.rate - b.rate).slice(0, 3);
         
-        const bestOfferDsti = uniqueOffers[0].dsti;
+        if (finalOffers.length === 0) { return { statusCode: 200, headers, body: JSON.stringify({ offers: [] }) }; }
+        
+        const bestOfferDsti = finalOffers[0].dsti;
         const score = { 
             ltv: Math.round(Math.max(10, Math.min(95, 110 - ltv))), 
             dsti: Math.round(Math.max(10, Math.min(95, (48 - bestOfferDsti) / 48 * 100))), 
@@ -83,9 +90,9 @@ const handler = async (event) => {
         let smartTip = null;
         let tips = [];
         if (term < 30) {
-            const payment30 = calculateMonthlyPayment(loanAmount, uniqueOffers[0].rate, 30);
-            if (payment30 < uniqueOffers[0].monthlyPayment * 0.95) {
-                const diff = Math.round(uniqueOffers[0].monthlyPayment - payment30);
+            const payment30 = calculateMonthlyPayment(loanAmount, finalOffers[0].rate, 30);
+            if (payment30 < finalOffers[0].monthlyPayment * 0.95) {
+                const diff = Math.round(finalOffers[0].monthlyPayment - payment30);
                 smartTip = { id: 'smart_term', title: "Chytrý tip!", message: `Zvažte prodloužení splatnosti na 30 let. Vaše splátka by klesla na cca ${formatNumber(payment30)} a ušetřili byste tak ${formatNumber(diff)} měsíčně.` };
             }
         }
@@ -93,7 +100,7 @@ const handler = async (event) => {
         if (score.ltv < 70 && ltv > 80) { tips.push({ id: 'low_ltv', title: 'Tip pro lepší úrok', message: 'Pro nejlepší úrokové sazby zkuste navýšit vlastní zdroje, abyste snížili LTV pod 80 %.' }); }
         
         const finalLtv = Math.round(ltv);
-        return { statusCode: 200, headers, body: JSON.stringify({ offers: uniqueOffers, approvability: { ...score, ltv: finalLtv }, smartTip, tips }) };
+        return { statusCode: 200, headers, body: JSON.stringify({ offers: finalOffers, approvability: { ...score, ltv: finalLtv }, smartTip, tips }) };
     } catch (error) {
         console.error("Rates function error:", error);
         return { statusCode: 500, headers, body: JSON.stringify({ error: error.message }) };

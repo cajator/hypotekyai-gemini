@@ -1,4 +1,4 @@
-// netlify/functions/chat.js - v16.0 - AI Integration Build
+// netlify/functions/chat.js - v20.0 - Final Polish & Robust Parsing
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const handler = async (event) => {
@@ -25,18 +25,21 @@ const handler = async (event) => {
              throw new Error("AI nevrátila žádnou platnou odpověď.");
         }
         
+        // Try to find a JSON object within the response text
         const jsonMatch = responseText.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
             try {
                 const jsonResponse = JSON.parse(jsonMatch[0]);
                 if (jsonResponse.tool) {
+                    // It's a pure tool call, return it directly
                     return { statusCode: 200, headers, body: JSON.stringify(jsonResponse) };
                 }
             } catch (e) {
-                // Not a valid JSON tool call, continue to send as plain text
+                // Not a valid JSON, or not a tool call. Fall through to send as plain text.
             }
         }
         
+        // If no valid tool call was found, send the whole response as text.
         return { statusCode: 200, headers, body: JSON.stringify({ response: responseText }) };
 
     } catch (error) {
@@ -47,29 +50,31 @@ const handler = async (event) => {
 
 function createSystemPrompt(userMessage, context) {
     const hasContext = context && context.calculation && context.calculation.offers && context.calculation.offers.length > 0;
-    const contextString = hasContext ? `Uživatel má v panelu namodelovanou hypotéku s těmito výsledky: ${JSON.stringify(context.calculation, null, 2)}` : 'Uživatel zatím nic nepočítal.';
+    const contextString = hasContext ? `Uživatel MÁ namodelovanou hypotéku. Jeho data: ${JSON.stringify(context.calculation, null, 2)}` : 'Uživatel zatím nic nepočítal a nemá žádná data.';
 
-    let prompt = `Jsi Hypoteční Ai, přátelský a profesionální asistent. Tvoje služby i služby našich lidských specialistů jsou pro klienta **zcela zdarma**. Naší odměnu platí banka, ne klient. 
+    let prompt = `Jsi Hypoteční Ai, přátelský a profesionální asistent. Tvoje odpovědi jsou **stručné, jasné a věcné**. 
     
     AKTUÁLNÍ KONTEXT: ${contextString}
-    UŽIVATELŮV AKTUÁLNÍ DOTAZ: "${userMessage}"`;
+    UŽIVATELŮV DOTAZ: "${userMessage}"`;
 
     if (userMessage === "Proveď úvodní analýzu mé situace.") {
-        return `Uživatel si právě zobrazil výsledky své hypotéky a chce od tebe úvodní analýzu. Vytvoř shrnutí jeho situace.
-        - Začni s titulkem "**Analýza vaší situace**".
-        - Zhodnoť jeho celkové skóre ("approvability.total") a co znamená.
-        - Okometuj nejlepší nabídku ("selectedOffer"), zejména měsíční splátku a sazbu.
-        - Pokud existuje chytrý tip ("smartTip"), vysvětli ho.
-        - Pokud existují další tipy ("tips"), stručně je shrň.
-        - Buď pozitivní, ale věcný. Vše naformuluj do souvislého textu o 2-4 odstavcích.
-        - Odpověz POUZE JSON objektem ve formátu: {"tool":"initialAnalysis","response":"Tvůj vygenerovaný text v HTML/markdown formátu."}`;
+        return `Uživatel si zobrazil výsledky hypotéky a chce úvodní analýzu do panelu. Vytvoř krátké shrnutí.
+        - Titulek: **Analýza vaší situace**
+        - Zhodnoť celkové skóre ("approvability.total") jednou větou.
+        - Okometuj nejlepší nabídku ("selectedOffer") jednou větou.
+        - Pokud existuje chytrý tip ("smartTip"), stručně ho vysvětli.
+        - Odpověz POUZE JSON objektem: {"tool":"initialAnalysis","response":"Tvůj vygenerovaný text."}`;
+    }
+
+    if (userMessage === "přepočítej hypotéku") {
+        return `Uživatel změnil parametry v mini-kalkulačce a chce tichý přepočet. Odpověz POUZE JSON: {"tool":"modelScenario"}`;
     }
 
     prompt += `
         TVOJE ÚKOLY:
-        1.  **Běžná konverzace:** Pokud se uživatel ptá na obecné téma, odpověz stručně (1-3 věty) a přátelsky. Vždy využij kontext! 
-        2.  **Rozpoznání modelování:** Pokud dotaz obsahuje parametry hypotéky (např. "splátka na 5 milionů na 20 let"), odpověz POUZE JSON objektem. Odhadni hodnotu nemovitosti jako 125 % výše úvěru. Příklad: {"tool":"modelScenario","params":{"loanAmount":5500000,"propertyValue":6875000,"loanTerm":30}}
-        3.  **Rozpoznání žádosti o specialistu:** Pokud se uživatel ptá na "kontakt", "specialistu", spusť konverzační formulář. Odpověz POUZE JSON objektem: {"tool":"startContactForm","response":"Ráda vás spojím s naším specialistou. Naše služby jsou pro vás zcela zdarma. Můžete mi prosím napsat vaše celé jméno a telefonní číslo? <br><br> (Nebo můžete využít <a href='#kontakt' data-action='show-lead-form' class='font-bold text-blue-600 underline'>standardní formulář</a>.)"}
+        1.  **Běžná konverzace:** Pokud se uživatel ptá na obecné téma, odpověz stručně (1-2 věty). Pokud nemá data, povzbuď ho, ať si hypotéku namodeluje v panelu vpravo.
+        2.  **Rozpoznání modelování:** Pokud dotaz obsahuje parametry hypotéky (např. "splátka na 5 mega na 20 let"), ale UŽIVATEL NEMÁ ŽÁDNÁ DATA, odpověz textem: "Ráda vám s výpočtem pomohu! Nejprve ale potřebovala bych znát některé podrobnosti, například výši úvěru, délku splatnosti a případně úrokovou sazbu.". Pokud UŽIVATEL MÁ DATA, odpověz POUZE JSON objektem pro přepočet. Příklad: {"tool":"modelScenario","params":{"loanAmount":5000000,"propertyValue":6250000,"loanTerm":20}}
+        3.  **Rozpoznání žádosti o specialistu:** Pokud se uživatel ptá na "kontakt", "specialistu", odpověz POUZE JSON: {"tool":"startContactForm","response":"Ráda vás spojím s naším specialistou. Naše služby jsou pro vás zcela zdarma. Můžete mi prosím napsat vaše celé jméno a telefonní číslo? <br><br> (Nebo můžete využít <a href='#kontakt' data-action='show-lead-form' class='font-bold text-blue-600 underline'>standardní formulář</a>.)"}
         
         Ve všech ostatních případech odpovídej běžným textem.`;
     

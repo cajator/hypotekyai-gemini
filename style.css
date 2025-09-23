@@ -4,7 +4,7 @@ body { font-family: 'Inter', sans-serif; }
 
 .nav-link { color: #4b5563; transition: color 0.2s ease-in-out; }
 .nav-link:hover { color: var(--accent-color); }
-.nav-btn { background-color: var(--accent-color); color: white; font-weight: bold; padding: 10px 20px; border-radius: 8px; transition: all 0.2s ease; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+.nav-btn { background-color: var(--accent-color); color: white; font-weight: bold; padding: 10px 20px; border-radius: 8px; transition: all 0.2s ease; border: none; cursor: pointer; display: inline-flex; align-items-center; justify-content: center; }
 .nav-btn:hover { background-color: #1d4ed8; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 .nav-btn:disabled { background-color: #9ca3af; cursor: not-allowed; transform: none; box-shadow: none; }
 
@@ -20,13 +20,13 @@ body { font-family: 'Inter', sans-serif; }
 .mode-card { border: 2px solid #e5e7eb; padding: 1.5rem; border-radius: 1rem; cursor: pointer; transition: all 0.2s ease-in-out; position: relative; display: flex; flex-direction: column; padding-top: 4rem; }
 .mode-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px -5px rgba(0,0,0,0.08); }
 .mode-card.active { border-color: var(--accent-color); box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2); }
-.mode-card-dark { background: linear-gradient(135deg, #4f46e5, #1e293b); color: white; }
+.mode-card-dark { background: linear-gradient(135deg, #1e3a8a, #1e293b); color: white; }
 
-.partner-logo { max-height: 32px; width: auto; filter: grayscale(100%); opacity: 0.6; transition: all 0.2s ease; margin: 0 auto; }
+.partner-logo { max-height: 40px; width: auto; filter: grayscale(100%); opacity: 0.7; transition: all 0.2s ease; margin: 0 auto; }
 .partner-logo:hover { filter: grayscale(0%); opacity: 1; }
 
 .form-label { font-weight: 600; font-size: 0.875rem; color: #374151; margin-bottom: 0.5rem; display: block; }
-.form-section-heading { font-size: 1.25rem; font-weight: 700; color: #111827; padding-bottom: 0.75rem; margin-top: 1rem; margin-bottom: 1.5rem; border-bottom: 1px solid #e5e7eb; }
+.form-section-heading { font-size: 1.5rem; font-weight: 700; color: #111827; padding-bottom: 0.75rem; margin-bottom: 1.5rem; border-bottom: 1px solid #e5e7eb; }
 
 .slider-container { margin-top: 0.5rem; }
 .slider-input { width: 100%; -webkit-appearance: none; appearance: none; background: transparent; cursor: pointer; }

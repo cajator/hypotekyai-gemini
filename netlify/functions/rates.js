@@ -1,4 +1,4 @@
-// netlify/functions/rates.js - v15.0 - Final Build
+// netlify/functions/rates.js - v16.0 - Detailed Calculator Build
 const ALL_OFFERS = {
     'offer-1': { id: 'offer-1', rates: { 3: { base: 4.59, min: 4.39, max: 5.09 }, 5: { base: 4.39, min: 4.19, max: 4.89 }, 7: { base: 4.49, min: 4.29, max: 4.99 }, 10: { base: 4.69, min: 4.49, max: 5.19 } }, requirements: { maxLTV: 90 }, type: "standard" },
     'offer-2': { id: 'offer-2', rates: { 3: { base: 4.49, min: 4.29, max: 4.99 }, 5: { base: 4.29, min: 4.09, max: 4.79 }, 7: { base: 4.39, min: 4.19, max: 4.89 }, 10: { base: 4.59, min: 4.39, max: 5.09 } }, requirements: { maxLTV: 100 }, type: "best-rate" },
@@ -20,6 +20,7 @@ const handler = async (event) => {
         const income = parseInt(p.income) || 0, liabilities = parseInt(p.liabilities) || 0;
         const term = parseInt(p.loanTerm) || 25;
         const children = parseInt(p.children) || 0;
+        const employmentType = p.employmentType || 'zamestnanec';
         
         const fixationInput = parseInt(p.fixation) || 5;
         const validFixations = [3, 5, 7, 10];
@@ -27,9 +28,13 @@ const handler = async (event) => {
 
         if (!loanAmount || !propertyValue || !income) { return { statusCode: 200, headers, body: JSON.stringify({ offers: [] }) }; }
 
-        const ltv = (loanAmount / propertyValue) * 100;
+        const ltv = (propertyValue > 0) ? (loanAmount / propertyValue) * 100 : 0;
+        
+        // Simplified income adjustment for self-employed (OSVČ)
+        const adjustedIncome = employmentType === 'osvc' ? income * 0.7 : income;
+
         const livingMinimum = 10000 + (children * 2500);
-        const disposableIncome = income - livingMinimum;
+        const disposableIncome = adjustedIncome - livingMinimum;
 
         const allQualifiedOffers = Object.values(ALL_OFFERS)
             .filter(o => ltv <= o.requirements.maxLTV && o.rates[fixation])
@@ -38,7 +43,7 @@ const handler = async (event) => {
                 let rate = rateInfo.base;
                 if (ltv <= 70) rate = rateInfo.min; else if (ltv > 90) rate = rateInfo.max;
                 const monthlyPayment = calculateMonthlyPayment(loanAmount, rate, term);
-                const dsti = ((monthlyPayment + liabilities) / income) * 100;
+                const dsti = ((monthlyPayment + liabilities) / adjustedIncome) * 100;
                 if (dsti > 48 || monthlyPayment + liabilities > disposableIncome) return null;
                 return { id: o.id, rate: parseFloat(rate.toFixed(2)), monthlyPayment: Math.round(monthlyPayment), type: o.type, dsti };
             }).filter(Boolean);
@@ -54,7 +59,11 @@ const handler = async (event) => {
         if (uniqueOffers.length === 0) { return { statusCode: 200, headers, body: JSON.stringify({ offers: [] }) }; }
         
         const bestOfferDsti = uniqueOffers[0].dsti;
-        const score = { ltv: Math.round(Math.max(10, Math.min(95, 110 - ltv))), dsti: Math.round(Math.max(10, Math.min(95, (48 - bestOfferDsti) / 48 * 100))), bonita: Math.round(Math.max(10, Math.min(95, (disposableIncome / 20000) * 100))) };
+        const score = { 
+            ltv: Math.round(Math.max(10, Math.min(95, 110 - ltv))), 
+            dsti: Math.round(Math.max(10, Math.min(95, (48 - bestOfferDsti) / 48 * 100))), 
+            bonita: Math.round(Math.max(10, Math.min(95, (disposableIncome / 20000) * 100))) 
+        };
         score.total = Math.round((score.ltv * 0.4) + (score.dsti * 0.4) + (score.bonita * 0.2));
 
         let smartTip = null;
@@ -69,7 +78,7 @@ const handler = async (event) => {
         if (score.dsti < 60) { tips.push({ id: 'low_dsti', title: 'Tip pro lepší DSTI', message: 'Vaše DSTI je hraniční. Zkuste snížit jiné měsíční splátky, pokud je to možné, pro lepší podmínky.' }); }
         if (score.ltv < 70 && ltv > 80) { tips.push({ id: 'low_ltv', title: 'Tip pro lepší úrok', message: 'Pro nejlepší úrokové sazby zkuste navýšit vlastní zdroje, abyste snížili LTV pod 80 %.' }); }
         
-        return { statusCode: 200, headers, body: JSON.stringify({ offers: uniqueOffers, approvability: score, smartTip, tips }) };
+        return { statusCode: 200, headers, body: JSON.stringify({ offers: uniqueOffers, approvability: { ...score, ltv: Math.round(ltv) }, smartTip, tips }) };
     } catch (error) {
         return { statusCode: 500, headers, body: JSON.stringify({ error: error.message }) };
     }

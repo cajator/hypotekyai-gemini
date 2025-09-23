@@ -1,4 +1,4 @@
-// netlify/functions/chat.js - v15.0 - Final Build
+// netlify/functions/chat.js - v16.0 - Final Build (JSON Parsing Fix)
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const handler = async (event) => {
@@ -17,20 +17,26 @@ const handler = async (event) => {
         const result = await model.generateContent(createSystemPrompt(message, context));
         
         const response = result.response;
-        if (!response.candidates || response.candidates.length === 0 || !response.text) {
+        const responseText = response.text();
+
+        if (!response.candidates || response.candidates.length === 0 || !responseText) {
              const blockReason = response.promptFeedback?.blockReason;
              if (blockReason) throw new Error(`Požadavek byl zablokován z důvodu: ${blockReason}. Zkuste přeformulovat dotaz.`);
              throw new Error("AI nevrátila žádnou platnou odpověď.");
         }
-        let responseText = response.text().trim();
         
-        try {
-            const jsonResponse = JSON.parse(responseText);
-            if (jsonResponse.tool) {
-                 return { statusCode: 200, headers, body: JSON.stringify(jsonResponse) };
+        // Vylepšená logika pro extrakci JSON z odpovědi AI
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            try {
+                const jsonResponse = JSON.parse(jsonMatch[0]);
+                if (jsonResponse.tool) {
+                    return { statusCode: 200, headers, body: JSON.stringify(jsonResponse) };
+                }
+            } catch (e) {
+                // Nepodařilo se parsovat, jedná se o běžný text, který jen obsahuje složené závorky.
+                // Pokračujeme a pošleme to jako normální textovou odpověď.
             }
-        } catch (e) {
-            // It's a regular text response
         }
         
         return { statusCode: 200, headers, body: JSON.stringify({ response: responseText }) };
@@ -67,9 +73,9 @@ function createSystemPrompt(userMessage, context) {
             Uživatel: "ukaž mi splátku na 5.5 milionu na 30 let"
             Tvoje odpověď: {"tool":"modelScenario","params":{"loanAmount":5500000,"propertyValue":6875000,"loanTerm":30}}
 
-        3.  **Rozpoznání žádosti o specialistu:** Pokud se uživatel ptá na "kontakt", "specialistu", "chci mluvit s člověkem", spusť konverzační formulář. Odpověz POUZE JSON objektem:
+        3.  **Rozpoznání žádosti o specialistu:** Pokud se uživatel ptá na "kontakt", "specialistu", "chci mluvit s člověkem", spusť konverzační formulář. Odpověz POUZE JSON objektem. Příklad:
             Uživatel: "chci to probrat s poradcem"
-            Tvoje odpověď: {"tool":"startContactForm","response":"Rozumím. Rád vás spojím s naším specialistou. Můžete mi prosím napsat vaše celé jméno? <br><br> (Nebo můžete využít <a href='#kontakt' data-action='show-lead-form' class='font-bold text-blue-600 underline'>standardní formulář</a>.)"}
+            Tvoje odpověď: {"tool":"startContactForm","response":"Ráda vás spojím s naším specialistou. Naše služby jsou pro vás zcela zdarma, stejně jako služby našich specialistů – odměnu platí banka. Můžete mi prosím napsat vaše celé jméno a telefonní číslo, abych vás mohl co nejrychleji spojit? <br><br> (Nebo můžete využít <a href='#kontakt' data-action='show-lead-form' class='font-bold text-blue-600 underline'>standardní formulář</a>.)"}
         
         Ve všech ostatních případech odpovídej běžným textem.`;
     }

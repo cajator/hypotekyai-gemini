@@ -92,29 +92,29 @@ document.addEventListener('DOMContentLoaded', () => {
         const tipHTML = (tip) => `<div class="smart-tip"><p class="font-bold">${tip.title}</p><p class="text-sm">${tip.message}</p></div>`;
         const allTipsHTML = (smartTip ? [smartTip] : []).concat(tips || []).map(tipHTML).join('');
         
-        container.innerHTML = `<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="lg:col-span-2 space-y-6">
-                <div>
-                    <h3 class="text-3xl font-bold mb-6">Našli jsme pro vás tyto nabídky:</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">${offersHTML}</div>
-                </div>
-                <div>
+        container.innerHTML = `<div class="space-y-12">
+            <div>
+                <h3 class="text-3xl font-bold mb-6">Našli jsme pro vás tyto nabídky:</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">${offersHTML}</div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                <div class="lg:col-span-2">
                     <h3 class="text-3xl font-bold mb-6">Vývoj splácení v čase</h3>
                     <div class="bg-white p-6 rounded-xl border"><div class="relative h-96"><canvas id="resultsChart"></canvas></div></div>
                 </div>
-            </div>
-            <div class="lg:sticky top-28">
-                <div class="summary-card">
-                    <h4 class="text-xl font-bold mb-4">Přehled a skóre vaší žádosti</h4>
-                    <div class="space-y-3">
-                        ${scoreHTML('LTV', approvability.ltv, 'bg-green-500')}
-                        ${scoreHTML('DSTI', approvability.dsti, 'bg-yellow-500')}
-                        ${scoreHTML('Bonita', approvability.bonita, 'bg-green-500')}
+                <div class="lg:sticky top-28">
+                    <div class="summary-card">
+                        <h4 class="text-xl font-bold mb-4">Přehled a skóre vaší žádosti</h4>
+                        <div class="space-y-3">
+                            ${scoreHTML('LTV', approvability.ltv, 'bg-green-500')}
+                            ${scoreHTML('DSTI', approvability.dsti, 'bg-yellow-500')}
+                            ${scoreHTML('Bonita', approvability.bonita, 'bg-green-500')}
+                        </div>
+                        <h4 class="text-lg font-bold mt-6 mb-2">Celková šance: <span class="text-2xl font-bold text-green-600">${approvability.total}%</span></h4>
+                        <div class="approvability-bar-bg"><div class="approvability-bar bg-green-500" style="width: ${approvability.total}%"></div></div>
+                        ${allTipsHTML}
+                        <button class="nav-btn btn-green text-lg w-full mt-6" data-action="show-lead-form">Chci nejlepší nabídku</button>
                     </div>
-                    <h4 class="text-lg font-bold mt-6 mb-2">Celková šance: <span class="text-2xl font-bold text-green-600">${approvability.total}%</span></h4>
-                    <div class="approvability-bar-bg"><div class="approvability-bar bg-green-500" style="width: ${approvability.total}%"></div></div>
-                    ${allTipsHTML}
-                    <button class="nav-btn btn-green text-lg w-full mt-6" data-action="show-lead-form">Chci nejlepší nabídku</button>
                 </div>
             </div>
         </div>`;
@@ -172,32 +172,74 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     const handleFormSubmit = async (e) => { e.preventDefault(); const form = e.target, btn = form.querySelector('button'); btn.disabled = true; btn.textContent = 'Odesílám...'; try { await fetch("/", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams(new FormData(form)).toString() }); form.style.display = 'none'; document.getElementById('form-success').style.display = 'block'; } catch (error) { alert('Odeslání se nezdařilo.'); btn.disabled = false; btn.textContent = 'Odeslat nezávazně'; } };
+    
     const handleChatMessageSend = async (message) => {
-        if (state.chatFormState !== 'idle') { handleChatFormInput(message); return; }
+        if (state.chatFormState !== 'idle') {
+            handleChatFormInput(message);
+            return;
+        }
         addChatMessage('', 'ai-typing');
         const { chart, ...cleanContext } = state;
         try {
-            const response = await fetch(CONFIG.API_CHAT_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message, context: cleanContext }) });
+            const response = await fetch(CONFIG.API_CHAT_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message, context: cleanContext })
+            });
+            
             document.getElementById('typing-indicator')?.remove();
-            if (!response.ok) throw new Error((await response.json()).error || 'Server error');
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Server error');
+            }
+    
             const data = await response.json();
-            if (data.tool === 'modelScenario') {
-                state.formData = {...state.formData, ...data.params};
-                addChatMessage('Rozumím, moment. Počítám nový scénář a aktualizuji data vpravo.', 'ai');
-                await calculateRates(null, true);
-                const sidebarContainer = document.getElementById('sidebar-container');
-                if (state.calculation.offers.length > 0) {
-                    state.calculation.selectedOffer = state.calculation.offers[0];
-                    if (sidebarContainer) sidebarContainer.innerHTML = getSidebarHTML(state.calculation);
-                } else {
-                    if (sidebarContainer) sidebarContainer.innerHTML = getSidebarHTML(null);
-                    addChatMessage('Bohužel pro tento scénář nemáme vhodnou nabídku.', 'ai');
+            
+            const handleToolCall = async (toolData) => {
+                if (toolData.tool === 'modelScenario') {
+                    state.formData = { ...state.formData, ...toolData.params };
+                    addChatMessage('Rozumím, moment. Počítám nový scénář a aktualizuji data vpravo.', 'ai');
+                    await calculateRates(null, true);
+                    const sidebarContainer = document.getElementById('sidebar-container');
+                    if (state.calculation.offers.length > 0) {
+                        state.calculation.selectedOffer = state.calculation.offers[0];
+                        if (sidebarContainer) {
+                            sidebarContainer.innerHTML = getSidebarHTML(state.calculation);
+                            renderSidebarChart();
+                        }
+                    } else {
+                        if (sidebarContainer) sidebarContainer.innerHTML = getSidebarHTML(null);
+                        addChatMessage('Bohužel pro tento scénář nemáme vhodnou nabídku.', 'ai');
+                    }
+                } else if (toolData.tool === 'startContactForm') {
+                    addChatMessage(toolData.response, 'ai');
+                    state.chatFormState = 'awaiting_name';
+                }
+            };
+    
+            if (data.tool) {
+                handleToolCall(data);
+            } else if (data.response) {
+                let responseMessage = data.response;
+                try {
+                    const nestedData = JSON.parse(responseMessage);
+                    if (nestedData.tool) {
+                        handleToolCall(nestedData);
+                    } else {
+                        addChatMessage(responseMessage, 'ai');
+                    }
+                } catch (e) {
+                    addChatMessage(responseMessage, 'ai');
                 }
             }
-            else if (data.tool === 'startContactForm') { addChatMessage(data.response, 'ai'); state.chatFormState = 'awaiting_name'; }
-            else { addChatMessage(data.response, 'ai'); }
-        } catch (error) { document.getElementById('typing-indicator')?.remove(); addChatMessage(`Omlouvám se, došlo k chybě: ${error.message}`, 'ai'); }
+    
+        } catch (error) {
+            document.getElementById('typing-indicator')?.remove();
+            addChatMessage(`Omlouvám se, došlo k chybě: ${error.message}`, 'ai');
+        }
     };
+
     const handleChatFormInput = (message) => {
         if (state.chatFormState === 'awaiting_name') { state.chatFormData.name = message; addChatMessage('Děkuji. Jaký je Váš telefon?', 'ai'); state.chatFormState = 'awaiting_phone'; }
         else if (state.chatFormState === 'awaiting_phone') { state.chatFormData.phone = message; addChatMessage('Skvělé. A poslední údaj, Váš e-mail?', 'ai'); state.chatFormState = 'awaiting_email'; }
@@ -225,3 +267,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     init();
 });
+

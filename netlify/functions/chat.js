@@ -1,4 +1,4 @@
-// netlify/functions/chat.js - v25.0 - Final Polish & Robust AI Logic
+// netlify/functions/chat.js - v28.0 - Final Polish & Robust AI Logic
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const handler = async (event) => {
@@ -23,6 +23,7 @@ const handler = async (event) => {
              return { statusCode: 200, headers, body: JSON.stringify({ response: "Omlouvám se, momentálně nemohu odpovědět. Zkuste to prosím později." }) };
         }
         
+        // Robust JSON parsing
         const jsonMatch = responseText.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
             try {
@@ -30,10 +31,11 @@ const handler = async (event) => {
                 if (jsonResponse.tool) {
                     return { statusCode: 200, headers, body: JSON.stringify(jsonResponse) };
                 }
-            } catch (e) { /* Not a valid JSON, fall through */ }
+            } catch (e) { /* Not a valid JSON, fall through to text response */ }
         }
         
-        return { statusCode: 200, headers, body: JSON.stringify({ response: responseText }) };
+        // If no valid JSON tool is found, return the plain text response
+        return { statusCode: 200, headers, body: JSON.stringify({ response: responseText.replace(/```json|```/g, "").trim() }) };
 
     } catch (error) {
         console.error('Gemini API Error:', error);
@@ -49,7 +51,7 @@ function createSystemPrompt(userMessage, context) {
     
     PRAVIDLA:
     - TVOJE ODPOVĚDI JSOU VŽDY EXTRÉMNĚ STRUČNÉ (MAX 1-2 VĚTY).
-    - Vždy dodržuj formát odpovědi (JSON nebo text).
+    - Vždy dodržuj požadovaný formát odpovědi (JSON nebo text).
     - Pokud je dotaz nesmyslný nebo mimo téma hypoték, odpověz jednou z těchto frází: "Tomuto dotazu bohužel nerozumím. Zkuste to prosím jinak." nebo "Specializuji se pouze na hypotéky. Rád vám pomohu s financováním bydlení."
     
     AKTUÁLNÍ KONTEXT: ${contextString}
@@ -61,15 +63,11 @@ function createSystemPrompt(userMessage, context) {
         Odpověz POUZE JSON objektem: {"tool":"initialAnalysis","response":"Tvůj vygenerovaný text."}`;
     }
 
-    if (userMessage === "přepočítej hypotéku") {
-        return `Odpověz POUZE JSON: {"tool":"modelScenario"}`;
-    }
-
     prompt += `
         TVOJE ÚKOLY:
         1.  **Běžná konverzace:** Pokud uživatel nemá data, povzbuď ho, ať si hypotéku namodeluje v panelu vpravo. Příklad: "Jistě. Nejprve prosím zadejte základní parametry do panelu vpravo."
         2.  **Rozpoznání modelování:** Pokud dotaz obsahuje parametry hypotéky (např. "splátka na 5 mega na 20 let"), odpověz POUZE JSON pro přepočet. Příklad: {"tool":"modelScenario","params":{"loanAmount":5000000,"propertyValue":6250000,"loanTerm":20}}
-        3.  **Rozpoznání žádosti o specialistu:** Pokud se uživatel ptá na "kontakt", "specialistu", odpověz POUZE JSON: {"tool":"startContactForm","response":"Rád vás spojím s naším specialistou. Můžete mi prosím napsat vaše celé jméno a telefonní číslo? <br><br> (Nebo můžete využít <a href='#kontakt' data-action='show-lead-form' class='font-bold text-blue-600 underline'>standardní formulář</a>.)"}
+        3.  **Rozpoznání žádosti o specialistu:** Pokud se uživatel ptá na "kontakt", "specialistu", odpověz POUZE JSON: {"tool":"startContactForm","response":"Rád vás spojím s naším specialistou. Můžete mi prosím napsat vaše celé jméno a telefonní číslo? <br><br> (Nebo můžete využít [standardní formulář](#kontakt).)"}
         
         Ve všech ostatních případech odpovídej běžným textem dle pravidel výše.`;
     

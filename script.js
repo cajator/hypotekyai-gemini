@@ -60,9 +60,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const getAiLayout = () => `<div class="grid ai-layout-grid gap-8 items-start"><div class="bg-white rounded-2xl shadow-xl border h-[75vh] flex flex-col"><div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4"></div><div id="ai-suggestions" class="p-4 border-t"></div><div class="p-4 border-t flex items-center space-x-2"><input type="text" id="chat-input" class="modern-input" placeholder="Zadejte svůj dotaz..."><button id="chat-send" class="nav-btn" data-action="send-chat">Odeslat</button></div></div><div id="sidebar-container" class="lg:sticky top-28 space-y-6"></div></div>`;
     const getSidebarHTML = () => { 
         if (state.calculation.offers && state.calculation.offers.length > 0 && state.calculation.selectedOffer) {
-            return `<div id="ai-analysis-container" class="bg-blue-50 p-6 rounded-2xl border border-blue-200 space-y-4"><h3 class="text-xl font-bold">Analýza vaší situace</h3><div id="ai-analysis-content" class="text-gray-700"><div class="loading-spinner-blue mx-auto"></div><p class="text-center">AI analyzuje vaše data...</p></div></div><div class="bg-gray-50 p-6 rounded-2xl border"><h4 class="font-bold mb-2">Graf splácení</h4><div id="sidebar-chart-container" class="relative h-48"><canvas id="sidebarChart"></canvas></div></div>`;
+            const { loanAmount, propertyValue, loanTerm } = state.formData;
+            const ltv = propertyValue > 0 ? Math.round((loanAmount / propertyValue) * 100) : 0;
+            return `
+                <div id="ai-analysis-container" class="bg-blue-50 p-6 rounded-2xl border border-blue-200 space-y-4">
+                    <h3 class="text-xl font-bold">Rekapitulace</h3>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between"><span>Výše úvěru:</span> <strong class="text-gray-900">${formatNumber(loanAmount)}</strong></div>
+                        <div class="flex justify-between"><span>Hodnota nemovitosti:</span> <strong class="text-gray-900">${formatNumber(propertyValue)}</strong></div>
+                        <div class="flex justify-between"><span>Splatnost:</span> <strong class="text-gray-900">${loanTerm} let</strong></div>
+                        <div class="flex justify-between"><span>LTV:</span> <strong class="text-gray-900">${ltv}%</strong></div>
+                    </div>
+                    <div id="ai-analysis-content" class="text-gray-700 pt-4 border-t border-blue-200">
+                        <div class="loading-spinner-blue mx-auto"></div>
+                        <p class="text-center text-sm">AI analyzuje vaše data...</p>
+                    </div>
+                </div>
+                <div class="bg-gray-50 p-6 rounded-2xl border">
+                    <h4 class="font-bold mb-2">Graf splácení</h4>
+                    <div id="sidebar-chart-container" class="relative h-48"><canvas id="sidebarChart"></canvas></div>
+                </div>`;
         } else {
-            return `<div class="bg-blue-50 p-6 rounded-2xl border border-blue-200"><h3 class="text-xl font-bold mb-4">Namodelujte si hypotéku</h3><div id="ai-calculator" class="space-y-4">${createSlider('loanAmount','Chci si půjčit',state.formData.loanAmount,200000,20000000,100000)}${createSlider('propertyValue','Hodnota nemovitosti',state.formData.propertyValue,500000,30000000,100000)}<div class="text-center font-bold text-lg text-green-600" id="ltv-display-ai">Aktuální LTV: ${Math.round((state.formData.loanAmount / state.formData.propertyValue) * 100)}%</div>${createSlider('loanTerm','Délka splatnosti',state.formData.loanTerm,5,30,1)}<button class="nav-btn w-full mt-2" data-action="calculate-from-ai">Spočítat</button></div></div>`;
+             return `<div class="bg-blue-50 p-6 rounded-2xl border border-blue-200">
+                <h3 class="text-xl font-bold mb-4">Namodelujte si hypotéku</h3>
+                <div id="ai-calculator" class="space-y-4">
+                    ${createSlider('loanAmount','Chci si půjčit',state.formData.loanAmount,200000,20000000,100000)}
+                    ${createSlider('propertyValue','Hodnota nemovitosti',state.formData.propertyValue,500000,30000000,100000)}
+                    <div class="text-center font-bold text-lg text-green-600" id="ltv-display-ai">Aktuální LTV: ${Math.round((state.formData.loanAmount / state.formData.propertyValue) * 100)}%</div>
+                    ${createSlider('loanTerm','Délka splatnosti',state.formData.loanTerm,5,30,1)}
+                    <button class="nav-btn w-full mt-2" data-action="calculate-from-ai">Spočítat a analyzovat</button>
+                </div>
+            </div>`;
         }
     };
     const getExpressHTML = () => getCalculatorLayout(`<div id="express-form" class="space-y-6">${createSlider('propertyValue','Hodnota nemovitosti',state.formData.propertyValue,500000,30000000,100000)}${createSlider('loanAmount','Chci si půjčit',state.formData.loanAmount,200000,20000000,100000)}${createSlider('income','Měsíční čistý příjem',state.formData.income,15000,300000,1000)}<div class="flex justify-center pt-4"><button class="nav-btn text-lg w-full md:w-auto" data-action="calculate"><span class="mr-2">Spočítat a najít nabídky</span><div class="loading-spinner-white hidden"></div></button></div></div><div id="results-container" class="hidden mt-12"></div>`);
@@ -449,7 +477,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!fromResults) {
                 addChatMessage('Dobrý den! Jsem Hypoteční stratég. Zeptejte se na cokoliv, nebo si namodelujte hypotéku v panelu vpravo.', 'ai');
             } else {
-                 addChatMessage('Vítejte v AI Stratégovi. Vpravo vidíte analýzu vaší situace. Na co se podíváme dál?', 'ai');
+                 addChatMessage('Vítejte v AI Stratégovi. Vpravo vidíte rekapitulaci a analýzu vaší situace. Na co se podíváme dál?', 'ai');
                  handleChatMessageSend("Proveď úvodní analýzu mé situace.");
                  setTimeout(() => renderSidebarChart(), 100);
             }

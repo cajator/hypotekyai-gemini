@@ -1,4 +1,4 @@
-// netlify/functions/chat.js - v34.0 - Final Polish & Robust AI Logic
+// netlify/functions/chat.js - v35.0 - Final Polish & Robust AI Logic
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const handler = async (event) => {

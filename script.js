@@ -91,18 +91,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const createSlider = (id, label, value, min, max, step, containerClass = '') => {
         const suffix = (id.includes('Term') || id.includes('age') || id.includes('children') || id.includes('fixation')) ? ' let' : ' Kč';
         const isMobileDevice = isMobile();
-        return `<div class="${containerClass}" id="${id}-group" style="width: 100%;">
+        return `<div class="${containerClass}" id="${id}-group" style="width: 100%; position: relative; z-index: 1;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; gap: 0.5rem;">
                 <label for="${id}" class="form-label" style="margin: 0; flex-shrink: 0; font-size: ${isMobileDevice ? '0.875rem' : '0.9375rem'};">${label}</label>
-                <div style="display: flex; align-items: center; gap: 0.25rem;">
+                <div style="display: flex; align-items: center; gap: 0.25rem; position: relative; z-index: 2;">
                     <input type="text" id="${id}-input" value="${formatNumber(value, false)}" 
                            class="slider-value-input" 
-                           style="max-width: ${isMobileDevice ? '100px' : '140px'}; font-size: ${isMobileDevice ? '0.9375rem' : '1rem'};">
+                           style="max-width: ${isMobileDevice ? '100px' : '140px'}; font-size: ${isMobileDevice ? '0.9375rem' : '1rem'}; position: relative; z-index: 2;">
                     <span style="font-weight: 600; color: #6b7280; font-size: ${isMobileDevice ? '0.875rem' : '0.9375rem'}; flex-shrink: 0;">${suffix}</span>
                 </div>
             </div>
-            <div class="slider-container" style="padding: 0.5rem 0;">
-                <input type="range" id="${id}" name="${id}" min="${min}" max="${max}" value="${value}" step="${step}" class="slider-input">
+            <div class="slider-container" style="padding: 0.5rem 0; position: relative; z-index: 1;">
+                <input type="range" id="${id}" name="${id}" min="${min}" max="${max}" value="${value}" step="${step}" class="slider-input" style="position: relative; z-index: 1;">
             </div>
         </div>`;
     };
@@ -938,7 +938,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 DOMElements.mobileMenu.classList.add('hidden');
             }
         }
-        else if (mode) switchMode(mode);
+        else if (mode) {
+            switchMode(mode);
+            // Scroll na formulář pouze na mobilu po kliknutí
+            if (isMobile()) {
+                setTimeout(() => {
+                    const formId = mode === 'express' ? 'express-form' : 
+                                   mode === 'guided' ? 'guided-form' : 
+                                   'chat-messages';
+                    const form = document.getElementById(formId);
+                    if (form) {
+                        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }, 100);
+            }
+        }
         else if (action === 'calculate') calculateRates(target);
         else if (action === 'go-to-calculator') {
             if (isMobile()) toggleMobileSidebar();
@@ -1139,24 +1153,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (mode === 'express') {
             DOMElements.contentContainer.innerHTML = getExpressHTML();
-            // Scroll na kalkulačku na mobilu
-            if (isMobile()) {
-                setTimeout(() => {
-                    const form = document.getElementById('express-form');
-                    if (form) form.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 100);
-            }
         }
         else if (mode === 'guided') {
             DOMElements.contentContainer.innerHTML = getGuidedHTML();
             handleGuidedFormLogic();
-            // Scroll na kalkulačku na mobilu
-            if (isMobile()) {
-                setTimeout(() => {
-                    const form = document.getElementById('guided-form');
-                    if (form) form.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 100);
-            }
         }
         else if (mode === 'ai') {
             if (!fromResults) {

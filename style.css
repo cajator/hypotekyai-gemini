@@ -1,4 +1,4 @@
-/* Hypoteky Ai - v35.0 - Complete Enhanced Styles */
+/* Hypoteky Ai - v36.0 - Mobile-First Enhanced Styles */
 :root { 
     --accent-color: #2563eb;
     --success-color: #10b981;
@@ -6,9 +6,22 @@
     --danger-color: #ef4444;
 }
 
+/* Reset pro mobily */
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+}
+
 body { 
     font-family: 'Inter', sans-serif; 
     scroll-behavior: smooth;
+    overflow-x: hidden;
+    width: 100%;
 }
 
 .nav-link { color: #4b5563; transition: color 0.2s ease-in-out; }

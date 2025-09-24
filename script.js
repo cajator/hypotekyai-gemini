@@ -50,6 +50,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (counter) {
             counter.innerHTML = `<span class="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse mr-1"></span> ${state.activeUsers} lidí právě počítá hypotéku`;
         }
+        
+        // Aktualizace ve footeru
+        const footerCounter = document.getElementById('active-users-footer');
+        if (footerCounter) {
+            footerCounter.textContent = `${state.activeUsers} lidí právě počítá hypotéku`;
+        }
     };
 
     // Aktualizace každých 30 sekund
@@ -1131,10 +1137,26 @@ document.addEventListener('DOMContentLoaded', () => {
         state.mode = mode;
         DOMElements.modeCards.forEach(card => card.classList.toggle('active', card.dataset.mode === mode));
         
-        if (mode === 'express') DOMElements.contentContainer.innerHTML = getExpressHTML();
+        if (mode === 'express') {
+            DOMElements.contentContainer.innerHTML = getExpressHTML();
+            // Scroll na kalkulačku na mobilu
+            if (isMobile()) {
+                setTimeout(() => {
+                    const form = document.getElementById('express-form');
+                    if (form) form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+        }
         else if (mode === 'guided') {
             DOMElements.contentContainer.innerHTML = getGuidedHTML();
             handleGuidedFormLogic();
+            // Scroll na kalkulačku na mobilu
+            if (isMobile()) {
+                setTimeout(() => {
+                    const form = document.getElementById('guided-form');
+                    if (form) form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
         }
         else if (mode === 'ai') {
             if (!fromResults) {

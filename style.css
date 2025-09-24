@@ -1,4 +1,4 @@
-/* Hypoteky Ai - v35.0 - Enhanced UI Styles */
+/* Hypoteky Ai - v35.0 - Complete Enhanced Styles */
 :root { 
     --accent-color: #2563eb;
     --success-color: #10b981;
@@ -6,9 +6,107 @@
     --danger-color: #ef4444;
 }
 
-/* ... stávající styly ... */
+body { 
+    font-family: 'Inter', sans-serif; 
+    scroll-behavior: smooth;
+}
 
-/* Vylepšené offer karty */
+.nav-link { color: #4b5563; transition: color 0.2s ease-in-out; }
+.nav-link:hover { color: var(--accent-color); }
+
+.nav-btn { 
+    background-color: var(--accent-color); color: white; font-weight: bold; 
+    padding: 10px 20px; border-radius: 8px; transition: all 0.2s ease; 
+    border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; 
+}
+.nav-btn:hover { background-color: #1d4ed8; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+.nav-btn:disabled { background-color: #9ca3af; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.badge { 
+    padding: 4px 12px; border-radius: 9999px; font-weight: 600; font-size: 0.75rem; 
+    display: inline-block; position: absolute; top: 1rem; left: 1rem; 
+}
+.badge-yellow { background-color: #fef9c3; color: #ca8a04; }
+.badge-blue { background-color: #dbeafe; color: var(--accent-color); }
+.badge-purple { background-color: #ede9fe; color: #7c3aed; }
+
+.modern-input, .modern-select { 
+    width: 100%; background: #f9fafb; border: 1px solid #d1d5db; color: #111827; 
+    padding: 12px 16px; border-radius: 8px; transition: all 0.2s; font-size: 1rem; 
+}
+.modern-input:focus, .modern-select:focus { 
+    background: white; border-color: var(--accent-color); 
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); outline: none; 
+}
+
+.modern-select { 
+    appearance: none; 
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%e3c/svg%3e");
+    background-position: right 1rem center; background-repeat: no-repeat; background-size: 1.2em;
+}
+
+.mode-card { 
+    border: 2px solid #e5e7eb; padding: 1.5rem; border-radius: 1rem; cursor: pointer; 
+    transition: all 0.2s ease-in-out; position: relative; display: flex; 
+    flex-direction: column; padding-top: 4rem; 
+}
+.mode-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px -5px rgba(0,0,0,0.08); }
+.mode-card.active { border-color: var(--accent-color); box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2); }
+.mode-card-dark { background: linear-gradient(135deg, #1e3a8a, #1e293b); color: white; }
+
+.form-label { font-weight: 600; font-size: 0.875rem; color: #374151; margin-bottom: 0.5rem; display: block; }
+.form-section-heading { 
+    font-size: 1.5rem; font-weight: 700; color: #111827; padding-bottom: 0.75rem; 
+    margin-bottom: 1.5rem; border-bottom: 1px solid #e5e7eb; 
+}
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem 2rem;
+    align-items: end;
+}
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.slider-input { 
+    width: 100%; -webkit-appearance: none; appearance: none; 
+    background: transparent; cursor: pointer; 
+}
+.slider-input::-webkit-slider-runnable-track { background: #e5e7eb; height: 0.5rem; border-radius: 1rem; }
+.slider-input::-webkit-slider-thumb { 
+    -webkit-appearance: none; appearance: none; margin-top: -4px; 
+    background-color: var(--accent-color); height: 1.25rem; width: 1.25rem; border-radius: 50%; 
+    border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+}
+
+.slider-value-input {
+    font-weight: bold; font-size: 1.125rem; text-align: right; border: 1px solid transparent; 
+    background-color: transparent; padding: 2px 8px; border-radius: 6px; 
+    transition: all 0.2s ease; max-width: 180px;
+}
+.slider-value-input:focus, .slider-value-input:hover { background-color: #f3f4f6; border-color: #d1d5db; }
+
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+@media (max-width: 1024px) {
+    .results-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (max-width: 768px) {
+    .results-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Enhanced offer cards */
 .offer-card { 
     background-color: white; 
     border: 2px solid #e5e7eb; 
@@ -50,16 +148,7 @@
     background: linear-gradient(to bottom right, #eff6ff, #fefefe);
 }
 
-/* Rychlá analýza box */
-.quick-analysis-box {
-    background: linear-gradient(135deg, #fef3c7, #fef9c3);
-    border-left: 4px solid var(--warning-color);
-    padding: 1rem;
-    border-radius: 0.75rem;
-    box-shadow: 0 4px 6px -1px rgba(251, 191, 36, 0.1);
-}
-
-/* AI chat vylepšení */
+/* Enhanced chat bubbles */
 .chat-bubble-ai { 
     background: linear-gradient(to bottom, #f9fafb, #f3f4f6);
     color: #1f2937; 
@@ -95,7 +184,19 @@
     to { opacity: 1; transform: translateX(0); }
 }
 
-/* Vylepšené suggestion buttons */
+.loading-spinner-blue { 
+    margin: 1rem auto; display: inline-block; width: 24px; height: 24px; 
+    border: 3px solid rgba(59, 130, 246, 0.2); border-top-color: var(--accent-color); 
+    border-radius: 50%; animation: spin 1s linear infinite; 
+}
+.loading-spinner-white { 
+    display: inline-block; width: 20px; height: 20px; 
+    border: 3px solid rgba(255, 255, 255, 0.3); border-top-color: #fff; 
+    border-radius: 50%; animation: spin 1s linear infinite; 
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Enhanced suggestion buttons */
 .suggestion-btn { 
     background: linear-gradient(to bottom, white, #fafafa);
     border: 1px solid #d1d5db; 
@@ -118,7 +219,40 @@
     box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
 }
 
-/* Score cards vylepšení */
+.approvability-bar-bg { background-color: #e5e7eb; border-radius: 9999px; height: 8px; overflow: hidden; }
+.approvability-bar { height: 100%; border-radius: 9999px; transition: width 0.5s ease-in-out; }
+
+/* Animation utilities */
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-down {
+    animation: fadeInDown 0.5s ease-out forwards;
+}
+.animation-delay-200 { animation-delay: 0.2s; }
+.animation-delay-400 { animation-delay: 0.4s; }
+
+/* Custom styles for AI chat layout */
+.ai-layout-grid {
+    grid-template-columns: 2fr 1fr;
+}
+@media (max-width: 1024px) {
+    .ai-layout-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Quick analysis box */
+.quick-analysis-box {
+    background: linear-gradient(135deg, #fef3c7, #fef9c3);
+    border-left: 4px solid var(--warning-color);
+    padding: 1rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px -1px rgba(251, 191, 36, 0.1);
+}
+
+/* Score cards */
 .score-card {
     background: white;
     padding: 1rem;
@@ -157,7 +291,7 @@
     transition: left 0.5s ease-out;
 }
 
-/* Mobilní optimalizace */
+/* Mobile optimizations */
 @media (max-width: 768px) {
     .offer-card {
         padding: 1rem;
@@ -188,7 +322,7 @@
     }
 }
 
-/* Highlight badges pro nabídky */
+/* Highlight badges */
 .offer-highlight {
     display: inline-block;
     padding: 0.25rem 0.75rem;
@@ -202,7 +336,7 @@
     border: 1px solid #bfdbfe;
 }
 
-/* Tlačítko "Domluvit se specialistou" - výraznější */
+/* CTA button enhancement */
 .nav-btn.nav-btn-cta {
     background: linear-gradient(135deg, var(--success-color), #059669);
     box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
@@ -227,7 +361,7 @@
     left: 100%;
 }
 
-/* Info panely */
+/* Info panels */
 .info-panel {
     background: linear-gradient(to right, #f0f9ff, #e0f2fe);
     border-left: 4px solid var(--accent-color);
@@ -246,7 +380,7 @@
     border-left-color: var(--warning-color);
 }
 
-/* Animace pro důležité prvky */
+/* Pulse animation for important elements */
 @keyframes pulse {
     0%, 100% { transform: scale(1); opacity: 1; }
     50% { transform: scale(1.05); opacity: 0.9; }
@@ -256,16 +390,7 @@
     animation: pulse 2s ease-in-out infinite;
 }
 
-/* Vylepšený vzhled formulářů */
-.modern-input:focus,
-.modern-select:focus {
-    background: white;
-    border-color: var(--accent-color);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    outline: none;
-}
-
-/* Tooltip styly */
+/* Tooltips */
 .tooltip {
     position: relative;
     display: inline-block;
@@ -294,7 +419,7 @@
     opacity: 1;
 }
 
-/* Loading skeleton pro lepší UX */
+/* Loading skeleton */
 .skeleton {
     background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
     background-size: 200% 100%;
@@ -304,4 +429,45 @@
 @keyframes loading {
     0% { background-position: 200% 0; }
     100% { background-position: -200% 0; }
+}
+
+/* Additional enhancements */
+.gradient-bg-blue {
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+}
+
+.gradient-bg-green {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+}
+
+.gradient-bg-purple {
+    background: linear-gradient(135deg, #faf5ff, #ede9fe);
+}
+
+.shadow-soft {
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+}
+
+.shadow-medium {
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04);
+}
+
+.shadow-hard {
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+}
+
+/* Smooth transitions */
+* {
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Print styles */
+@media print {
+    .nav-btn, #mobile-menu-button, #cookie-banner {
+        display: none !important;
+    }
+    
+    .offer-card {
+        page-break-inside: avoid;
+    }
 }

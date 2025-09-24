@@ -118,35 +118,43 @@ document.addEventListener('DOMContentLoaded', () => {
     const getAiLayout = () => {
         if (isMobile()) {
             return `
-                <div class="flex flex-col" style="height: calc(100vh - 8rem); max-height: calc(100vh - 8rem);">
-                    <div class="bg-white flex-1 flex flex-col" style="overflow: hidden;">
-                        <div id="chat-messages" class="flex-1" style="overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0.75rem; height: calc(100% - 8rem);"></div>
-                        <div id="ai-suggestions" style="padding: 0.75rem; border-top: 1px solid #e5e7eb; overflow-x: auto; -webkit-overflow-scrolling: touch; flex-shrink: 0;"></div>
-                        <div style="padding: 0.75rem; border-top: 1px solid #e5e7eb; display: flex; align-items: center; gap: 0.5rem; background: white; flex-shrink: 0;">
-                            <input type="text" id="chat-input" 
-                                   class="modern-input flex-1" 
-                                   placeholder="Zeptejte se..." 
-                                   style="font-size: 16px; min-width: 0;"
-                                   autocomplete="off"
-                                   autocorrect="off">
-                            <button id="chat-send" class="nav-btn" style="padding: 0.75rem; flex-shrink: 0;" data-action="send-chat">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                                </svg>
-                            </button>
+                <div class="flex flex-col" style="position: relative; height: calc(100vh - 10rem); max-height: 600px; width: 100%; overflow: hidden;">
+                    <div class="bg-white flex-1 flex flex-col" style="position: relative; height: 100%; overflow: hidden;">
+                        <div id="chat-messages" style="flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0.75rem; min-height: 0;"></div>
+                        <div id="ai-suggestions" style="flex: 0 0 auto; padding: 0.75rem; border-top: 1px solid #e5e7eb; overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap;"></div>
+                        <div style="flex: 0 0 auto; padding: 0.75rem; border-top: 1px solid #e5e7eb; background: white; position: relative; z-index: 10;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="text" 
+                                       id="chat-input" 
+                                       class="modern-input" 
+                                       placeholder="Zeptejte se..." 
+                                       style="flex: 1; font-size: 16px; min-width: 0; position: relative; z-index: 10; opacity: 1 !important; visibility: visible !important; -webkit-transform: translateZ(0); transform: translateZ(0);"
+                                       autocomplete="off"
+                                       autocorrect="off"
+                                       autocapitalize="off"
+                                       spellcheck="false">
+                                <button id="chat-send" 
+                                        class="nav-btn" 
+                                        style="flex: 0 0 auto; padding: 0.75rem; position: relative; z-index: 10;" 
+                                        data-action="send-chat">
+                                    <svg style="width: 1.25rem; height: 1.25rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
                     
                     ${state.calculation.selectedOffer ? `
                     <button id="mobile-sidebar-toggle" 
-                            style="position: fixed; bottom: 1.5rem; right: 1rem; width: 3.5rem; height: 3.5rem; background-color: #2563eb; color: white; border-radius: 50%; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); display: flex; align-items: center; justify-content: center; z-index: 90; border: none;"
+                            style="position: fixed; bottom: 1.5rem; right: 1rem; width: 3.5rem; height: 3.5rem; background-color: #2563eb; color: white; border-radius: 50%; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; z-index: 90; border: none;"
                             data-action="toggle-mobile-sidebar">
                         <span style="font-size: 1.5rem;">📊</span>
                     </button>
                     ` : ''}
                     
                     <div id="mobile-sidebar-overlay" class="hidden" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 100;" data-action="close-mobile-sidebar">
-                        <div id="sidebar-container" style="position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top-left-radius: 1.5rem; border-top-right-radius: 1.5rem; padding: 1.5rem 1rem; max-height: 70vh; overflow-y: auto; -webkit-overflow-scrolling: touch; box-shadow: 0 -4px 6px -1px rgba(0,0,0,0.1);" onclick="event.stopPropagation()"></div>
+                        <div id="sidebar-container" style="position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top-left-radius: 1.5rem; border-top-right-radius: 1.5rem; padding: 1.5rem 1rem; max-height: 70vh; overflow-y: auto; -webkit-overflow-scrolling: touch;" onclick="event.stopPropagation()"></div>
                     </div>
                 </div>`;
         }
@@ -1179,8 +1187,43 @@ document.addEventListener('DOMContentLoaded', () => {
                 addChatMessage(`Výborně! Mám vaši analýzu. Splátka **${formatNumber(state.calculation.selectedOffer.monthlyPayment)}** při sazbě **${state.calculation.selectedOffer.rate.toFixed(2)}%** je ${state.calculation.approvability.total > 80 ? 'velmi dobrá' : 'přijatelná'}. Co vás zajímá nejvíc?`, 'ai');
             }
             generateAISuggestions();
-            document.getElementById('chat-input')?.addEventListener('keydown', handleChatEnter);
-            scrollToTarget('#content-container');
+            
+            // Speciální handling pro mobilní chat input
+            setTimeout(() => {
+                const chatInput = document.getElementById('chat-input');
+                if (chatInput) {
+                    // Zabránění mizení na mobilu
+                    chatInput.addEventListener('focus', (e) => {
+                        e.target.style.opacity = '1';
+                        e.target.style.visibility = 'visible';
+                        e.target.style.display = 'block';
+                        if (isMobile()) {
+                            // Zabránit scrollování při focusu
+                            e.preventDefault();
+                            setTimeout(() => {
+                                e.target.scrollIntoViewIfNeeded ? e.target.scrollIntoViewIfNeeded() : e.target.scrollIntoView(false);
+                            }, 100);
+                        }
+                    });
+                    
+                    chatInput.addEventListener('blur', (e) => {
+                        // Nechat input viditelný i po blur
+                        e.target.style.opacity = '1';
+                        e.target.style.visibility = 'visible';
+                    });
+                    
+                    chatInput.addEventListener('keydown', handleChatEnter);
+                    
+                    // Předejití iOS zoom
+                    if (isMobile()) {
+                        chatInput.style.fontSize = '16px';
+                    }
+                }
+            }, 100);
+            
+            if (!fromResults || state.mode === 'ai') {
+                scrollToTarget('#content-container');
+            }
         }
     };
 

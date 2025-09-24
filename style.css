@@ -484,3 +484,32 @@ body {
         page-break-inside: avoid;
     }
 }
+
+/* KRITICKÉ OPRAVY PRO AI CHAT NA MOBILU */
+@media (max-width: 767px) {
+    #chat-input {
+        font-size: 16px !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        display: block !important;
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        position: relative;
+        z-index: 999 !important;
+        width: calc(100% - 4rem) !important;
+    }
+    
+    #chat-messages {
+        position: relative !important;
+        z-index: 1 !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    
+    #ai-suggestions {
+        position: relative !important;
+        z-index: 2 !important;
+    }
+}

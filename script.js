@@ -12,14 +12,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const state = {
         mode: 'express',
         isAiTyping: false,
+        chatFormState: 'idle', 
+        chatFormData: {},
         formData: {
             propertyValue: 5000000, loanAmount: 4000000,
-            income: 60000, liabilities: 0, age: 35, children: 0,
+            income: 70000, liabilities: 5000, age: 35, children: 1,
             loanTerm: 25, fixation: 5,
             purpose: 'koupě', propertyType: 'byt', landValue: 0, reconstructionValue: 0,
             employment: 'zaměstnanec', education: 'středoškolské'
         },
-        calculation: { offers: [], selectedOffer: null, approvability: { total: 0 }, smartTip: null, tips: [] },
+        calculation: { offers: [], selectedOffer: null, approvability: { total: 0 }, smartTip: null, tips: [], fixationDetails: null },
         chart: null,
     };
 
@@ -47,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- COMPONENT FACTORIES ---
     const createSlider = (id, label, value, min, max, step, containerClass = '') => {
-        const suffix = id.includes('Term') || id.includes('age') || id.includes('children') ? ' let' : ' Kč';
+        const suffix = (id.includes('Term') || id.includes('age') || id.includes('children') || id.includes('fixation')) ? ' let' : ' Kč';
         return `<div class="${containerClass}" id="${id}-group"><div class="flex justify-between items-center mb-1"><label for="${id}" class="form-label mb-0">${label}</label><div class="flex items-center"><input type="text" id="${id}-input" value="${formatNumber(value, false)}" class="slider-value-input"><span class="font-semibold text-gray-500">${suffix}</span></div></div><div class="slider-container"><input type="range" id="${id}" name="${id}" min="${min}" max="${max}" value="${value}" step="${step}" class="slider-input"></div></div>`;
     };
     const createSelect = (id, label, options, selectedValue, containerClass = '') => {
@@ -70,24 +72,22 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="flex justify-between"><span>Hodnota nemovitosti:</span> <strong class="text-gray-900">${formatNumber(propertyValue)}</strong></div>
                         <div class="flex justify-between"><span>Splatnost:</span> <strong class="text-gray-900">${loanTerm} let</strong></div>
                         <div class="flex justify-between"><span>LTV:</span> <strong class="text-gray-900">${ltv}%</strong></div>
-                    </div>
-                    <div id="ai-analysis-content" class="text-gray-700 pt-4 border-t border-blue-200">
-                        <div class="loading-spinner-blue mx-auto"></div>
-                        <p class="text-center text-sm">AI analyzuje vaše data...</p>
+                         <div class="flex justify-between pt-2 border-t border-blue-200"><span>Měsíční splátka:</span> <strong class="text-gray-900">${formatNumber(state.calculation.selectedOffer.monthlyPayment)}</strong></div>
                     </div>
                 </div>
-                <div class="bg-gray-50 p-6 rounded-2xl border">
-                    <h4 class="font-bold mb-2">Graf splácení</h4>
-                    <div id="sidebar-chart-container" class="relative h-48"><canvas id="sidebarChart"></canvas></div>
+                 <div id="ai-analysis-content" class="text-gray-700 bg-gray-50 p-6 rounded-2xl border">
+                    <div class="loading-spinner-blue mx-auto"></div>
+                    <p class="text-center text-sm">AI analyzuje vaši situaci...</p>
                 </div>`;
         } else {
              return `<div class="bg-blue-50 p-6 rounded-2xl border border-blue-200">
                 <h3 class="text-xl font-bold mb-4">Namodelujte si hypotéku</h3>
                 <div id="ai-calculator" class="space-y-4">
-                    ${createSlider('loanAmount','Chci si půjčit',state.formData.loanAmount,200000,20000000,100000)}
-                    ${createSlider('propertyValue','Hodnota nemovitosti',state.formData.propertyValue,500000,30000000,100000)}
-                    <div class="text-center font-bold text-lg text-green-600" id="ltv-display-ai">Aktuální LTV: ${Math.round((state.formData.loanAmount / state.formData.propertyValue) * 100)}%</div>
-                    ${createSlider('loanTerm','Délka splatnosti',state.formData.loanTerm,5,30,1)}
+                    <div class="text-sm">
+                        <div class="flex justify-between"><span>Výše úvěru:</span> <strong class="text-gray-900">${formatNumber(state.formData.loanAmount)}</strong></div>
+                        <div class="flex justify-between"><span>Hodnota nemovitosti:</span> <strong class="text-gray-900">${formatNumber(state.formData.propertyValue)}</strong></div>
+                        <div class="flex justify-between"><span>Splatnost:</span> <strong class="text-gray-900">${state.formData.loanTerm} let</strong></div>
+                    </div>
                     <button class="nav-btn w-full mt-2" data-action="calculate-from-ai">Spočítat a analyzovat</button>
                 </div>
             </div>`;
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     const renderResults = () => {
-        const { offers, approvability, smartTip, tips } = state.calculation;
+        const { offers, approvability, smartTip, tips, fixationDetails } = state.calculation;
         const container = document.getElementById('results-container');
         if (!container) return;
         
@@ -144,25 +144,45 @@ document.addEventListener('DOMContentLoaded', () => {
         const scoreHTML = (label, value, color) => `<div class="flex justify-between items-center text-sm"><span class="font-semibold">${label}:</span><div class="flex items-center gap-2"><div class="w-24 h-2 rounded-full bg-gray-200"><div class="h-2 rounded-full ${color}" style="width: ${value}%"></div></div><span class="font-bold">${value}%</span></div></div>`;
         const tipHTML = (tip) => `<div class="mt-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-r-lg"><p class="font-bold">${tip.title}</p><p class="text-sm">${tip.message}</p></div>`;
         const allTipsHTML = (smartTip ? [smartTip] : []).concat(tips || []).map(tipHTML).join('');
+        const fixationHTML = fixationDetails ? `
+            <div class="bg-gray-50 p-6 rounded-2xl border">
+                <h4 class="text-xl font-bold mb-4">Inteligentní analýza fixace</h4>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between"><span>Zaplaceno na úrocích za ${state.formData.fixation} let:</span> <strong class="text-gray-900">${formatNumber(fixationDetails.totalInterestForFixation)}</strong></div>
+                    <div class="flex justify-between"><span>Zbývající dluh po fixaci:</span> <strong class="text-gray-900">${formatNumber(fixationDetails.remainingBalanceAfterFixation)}</strong></div>
+                    <div class="flex justify-between items-center pt-3 border-t mt-3">
+                        <span>Splátka při poklesu sazby o 1 %:</span> 
+                        <strong class="text-green-600 text-lg">${formatNumber(fixationDetails.futureScenario.newMonthlyPayment)}</strong>
+                    </div>
+                     <p class="text-xs text-gray-500 pt-2">Tento scénář ukazuje, jak by se mohla změnit vaše splátka po konci fixace při příznivějším vývoji úrokových sazeb.</p>
+                </div>
+            </div>` : '';
 
-        container.innerHTML = `<div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
-            <div class="lg:col-span-3">
+
+        container.innerHTML = `
+            <div>
                 <h3 class="text-3xl font-bold mb-6">Našli jsme pro vás tyto nabídky:</h3>
                 <div class="results-grid">${offersHTML}</div>
-                <div class="mt-8"><h3 class="text-3xl font-bold mb-6">Vývoj splácení v čase</h3><div class="bg-white p-6 rounded-xl border shadow-lg"><div class="relative h-96"><canvas id="resultsChart"></canvas></div></div></div>
             </div>
-            <div class="lg:col-span-2 lg:sticky top-28"><div class="bg-blue-50 p-6 rounded-2xl border border-blue-200">
-                <h4 class="text-xl font-bold mb-4">Přehled a skóre vaší žádosti</h4>
-                <div class="space-y-3">${scoreHTML('LTV', approvability.ltv, 'bg-green-500')}${scoreHTML('DSTI', approvability.dsti, 'bg-yellow-500')}${scoreHTML('Bonita', approvability.bonita, 'bg-green-500')}</div>
-                <h4 class="text-lg font-bold mt-6 mb-2">Celková šance: <span class="text-2xl font-bold text-green-600">${approvability.total}%</span></h4>
-                <div class="approvability-bar-bg"><div class="approvability-bar bg-green-500" style="width: ${approvability.total}%"></div></div>
-                ${allTipsHTML}
-            </div>
-            <div class="text-center mt-6 space-y-3">
-                <button class="nav-btn bg-blue-600 hover:bg-blue-700 text-lg w-full" data-action="discuss-with-ai">Probrat s AI stratégem</button>
-                <button class="nav-btn bg-green-600 hover:bg-green-700 text-lg w-full" data-action="show-lead-form">Chci nejlepší nabídku</button>
-            </div></div>
-        </div>`;
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 mt-12">
+                <div class="lg:col-span-3">
+                    <div class="mt-8 lg:mt-0"><h3 class="text-3xl font-bold mb-6">Vývoj splácení v čase</h3><div class="bg-white p-6 rounded-xl border shadow-lg"><div class="relative h-96"><canvas id="resultsChart"></canvas></div></div></div>
+                </div>
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="bg-blue-50 p-6 rounded-2xl border border-blue-200">
+                        <h4 class="text-xl font-bold mb-4">Přehled a skóre vaší žádosti</h4>
+                        <div class="space-y-3">${scoreHTML('LTV', approvability.ltv, 'bg-green-500')}${scoreHTML('DSTI', approvability.dsti, 'bg-yellow-500')}${scoreHTML('Bonita', approvability.bonita, 'bg-green-500')}</div>
+                        <h4 class="text-lg font-bold mt-6 mb-2">Celková šance: <span class="text-2xl font-bold text-green-600">${approvability.total}%</span></h4>
+                        <div class="approvability-bar-bg"><div class="approvability-bar bg-green-500" style="width: ${approvability.total}%"></div></div>
+                        ${allTipsHTML}
+                    </div>
+                    ${fixationHTML}
+                     <div class="text-center mt-6 space-y-3">
+                        <button class="nav-btn bg-blue-600 hover:bg-blue-700 text-lg w-full" data-action="discuss-with-ai">Probrat s AI stratégem</button>
+                        <button class="nav-btn bg-green-600 hover:bg-green-700 text-lg w-full" data-action="show-lead-form">Chci nejlepší nabídku</button>
+                    </div>
+                </div>
+            </div>`;
 
         const firstCard = container.querySelector('.offer-card'); 
         if (firstCard) { 
@@ -409,8 +429,13 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.textContent = 'Odeslat nezávazně';
         }
     };
-
+    
     const handleChatMessageSend = async (message) => {
+        if (state.chatFormState !== 'idle') {
+            handleChatFormInput(message);
+            return;
+        }
+
         state.isAiTyping = true;
         addChatMessage('', 'ai-typing');
         generateAISuggestions();
@@ -434,6 +459,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             else if (data.tool === 'startContactForm') {
                 addChatMessage(data.response, 'ai');
+                state.chatFormState = 'awaiting_name';
             }
              else if (data.tool === 'initialAnalysis') {
                 const analysisContainer = document.getElementById('ai-analysis-content');
@@ -447,6 +473,25 @@ document.addEventListener('DOMContentLoaded', () => {
             addChatMessage(`Omlouvám se, došlo k chybě: ${error.message}`, 'ai');
         } finally {
             state.isAiTyping = false;
+        }
+    };
+
+    const handleChatFormInput = (message) => {
+        if (state.chatFormState === 'awaiting_name') {
+            state.chatFormData.name = message;
+            addChatMessage('Děkuji. Jaké je Váš telefon?', 'ai');
+            state.chatFormState = 'awaiting_phone';
+        } else if (state.chatFormState === 'awaiting_phone') {
+            state.chatFormData.phone = message;
+            addChatMessage('Skvělé. A poslední údaj, Váš e-mail?', 'ai');
+            state.chatFormState = 'awaiting_email';
+        } else if (state.chatFormState === 'awaiting_email') {
+            state.chatFormData.email = message;
+            addChatMessage('Děkuji mockrát! Všechny údaje mám. Kolega se Vám brzy ozve. Přejete si ještě s něčím pomoci?', 'ai');
+            state.chatFormState = 'idle';
+            // Here you would typically send the lead data to your backend/CRM
+            console.log("Captured lead:", state.chatFormData);
+            state.chatFormData = {};
         }
     };
 
@@ -468,7 +513,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         else if (mode === 'ai') {
             if (!fromResults) {
-                state.calculation = { offers: [], selectedOffer: null, approvability: { total: 0 }, smartTip: null, tips: [] };
+                state.calculation = { offers: [], selectedOffer: null, approvability: { total: 0 }, smartTip: null, tips: [], fixationDetails: null };
             }
             DOMElements.contentContainer.innerHTML = getAiLayout();
             const sidebarContainer = document.getElementById('sidebar-container');
@@ -478,8 +523,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 addChatMessage('Dobrý den! Jsem Hypoteční stratég. Zeptejte se na cokoliv, nebo si namodelujte hypotéku v panelu vpravo.', 'ai');
             } else {
                  addChatMessage('Vítejte v AI Stratégovi. Vpravo vidíte rekapitulaci a analýzu vaší situace. Na co se podíváme dál?', 'ai');
-                 handleChatMessageSend("Proveď úvodní analýzu mé situace.");
-                 setTimeout(() => renderSidebarChart(), 100);
+                 if(state.calculation.selectedOffer){
+                    handleChatMessageSend("Proveď úvodní analýzu mé situace.");
+                    setTimeout(() => renderSidebarChart(), 100);
+                 }
             }
             generateAISuggestions();
             document.getElementById('chat-input')?.addEventListener('keydown', handleChatEnter);

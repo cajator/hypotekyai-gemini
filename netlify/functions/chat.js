@@ -53,6 +53,7 @@ function createSystemPrompt(userMessage, context) {
     - TVOJE ODPOVĚDI JSOU VŽDY STRUČNÉ, ALE UŽITEČNÉ (CCA 2-4 VĚTY).
     - Vždy dodržuj požadovaný formát odpovědi (JSON nebo text).
     - Pokud je dotaz nesmyslný nebo mimo téma hypoték, odpověz jednou z těchto frází: "Tomuto dotazu bohužel nerozumím. Zkuste to prosím jinak." nebo "Specializuji se pouze na hypotéky. Rád vám pomohu s financováním bydlení."
+    - Vždy mluv o konkrétních číslech z kontextu, pokud jsou k dispozici.
     
     AKTUÁLNÍ KONTEXT: ${contextString}
     UŽIVATELŮV DOTAZ: "${userMessage}"`;
@@ -63,6 +64,7 @@ function createSystemPrompt(userMessage, context) {
         }
         return `Uživatel si zobrazil výsledky a chce úvodní analýzu. Vytvoř **stručné, ale informativní** shrnutí na **2 až 3 věty**.
         - Zhodnoť celkové skóre a okomentuj nejlepší nabídku.
+        - Použij data z kontextu, např. context.calculation.approvability.total a context.calculation.selectedOffer.monthlyPayment.
         - Příklad: "Vaše celkové skóre ${context.calculation.approvability.total}% je solidní a dává Vám dobrou šanci na schválení. Na základě Vašich údajů jsme našli nabídku s měsíční splátkou ${context.calculation.selectedOffer.monthlyPayment.toLocaleString('cs-CZ')} Kč, což je za současných podmínek velmi konkurenceschopné."
         - Odpověz POUZE JSON objektem: {"tool":"initialAnalysis","response":"Tvůj vygenerovaný text."}`;
     }
@@ -71,7 +73,7 @@ function createSystemPrompt(userMessage, context) {
         TVOJE ÚKOLY:
         1.  **Běžná konverzace:** Pokud uživatel nemá data, povzbuď ho, ať si hypotéku namodeluje v panelu vpravo. Příklad: "Jistě. Nejprve prosím zadejte základní parametry do panelu vpravo, abych Vám mohl spočítat konkrétní čísla."
         2.  **Rozpoznání modelování:** Pokud dotaz obsahuje parametry hypotéky (např. "splátka na 5 mega na 20 let"), odpověz POUZE JSON pro přepočet. Příklad: {"tool":"modelScenario","params":{"loanAmount":5000000,"propertyValue":6250000,"loanTerm":20}}
-        3.  **Rozpoznání žádosti o specialistu:** Pokud se uživatel ptá na "kontakt", "specialistu", odpověz POUZE JSON: {"tool":"startContactForm","response":"Rád vás spojím s naším specialistou. Můžete mi prosím napsat vaše celé jméno a telefonní číslo? <br><br> (Nebo můžete využít [standardní formulář](#kontakt).)"}
+        3.  **Rozpoznání žádosti o specialistu:** Pokud se uživatel ptá na "kontakt", "specialistu", "chci mluvit s člověkem", odpověz POUZE JSON: {"tool":"startContactForm","response":"Rád vás spojím s naším specialistou. Můžete mi prosím napsat vaše celé jméno a telefonní číslo? <br><br> (Nebo můžete využít [standardní formulář](#kontakt).)"}
         
         Ve všech ostatních případech odpovídej běžným textem dle pravidel výše.`;
     

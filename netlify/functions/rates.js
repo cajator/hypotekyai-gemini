@@ -6,10 +6,10 @@ const ALL_OFFERS = [
         description: "Nejnižší úrok pro klienty s výbornou bonitou a nízkým LTV.",
         max_ltv: 90,
         rates: {
-            '3': { rate_ltv70: 4.49, rate_ltv80: 4.69, rate_ltv90: 5.09 },
-            '5': { rate_ltv70: 4.29, rate_ltv80: 4.49, rate_ltv90: 4.89 },
-            '7': { rate_ltv70: 4.39, rate_ltv80: 4.59, rate_ltv90: 4.99 },
-            '10': { rate_ltv70: 4.59, rate_ltv80: 4.79, rate_ltv90: 5.19 }
+            '3': { rate_ltv70: 4.09, rate_ltv80: 4.29, rate_ltv90: 4.72 },
+            '5': { rate_ltv70: 4.14, rate_ltv80: 4.29, rate_ltv90: 4.89 },
+            '7': { rate_ltv70: 4.59, rate_ltv80: 4.69, rate_ltv90: 4.99 },
+            '10': { rate_ltv70: 4.69, rate_ltv80: 4.79, rate_ltv90: 5.19 }
         }
     },
     {
@@ -18,10 +18,10 @@ const ALL_OFFERS = [
         description: "Vyvážená nabídka s rozumnými podmínkami pro většinu klientů.",
         max_ltv: 90,
         rates: {
-            '3': { rate_ltv70: 4.59, rate_ltv80: 4.79, rate_ltv90: 5.19 },
-            '5': { rate_ltv70: 4.39, rate_ltv80: 4.59, rate_ltv90: 4.99 },
-            '7': { rate_ltv70: 4.49, rate_ltv80: 4.69, rate_ltv90: 5.09 },
-            '10': { rate_ltv70: 4.69, rate_ltv80: 4.89, rate_ltv90: 5.29 }
+            '3': { rate_ltv70: 4.29, rate_ltv80: 4.39, rate_ltv90: 4.73 },
+            '5': { rate_ltv70: 4.34, rate_ltv80: 4.59, rate_ltv90: 4.89 },
+            '7': { rate_ltv70: 4.69, rate_ltv80: 4.79, rate_ltv90: 5.04 },
+            '10': { rate_ltv70: 4.69, rate_ltv80: 4.89, rate_ltv90: 5.14 }
         }
     },
     {
@@ -30,10 +30,10 @@ const ALL_OFFERS = [
         description: "Vstřícné podmínky i pro klienty s vyšším LTV nebo nižší bonitou.",
         max_ltv: 95,
         rates: {
-            '3': { rate_ltv70: 4.79, rate_ltv80: 4.99, rate_ltv90: 5.39 },
-            '5': { rate_ltv70: 4.59, rate_ltv80: 4.79, rate_ltv90: 5.19 },
+            '3': { rate_ltv70: 4.44, rate_ltv80: 4.79, rate_ltv90: 4.94 },
+            '5': { rate_ltv70: 4.59, rate_ltv80: 4.74, rate_ltv90: 4.99 },
             '7': { rate_ltv70: 4.69, rate_ltv80: 4.89, rate_ltv90: 5.29 },
-            '10': { rate_ltv70: 4.89, rate_ltv80: 5.09, rate_ltv90: 5.49 }
+            '10': { rate_ltv70: 4.84, rate_ltv80: 5.09, rate_ltv90: 5.49 }
         }
     },
     {
@@ -42,10 +42,10 @@ const ALL_OFFERS = [
         description: "Exkluzivní sazby pro klienty s nejlepší bonitou a LTV do 70%.",
         max_ltv: 70,
         rates: {
-            '3': { rate_ltv70: 4.29 },
-            '5': { rate_ltv70: 4.09 },  // Minimum 4.09% jak jste uvedl
-            '7': { rate_ltv70: 4.19 },
-            '10': { rate_ltv70: 4.39 }
+            '3': { rate_ltv70: 4.09 },
+            '5': { rate_ltv70: 4.19 },  
+            '7': { rate_ltv70: 4.49 },
+            '10': { rate_ltv70: 4.54 }
         }
     }
 ];
@@ -77,7 +77,7 @@ const calculateFixationAnalysis = (loanAmount, rate, loanTerm, fixation) => {
     const remainingMonths = remainingYears * 12;
     
     // Realistické scénáře
-    const optimisticRate = Math.max(3.79, rate - 0.5); // Pokles max o 0.5%
+    const optimisticRate = Math.max(3.99, rate - 0.5); // Pokles max o 0.5%
     const optimisticPayment = remainingMonths > 0 ? 
         calculateMonthlyPayment(remainingBalance, optimisticRate, remainingYears) : 0;
     

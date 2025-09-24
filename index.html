@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=2.0">
+    <link rel="stylesheet" href="style.css?v=2.1">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💡</text></svg>">
 </head>
 <body class="bg-gray-50 text-gray-800 antialiased">
@@ -26,7 +26,7 @@
                 <a href="#partneri" class="nav-link scroll-to">Partneři</a>
             </div>
             <div class="flex items-center space-x-4">
-                 <a href="#kontakt" class="nav-btn scroll-to" data-action="show-lead-form-direct">📞 Domluvit se specialistou</a>
+                 <a href="#kontakt" class="nav-btn scroll-to" data-action="show-lead-form-direct" data-target="#kontakt">📞 Domluvit se specialistou</a>
                  <button id="mobile-menu-button" class="md:hidden p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
                  </button>
@@ -43,24 +43,32 @@
 
     <div id="top"></div>
 
-    <main class="container mx-auto px-6 py-12 md:py-20">
-        <section class="text-center mb-16">
-             <div class="flex justify-center items-center space-x-12 mb-12 text-center">
+    <main class="container mx-auto px-6 py-8 md:py-12">
+        <!-- Aktivní uživatelé counter -->
+        <div class="text-center mb-6">
+            <p id="active-users-counter" class="text-sm text-gray-600 inline-flex items-center">
+                <span class="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse mr-1"></span>
+                Načítám...
+            </p>
+        </div>
+        
+        <section class="text-center mb-12">
+             <div class="flex justify-center items-center space-x-4 sm:space-x-8 lg:space-x-12 mb-8 text-center">
                 <div>
-                    <p class="text-3xl font-bold text-blue-600">8.4 mld Kč</p>
-                    <p class="text-gray-500">Zprostředkováno</p>
+                    <p class="text-2xl sm:text-3xl font-bold text-blue-600">8.4 mld Kč</p>
+                    <p class="text-xs sm:text-sm text-gray-500">Zprostředkováno</p>
                 </div>
                 <div>
-                    <p class="text-3xl font-bold text-blue-600">286 000 Kč</p>
-                    <p class="text-gray-500">Průměrná úspora</p>
+                    <p class="text-2xl sm:text-3xl font-bold text-blue-600">286 000 Kč</p>
+                    <p class="text-xs sm:text-sm text-gray-500">Průměrná úspora</p>
                 </div>
                 <div>
-                    <p class="text-3xl font-bold text-blue-600">12 847</p>
-                    <p class="text-gray-500">Spokojených klientů</p>
+                    <p class="text-2xl sm:text-3xl font-bold text-blue-600">12 847</p>
+                    <p class="text-xs sm:text-sm text-gray-500">Spokojených klientů</p>
                 </div>
              </div>
-            <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 animate-fade-in-down">Profesionální hypoteční analýza s AI</h2>
-            <p class="text-lg text-gray-600 max-w-3xl mx-auto animate-fade-in-down animation-delay-200">Metodika 19+ partnerů | Aktuální sazby | Scoring v reálném čase</p>
+            <h2 class="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4 animate-fade-in-down">Profesionální hypoteční analýza s AI</h2>
+            <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto animate-fade-in-down animation-delay-200">Metodika 19+ partnerů | Aktuální sazby | Scoring v reálném čase</p>
         </section>
         
         <div id="kalkulacka" class="mb-24 scroll-mt-20">
@@ -179,7 +187,20 @@
                         <div><label for="phone" class="form-label">Telefon *</label><input type="tel" id="phone" name="phone" required class="modern-input"></div>
                     </div>
                     <div><label for="email" class="form-label">E-mail *</label><input type="email" id="email" name="email" required class="modern-input"></div>
-                    <div><label for="note" class="form-label">Poznámka (nepovinné)</label><textarea id="note" name="note" rows="3" class="modern-input"></textarea></div>
+                    
+                    <!-- Nové pole - kdy kontaktovat -->
+                    <div>
+                        <label for="contact-time" class="form-label">Kdy vás můžeme kontaktovat?</label>
+                        <select id="contact-time" name="contact-time" class="modern-select">
+                            <option value="kdykoliv">Kdykoliv během dne</option>
+                            <option value="rano">Ráno (8:00 - 12:00)</option>
+                            <option value="odpoledne">Odpoledne (12:00 - 17:00)</option>
+                            <option value="vecer">Večer (17:00 - 20:00)</option>
+                            <option value="vikend">Pouze o víkendu</option>
+                        </select>
+                    </div>
+                    
+                    <div><label for="note" class="form-label">Poznámka (nepovinné)</label><textarea id="note" name="note" rows="3" class="modern-input" placeholder="Např. už mám předschválenou hypotéku, refinancuji, atd."></textarea></div>
                      <div class="pt-2 text-center">
                         <p class="text-xs text-gray-500 mb-4">Odesláním formuláře souhlasíte se zpracováním osobních údajů.</p>
                         <button type="submit" id="submit-lead-btn" class="w-full md:w-auto nav-btn bg-green-600 hover:bg-green-700 text-lg">📞 Odeslat nezávazně</button>
@@ -187,7 +208,7 @@
                 </form>
                 <div id="form-success" class="hidden mt-6 text-center p-4 bg-green-100 text-green-800 rounded-lg">
                     <h3 class="font-bold text-lg">✅ Děkujeme!</h3>
-                    <p>Váš požadavek byl úspěšně odeslán. Brzy se vám ozveme.</p>
+                    <p>Váš požadavek byl úspěšně odeslán. Ozveme se vám ve vámi preferovaný čas.</p>
                 </div>
              </div>
         </section>
@@ -212,6 +233,6 @@
         <button id="cookie-accept" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm whitespace-nowrap">Rozumím a souhlasím</button>
     </div>
 
-    <script src="script.js?v=2.0" defer></script>
+    <script src="script.js?v=2.1" defer></script>
 </body>
 </html>

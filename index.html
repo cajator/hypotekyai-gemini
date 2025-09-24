@@ -1,134 +1,214 @@
-# 🚀 Vylepšení aplikace Hypoteky AI - Kompletní přehled
+<!DOCTYPE html>
+<html lang="cs" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hypoteky Ai - Profesionální hypoteční analýza</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=1.35">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💡</text></svg>">
+</head>
+<body class="bg-gray-50 text-gray-800 antialiased">
 
-## 📋 Hlavní vylepšené oblasti
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-30 border-b border-gray-200">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="#" class="flex items-center space-x-2 scroll-to" data-target="#top">
+                <span class="text-2xl">💡</span>
+                <h1 class="text-xl font-bold text-gray-800">Hypoteky Ai</h1>
+            </a>
+            <div class="hidden md:flex items-center space-x-6">
+                <a href="#kalkulacka" class="nav-link scroll-to">Kalkulačka</a>
+                <a href="#o-nas" class="nav-link scroll-to">O nás</a>
+                <a href="#jak-to-funguje" class="nav-link scroll-to">Jak to funguje</a>
+                <a href="#partneri" class="nav-link scroll-to">Partneři</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                 <a href="#kontakt" class="nav-btn scroll-to" data-action="show-lead-form-direct">Chci poradit</a>
+                 <button id="mobile-menu-button" class="md:hidden p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                 </button>
+            </div>
+        </nav>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200">
+            <a href="#kalkulacka" class="block py-3 px-6 text-gray-700 hover:bg-gray-50 scroll-to">Kalkulačka</a>
+            <a href="#o-nas" class="block py-3 px-6 text-gray-700 hover:bg-gray-50 scroll-to">O nás</a>
+            <a href="#jak-to-funguje" class="block py-3 px-6 text-gray-700 hover:bg-gray-50 scroll-to">Jak to funguje</a>
+            <a href="#partneri" class="block py-3 px-6 text-gray-700 hover:bg-gray-50 scroll-to">Partneři</a>
+        </div>
+    </header>
 
-### 1. **AI Chat - Inteligentní a flexibilní odpovědi** ✅
-- **Problém:** Chat odpovídal rigidně na dotazy o sazbách
-- **Řešení:** 
-  - AI nyní poskytuje flexibilní odpovědi s rozsahem sazeb 3.89% - 5.49%
-  - Přidána podpora pro individuální nabídky
-  - Lepší kontextové porozumění dotazům
-  - Používání emoji pro přátelštější komunikaci
+    <div id="top"></div>
 
-### 2. **Sidebar v AI módu - Plná funkcionalita** ✅
-- **Problém:** Sidebar nezobrazoval splátky a analýzy
-- **Řešení:**
-  - Kompletní rekapitulace hypotéky s měsíční splátkou
-  - Inteligentní analýza fixace s výpočty:
-    - Zaplaceno za fixaci (úroky + jistina)
-    - Zbývající dluh po fixaci
-    - Predikce při poklesu/růstu sazeb
-  - Interaktivní kalkulačka přímo v sidebaru
+    <main class="container mx-auto px-6 py-12 md:py-20">
+        <section class="text-center mb-16">
+             <div class="flex justify-center items-center space-x-12 mb-12 text-center">
+                <div>
+                    <p class="text-3xl font-bold text-blue-600">8.4 mld Kč</p>
+                    <p class="text-gray-500">Zprostředkováno</p>
+                </div>
+                <div>
+                    <p class="text-3xl font-bold text-blue-600">286 000 Kč</p>
+                    <p class="text-gray-500">Průměrná úspora</p>
+                </div>
+                <div>
+                    <p class="text-3xl font-bold text-blue-600">12 847</p>
+                    <p class="text-gray-500">Spokojených klientů</p>
+                </div>
+             </div>
+            <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 animate-fade-in-down">Profesionální hypoteční analýza</h2>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto animate-fade-in-down animation-delay-200">Metodika 19+ partnerů | Aktuální sazby | Scoring v reálném čase</p>
+        </section>
+        
+        <div id="kalkulacka" class="mb-24 scroll-mt-20">
+            <section class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12 items-stretch">
+                 <div class="mode-card active" data-mode="express">
+                    <div class="badge badge-yellow !text-yellow-800 !bg-yellow-200">Rychle <span class="hidden sm:inline">za 30 sekund</span></div>
+                    <h3 class="font-bold text-xl mb-3">Expresní scoring</h3>
+                    <ul class="space-y-2 text-sm text-gray-600 flex-grow">
+                        <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Okamžitý výpočet</li>
+                        <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Porovnání 19+ partnerů</li>
+                    </ul>
+                </div>
+                <div class="mode-card" data-mode="guided">
+                    <div class="badge badge-blue">Doporučeno</div>
+                    <h3 class="font-bold text-xl mb-3">Detailní analýza</h3>
+                    <ul class="space-y-2 text-sm text-gray-600 flex-grow">
+                        <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Komplexní scoring podle metodik</li>
+                        <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Stress test ČNB a DSTI</li>
+                    </ul>
+                </div>
+                <div class="mode-card mode-card-dark" data-mode="ai">
+                     <div class="badge badge-purple !text-purple-800 !bg-purple-200">AI Powered</div>
+                    <h3 class="font-bold text-xl mb-3 text-white">AI Hypoteční stratég</h3>
+                    <ul class="space-y-2 text-sm text-gray-300 flex-grow">
+                         <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-purple-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Interaktivní modelování splátek</li>
+                         <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-purple-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Predikce schválení 97%</li>
+                    </ul>
+                </div>
+            </section>
 
-### 3. **Kontaktní formulář - Funkční integrace** ✅
-- **Problém:** Formulář se neotevíral při žádosti o kontakt
-- **Řešení:**
-  - Chat automaticky otevře formulář při detekci klíčových slov
-  - Přidáno tlačítko pro konzultaci se specialistou
-  - Možnost vyplnění údajů přímo v chatu
+            <section id="content-container"></section>
+        </div>
+        
+        <section id="o-nas" class="my-24 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900">Proč si vybrat naši platformu?</h2>
+                <p class="mt-4 text-lg text-gray-600">Spojujeme to nejlepší z obou světů.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
+                     <div class="text-4xl mb-4">🤖</div>
+                    <h3 class="text-xl font-bold mb-2">Síla umělé inteligence</h3>
+                    <p class="text-gray-600">Naše AI v reálném čase analyzuje desítky parametrů a porovnává je s metodikami bank. Získáte tak okamžitý a přesný odhad vašich možností.</p>
+                </div>
+                <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
+                    <div class="text-4xl mb-4">🤝</div>
+                    <h3 class="text-xl font-bold mb-2">Lidský přístup specialistů</h3>
+                    <p class="text-gray-600">Technologie je skvělý pomocník, ale hypotéka je lidská záležitost. Naši zkušení specialisté jsou připraveni s vámi doladit detaily a vyjednat ty nejlepší podmínky.</p>
+                </div>
+                <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
+                    <div class="text-4xl mb-4">📈</div>
+                    <h3 class="text-xl font-bold mb-2">Data, kterým můžete věřit</h3>
+                    <p class="text-gray-600">Nejsme jen další srovnávač. Naše platforma pracuje s aktuálními sazbami a scoringovými modely, které reflektují skutečnou situaci na trhu.</p>
+                </div>
+            </div>
+        </section>
 
-### 4. **Rozšířená analýza fixace** ✅
-- **Problém:** Chyběly pokročilé informace o fixaci
-- **Řešení:**
-  - Výpočet celkové částky zaplacené během fixace
-  - Rozdělení na úroky a jistinu
-  - Scénáře "Co kdyby" pro změny sazeb
-  - Vizualizace úspor/nákladů při změně sazeb
+        <section id="jak-to-funguje" class="my-24 scroll-mt-20">
+             <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900">Jak to celé funguje?</h2>
+                <p class="mt-4 text-lg text-gray-600">Tři jednoduché kroky k vaší hypotéce.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center p-6">
+                    <div class="flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 text-blue-600 text-2xl font-bold mx-auto mb-4">1</div>
+                    <h3 class="text-xl font-bold mb-2">Zadejte parametry</h3>
+                    <p class="text-gray-600">Vyplňte několik základních údajů o sobě a nemovitosti, kterou chcete financovat. Zabere to jen chvilku.</p>
+                </div>
+                <div class="text-center p-6">
+                     <div class="flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 text-blue-600 text-2xl font-bold mx-auto mb-4">2</div>
+                    <h3 class="text-xl font-bold mb-2">Získejte analýzu</h3>
+                    <p class="text-gray-600">Naše AI okamžitě vyhodnotí vaši situaci, ukáže vám předběžné nabídky a odhadne šanci na schválení.</p>
+                </div>
+                 <div class="text-center p-6">
+                     <div class="flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 text-blue-600 text-2xl font-bold mx-auto mb-4">3</div>
+                    <h3 class="text-xl font-bold mb-2">Spojte se se specialistou</h3>
+                    <p class="text-gray-600">Pokud vám analýza dává smysl, jedním kliknutím se spojíte s naším specialistou, který s vámi vše dokončí. Zdarma a nezávazně.</p>
+                </div>
+            </div>
+        </section>
+        
+        <section id="partneri" class="my-24 scroll-mt-20">
+            <h3 class="text-2xl font-bold mb-8 text-gray-800 text-center">Spolupracujeme s celým trhem</h3>
+            <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
+                <div class="flex flex-wrap justify-center items-center gap-x-8 gap-y-4 text-gray-500 font-semibold">
+                    <span style="color: #E3001B;">Česká spořitelna</span>
+                    <span style="color: #0054A6;">ČSOB</span>
+                    <span style="color: #E2001A;">Komerční banka</span>
+                    <span style="color: #FFEC00; text-shadow: 0 0 1px #000;">Raiffeisenbank</span>
+                    <span style="color: #003F7D;">UniCredit Bank</span>
+                    <span style="color: #56BA4D;">MONETA</span>
+                    <span style="color: #E30613;">mBank</span>
+                    <span style="color: #A6CE39;">Fio banka</span>
+                    <span style="color: #009FE3;">Air Bank</span>
+                    <span style="color: #DE0201;">Banka CREDITAS</span>
+                    <span>Modrá pyramida</span>
+                    <span>ČMSS</span>
+                    <span>Raiffeisen stavební</span>
+                    <span>Buřinka</span>
+                    <span>...a další</span>
+                </div>
+            </div>
+        </section>
+        
+        <section id="kontakt" class="my-16 bg-gradient-to-r from-blue-50 to-indigo-50 p-8 md:p-12 rounded-2xl border-blue-200 border scroll-mt-20 hidden">
+             <div class="text-center max-w-2xl mx-auto">
+                <h2 class="text-3xl font-bold mb-2">Získejte osobní nabídku od specialisty</h2>
+                <p class="text-gray-600 mb-8">Naše služby jsou pro vás zcela zdarma. Ozveme se do 24 hodin.</p>
+                <form id="lead-form" class="space-y-4 text-left" name="lead-form" method="POST" data-netlify="true">
+                    <input type="hidden" name="form-name" value="lead-form" />
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><label for="name" class="form-label">Jméno a příjmení *</label><input type="text" id="name" name="name" required class="modern-input"></div>
+                        <div><label for="phone" class="form-label">Telefon *</label><input type="tel" id="phone" name="phone" required class="modern-input"></div>
+                    </div>
+                    <div><label for="email" class="form-label">E-mail *</label><input type="email" id="email" name="email" required class="modern-input"></div>
+                    <div><label for="note" class="form-label">Poznámka (nepovinné)</label><textarea id="note" name="note" rows="3" class="modern-input"></textarea></div>
+                     <div class="pt-2 text-center">
+                        <p class="text-xs text-gray-500 mb-4">Odesláním formuláře souhlasíte se zpracováním osobních údajů.</p>
+                        <button type="submit" id="submit-lead-btn" class="w-full md:w-auto nav-btn bg-green-600 hover:bg-green-700 text-lg">Odeslat nezávazně</button>
+                    </div>
+                </form>
+                <div id="form-success" class="hidden mt-6 text-center p-4 bg-green-100 text-green-800 rounded-lg">
+                    <h3 class="font-bold text-lg">Děkujeme!</h3>
+                    <p>Váš požadavek byl úspěšně odeslán. Brzy se vám ozveme.</p>
+                </div>
+             </div>
+        </section>
+    </main>
+    
+    <footer class="bg-gray-800 text-white">
+        <div class="container mx-auto px-6 py-8">
+            <div class="text-center text-sm text-gray-400">
+                <p>&copy; 2025 Hypoteky Ai. Všechna práva vyhrazena.</p>
+                <div class="mt-4">
+                    <a href="#" class="hover:underline">Ochrana osobních údajů</a>
+                    <span class="mx-2">|</span>
+                    <a href="#" class="hover:underline">Obchodní podmínky</a>
+                </div>
+            </div>
+        </div>
+    </footer>
 
-## 🔧 Technické změny
+    <!-- GDPR Cookie Banner -->
+    <div id="cookie-banner" class="hidden fixed bottom-0 left-0 right-0 bg-gray-900 text-white p-4 z-50 flex-wrap md:flex-nowrap justify-between items-center gap-4">
+        <p class="text-sm">Tato webová stránka používá soubory cookies k zajištění co nejlepšího zážitku. <a href="#" class="underline hover:text-blue-400">Více informací</a></p>
+        <button id="cookie-accept" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm whitespace-nowrap">Rozumím a souhlasím</button>
+    </div>
 
-### **script_improved.js**
-```javascript
-// Hlavní vylepšení:
-- getSidebarHTML() - kompletně přepracovaná funkce
-- calculateMonthlyPaymentForBalance() - nová pomocná funkce
-- handleChatMessageSend() - rozšířená logika pro tool calls
-- Vylepšená synchronizace dat mezi módy
-```
+    <script src="script.js?v=1.34" defer></script>
+</body>
+</html>
 
-### **chat_improved.js**
-```javascript
-// Hlavní vylepšení:
-- createSystemPrompt() - inteligentní AI prompty
-- Flexibilní odpovědi na dotazy o sazbách
-- Detekce kontaktních požadavků
-- Kontextové porozumění s konkrétními čísly
-```
-
-### **rates_improved.js**
-```javascript
-// Hlavní vylepšení:
-- calculateFixationAnalysis() - nová funkce pro analýzu fixace
-- Premium nabídka pro klienty s výbornou bonitou
-- Optimistické/pesimistické scénáře
-- Rozšířené faktory (vzdělání, věk, typ zaměstnání)
-```
-
-## 📊 Nové funkce v detailu
-
-### **1. Inteligentní analýza fixace**
-Zobrazuje:
-- Celkem zaplaceno za dobu fixace
-- Z toho úroky vs. jistina
-- Zbývající dluh po fixaci
-- Procento splacené jistiny
-- Predikce splátky při změně sazeb o ±1%
-
-### **2. Flexibilní AI odpovědi**
-- Rozsah sazeb 3.89% - 5.49% podle situace
-- Zmínka o individuálních nabídkách
-- Povzbuzení k osobní konzultaci
-- Použití emoji pro lepší UX
-
-### **3. Vylepšený lead generation**
-- Automatické otevření formuláře
-- Chat formulář pro rychlé zadání kontaktu
-- Výrazné CTA tlačítko v sidebaru
-
-## 🚀 Jak nasadit změny
-
-1. **Nahraďte soubory:**
-   - `script.js` → `script_improved.js`
-   - `netlify/functions/chat.js` → `chat_improved.js`
-   - `netlify/functions/rates.js` → `rates_improved.js`
-
-2. **Ověřte environment variables:**
-   ```bash
-   GEMINI_API_KEY=your_api_key
-   ```
-
-3. **Deploy na Netlify:**
-   ```bash
-   git add .
-   git commit -m "Implement AI improvements and fixation analysis"
-   git push origin main
-   ```
-
-## ✨ Výhody pro uživatele
-
-1. **Přesnější informace** - AI poskytuje reálné rozsahy sazeb
-2. **Lepší rozhodování** - Detailní analýza fixace pomáhá pochopit dlouhodobé náklady
-3. **Rychlejší kontakt** - Snadnější cesta ke specialistovi
-4. **Příjemnější komunikace** - Přátelštější AI s emoji
-5. **Komplexní analýza** - Všechny důležité metriky na jednom místě
-
-## 📈 Očekávané výsledky
-
-- **+30% konverze** díky lepší AI komunikaci
-- **+25% leadů** díky snadnějšímu kontaktu
-- **+40% engagement** díky interaktivnímu sidebaru
-- **Vyšší důvěra** díky transparentní analýze
-
-## 🔮 Další možná vylepšení
-
-1. **A/B testing** různých AI promptů
-2. **Historie chatu** pro returning visitors
-3. **Email notifikace** při změně sazeb
-4. **PDF export** analýzy
-5. **Integrace s CRM** pro automatický lead management
-
----
-
-**Vytvořeno:** Leden 2025
-**Verze:** 2.0
-**Status:** Připraveno k nasazení

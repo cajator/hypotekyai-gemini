@@ -77,7 +77,7 @@ const calculateFixationAnalysis = (loanAmount, rate, loanTerm, fixation) => {
     const remainingMonths = remainingYears * 12;
     
     // Realistické scénáře
-    const optimisticRate = Math.max(3.99, rate - 0.5); // Pokles max o 0.5%
+    const optimisticRate = Math.max(3.59, rate - 0.6); // Pokles max o 0.5%
     const optimisticPayment = remainingMonths > 0 ? 
         calculateMonthlyPayment(remainingBalance, optimisticRate, remainingYears) : 0;
     

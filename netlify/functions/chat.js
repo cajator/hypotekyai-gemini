@@ -1,4 +1,4 @@
-// netlify/functions/chat.js - v28.0 - Final Polish & Robust AI Logic
+// netlify/functions/chat.js - v30.0 - Final Polish & Robust AI Logic
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const handler = async (event) => {
@@ -47,10 +47,10 @@ function createSystemPrompt(userMessage, context) {
     const hasContext = context && context.calculation && context.calculation.offers && context.calculation.offers.length > 0;
     const contextString = hasContext ? `Uživatel MÁ namodelovanou hypotéku. Jeho data: ${JSON.stringify(context.calculation, null, 2)}` : 'Uživatel zatím nic nepočítal.';
 
-    let prompt = `Jsi Hypoteční Ai, přátelský, stručný a profesionální asistent.
+    let prompt = `Jsi Hypoteční Ai, přátelský, a profesionální asistent.
     
     PRAVIDLA:
-    - TVOJE ODPOVĚDI JSOU VŽDY EXTRÉMNĚ STRUČNÉ (MAX 1-2 VĚTY).
+    - TVOJE ODPOVĚDI JSOU VŽDY STRUČNÉ, ALE UŽITEČNÉ (CCA 2-4 VĚTY).
     - Vždy dodržuj požadovaný formát odpovědi (JSON nebo text).
     - Pokud je dotaz nesmyslný nebo mimo téma hypoték, odpověz jednou z těchto frází: "Tomuto dotazu bohužel nerozumím. Zkuste to prosím jinak." nebo "Specializuji se pouze na hypotéky. Rád vám pomohu s financováním bydlení."
     
@@ -58,14 +58,15 @@ function createSystemPrompt(userMessage, context) {
     UŽIVATELŮV DOTAZ: "${userMessage}"`;
 
     if (userMessage === "Proveď úvodní analýzu mé situace.") {
-        return `Uživatel si zobrazil výsledky a chce úvodní analýzu. Vytvoř **velmi stručné** shrnutí na **MAXIMÁLNĚ dvě věty**.
-        Příklad: "Vaše celkové skóre je velmi dobré. Našli jsme pro vás nabídku s výbornou sazbou a měsíční splátkou 21 535 Kč."
-        Odpověz POUZE JSON objektem: {"tool":"initialAnalysis","response":"Tvůj vygenerovaný text."}`;
+        return `Uživatel si zobrazil výsledky a chce úvodní analýzu. Vytvoř **stručné, ale informativní** shrnutí na **2 až 3 věty**.
+        - Zhodnoť celkové skóre a okomentuj nejlepší nabídku.
+        - Příklad: "Vaše celkové skóre ${context.calculation.approvability.total}% je solidní a dává Vám dobrou šanci na schválení. Na základě Vašich údajů jsme našli nabídku s měsíční splátkou ${context.calculation.selectedOffer.monthlyPayment.toLocaleString('cs-CZ')} Kč, což je za současných podmínek velmi konkurenceschopné."
+        - Odpověz POUZE JSON objektem: {"tool":"initialAnalysis","response":"Tvůj vygenerovaný text."}`;
     }
 
     prompt += `
         TVOJE ÚKOLY:
-        1.  **Běžná konverzace:** Pokud uživatel nemá data, povzbuď ho, ať si hypotéku namodeluje v panelu vpravo. Příklad: "Jistě. Nejprve prosím zadejte základní parametry do panelu vpravo."
+        1.  **Běžná konverzace:** Pokud uživatel nemá data, povzbuď ho, ať si hypotéku namodeluje v panelu vpravo. Příklad: "Jistě. Nejprve prosím zadejte základní parametry do panelu vpravo, abych Vám mohl spočítat konkrétní čísla."
         2.  **Rozpoznání modelování:** Pokud dotaz obsahuje parametry hypotéky (např. "splátka na 5 mega na 20 let"), odpověz POUZE JSON pro přepočet. Příklad: {"tool":"modelScenario","params":{"loanAmount":5000000,"propertyValue":6250000,"loanTerm":20}}
         3.  **Rozpoznání žádosti o specialistu:** Pokud se uživatel ptá na "kontakt", "specialistu", odpověz POUZE JSON: {"tool":"startContactForm","response":"Rád vás spojím s naším specialistou. Můžete mi prosím napsat vaše celé jméno a telefonní číslo? <br><br> (Nebo můžete využít [standardní formulář](#kontakt).)"}
         

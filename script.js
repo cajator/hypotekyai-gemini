@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const DOMElements = {
         contentContainer: document.getElementById('content-container'),
         modeCards: document.querySelectorAll('.mode-card'),
+        leadFormContainer: document.getElementById('kontakt'),
         leadForm: document.getElementById('lead-form'),
         mobileMenuButton: document.getElementById('mobile-menu-button'),
         mobileMenu: document.getElementById('mobile-menu'),
@@ -49,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     const createSelect = (id, label, options, selectedValue, containerClass = '') => {
         const optionsHTML = Object.entries(options).map(([key, val]) => `<option value="${key}" ${key === selectedValue ? 'selected' : ''}>${val}</option>`).join('');
-        return `<div class="${containerClass}" id="${id}-group"><label for="${id}" class="form-label">${label}</label><select id="${id}" name="${id}" class="modern-select">${optionsHTML}</select></div>`;
+        return `<div class="${containerClass}"><label for="${id}" class="form-label">${label}</label><select id="${id}" name="${id}" class="modern-select">${optionsHTML}</select></div>`;
     };
     
     // --- DYNAMIC CONTENT & LAYOUTS ---
@@ -57,10 +58,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const getAiLayout = () => `<div class="grid ai-layout-grid gap-8 items-start"><div class="bg-white rounded-2xl shadow-xl border h-[75vh] flex flex-col"><div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4"></div><div id="ai-suggestions" class="p-4 border-t"></div><div class="p-4 border-t flex items-center space-x-2"><input type="text" id="chat-input" class="modern-input" placeholder="Zadejte svůj dotaz..."><button id="chat-send" class="nav-btn" data-action="send-chat">Odeslat</button></div></div><div id="sidebar-container" class="lg:sticky top-28 space-y-6"></div></div>`;
     const getSidebarHTML = () => { 
         if (state.calculation.offers && state.calculation.offers.length > 0) {
-            // Sidebar with analysis
             return `<div id="ai-analysis-container" class="bg-blue-50 p-6 rounded-2xl border border-blue-200 space-y-4"><h3 class="text-xl font-bold">Analýza vaší situace</h3><div id="ai-analysis-content" class="text-gray-700"><div class="loading-spinner-blue mx-auto"></div><p class="text-center">AI analyzuje vaše data...</p></div></div><div class="bg-gray-50 p-6 rounded-2xl border"><h4 class="font-bold mb-2">Graf splácení</h4><div id="sidebar-chart-container" class="relative h-48"><canvas id="sidebarChart"></canvas></div></div>`;
         } else {
-            // Sidebar with mini-calculator
             return `<div class="bg-blue-50 p-6 rounded-2xl border border-blue-200"><h3 class="text-xl font-bold mb-4">Namodelujte si hypotéku</h3><div id="ai-calculator" class="space-y-4">${createSlider('loanAmount','Chci si půjčit',state.formData.loanAmount,200000,20000000,100000)}${createSlider('propertyValue','Hodnota nemovitosti',state.formData.propertyValue,500000,30000000,100000)}<div class="text-center font-bold text-lg text-green-600" id="ltv-display-ai">Aktuální LTV: ${Math.round((state.formData.loanAmount / state.formData.propertyValue) * 100)}%</div>${createSlider('loanTerm','Délka splatnosti',state.formData.loanTerm,5,30,1)}<button class="nav-btn w-full mt-2" data-action="calculate-from-ai">Spočítat</button></div></div>`;
         }
     };
@@ -73,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         return getCalculatorLayout(`<div id="guided-form" class="space-y-8">
             <div><h3 class="form-section-heading">Parametry úvěru a nemovitosti</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 items-start">
+                <div class="form-grid">
                     ${createSelect('purpose', 'Účel hypotéky', purposes, state.formData.purpose)}
                     ${createSelect('propertyType', 'Typ nemovitosti', propertyTypes, state.formData.propertyType)}
                     ${createSlider('propertyValue','Hodnota nemovitosti po dokončení',state.formData.propertyValue,500000,30000000,100000, 'col-span-2 md:col-span-1')}
@@ -85,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
             <div><h3 class="form-section-heading">Vaše bonita a osobní údaje</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <div class="form-grid">
                     ${createSelect('employment', 'Typ příjmu', employments, state.formData.employment)}
                     ${createSelect('education', 'Nejvyšší dosažené vzdělání', educations, state.formData.education)}
                     ${createSlider('income','Čistý měsíční příjem',state.formData.income,15000,300000,1000)}
@@ -105,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         container.classList.remove('hidden');
         if (!offers || offers.length === 0) {
-            container.innerHTML = `<div class="text-center bg-red-50 p-8 rounded-lg mt-8"><h3 class="text-2xl font-bold text-red-800 mb-2">Dle zadaných parametrů to nevychází</h3><p class="text-red-700">Zkuste upravit parametry, nebo se <a href="#kontakt" class="font-bold underline nav-link scroll-to">spojte s naším specialistou</a>.</p></div>`;
+            container.innerHTML = `<div class="text-center bg-red-50 p-8 rounded-lg mt-8"><h3 class="text-2xl font-bold text-red-800 mb-2">Dle zadaných parametrů to nevychází</h3><p class="text-red-700">Zkuste upravit parametry, nebo se <a href="#kontakt" data-action="show-lead-form" class="font-bold underline nav-link scroll-to">spojte s naším specialistou</a>.</p></div>`;
             return;
         }
 
@@ -181,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
             bubble.className = sender === 'ai' ? 'chat-bubble-ai' : 'chat-bubble-user';
             // Simple markdown for bold text and links
             let processedMessage = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            processedMessage = processedMessage.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" class="font-bold text-blue-600 underline" target="_blank">$1</a>');
+             processedMessage = processedMessage.replace(/\[(.*?)\]\((#.*?)\)/g, '<a href="$2" data-action="scroll-to-chat-link" class="font-bold text-blue-600 underline">$1</a>');
             bubble.innerHTML = processedMessage;
         }
         container.appendChild(bubble);
@@ -299,9 +298,23 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const handleClick = async (e) => {
-        const target = e.target.closest('[data-action], .offer-card, .suggestion-btn, [data-mode], .scroll-to');
+        let target = e.target.closest('[data-action], .offer-card, .suggestion-btn, [data-mode], .scroll-to');
         if (!target) return;
         
+        // Handle special case for links inside chat
+        if (target.dataset.action === 'scroll-to-chat-link') {
+            const href = target.getAttribute('href');
+            if (href) {
+                e.preventDefault();
+                const actualTarget = document.querySelector(href);
+                if (actualTarget.dataset.action === 'show-lead-form') {
+                    DOMElements.leadFormContainer.classList.remove('hidden');
+                }
+                scrollToTarget(href);
+            }
+            return;
+        }
+
         const { action, mode, suggestion, target: targetId } = target.dataset;
 
         if (targetId) {
@@ -317,7 +330,10 @@ document.addEventListener('DOMContentLoaded', () => {
             await calculateRates(null, true);
             switchMode('ai', true);
         }
-        else if (action === 'show-lead-form') scrollToTarget('#kontakt');
+        else if (action === 'show-lead-form') {
+            DOMElements.leadFormContainer.classList.remove('hidden');
+            scrollToTarget('#kontakt');
+        }
         else if (action === 'discuss-with-ai') switchMode('ai', true);
         else if (action === 'send-chat' || suggestion) {
             const input = document.getElementById('chat-input');
@@ -354,9 +370,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleChatMessageSend = async (message) => {
         state.isAiTyping = true;
         addChatMessage('', 'ai-typing');
-        generateAISuggestions(); // Refresh suggestions to show context
+        generateAISuggestions();
         
-        const { chart, ...cleanContext } = state; // Remove chart object from context
+        const { chart, ...cleanContext } = state;
         try {
             const response = await fetch(CONFIG.API_CHAT_ENDPOINT, { 
                 method: 'POST', 
@@ -371,7 +387,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 state.formData = {...state.formData, ...(data.params || {})};
                 addChatMessage('Rozumím, moment. Počítám nový scénář...', 'ai');
                 await calculateRates(null, true);
-                switchMode('ai', true); // Re-render AI view with new data
+                switchMode('ai', true);
             }
             else if (data.tool === 'startContactForm') {
                 addChatMessage(data.response, 'ai');
@@ -419,7 +435,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                  addChatMessage('Vítejte v AI Stratégovi. Vpravo vidíte analýzu vaší situace. Na co se podíváme dál?', 'ai');
                  handleChatMessageSend("Proveď úvodní analýzu mé situace.");
-                 setTimeout(() => renderSidebarChart(), 50);
+                 setTimeout(() => renderSidebarChart(), 100); // Added small delay
             }
             generateAISuggestions();
             document.getElementById('chat-input')?.addEventListener('keydown', handleChatEnter);

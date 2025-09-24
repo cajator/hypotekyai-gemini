@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
         chatFormState: 'idle', 
         chatFormData: {},
         chatHistory: [],
+        mobileSidebarOpen: false,
         formData: {
             propertyValue: 5000000, loanAmount: 4000000,
             income: 70000, liabilities: 5000, age: 35, children: 1,
@@ -48,37 +49,86 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     
+    const isMobile = () => window.innerWidth < 768;
+    const isTablet = () => window.innerWidth >= 768 && window.innerWidth < 1024;
+    
     // --- COMPONENT FACTORIES ---
     const createSlider = (id, label, value, min, max, step, containerClass = '') => {
         const suffix = (id.includes('Term') || id.includes('age') || id.includes('children') || id.includes('fixation')) ? ' let' : ' Kč';
-        return `<div class="${containerClass}" id="${id}-group"><div class="flex justify-between items-center mb-1"><label for="${id}" class="form-label mb-0">${label}</label><div class="flex items-center"><input type="text" id="${id}-input" value="${formatNumber(value, false)}" class="slider-value-input"><span class="font-semibold text-gray-500">${suffix}</span></div></div><div class="slider-container"><input type="range" id="${id}" name="${id}" min="${min}" max="${max}" value="${value}" step="${step}" class="slider-input"></div></div>`;
+        return `<div class="${containerClass}" id="${id}-group">
+            <div class="flex justify-between items-center mb-1">
+                <label for="${id}" class="form-label mb-0">${label}</label>
+                <div class="flex items-center">
+                    <input type="text" id="${id}-input" value="${formatNumber(value, false)}" class="slider-value-input">
+                    <span class="font-semibold text-gray-500">${suffix}</span>
+                </div>
+            </div>
+            <div class="slider-container">
+                <input type="range" id="${id}" name="${id}" min="${min}" max="${max}" value="${value}" step="${step}" class="slider-input">
+            </div>
+        </div>`;
     };
+    
     const createSelect = (id, label, options, selectedValue, containerClass = '') => {
-        const optionsHTML = Object.entries(options).map(([key, val]) => `<option value="${key}" ${key === selectedValue ? 'selected' : ''}>${val}</option>`).join('');
-        return `<div class="${containerClass}"><label for="${id}" class="form-label">${label}</label><select id="${id}" name="${id}" class="modern-select">${optionsHTML}</select></div>`;
+        const optionsHTML = Object.entries(options).map(([key, val]) => 
+            `<option value="${key}" ${key === selectedValue ? 'selected' : ''}>${val}</option>`
+        ).join('');
+        return `<div class="${containerClass}">
+            <label for="${id}" class="form-label">${label}</label>
+            <select id="${id}" name="${id}" class="modern-select">${optionsHTML}</select>
+        </div>`;
     };
     
     // --- DYNAMIC CONTENT & LAYOUTS ---
-    const getCalculatorLayout = (formHTML) => `<div class="bg-white p-6 md:p-12 rounded-2xl shadow-xl border">${formHTML}</div>`;
+    const getCalculatorLayout = (formHTML) => 
+        `<div class="bg-white p-4 md:p-6 lg:p-12 rounded-2xl shadow-xl border">${formHTML}</div>`;
     
-    const getAiLayout = () => `
-        <div class="grid ai-layout-grid gap-8 items-start">
-            <div class="bg-white rounded-2xl shadow-xl border h-[75vh] flex flex-col">
-                <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
-                <div id="ai-suggestions" class="p-4 border-t"></div>
-                <div class="p-4 border-t flex items-center space-x-2">
-                    <input type="text" id="chat-input" class="modern-input" placeholder="Zadejte svůj dotaz...">
-                    <button id="chat-send" class="nav-btn" data-action="send-chat">Odeslat</button>
+    const getAiLayout = () => {
+        if (isMobile()) {
+            return `
+                <div class="flex flex-col h-[calc(100vh-120px)]">
+                    <div class="bg-white flex-1 flex flex-col">
+                        <div id="chat-messages" class="flex-1 overflow-y-auto p-3 space-y-3"></div>
+                        <div id="ai-suggestions" class="p-3 border-t overflow-x-auto"></div>
+                        <div class="p-3 border-t flex items-center space-x-2">
+                            <input type="text" id="chat-input" class="modern-input flex-1" placeholder="Zadejte svůj dotaz..." style="font-size: 16px;">
+                            <button id="chat-send" class="nav-btn px-4 py-3" data-action="send-chat">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    ${state.calculation.selectedOffer ? `
+                    <button id="mobile-sidebar-toggle" class="fixed bottom-20 right-4 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center z-40" data-action="toggle-mobile-sidebar">
+                        <span class="text-2xl">📊</span>
+                    </button>
+                    ` : ''}
+                    
+                    <div id="mobile-sidebar-overlay" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50" data-action="close-mobile-sidebar">
+                        <div id="sidebar-container" class="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 max-h-[70vh] overflow-y-auto" onclick="event.stopPropagation()"></div>
+                    </div>
+                </div>`;
+        }
+        
+        return `
+            <div class="grid ai-layout-grid gap-8 items-start">
+                <div class="bg-white rounded-2xl shadow-xl border h-[75vh] flex flex-col">
+                    <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
+                    <div id="ai-suggestions" class="p-4 border-t"></div>
+                    <div class="p-4 border-t flex items-center space-x-2">
+                        <input type="text" id="chat-input" class="modern-input" placeholder="Zadejte svůj dotaz...">
+                        <button id="chat-send" class="nav-btn" data-action="send-chat">Odeslat</button>
+                    </div>
                 </div>
-            </div>
-            <div id="sidebar-container" class="lg:sticky top-28 space-y-6"></div>
-        </div>`;
+                <div id="sidebar-container" class="lg:sticky top-28 space-y-6"></div>
+            </div>`;
+    };
     
     const getSidebarHTML = () => { 
-        // AI Sidebar - contextual info based on calculation state
         if (state.calculation.offers && state.calculation.offers.length > 0 && state.calculation.selectedOffer) {
             const { loanAmount, propertyValue, loanTerm } = state.formData;
-            const ltv = propertyValue > 0 ? Math.round((loanAmount / propertyValue) * 100) : 0;
             const monthlyPayment = state.calculation.selectedOffer.monthlyPayment;
             const rate = state.calculation.selectedOffer.rate;
             
@@ -105,37 +155,37 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
 
+                    ${state.chatHistory.length > 0 ? `
                     <div class="bg-yellow-50 p-3 rounded-lg mb-4 border border-yellow-200">
-                        <p class="text-sm font-semibold text-yellow-800 mb-2">💡 Co jsme probrali:</p>
+                        <p class="text-sm font-semibold text-yellow-800 mb-1">💡 Co jsme probrali:</p>
                         <div class="text-xs text-gray-700 space-y-1">
-                            ${state.chatHistory.slice(-3).filter(msg => msg.sender === 'user').map(msg => 
+                            ${state.chatHistory.slice(-2).filter(msg => msg.sender === 'user').map(msg => 
                                 `<div class="flex items-start">
                                     <span class="text-blue-600 mr-1">›</span>
-                                    <span class="line-clamp-1">${msg.text}</span>
+                                    <span class="line-clamp-1">${msg.text.substring(0, 40)}...</span>
                                 </div>`
                             ).join('')}
                         </div>
                     </div>
+                    ` : ''}
 
                     <button class="nav-btn bg-green-600 hover:bg-green-700 text-white w-full" data-action="show-lead-form">
                         📞 Domluvit schůzku
                     </button>
                 </div>
 
+                ${state.calculation.fixationDetails ? `
                 <div class="bg-white p-4 rounded-xl border">
-                    <h4 class="font-bold text-sm mb-3">🎯 Rychlá analýza</h4>
-                    <div class="text-xs text-gray-700 space-y-1">
-                        <p>Analyzuji vaši situaci...</p>
-                        ${state.calculation.fixationDetails ? `
-                            <div class="mt-2 p-2 bg-gray-50 rounded">
-                                <strong>Tip:</strong> Za ${state.formData.fixation} let zaplatíte ${formatNumber(state.calculation.fixationDetails.totalInterestForFixation)} na úrocích.
-                                <a href="#" class="text-blue-600 underline text-xs" data-action="ask-about-fixation">Zeptat se na detaily</a>
-                            </div>
-                        ` : ''}
+                    <h4 class="font-bold text-sm mb-2">🎯 Rychlá analýza</h4>
+                    <div class="text-xs text-gray-700">
+                        <p><strong>Tip:</strong> Za ${state.formData.fixation} let zaplatíte ${formatNumber(state.calculation.fixationDetails.totalInterestForFixation)} na úrocích.</p>
+                        <button class="text-blue-600 underline text-xs mt-1" data-action="ask-about-fixation">
+                            Zeptat se na detaily
+                        </button>
                     </div>
-                </div>`;
+                </div>
+                ` : ''}`;
         } else {
-            // Pre-calculation state - show quick questions
             return `
                 <div class="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-2xl border border-purple-200">
                     <h3 class="text-xl font-bold mb-4 flex items-center">
@@ -149,23 +199,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         </button>
                         <button class="w-full text-left p-3 bg-white rounded-lg hover:shadow-md transition-shadow text-sm"
                                 data-quick-question="Jaký je rozdíl mezi fixací na 5 a 10 let?">
-                            <span class="text-purple-600 font-semibold">→</span> Jaký je rozdíl mezi fixací na 5 a 10 let?
+                            <span class="text-purple-600 font-semibold">→</span> Rozdíl mezi fixací 5 a 10 let?
                         </button>
                         <button class="w-full text-left p-3 bg-white rounded-lg hover:shadow-md transition-shadow text-sm"
                                 data-quick-question="Můžu dostat hypotéku jako OSVČ?">
-                            <span class="text-purple-600 font-semibold">→</span> Můžu dostat hypotéku jako OSVČ?
-                        </button>
-                        <button class="w-full text-left p-3 bg-white rounded-lg hover:shadow-md transition-shadow text-sm"
-                                data-quick-question="Co všechno potřebuju k vyřízení?">
-                            <span class="text-purple-600 font-semibold">→</span> Co všechno potřebuju k vyřízení?
+                            <span class="text-purple-600 font-semibold">→</span> Hypotéka pro OSVČ?
                         </button>
                     </div>
 
-                    <div class="border-t pt-4">
-                        <button class="nav-btn bg-purple-600 hover:bg-purple-700 w-full text-sm" data-action="go-to-calculator">
-                            📊 Spočítat hypotéku
-                        </button>
-                    </div>
+                    <button class="nav-btn bg-purple-600 hover:bg-purple-700 w-full text-sm" data-action="go-to-calculator">
+                        📊 Spočítat hypotéku
+                    </button>
                 </div>`;
         }
     };
@@ -200,7 +244,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${createSlider('landValue','Hodnota pozemku (u výstavby)',state.formData.landValue,0,10000000,50000, 'col-span-2 md:col-span-1 hidden')}
                     <div class="col-span-2 md:col-span-1"></div>
                     ${createSlider('loanAmount','Požadovaná výše úvěru',state.formData.loanAmount,200000,20000000,100000, 'col-span-2')}
-                    <div class="col-span-2 text-center font-bold text-lg text-green-600" id="ltv-display">Aktuální LTV: ${Math.round((state.formData.loanAmount / state.formData.propertyValue) * 100)}%</div>
+                    <div class="col-span-2 text-center font-bold text-lg text-green-600" id="ltv-display">
+                        Aktuální LTV: ${Math.round((state.formData.loanAmount / state.formData.propertyValue) * 100)}%
+                    </div>
                     ${createSlider('loanTerm','Délka splatnosti',state.formData.loanTerm,5,30,1)}
                     ${createSlider('fixation','Délka fixace',state.formData.fixation,3,10,1)}
                 </div>
@@ -232,7 +278,12 @@ document.addEventListener('DOMContentLoaded', () => {
         
         container.classList.remove('hidden');
         if (!offers || offers.length === 0) {
-            container.innerHTML = `<div class="text-center bg-red-50 p-8 rounded-lg mt-8"><h3 class="text-2xl font-bold text-red-800 mb-2">Dle zadaných parametrů to nevychází</h3><p class="text-red-700">Zkuste upravit parametry, nebo se <a href="#kontakt" data-action="show-lead-form" class="font-bold underline nav-link scroll-to">spojte s naším specialistou</a>.</p></div>`;
+            container.innerHTML = `<div class="text-center bg-red-50 p-8 rounded-lg mt-8">
+                <h3 class="text-2xl font-bold text-red-800 mb-2">Dle zadaných parametrů to nevychází</h3>
+                <p class="text-red-700">Zkuste upravit parametry, nebo se 
+                    <a href="#kontakt" data-action="show-lead-form" class="font-bold underline nav-link scroll-to">spojte s naším specialistou</a>.
+                </p>
+            </div>`;
             return;
         }
 
@@ -248,7 +299,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>`).join('');
 
-        // Score display
         const scoreHTML = (label, value, color, icon) => `
             <div class="bg-white p-3 rounded-lg">
                 <div class="flex items-center justify-between mb-2">
@@ -272,7 +322,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
         const allTipsHTML = (smartTip ? [smartTip] : []).concat(tips || []).map(tipHTML).join('');
 
-        // Main results layout - Fixation analysis integrated with offers
         container.innerHTML = `
             <div>
                 <h3 class="text-3xl font-bold mb-6">Našli jsme pro vás tyto nabídky:</h3>
@@ -320,7 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 
                 <div class="space-y-6">
-                    <!-- Fixation Analysis integrated here -->
+                    <!-- Fixation Analysis -->
                     ${fixationDetails ? `
                         <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-2xl border border-green-200 shadow-lg">
                             <h4 class="text-xl font-bold mb-4 flex items-center">
@@ -353,7 +402,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <h5 class="font-bold text-sm mb-2 flex items-center">
                                     <span class="text-lg mr-1">💡</span> Co kdyby klesly sazby?
                                 </h5>
-                                <p class="text-xs text-gray-600 mb-2">Pokud by po ${state.formData.fixation} letech klesla sazba na ${fixationDetails.futureScenario.optimistic.rate.toFixed(2)}%:</p>
+                                <p class="text-xs text-gray-600 mb-2">
+                                    Pokud by po ${state.formData.fixation} letech klesla sazba na ${fixationDetails.futureScenario.optimistic.rate.toFixed(2)}%:
+                                </p>
                                 <div class="flex justify-between items-center">
                                     <span class="text-sm">Nová splátka:</span>
                                     <strong class="text-green-600 text-lg">${formatNumber(fixationDetails.futureScenario.optimistic.newMonthlyPayment)}</strong>
@@ -413,8 +464,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 ] 
             }, 
             options: { 
-                responsive: true, maintainAspectRatio: false, 
-                scales: { x: { stacked: true }, y: { stacked: true, ticks: { display: false } } }, 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                scales: { 
+                    x: { stacked: true }, 
+                    y: { stacked: true, ticks: { display: false } } 
+                }, 
                 plugins: { legend: { position: 'top' } } 
             } 
         }); 
@@ -426,7 +481,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const container = document.getElementById('chat-messages');
         if (!container) return;
         
-        // Store in history
         if (sender !== 'ai-typing') {
             state.chatHistory.push({ text: message, sender: sender, timestamp: Date.now() });
         }
@@ -446,7 +500,6 @@ document.addEventListener('DOMContentLoaded', () => {
         container.appendChild(bubble);
         container.scrollTop = container.scrollHeight;
         
-        // Update sidebar if in AI mode
         if (state.mode === 'ai') {
             const sidebarContainer = document.getElementById('sidebar-container');
             if(sidebarContainer) sidebarContainer.innerHTML = getSidebarHTML();
@@ -456,25 +509,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const generateAISuggestions = () => {
         const container = document.getElementById('ai-suggestions');
         if (!container) return;
-        let suggestions = [];
         
+        let suggestions = [];
         if (state.calculation.offers && state.calculation.offers.length > 0) {
-            suggestions = [
-                "Co přesně ovlivnilo mé skóre?",
-                "Můžu dostat ještě lepší úrok?", 
-                "Jak rychle lze hypotéku vyřídit?",
-                "Chci mluvit se specialistou"
-            ];
+            suggestions = ["Co ovlivnilo skóre?", "Lepší úrok?", "Jak rychle?", "Specialista"];
         } else {
-            suggestions = [
-                "Co přesně ovlivnilo mé skóre?",
-                "Můžu dostat ještě lepší úrok?",
-                "Jak rychle lze hypotéku vyřídit?", 
-                "Chci mluvit se specialistou"
-            ];
+            suggestions = ["Spočítat hypotéku", "Aktuální sazby?", "Co potřebuji?", "Kontakt"];
         }
         
-        container.innerHTML = `<div class="flex flex-wrap gap-2">${suggestions.map(s => `<button class="suggestion-btn" data-suggestion="${s}">${s}</button>`).join('')}</div>`;
+        const suggestionsHTML = isMobile() 
+            ? `<div class="flex gap-2 overflow-x-auto pb-1">${suggestions.map(s => 
+                `<button class="suggestion-btn whitespace-nowrap flex-shrink-0" data-suggestion="${s}">${s}</button>`
+              ).join('')}</div>`
+            : `<div class="flex flex-wrap gap-2">${suggestions.map(s => 
+                `<button class="suggestion-btn" data-suggestion="${s}">${s}</button>`
+              ).join('')}</div>`;
+            
+        container.innerHTML = suggestionsHTML;
     };
 
     const calculateAmortization = (p, r, t, year) => {
@@ -493,7 +544,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const calculateRates = async (button = null, isSilent = false) => {
         if (!isSilent) {
             const spinner = button?.querySelector('.loading-spinner-white');
-            if (button) { button.disabled = true; spinner?.classList.remove('hidden'); }
+            if (button) { 
+                button.disabled = true; 
+                spinner?.classList.remove('hidden'); 
+            }
             const container = document.getElementById('results-container');
             if(container) { 
                 container.innerHTML = `<div class="text-center p-8"><div class="loading-spinner-blue"></div><p>Počítám nejlepší nabídky...</p></div>`; 
@@ -510,7 +564,10 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Chyba při načítání sazeb:', error);
             if (!isSilent) { 
                 const container = document.getElementById('results-container'); 
-                if(container) container.innerHTML = `<div class="text-center bg-red-50 p-8 rounded-lg"><h3 class="text-2xl font-bold text-red-800 mb-2">Chyba při výpočtu</h3><p class="text-red-700">Zkuste to prosím znovu.</p></div>`;
+                if(container) container.innerHTML = `<div class="text-center bg-red-50 p-8 rounded-lg">
+                    <h3 class="text-2xl font-bold text-red-800 mb-2">Chyba při výpočtu</h3>
+                    <p class="text-red-700">Zkuste to prosím znovu.</p>
+                </div>`;
             }
             return false;
         } finally {
@@ -582,6 +639,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    const toggleMobileSidebar = () => {
+        const overlay = document.getElementById('mobile-sidebar-overlay');
+        if (!overlay) return;
+        
+        if (state.mobileSidebarOpen) {
+            overlay.classList.add('hidden');
+            document.body.style.overflow = '';
+        } else {
+            overlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        state.mobileSidebarOpen = !state.mobileSidebarOpen;
+    };
+
     const handleClick = async (e) => {
         let target = e.target.closest('[data-action], .offer-card, .suggestion-btn, [data-mode], .scroll-to, [data-quick-question]');
         if (!target) return;
@@ -589,7 +660,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const { action, mode, suggestion, target: targetId } = target.dataset;
         const quickQuestion = target.dataset.quickQuestion;
 
+        if (action === 'toggle-mobile-sidebar') {
+            toggleMobileSidebar();
+            return;
+        }
+        
+        if (action === 'close-mobile-sidebar') {
+            toggleMobileSidebar();
+            return;
+        }
+
         if (quickQuestion) {
+            if (isMobile()) toggleMobileSidebar();
             document.getElementById('chat-input').value = quickQuestion;
             handleChatMessageSend(quickQuestion);
             return;
@@ -598,20 +680,25 @@ document.addEventListener('DOMContentLoaded', () => {
         if (targetId) {
             e.preventDefault();
             if (action === 'show-lead-form-direct') {
-                 DOMElements.leadFormContainer.classList.remove('hidden');
+                DOMElements.leadFormContainer.classList.remove('hidden');
             }
             scrollToTarget(targetId);
             if (DOMElements.mobileMenu.classList.contains('hidden') === false) {
-                 DOMElements.mobileMenu.classList.add('hidden');
+                DOMElements.mobileMenu.classList.add('hidden');
             }
         }
         else if (mode) switchMode(mode);
         else if (action === 'calculate') calculateRates(target);
-        else if (action === 'go-to-calculator') switchMode('express');
+        else if (action === 'go-to-calculator') {
+            if (isMobile()) toggleMobileSidebar();
+            switchMode('express');
+        }
         else if (action === 'ask-about-fixation') {
+            if (isMobile()) toggleMobileSidebar();
             handleChatMessageSend("Řekni mi více o analýze fixace");
         }
         else if (action === 'show-lead-form') {
+            if (isMobile()) toggleMobileSidebar();
             DOMElements.leadFormContainer.classList.remove('hidden');
             scrollToTarget('#kontakt');
         }
@@ -644,7 +731,11 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.disabled = true;
         btn.textContent = 'Odesílám...';
         try {
-            await fetch("/", { method: "POST", headers: { "Content-Type": "application/x-form-urlencoded" }, body: new URLSearchParams(new FormData(form)).toString() });
+            await fetch("/", { 
+                method: "POST", 
+                headers: { "Content-Type": "application/x-form-urlencoded" }, 
+                body: new URLSearchParams(new FormData(form)).toString() 
+            });
             form.style.display = 'none';
             document.getElementById('form-success').style.display = 'block';
         } catch (error) {
@@ -665,7 +756,7 @@ document.addEventListener('DOMContentLoaded', () => {
         addChatMessage('', 'ai-typing');
         generateAISuggestions();
         
-        const { chart, chatHistory, ...cleanContext } = state;
+        const { chart, chatHistory, mobileSidebarOpen, ...cleanContext } = state;
         try {
             const response = await fetch(CONFIG.API_CHAT_ENDPOINT, { 
                 method: 'POST', 
@@ -740,7 +831,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         else if (mode === 'ai') {
             if (!fromResults) {
-                // Reset if coming fresh (not from results)
                 state.chatHistory = [];
             }
             DOMElements.contentContainer.innerHTML = getAiLayout();
@@ -748,11 +838,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if(sidebarContainer) sidebarContainer.innerHTML = getSidebarHTML();
 
             if (!fromResults) {
-                // Starting fresh - AI needs to gather info
-                addChatMessage('Dobrý den! Vaše skóre 70% je slušné, ale prostor pro zlepšení je. Ovlivnilo ho pravděpodobně několik faktorů jako délka historie v bankovním registru (méně než 5 let snižuje skóre), výše vašich dalších úvěrů a jejich splátky, případně i neuhrazené pohledávky. Zkuste si zdarma stáhnout svůj registr z ČNB a prohlédnout si podrobnosti, co přesně skóre ovlivnilo. Na základě toho pak můžeme společně probrat další kroky k jeho případnému zvýšení a dosáhnout tak výhodnější úrokové sazby, třeba té nejlepší 3,69%.', 'ai');
+                addChatMessage('Dobrý den! Jsem váš hypoteční poradce. Pomohu vám najít nejlepší řešení pro vaši situaci. Co vás zajímá?', 'ai');
             } else if (state.calculation.selectedOffer) {
-                // Coming from results with data
-                addChatMessage(`Dobrý den! Vaše sazba ${state.calculation.selectedOffer.rate.toFixed(2)}% je v současné situaci na trhu průměrná. S ohledem na vaše skóre ${state.calculation.approvability.total}% a LTV ${state.calculation.approvability.ltv}% je reálně dosáhnout úroku kolem 4.09%. To by vám snížilo měsíční splátku asi o 360 Kč. Pro dosažení nejlepší dostupné sazby 3.69% byste musel zlepšit skóre a/nebo snížit LTV, například vladem vlastních prostředků. Doporučuji spočítat si dopad snížení LTV na vaši splátku a zvážit další kroky.`, 'ai');
+                addChatMessage(`Výborně! Mám vaši analýzu. Splátka **${formatNumber(state.calculation.selectedOffer.monthlyPayment)}** při sazbě **${state.calculation.selectedOffer.rate.toFixed(2)}%** je ${state.calculation.approvability.total > 80 ? 'velmi dobrá' : 'přijatelná'}. Co vás zajímá nejvíc?`, 'ai');
             }
             generateAISuggestions();
             document.getElementById('chat-input')?.addEventListener('keydown', handleChatEnter);
@@ -762,13 +850,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const handleCookieBanner = () => {
         if (localStorage.getItem('cookieConsent') === 'true') {
-            DOMElements.cookieBanner.classList.add('hidden');
+            DOMElements.cookieBanner?.classList.add('hidden');
         } else {
-            DOMElements.cookieBanner.classList.remove('hidden');
+            DOMElements.cookieBanner?.classList.remove('hidden');
         }
         DOMElements.cookieAcceptBtn?.addEventListener('click', () => {
             localStorage.setItem('cookieConsent', 'true');
-            DOMElements.cookieBanner.classList.add('hidden');
+            DOMElements.cookieBanner?.classList.add('hidden');
         });
     };
 
@@ -778,7 +866,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (DOMElements.leadForm) DOMElements.leadForm.addEventListener('submit', handleFormSubmit);
 
         DOMElements.mobileMenuButton?.addEventListener('click', () => {
-            DOMElements.mobileMenu.classList.toggle('hidden');
+            DOMElements.mobileMenu?.classList.toggle('hidden');
+        });
+
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                if (state.mode === 'ai') {
+                    DOMElements.contentContainer.innerHTML = getAiLayout();
+                    const sidebarContainer = document.getElementById('sidebar-container');
+                    if(sidebarContainer) sidebarContainer.innerHTML = getSidebarHTML();
+                }
+            }, 250);
         });
 
         handleCookieBanner();

@@ -1,34 +1,22 @@
-// netlify/functions/rates.js - v3.0 - Enhanced Fixation Analysis
+// netlify/functions/rates.js - v4.0 - Real Market Rates
 const ALL_OFFERS = [
     {
         id: 'offer-1',
         title: "Nejlepší úrok",
-        description: "Absolutně nejnižší úrok pro maximální úsporu. Ideální pro silnou bonitu.",
+        description: "Nejnižší úrok pro klienty s výbornou bonitou a nízkým LTV.",
         max_ltv: 90,
         rates: {
-            '3': { rate_ltv70: 4.29, rate_ltv80: 4.49, rate_ltv90: 4.89 },
-            '5': { rate_ltv70: 4.09, rate_ltv80: 4.29, rate_ltv90: 4.69 },
-            '7': { rate_ltv70: 4.19, rate_ltv80: 4.39, rate_ltv90: 4.79 },
-            '10': { rate_ltv70: 4.39, rate_ltv80: 4.59, rate_ltv90: 4.99 }
+            '3': { rate_ltv70: 4.49, rate_ltv80: 4.69, rate_ltv90: 5.09 },
+            '5': { rate_ltv70: 4.29, rate_ltv80: 4.49, rate_ltv90: 4.89 },
+            '7': { rate_ltv70: 4.39, rate_ltv80: 4.59, rate_ltv90: 4.99 },
+            '10': { rate_ltv70: 4.59, rate_ltv80: 4.79, rate_ltv90: 5.19 }
         }
     },
     {
         id: 'offer-2',
         title: "Zlatá střední cesta",
-        description: "Skvělá sazba s mírnějšími požadavky. Pro většinu klientů nejlepší volba.",
+        description: "Vyvážená nabídka s rozumnými podmínkami pro většinu klientů.",
         max_ltv: 90,
-        rates: {
-            '3': { rate_ltv70: 4.39, rate_ltv80: 4.59, rate_ltv90: 4.99 },
-            '5': { rate_ltv70: 4.19, rate_ltv80: 4.39, rate_ltv90: 4.79 },
-            '7': { rate_ltv70: 4.29, rate_ltv80: 4.49, rate_ltv90: 4.89 },
-            '10': { rate_ltv70: 4.49, rate_ltv80: 4.69, rate_ltv90: 5.09 }
-        }
-    },
-    {
-        id: 'offer-3',
-        title: "Maximální šance",
-        description: "Nejbenevolentnější podmínky. Pro případy s nižší bonitou nebo vyšším LTV.",
-        max_ltv: 95,
         rates: {
             '3': { rate_ltv70: 4.59, rate_ltv80: 4.79, rate_ltv90: 5.19 },
             '5': { rate_ltv70: 4.39, rate_ltv80: 4.59, rate_ltv90: 4.99 },
@@ -37,15 +25,27 @@ const ALL_OFFERS = [
         }
     },
     {
+        id: 'offer-3',
+        title: "Maximální dostupnost",
+        description: "Vstřícné podmínky i pro klienty s vyšším LTV nebo nižší bonitou.",
+        max_ltv: 95,
+        rates: {
+            '3': { rate_ltv70: 4.79, rate_ltv80: 4.99, rate_ltv90: 5.39 },
+            '5': { rate_ltv70: 4.59, rate_ltv80: 4.79, rate_ltv90: 5.19 },
+            '7': { rate_ltv70: 4.69, rate_ltv80: 4.89, rate_ltv90: 5.29 },
+            '10': { rate_ltv70: 4.89, rate_ltv80: 5.09, rate_ltv90: 5.49 }
+        }
+    },
+    {
         id: 'offer-premium',
-        title: "Premium nabídka",
-        description: "Exkluzivní sazby pro TOP klienty s výjimečnou bonitou.",
+        title: "Premium pro TOP klienty",
+        description: "Exkluzivní sazby pro klienty s nejlepší bonitou a LTV do 70%.",
         max_ltv: 70,
         rates: {
-            '3': { rate_ltv70: 3.89 },
-            '5': { rate_ltv70: 3.69 },
-            '7': { rate_ltv70: 3.79 },
-            '10': { rate_ltv70: 3.99 }
+            '3': { rate_ltv70: 4.29 },
+            '5': { rate_ltv70: 4.09 },  // Minimum 4.09% jak jste uvedl
+            '7': { rate_ltv70: 4.19 },
+            '10': { rate_ltv70: 4.39 }
         }
     }
 ];
@@ -64,7 +64,6 @@ const calculateFixationAnalysis = (loanAmount, rate, loanTerm, fixation) => {
     let totalInterest = 0;
     let totalPrincipal = 0;
     
-    // Calculate for fixation period
     for (let i = 0; i < fixation * 12; i++) {
         const interest = remainingBalance * monthlyRate;
         const principal = monthlyPayment - interest;
@@ -73,25 +72,20 @@ const calculateFixationAnalysis = (loanAmount, rate, loanTerm, fixation) => {
         remainingBalance -= principal;
     }
     
-    // Calculate total payments during fixation
     const totalPaymentsInFixation = monthlyPayment * fixation * 12;
-    
-    // Future scenarios
     const remainingYears = loanTerm - fixation;
     const remainingMonths = remainingYears * 12;
     
-    // Optimistic scenario - rate drops (based on historical data)
-    const optimisticRate = Math.max(3.29, rate - 0.8); // More realistic drop
+    // Realistické scénáře
+    const optimisticRate = Math.max(3.79, rate - 0.5); // Pokles max o 0.5%
     const optimisticPayment = remainingMonths > 0 ? 
         calculateMonthlyPayment(remainingBalance, optimisticRate, remainingYears) : 0;
     
-    // Pessimistic scenario - rate increases
-    const pessimisticRate = rate + 1.2;
+    const pessimisticRate = rate + 1.0;
     const pessimisticPayment = remainingMonths > 0 ? 
         calculateMonthlyPayment(remainingBalance, pessimisticRate, remainingYears) : 0;
     
-    // Current market average scenario
-    const marketAvgRate = 4.5; // Current market average
+    const marketAvgRate = 4.59; // Aktuální průměr trhu
     const marketPayment = remainingMonths > 0 ? 
         calculateMonthlyPayment(remainingBalance, marketAvgRate, remainingYears) : 0;
     
@@ -148,20 +142,19 @@ const handler = async (event) => {
         const effectivePropertyValue = purpose === 'výstavba' ? propertyValue + landValue : propertyValue;
         const ltv = (effectivePropertyValue > 0) ? (loanAmount / effectivePropertyValue) * 100 : 0;
         
-        // Income adjustments based on employment type and education
+        // Income adjustments
         let adjustedIncome = income;
         if (employment === 'osvč') adjustedIncome = income * 0.7;
         else if (employment === 'jednatel') adjustedIncome = income * 0.8;
         
-        // Education bonus
         if (education === 'vysokoškolské') adjustedIncome *= 1.1;
         else if (education === 'středoškolské') adjustedIncome *= 1.05;
         
-        // Living minimum calculation (Czech standards)
-        const adultMinimum = 4620; // Czech living minimum for adult
-        const firstChildMinimum = 2830; // First child
-        const otherChildMinimum = 2450; // Other children
-        const housingMinimum = 7000; // Estimated housing costs
+        // Living minimum (Czech standards 2024)
+        const adultMinimum = 5000;
+        const firstChildMinimum = 3000;
+        const otherChildMinimum = 2500;
+        const housingMinimum = 8000;
         
         let livingMinimum = adultMinimum + housingMinimum;
         if (children > 0) livingMinimum += firstChildMinimum;
@@ -169,7 +162,7 @@ const handler = async (event) => {
         
         const disposableIncome = adjustedIncome - livingMinimum;
 
-        // Age factor for maximum term
+        // Age factor
         const maxTermByAge = Math.max(5, Math.min(30, 70 - age));
         const effectiveTerm = Math.min(term, maxTermByAge);
 
@@ -188,22 +181,22 @@ const handler = async (event) => {
                     rate = ratesForFixation.rate_ltv90 || ratesForFixation.rate_ltv80 || ratesForFixation.rate_ltv70;
                 } else {
                     rate = (ratesForFixation.rate_ltv90 || ratesForFixation.rate_ltv80 || ratesForFixation.rate_ltv70);
-                    if (rate) rate += 0.3; // Smaller penalty for >90% LTV
+                    if (rate) rate += 0.2; // Malá penalizace pro >90% LTV
                 }
 
                 if (!rate) return null;
 
                 const monthlyPayment = calculateMonthlyPayment(loanAmount, rate, effectiveTerm);
                 
-                // Enhanced DSTI calculation with stress test
-                const stressRate = rate + 2; // CNB stress test +2%
+                // DSTI calculation with stress test
+                const stressRate = rate + 2; // ČNB stress test
                 const stressPayment = calculateMonthlyPayment(loanAmount, stressRate, effectiveTerm);
                 const dsti = ((monthlyPayment + liabilities) / adjustedIncome) * 100;
                 const stressDsti = ((stressPayment + liabilities) / adjustedIncome) * 100;
                 
-                // DSTI limits (Czech National Bank recommendations)
+                // ČNB limity
                 if (dsti > 50) return null;
-                if (stressDsti > 60) return null; // Stress test limit
+                if (stressDsti > 60) return null;
                 if (monthlyPayment + liabilities > disposableIncome * 0.9) return null;
                 
                 return { 
@@ -217,17 +210,15 @@ const handler = async (event) => {
                 };
             }).filter(Boolean);
 
-        // Sort by rate and take top 3
         const finalOffers = allQualifiedOffers.sort((a, b) => a.rate - b.rate).slice(0, 3);
         
         if (finalOffers.length === 0) { 
             return { statusCode: 200, headers, body: JSON.stringify({ offers: [] }) }; 
         }
         
-        // Calculate comprehensive scores
+        // Calculate scores
         const bestOffer = finalOffers[0];
         
-        // LTV Score (lower is better)
         let ltvScore;
         if (ltv <= 60) ltvScore = 95;
         else if (ltv <= 70) ltvScore = 90;
@@ -235,19 +226,11 @@ const handler = async (event) => {
         else if (ltv <= 90) ltvScore = 65;
         else ltvScore = 40;
         
-        // DSTI Score (lower is better)
         let dstiScore = Math.round(Math.max(10, Math.min(95, (50 - bestOffer.dsti) / 50 * 100)));
-        
-        // Bonita Score (based on disposable income)
         let bonitaScore = Math.round(Math.max(10, Math.min(95, (disposableIncome / 30000) * 100)));
-        
-        // Age Score
         let ageScore = age <= 35 ? 95 : age <= 45 ? 85 : age <= 55 ? 70 : 50;
-        
-        // Employment Score
         let employmentScore = employment === 'zaměstnanec' ? 90 : employment === 'jednatel' ? 75 : 60;
         
-        // Calculate total score with weights
         const totalScore = Math.round(
             ltvScore * 0.25 +
             dstiScore * 0.30 +
@@ -265,14 +248,14 @@ const handler = async (event) => {
             total: totalScore
         };
 
-        // Generate intelligent tips
+        // Generate tips
         const tips = [];
         
         if (bestOffer.dsti > 35) {
             tips.push({ 
                 id: 'dsti_warning', 
                 title: "DSTI na vyšší hranici", 
-                message: `Váš poměr dluh/příjem je ${bestOffer.dsti}%. Doporučujeme udržet rezervu pro nečekané výdaje.` 
+                message: `Váš poměr dluh/příjem je ${bestOffer.dsti}%. Doporučujeme udržet finanční rezervu.` 
             });
         }
         
@@ -293,10 +276,10 @@ const handler = async (event) => {
             });
         }
 
-        // Smart tip for optimization
+        // Smart tip
         let smartTip = null;
         
-        // Check if shorter fixation would be better
+        // Check shorter fixation
         if (fixationInput >= 7) {
             const shorterFixRates = ALL_OFFERS[0].rates['5'];
             if (shorterFixRates) {
@@ -313,7 +296,7 @@ const handler = async (event) => {
             }
         }
         
-        // Check if longer term would help
+        // Check longer term
         if (!smartTip && effectiveTerm < 30 && age < 40) {
             const payment30 = calculateMonthlyPayment(loanAmount, bestOffer.rate, 30);
             if (payment30 < bestOffer.monthlyPayment * 0.85) {
@@ -326,7 +309,7 @@ const handler = async (event) => {
             }
         }
 
-        // Calculate detailed fixation analysis
+        // Fixation analysis
         const fixationDetails = finalOffers.length > 0 ? 
             calculateFixationAnalysis(loanAmount, bestOffer.rate, effectiveTerm, fixationInput) : null;
         
@@ -340,11 +323,11 @@ const handler = async (event) => {
                 tips,
                 fixationDetails,
                 marketInfo: {
-                    averageRate: 4.29,
-                    bestAvailableRate: 3.69,
+                    averageRate: 4.59,
+                    bestAvailableRate: 4.09,
                     yourRate: bestOffer.rate,
-                    ratePosition: bestOffer.rate <= 4.0 ? 'excellent' : 
-                                 bestOffer.rate <= 4.5 ? 'good' : 'average'
+                    ratePosition: bestOffer.rate <= 4.29 ? 'excellent' : 
+                                 bestOffer.rate <= 4.59 ? 'good' : 'average'
                 }
             }) 
         };

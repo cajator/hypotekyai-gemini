@@ -79,19 +79,23 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const isMobile = () => window.innerWidth < 768;
     const isTablet = () => window.innerWidth >= 768 && window.innerWidth < 1024;
+    const isTouchDevice = () => 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     
     // --- COMPONENT FACTORIES ---
     const createSlider = (id, label, value, min, max, step, containerClass = '') => {
         const suffix = (id.includes('Term') || id.includes('age') || id.includes('children') || id.includes('fixation')) ? ' let' : ' Kč';
-        return `<div class="${containerClass}" id="${id}-group">
-            <div class="flex justify-between items-center mb-1">
-                <label for="${id}" class="form-label mb-0">${label}</label>
-                <div class="flex items-center">
-                    <input type="text" id="${id}-input" value="${formatNumber(value, false)}" class="slider-value-input">
-                    <span class="font-semibold text-gray-500">${suffix}</span>
+        const isMobileDevice = isMobile();
+        return `<div class="${containerClass}" id="${id}-group" style="width: 100%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; gap: 0.5rem;">
+                <label for="${id}" class="form-label" style="margin: 0; flex-shrink: 0; font-size: ${isMobileDevice ? '0.875rem' : '0.9375rem'};">${label}</label>
+                <div style="display: flex; align-items: center; gap: 0.25rem;">
+                    <input type="text" id="${id}-input" value="${formatNumber(value, false)}" 
+                           class="slider-value-input" 
+                           style="max-width: ${isMobileDevice ? '100px' : '140px'}; font-size: ${isMobileDevice ? '0.9375rem' : '1rem'};">
+                    <span style="font-weight: 600; color: #6b7280; font-size: ${isMobileDevice ? '0.875rem' : '0.9375rem'}; flex-shrink: 0;">${suffix}</span>
                 </div>
             </div>
-            <div class="slider-container">
+            <div class="slider-container" style="padding: 0.5rem 0;">
                 <input type="range" id="${id}" name="${id}" min="${min}" max="${max}" value="${value}" step="${step}" class="slider-input">
             </div>
         </div>`;
@@ -101,9 +105,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const optionsHTML = Object.entries(options).map(([key, val]) => 
             `<option value="${key}" ${key === selectedValue ? 'selected' : ''}>${val}</option>`
         ).join('');
-        return `<div class="${containerClass}">
-            <label for="${id}" class="form-label">${label}</label>
-            <select id="${id}" name="${id}" class="modern-select">${optionsHTML}</select>
+        return `<div class="${containerClass}" style="width: 100%;">
+            <label for="${id}" class="form-label" style="font-size: ${isMobile() ? '0.875rem' : '0.9375rem'};">${label}</label>
+            <select id="${id}" name="${id}" class="modern-select" style="font-size: ${isMobile() ? '1rem' : '0.9375rem'};">${optionsHTML}</select>
         </div>`;
     };
     
@@ -114,13 +118,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const getAiLayout = () => {
         if (isMobile()) {
             return `
-                <div class="flex flex-col h-[calc(100vh-120px)]">
-                    <div class="bg-white flex-1 flex flex-col">
-                        <div id="chat-messages" class="flex-1 overflow-y-auto p-3 space-y-3"></div>
-                        <div id="ai-suggestions" class="p-3 border-t overflow-x-auto"></div>
-                        <div class="p-3 border-t flex items-center space-x-2">
-                            <input type="text" id="chat-input" class="modern-input flex-1" placeholder="Zeptejte se na cokoliv ohledně hypotéky..." style="font-size: 16px;">
-                            <button id="chat-send" class="nav-btn px-4 py-3" data-action="send-chat">
+                <div class="flex flex-col" style="height: calc(100vh - 8rem); max-height: calc(100vh - 8rem);">
+                    <div class="bg-white flex-1 flex flex-col" style="overflow: hidden;">
+                        <div id="chat-messages" class="flex-1" style="overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0.75rem; height: calc(100% - 8rem);"></div>
+                        <div id="ai-suggestions" style="padding: 0.75rem; border-top: 1px solid #e5e7eb; overflow-x: auto; -webkit-overflow-scrolling: touch; flex-shrink: 0;"></div>
+                        <div style="padding: 0.75rem; border-top: 1px solid #e5e7eb; display: flex; align-items: center; gap: 0.5rem; background: white; flex-shrink: 0;">
+                            <input type="text" id="chat-input" 
+                                   class="modern-input flex-1" 
+                                   placeholder="Zeptejte se..." 
+                                   style="font-size: 16px; min-width: 0;"
+                                   autocomplete="off"
+                                   autocorrect="off">
+                            <button id="chat-send" class="nav-btn" style="padding: 0.75rem; flex-shrink: 0;" data-action="send-chat">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                                 </svg>
@@ -129,13 +138,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     
                     ${state.calculation.selectedOffer ? `
-                    <button id="mobile-sidebar-toggle" class="fixed bottom-20 right-4 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center z-40" data-action="toggle-mobile-sidebar">
-                        <span class="text-2xl">📊</span>
+                    <button id="mobile-sidebar-toggle" 
+                            style="position: fixed; bottom: 1.5rem; right: 1rem; width: 3.5rem; height: 3.5rem; background-color: #2563eb; color: white; border-radius: 50%; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); display: flex; align-items: center; justify-content: center; z-index: 90; border: none;"
+                            data-action="toggle-mobile-sidebar">
+                        <span style="font-size: 1.5rem;">📊</span>
                     </button>
                     ` : ''}
                     
-                    <div id="mobile-sidebar-overlay" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50" data-action="close-mobile-sidebar">
-                        <div id="sidebar-container" class="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 max-h-[70vh] overflow-y-auto" onclick="event.stopPropagation()"></div>
+                    <div id="mobile-sidebar-overlay" class="hidden" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 100;" data-action="close-mobile-sidebar">
+                        <div id="sidebar-container" style="position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top-left-radius: 1.5rem; border-top-right-radius: 1.5rem; padding: 1.5rem 1rem; max-height: 70vh; overflow-y: auto; -webkit-overflow-scrolling: touch; box-shadow: 0 -4px 6px -1px rgba(0,0,0,0.1);" onclick="event.stopPropagation()"></div>
                     </div>
                 </div>`;
         }
@@ -324,18 +335,18 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     const getExpressHTML = () => getCalculatorLayout(`
-        <div id="express-form" class="space-y-6">
+        <div id="express-form" class="space-y-4" style="max-width: 100%; overflow: hidden;">
             ${createSlider('propertyValue','Hodnota nemovitosti',state.formData.propertyValue,500000,30000000,100000)}
             ${createSlider('loanAmount','Chci si půjčit',state.formData.loanAmount,200000,20000000,100000)}
             ${createSlider('income','Měsíční čistý příjem',state.formData.income,15000,300000,1000)}
-            <div class="flex justify-center pt-4">
-                <button class="nav-btn text-lg w-full md:w-auto" data-action="calculate">
-                    <span class="mr-2">Spočítat a najít nabídky</span>
+            <div class="flex justify-center" style="padding-top: 1rem;">
+                <button class="nav-btn" style="width: 100%; max-width: 20rem; font-size: 1rem; padding: 0.75rem 1.5rem;" data-action="calculate">
+                    <span style="margin-right: 0.5rem;">Spočítat a najít nabídky</span>
                     <div class="loading-spinner-white hidden"></div>
                 </button>
             </div>
         </div>
-        <div id="results-container" class="hidden mt-12"></div>`);
+        <div id="results-container" class="hidden" style="margin-top: 2rem;"></div>`);
     
     const getGuidedHTML = () => {
         const purposes = { 'koupě': 'Koupě', 'výstavba': 'Výstavba', 'rekonstrukce': 'Rekonstrukce', 'refinancování': 'Refinancování' };
@@ -343,25 +354,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const employments = { 'zaměstnanec': 'Zaměstnanec', 'osvc': 'OSVČ', 'jednatel': 'Jednatel s.r.o.'};
         const educations = { 'základní': 'Základní', 'středoškolské': 'SŠ s maturitou', 'vysokoškolské': 'VŠ' };
 
-        return getCalculatorLayout(`<div id="guided-form" class="space-y-8">
-            <div><h3 class="form-section-heading">Parametry úvěru a nemovitosti</h3>
-                <div class="form-grid">
+        return getCalculatorLayout(`<div id="guided-form" style="max-width: 100%; overflow: hidden;">
+            <div style="margin-bottom: 2rem;">
+                <h3 class="form-section-heading">Parametry úvěru a nemovitosti</h3>
+                <div class="form-grid" style="${isMobile() ? 'display: flex; flex-direction: column; gap: 1rem;' : ''}">
                     ${createSelect('purpose', 'Účel hypotéky', purposes, state.formData.purpose)}
                     ${createSelect('propertyType', 'Typ nemovitosti', propertyTypes, state.formData.propertyType)}
-                    ${createSlider('propertyValue','Hodnota nemovitosti po dokončení',state.formData.propertyValue,500000,30000000,100000, 'col-span-2 md:col-span-1')}
-                    ${createSlider('reconstructionValue','Rozsah rekonstrukce',state.formData.reconstructionValue,0,10000000,50000, 'col-span-2 md:col-span-1 hidden')}
-                    ${createSlider('landValue','Hodnota pozemku (u výstavby)',state.formData.landValue,0,10000000,50000, 'col-span-2 md:col-span-1 hidden')}
-                    <div class="col-span-2 md:col-span-1"></div>
-                    ${createSlider('loanAmount','Požadovaná výše úvěru',state.formData.loanAmount,200000,20000000,100000, 'col-span-2')}
-                    <div class="col-span-2 text-center font-bold text-lg text-green-600" id="ltv-display">
+                    ${createSlider('propertyValue','Hodnota nemovitosti po dokončení',state.formData.propertyValue,500000,30000000,100000, '')}
+                    ${createSlider('reconstructionValue','Rozsah rekonstrukce',state.formData.reconstructionValue,0,10000000,50000, 'hidden')}
+                    ${createSlider('landValue','Hodnota pozemku (u výstavby)',state.formData.landValue,0,10000000,50000, 'hidden')}
+                    ${createSlider('loanAmount','Požadovaná výše úvěru',state.formData.loanAmount,200000,20000000,100000, '')}
+                    <div style="${isMobile() ? 'width: 100%;' : 'grid-column: span 2;'} text-align: center; font-weight: bold; font-size: 1rem; color: #10b981;" id="ltv-display">
                         Aktuální LTV: ${Math.round((state.formData.loanAmount / state.formData.propertyValue) * 100)}%
                     </div>
                     ${createSlider('loanTerm','Délka splatnosti',state.formData.loanTerm,5,30,1)}
                     ${createSlider('fixation','Délka fixace',state.formData.fixation,3,10,1)}
                 </div>
             </div>
-            <div><h3 class="form-section-heading">Vaše bonita a osobní údaje</h3>
-                <div class="form-grid">
+            <div style="margin-bottom: 2rem;">
+                <h3 class="form-section-heading">Vaše bonita a osobní údaje</h3>
+                <div class="form-grid" style="${isMobile() ? 'display: flex; flex-direction: column; gap: 1rem;' : ''}">
                     ${createSelect('employment', 'Typ příjmu', employments, state.formData.employment)}
                     ${createSelect('education', 'Nejvyšší dosažené vzdělání', educations, state.formData.education)}
                     ${createSlider('income','Čistý měsíční příjem',state.formData.income,15000,300000,1000)}
@@ -370,14 +382,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${createSlider('children','Počet dětí',state.formData.children,0,10,1)}
                 </div>
             </div>
-            <div class="flex justify-center pt-4">
-                <button class="nav-btn text-lg w-full md:w-auto" data-action="calculate">
-                    <span class="mr-2">Spočítat a najít nabídky</span>
-                    <div class="loading-spinner-white hidden ml-2"></div>
+            <div class="flex justify-center" style="padding-top: 1rem;">
+                <button class="nav-btn" style="width: 100%; max-width: 20rem; font-size: 1rem; padding: 0.75rem 1.5rem;" data-action="calculate">
+                    <span style="margin-right: 0.5rem;">Spočítat a najít nabídky</span>
+                    <div class="loading-spinner-white hidden" style="margin-left: 0.5rem;"></div>
                 </button>
             </div>
         </div>
-        <div id="results-container" class="hidden mt-12"></div>`);
+        <div id="results-container" class="hidden" style="margin-top: 2rem;"></div>`);
     };
 
     const getAdditionalTips = (approvability) => {

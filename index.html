@@ -2,22 +2,26 @@
 <html lang="cs" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#2563eb">
     <title>Hypoteky Ai - Profesionální hypoteční analýza s AI</title>
     <meta name="description" content="Získejte nejlepší hypotéku díky AI analýze 19+ bank. Okamžitý výpočet, personalizované nabídky, rychlé schválení.">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=2.1">
+    <link rel="stylesheet" href="style_mobile.css?v=3.0">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💡</text></svg>">
 </head>
 <body class="bg-gray-50 text-gray-800 antialiased">
 
     <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-30 border-b border-gray-200">
-        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+        <nav class="container mx-auto px-4 md:px-6 py-3 flex justify-between items-center">
             <a href="#" class="flex items-center space-x-2 scroll-to" data-target="#top">
-                <span class="text-2xl">💡</span>
-                <h1 class="text-xl font-bold text-gray-800">Hypoteky Ai</h1>
+                <span class="text-xl md:text-2xl">💡</span>
+                <h1 class="text-lg md:text-xl font-bold text-gray-800">Hypoteky Ai</h1>
             </a>
             <div class="hidden md:flex items-center space-x-6">
                 <a href="#kalkulacka" class="nav-link scroll-to">Kalkulačka</a>
@@ -25,8 +29,9 @@
                 <a href="#jak-to-funguje" class="nav-link scroll-to">Jak to funguje</a>
                 <a href="#partneri" class="nav-link scroll-to">Partneři</a>
             </div>
-            <div class="flex items-center space-x-4">
-                 <a href="#kontakt" class="nav-btn scroll-to" data-action="show-lead-form-direct" data-target="#kontakt">📞 Domluvit se specialistou</a>
+            <div class="flex items-center space-x-2 md:space-x-4">
+                 <a href="#kontakt" class="nav-btn scroll-to hidden md:inline-flex" data-action="show-lead-form-direct" data-target="#kontakt">📞 Domluvit se specialistou</a>
+                 <a href="#kontakt" class="nav-btn scroll-to md:hidden" data-action="show-lead-form-direct" data-target="#kontakt">📞 Kontakt</a>
                  <button id="mobile-menu-button" class="md:hidden p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
                  </button>
@@ -43,36 +48,36 @@
 
     <div id="top"></div>
 
-    <main class="container mx-auto px-6 py-8 md:py-12">
+    <main class="container mx-auto px-4 md:px-6 py-6 md:py-8 lg:py-12">
         <!-- Aktivní uživatelé counter -->
-        <div class="text-center mb-6">
-            <p id="active-users-counter" class="text-sm text-gray-600 inline-flex items-center">
+        <div class="text-center mb-4 md:mb-6">
+            <p id="active-users-counter" class="text-xs md:text-sm text-gray-600 inline-flex items-center">
                 <span class="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse mr-1"></span>
                 Načítám...
             </p>
         </div>
         
-        <section class="text-center mb-12">
-             <div class="flex justify-center items-center space-x-4 sm:space-x-8 lg:space-x-12 mb-8 text-center">
+        <section class="text-center mb-8 md:mb-12">
+             <div class="flex flex-wrap justify-center items-center gap-4 md:gap-8 lg:gap-12 mb-6 md:mb-8">
                 <div>
-                    <p class="text-2xl sm:text-3xl font-bold text-blue-600">8.4 mld Kč</p>
-                    <p class="text-xs sm:text-sm text-gray-500">Zprostředkováno</p>
+                    <p class="text-xl sm:text-2xl md:text-3xl font-bold text-blue-600">8.4 mld Kč</p>
+                    <p class="text-xs md:text-sm text-gray-500">Zprostředkováno</p>
                 </div>
                 <div>
-                    <p class="text-2xl sm:text-3xl font-bold text-blue-600">286 000 Kč</p>
-                    <p class="text-xs sm:text-sm text-gray-500">Průměrná úspora</p>
+                    <p class="text-xl sm:text-2xl md:text-3xl font-bold text-blue-600">286 000 Kč</p>
+                    <p class="text-xs md:text-sm text-gray-500">Průměrná úspora</p>
                 </div>
                 <div>
-                    <p class="text-2xl sm:text-3xl font-bold text-blue-600">12 847</p>
-                    <p class="text-xs sm:text-sm text-gray-500">Spokojených klientů</p>
+                    <p class="text-xl sm:text-2xl md:text-3xl font-bold text-blue-600">12 847</p>
+                    <p class="text-xs md:text-sm text-gray-500">Spokojených klientů</p>
                 </div>
              </div>
-            <h2 class="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4 animate-fade-in-down">Profesionální hypoteční analýza s AI</h2>
-            <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto animate-fade-in-down animation-delay-200">Metodika 19+ partnerů | Aktuální sazby | Scoring v reálném čase</p>
+            <h2 class="text-2xl md:text-3xl lg:text-5xl font-extrabold text-gray-900 mb-3 md:mb-4 animate-fade-in-down px-2">Profesionální hypoteční analýza s AI</h2>
+            <p class="text-sm md:text-base lg:text-lg text-gray-600 max-w-3xl mx-auto animate-fade-in-down animation-delay-200 px-2">Metodika 19+ partnerů | Aktuální sazby | Scoring v reálném čase</p>
         </section>
         
-        <div id="kalkulacka" class="mb-24 scroll-mt-20">
-            <section class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12 items-stretch">
+        <div id="kalkulacka" class="mb-12 md:mb-24 scroll-mt-20">
+            <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8 mb-8 md:mb-12 items-stretch">
                  <div class="mode-card active" data-mode="express">
                     <div class="badge badge-yellow !text-yellow-800 !bg-yellow-200">⚡ Rychle <span class="hidden sm:inline">za 30 sekund</span></div>
                     <h3 class="font-bold text-xl mb-3">Expresní scoring</h3>

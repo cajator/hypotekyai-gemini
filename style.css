@@ -1,158 +1,307 @@
-/* Hypoteky Ai - v34.0 - Final Polish & Fixes */
-:root { --accent-color: #2563eb; }
-
-body { 
-    font-family: 'Inter', sans-serif; 
-    scroll-behavior: smooth;
+/* Hypoteky Ai - v35.0 - Enhanced UI Styles */
+:root { 
+    --accent-color: #2563eb;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
 }
 
-.nav-link { color: #4b5563; transition: color 0.2s ease-in-out; }
-.nav-link:hover { color: var(--accent-color); }
+/* ... stávající styly ... */
 
-.nav-btn { 
-    background-color: var(--accent-color); color: white; font-weight: bold; 
-    padding: 10px 20px; border-radius: 8px; transition: all 0.2s ease; 
-    border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; 
-}
-.nav-btn:hover { background-color: #1d4ed8; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-.nav-btn:disabled { background-color: #9ca3af; cursor: not-allowed; transform: none; box-shadow: none; }
-
-.badge { 
-    padding: 4px 12px; border-radius: 9999px; font-weight: 600; font-size: 0.75rem; 
-    display: inline-block; position: absolute; top: 1rem; left: 1rem; 
-}
-.badge-yellow { background-color: #fef9c3; color: #ca8a04; }
-.badge-blue { background-color: #dbeafe; color: var(--accent-color); }
-.badge-purple { background-color: #ede9fe; color: #7c3aed; }
-
-.modern-input, .modern-select { 
-    width: 100%; background: #f9fafb; border: 1px solid #d1d5db; color: #111827; 
-    padding: 12px 16px; border-radius: 8px; transition: all 0.2s; font-size: 1rem; 
-}
-.modern-input:focus, .modern-select:focus { 
-    background: white; border-color: var(--accent-color); 
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); outline: none; 
-}
-
-.modern-select { 
-    appearance: none; 
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%e3c/svg%3e");
-    background-position: right 1rem center; background-repeat: no-repeat; background-size: 1.2em;
-}
-
-.mode-card { 
-    border: 2px solid #e5e7eb; padding: 1.5rem; border-radius: 1rem; cursor: pointer; 
-    transition: all 0.2s ease-in-out; position: relative; display: flex; 
-    flex-direction: column; padding-top: 4rem; 
-}
-.mode-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px -5px rgba(0,0,0,0.08); }
-.mode-card.active { border-color: var(--accent-color); box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2); }
-.mode-card-dark { background: linear-gradient(135deg, #1e3a8a, #1e293b); color: white; }
-
-.form-label { font-weight: 600; font-size: 0.875rem; color: #374151; margin-bottom: 0.5rem; display: block; }
-.form-section-heading { 
-    font-size: 1.5rem; font-weight: 700; color: #111827; padding-bottom: 0.75rem; 
-    margin-bottom: 1.5rem; border-bottom: 1px solid #e5e7eb; 
-}
-.form-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem 2rem;
-    align-items: end;
-}
-@media (max-width: 768px) {
-    .form-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-
-.slider-input { 
-    width: 100%; -webkit-appearance: none; appearance: none; 
-    background: transparent; cursor: pointer; 
-}
-.slider-input::-webkit-slider-runnable-track { background: #e5e7eb; height: 0.5rem; border-radius: 1rem; }
-.slider-input::-webkit-slider-thumb { 
-    -webkit-appearance: none; appearance: none; margin-top: -4px; 
-    background-color: var(--accent-color); height: 1.25rem; width: 1.25rem; border-radius: 50%; 
-    border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
-}
-
-.slider-value-input {
-    font-weight: bold; font-size: 1.125rem; text-align: right; border: 1px solid transparent; 
-    background-color: transparent; padding: 2px 8px; border-radius: 6px; 
-    transition: all 0.2s ease; max-width: 180px;
-}
-.slider-value-input:focus, .slider-value-input:hover { background-color: #f3f4f6; border-color: #d1d5db; }
-
-.results-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-@media (max-width: 1024px) {
-    .results-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-@media (max-width: 768px) {
-    .results-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
+/* Vylepšené offer karty */
 .offer-card { 
-    background-color: white; border: 2px solid #e5e7eb; transition: all 0.2s ease; 
-    cursor: pointer; display: flex; flex-direction: column; 
-    border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    background-color: white; 
+    border: 2px solid #e5e7eb; 
+    transition: all 0.3s ease; 
+    cursor: pointer; 
+    display: flex; 
+    flex-direction: column; 
+    border-radius: 1rem; 
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    position: relative;
+    overflow: hidden;
 }
-.offer-card:hover { border-color: #93c5fd; transform: translateY(-3px); }
-.offer-card.selected { border-color: var(--accent-color); background-color: #eff6ff; }
 
-.chat-bubble-ai { background: #f3f4f6; color: #1f2937; border-radius: 1.25rem 1.25rem 1.25rem 0.25rem; padding: 12px 16px; max-width: 85%; width: fit-content; line-height: 1.5; }
-.chat-bubble-user { background: var(--accent-color); color: white; border-radius: 1.25rem 1.25rem 0.25rem 1.25rem; padding: 12px 16px; max-width: 85%; width: fit-content; align-self: flex-end; line-height: 1.5; }
-
-.loading-spinner-blue { 
-    margin: 1rem auto; display: inline-block; width: 24px; height: 24px; 
-    border: 3px solid rgba(59, 130, 246, 0.2); border-top-color: var(--accent-color); 
-    border-radius: 50%; animation: spin 1s linear infinite; 
+.offer-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent-color), #818cf8);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
 }
-.loading-spinner-white { 
-    display: inline-block; width: 20px; height: 20px; 
-    border: 3px solid rgba(255, 255, 255, 0.3); border-top-color: #fff; 
-    border-radius: 50%; animation: spin 1s linear infinite; 
-}
-@keyframes spin { to { transform: rotate(360deg); } }
 
+.offer-card:hover::before,
+.offer-card.selected::before {
+    transform: scaleX(1);
+}
+
+.offer-card:hover { 
+    border-color: #93c5fd; 
+    transform: translateY(-5px); 
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+}
+
+.offer-card.selected { 
+    border-color: var(--accent-color); 
+    background: linear-gradient(to bottom right, #eff6ff, #fefefe);
+}
+
+/* Rychlá analýza box */
+.quick-analysis-box {
+    background: linear-gradient(135deg, #fef3c7, #fef9c3);
+    border-left: 4px solid var(--warning-color);
+    padding: 1rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px -1px rgba(251, 191, 36, 0.1);
+}
+
+/* AI chat vylepšení */
+.chat-bubble-ai { 
+    background: linear-gradient(to bottom, #f9fafb, #f3f4f6);
+    color: #1f2937; 
+    border-radius: 1.25rem 1.25rem 1.25rem 0.25rem; 
+    padding: 14px 18px; 
+    max-width: 85%; 
+    width: fit-content; 
+    line-height: 1.6;
+    box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1);
+    animation: slideInLeft 0.3s ease-out;
+}
+
+.chat-bubble-user { 
+    background: linear-gradient(135deg, var(--accent-color), #4f46e5);
+    color: white; 
+    border-radius: 1.25rem 1.25rem 0.25rem 1.25rem; 
+    padding: 14px 18px; 
+    max-width: 85%; 
+    width: fit-content; 
+    align-self: flex-end; 
+    line-height: 1.6;
+    box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1);
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInRight {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* Vylepšené suggestion buttons */
 .suggestion-btn { 
-    background-color: white; border: 1px solid #d1d5db; color: #374151; 
-    padding: 6px 12px; border-radius: 9999px; font-size: 0.8rem; cursor: pointer; 
-    transition: all 0.2s ease; 
+    background: linear-gradient(to bottom, white, #fafafa);
+    border: 1px solid #d1d5db; 
+    color: #374151; 
+    padding: 8px 16px; 
+    border-radius: 9999px; 
+    font-size: 0.875rem; 
+    cursor: pointer; 
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+    position: relative;
+    overflow: hidden;
 }
-.suggestion-btn:hover { background-color: #f9fafb; border-color: #9ca3af; }
 
-.approvability-bar-bg { background-color: #e5e7eb; border-radius: 9999px; height: 8px; overflow: hidden; }
-.approvability-bar { height: 100%; border-radius: 9999px; transition: width 0.5s ease-in-out; }
+.suggestion-btn:hover { 
+    background: linear-gradient(to bottom, #fafafa, #f3f4f6);
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+}
 
-/* Animation utilities */
-@keyframes fadeInDown {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
+/* Score cards vylepšení */
+.score-card {
+    background: white;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
 }
-.animate-fade-in-down {
-    animation: fadeInDown 0.5s ease-out forwards;
-}
-.animation-delay-200 { animation-delay: 0.2s; }
-.animation-delay-400 { animation-delay: 0.4s; }
 
-/* Custom styles for AI chat layout */
-.ai-layout-grid {
-    grid-template-columns: 2fr 1fr;
+.score-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
 }
-@media (max-width: 1024px) {
-    .ai-layout-grid {
-        grid-template-columns: 1fr;
+
+.score-bar {
+    height: 12px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, 
+        #ef4444 0%, 
+        #f59e0b 30%, 
+        #eab308 50%, 
+        #84cc16 70%, 
+        #10b981 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.score-indicator {
+    position: absolute;
+    top: -4px;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border: 3px solid var(--accent-color);
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: left 0.5s ease-out;
+}
+
+/* Mobilní optimalizace */
+@media (max-width: 768px) {
+    .offer-card {
+        padding: 1rem;
+    }
+    
+    .chat-bubble-ai,
+    .chat-bubble-user {
+        max-width: 90%;
+        font-size: 0.9rem;
+    }
+    
+    .suggestion-btn {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+    
+    #mobile-sidebar-overlay {
+        backdrop-filter: blur(5px);
+    }
+    
+    #sidebar-container {
+        animation: slideUp 0.3s ease-out;
+    }
+    
+    @keyframes slideUp {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
     }
 }
 
+/* Highlight badges pro nabídky */
+.offer-highlight {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: linear-gradient(135deg, #dbeafe, #eff6ff);
+    color: var(--accent-color);
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 0.5rem;
+    margin-top: 0.5rem;
+    border: 1px solid #bfdbfe;
+}
+
+/* Tlačítko "Domluvit se specialistou" - výraznější */
+.nav-btn.nav-btn-cta {
+    background: linear-gradient(135deg, var(--success-color), #059669);
+    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+    font-size: 1rem;
+    padding: 14px 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-btn.nav-btn-cta::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.nav-btn.nav-btn-cta:hover::before {
+    left: 100%;
+}
+
+/* Info panely */
+.info-panel {
+    background: linear-gradient(to right, #f0f9ff, #e0f2fe);
+    border-left: 4px solid var(--accent-color);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin: 1rem 0;
+}
+
+.info-panel-success {
+    background: linear-gradient(to right, #f0fdf4, #dcfce7);
+    border-left-color: var(--success-color);
+}
+
+.info-panel-warning {
+    background: linear-gradient(to right, #fffbeb, #fef3c7);
+    border-left-color: var(--warning-color);
+}
+
+/* Animace pro důležité prvky */
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.9; }
+}
+
+.pulse-animation {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* Vylepšený vzhled formulářů */
+.modern-input:focus,
+.modern-select:focus {
+    background: white;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    outline: none;
+}
+
+/* Tooltip styly */
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip .tooltip-text {
+    visibility: hidden;
+    width: 200px;
+    background-color: #1f2937;
+    color: white;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.75rem;
+}
+
+.tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Loading skeleton pro lepší UX */
+.skeleton {
+    background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s ease-in-out infinite;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}

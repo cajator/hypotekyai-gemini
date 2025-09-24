@@ -1,9 +1,9 @@
-// netlify/functions/rates.js - v24.0 - Enhanced with Fixation Analysis
+// netlify/functions/rates.js - v3.0 - Enhanced Fixation Analysis
 const ALL_OFFERS = [
     {
         id: 'offer-1',
         title: "Nejlepší úrok",
-        description: "Absolutně nejnižší úrok pro maximální úsporu. Ideální, pokud máte silnou bonitu.",
+        description: "Absolutně nejnižší úrok pro maximální úsporu. Ideální pro silnou bonitu.",
         max_ltv: 90,
         rates: {
             '3': { rate_ltv70: 4.29, rate_ltv80: 4.49, rate_ltv90: 4.89 },
@@ -15,7 +15,7 @@ const ALL_OFFERS = [
     {
         id: 'offer-2',
         title: "Zlatá střední cesta",
-        description: "Skvělá sazba v kombinaci s mírnějšími požadavky. Pro většinu klientů nejlepší volba.",
+        description: "Skvělá sazba s mírnějšími požadavky. Pro většinu klientů nejlepší volba.",
         max_ltv: 90,
         rates: {
             '3': { rate_ltv70: 4.39, rate_ltv80: 4.59, rate_ltv90: 4.99 },
@@ -27,7 +27,7 @@ const ALL_OFFERS = [
     {
         id: 'offer-3',
         title: "Maximální šance",
-        description: "Nejbenevolentnější podmínky pro případy, kdy si nejste jistí svými příjmy nebo registry.",
+        description: "Nejbenevolentnější podmínky. Pro případy s nižší bonitou nebo vyšším LTV.",
         max_ltv: 95,
         rates: {
             '3': { rate_ltv70: 4.59, rate_ltv80: 4.79, rate_ltv90: 5.19 },
@@ -39,13 +39,13 @@ const ALL_OFFERS = [
     {
         id: 'offer-premium',
         title: "Premium nabídka",
-        description: "Exkluzivní sazby pro klienty s výjimečnou bonitou a nízkým LTV.",
+        description: "Exkluzivní sazby pro TOP klienty s výjimečnou bonitou.",
         max_ltv: 70,
         rates: {
             '3': { rate_ltv70: 3.89 },
-            '5': { rate_ltv70: 3.89 },
-            '7': { rate_ltv70: 3.99 },
-            '10': { rate_ltv70: 4.09 }
+            '5': { rate_ltv70: 3.69 },
+            '7': { rate_ltv70: 3.79 },
+            '10': { rate_ltv70: 3.99 }
         }
     }
 ];
@@ -73,26 +73,35 @@ const calculateFixationAnalysis = (loanAmount, rate, loanTerm, fixation) => {
         remainingBalance -= principal;
     }
     
+    // Calculate total payments during fixation
+    const totalPaymentsInFixation = monthlyPayment * fixation * 12;
+    
     // Future scenarios
     const remainingYears = loanTerm - fixation;
     const remainingMonths = remainingYears * 12;
     
-    // Optimistic scenario - rate drops by 1%
-    const optimisticRate = Math.max(2.5, rate - 1.0);
+    // Optimistic scenario - rate drops (based on historical data)
+    const optimisticRate = Math.max(3.29, rate - 0.8); // More realistic drop
     const optimisticPayment = remainingMonths > 0 ? 
         calculateMonthlyPayment(remainingBalance, optimisticRate, remainingYears) : 0;
     
-    // Pessimistic scenario - rate increases by 1%
-    const pessimisticRate = rate + 1.0;
+    // Pessimistic scenario - rate increases
+    const pessimisticRate = rate + 1.2;
     const pessimisticPayment = remainingMonths > 0 ? 
         calculateMonthlyPayment(remainingBalance, pessimisticRate, remainingYears) : 0;
     
+    // Current market average scenario
+    const marketAvgRate = 4.5; // Current market average
+    const marketPayment = remainingMonths > 0 ? 
+        calculateMonthlyPayment(remainingBalance, marketAvgRate, remainingYears) : 0;
+    
     return {
-        totalPaymentsInFixation: monthlyPayment * fixation * 12,
+        totalPaymentsInFixation: Math.round(totalPaymentsInFixation),
         totalInterestForFixation: Math.round(totalInterest),
         totalPrincipalForFixation: Math.round(totalPrincipal),
         remainingBalanceAfterFixation: Math.round(remainingBalance),
         percentagePaidOff: Math.round((totalPrincipal / loanAmount) * 100),
+        monthlyPayment: Math.round(monthlyPayment),
         futureScenario: {
             optimistic: {
                 rate: optimisticRate,
@@ -104,7 +113,11 @@ const calculateFixationAnalysis = (loanAmount, rate, loanTerm, fixation) => {
                 newMonthlyPayment: Math.round(pessimisticPayment),
                 monthlyIncrease: Math.round(pessimisticPayment - monthlyPayment)
             },
-            newMonthlyPayment: Math.round(optimisticPayment) // For backwards compatibility
+            marketAverage: {
+                rate: marketAvgRate,
+                newMonthlyPayment: Math.round(marketPayment),
+                difference: Math.round(marketPayment - monthlyPayment)
+            }
         }
     };
 };
@@ -135,16 +148,25 @@ const handler = async (event) => {
         const effectivePropertyValue = purpose === 'výstavba' ? propertyValue + landValue : propertyValue;
         const ltv = (effectivePropertyValue > 0) ? (loanAmount / effectivePropertyValue) * 100 : 0;
         
-        // Income adjustments based on employment type
+        // Income adjustments based on employment type and education
         let adjustedIncome = income;
         if (employment === 'osvč') adjustedIncome = income * 0.7;
         else if (employment === 'jednatel') adjustedIncome = income * 0.8;
         
         // Education bonus
-        if (education === 'vysokoškolské') adjustedIncome *= 1.05;
+        if (education === 'vysokoškolské') adjustedIncome *= 1.1;
+        else if (education === 'středoškolské') adjustedIncome *= 1.05;
         
-        // Living minimum calculation
-        const livingMinimum = 10000 + (children * 2500);
+        // Living minimum calculation (Czech standards)
+        const adultMinimum = 4620; // Czech living minimum for adult
+        const firstChildMinimum = 2830; // First child
+        const otherChildMinimum = 2450; // Other children
+        const housingMinimum = 7000; // Estimated housing costs
+        
+        let livingMinimum = adultMinimum + housingMinimum;
+        if (children > 0) livingMinimum += firstChildMinimum;
+        if (children > 1) livingMinimum += (children - 1) * otherChildMinimum;
+        
         const disposableIncome = adjustedIncome - livingMinimum;
 
         // Age factor for maximum term
@@ -165,24 +187,31 @@ const handler = async (event) => {
                 } else if (ltv <= 90) {
                     rate = ratesForFixation.rate_ltv90 || ratesForFixation.rate_ltv80 || ratesForFixation.rate_ltv70;
                 } else {
-                    rate = ratesForFixation.rate_ltv90 || ratesForFixation.rate_ltv80 || ratesForFixation.rate_ltv70;
-                    if (rate) rate += 0.5; // Additional penalty for >90% LTV
+                    rate = (ratesForFixation.rate_ltv90 || ratesForFixation.rate_ltv80 || ratesForFixation.rate_ltv70);
+                    if (rate) rate += 0.3; // Smaller penalty for >90% LTV
                 }
 
                 if (!rate) return null;
 
                 const monthlyPayment = calculateMonthlyPayment(loanAmount, rate, effectiveTerm);
-                const dsti = ((monthlyPayment + liabilities) / adjustedIncome) * 100;
                 
-                // DSTI limits
+                // Enhanced DSTI calculation with stress test
+                const stressRate = rate + 2; // CNB stress test +2%
+                const stressPayment = calculateMonthlyPayment(loanAmount, stressRate, effectiveTerm);
+                const dsti = ((monthlyPayment + liabilities) / adjustedIncome) * 100;
+                const stressDsti = ((stressPayment + liabilities) / adjustedIncome) * 100;
+                
+                // DSTI limits (Czech National Bank recommendations)
                 if (dsti > 50) return null;
-                if (monthlyPayment + liabilities > disposableIncome) return null;
+                if (stressDsti > 60) return null; // Stress test limit
+                if (monthlyPayment + liabilities > disposableIncome * 0.9) return null;
                 
                 return { 
                     id: o.id, 
                     rate: parseFloat(rate.toFixed(2)), 
                     monthlyPayment: Math.round(monthlyPayment), 
                     dsti: Math.round(dsti),
+                    stressDsti: Math.round(stressDsti),
                     title: o.title,
                     description: o.description
                 };
@@ -195,49 +224,111 @@ const handler = async (event) => {
             return { statusCode: 200, headers, body: JSON.stringify({ offers: [] }) }; 
         }
         
-        // Calculate scores
-        const bestOfferDsti = finalOffers[0].dsti;
+        // Calculate comprehensive scores
+        const bestOffer = finalOffers[0];
+        
+        // LTV Score (lower is better)
+        let ltvScore;
+        if (ltv <= 60) ltvScore = 95;
+        else if (ltv <= 70) ltvScore = 90;
+        else if (ltv <= 80) ltvScore = 80;
+        else if (ltv <= 90) ltvScore = 65;
+        else ltvScore = 40;
+        
+        // DSTI Score (lower is better)
+        let dstiScore = Math.round(Math.max(10, Math.min(95, (50 - bestOffer.dsti) / 50 * 100)));
+        
+        // Bonita Score (based on disposable income)
+        let bonitaScore = Math.round(Math.max(10, Math.min(95, (disposableIncome / 30000) * 100)));
+        
+        // Age Score
+        let ageScore = age <= 35 ? 95 : age <= 45 ? 85 : age <= 55 ? 70 : 50;
+        
+        // Employment Score
+        let employmentScore = employment === 'zaměstnanec' ? 90 : employment === 'jednatel' ? 75 : 60;
+        
+        // Calculate total score with weights
+        const totalScore = Math.round(
+            ltvScore * 0.25 +
+            dstiScore * 0.30 +
+            bonitaScore * 0.20 +
+            ageScore * 0.10 +
+            employmentScore * 0.15
+        );
+        
         const score = { 
             ltv: Math.round(ltv),
-            dsti: Math.round(Math.max(10, Math.min(95, (50 - bestOfferDsti) / 50 * 100))), 
-            bonita: Math.round(Math.max(10, Math.min(95, (disposableIncome / 20000) * 100))) 
+            dsti: dstiScore,
+            bonita: bonitaScore,
+            age: ageScore,
+            employment: employmentScore,
+            total: totalScore
         };
-        score.total = Math.round((score.ltv <= 80 ? 95 : score.ltv <= 90 ? 80 : 60) * 0.3 + score.dsti * 0.4 + score.bonita * 0.3);
 
-        // Generate tips
+        // Generate intelligent tips
         const tips = [];
-        if (score.dsti < 60) {
+        
+        if (bestOffer.dsti > 35) {
             tips.push({ 
-                id: 'low_dsti', 
-                title: "DSTI na hraně", 
-                message: `Váš poměr dluh/příjem je ${bestOfferDsti}%. Snižte stávající závazky nebo zvyšte příjem pro lepší podmínky.` 
+                id: 'dsti_warning', 
+                title: "DSTI na vyšší hranici", 
+                message: `Váš poměr dluh/příjem je ${bestOffer.dsti}%. Doporučujeme udržet rezervu pro nečekané výdaje.` 
             });
         }
+        
         if (ltv > 80) {
+            const additionalOwnFunds = Math.round((ltv - 80) * propertyValue / 100);
             tips.push({ 
                 id: 'high_ltv', 
-                title: "Vysoké LTV", 
-                message: `LTV ${Math.round(ltv)}% je vyšší. Zvažte navýšení vlastních zdrojů pro lepší úrok.` 
+                title: "Vyšší LTV = vyšší úrok", 
+                message: `Navýšením vlastních zdrojů o ${(additionalOwnFunds/1000000).toFixed(1)} mil. Kč získáte lepší sazbu.` 
+            });
+        }
+        
+        if (age > 45 && effectiveTerm > 20) {
+            tips.push({ 
+                id: 'age_term', 
+                title: "Věk a délka splácení", 
+                message: `V ${age + effectiveTerm} letech skončíte splácení. Zvažte kratší dobu nebo spolužadatele.` 
             });
         }
 
-        // Smart tip for term optimization
+        // Smart tip for optimization
         let smartTip = null;
-        if (effectiveTerm < 30 && age < 45) {
-            const payment30 = calculateMonthlyPayment(loanAmount, finalOffers[0].rate, 30);
-            if (payment30 < finalOffers[0].monthlyPayment * 0.9) {
-                const diff = Math.round(finalOffers[0].monthlyPayment - payment30);
+        
+        // Check if shorter fixation would be better
+        if (fixationInput >= 7) {
+            const shorterFixRates = ALL_OFFERS[0].rates['5'];
+            if (shorterFixRates) {
+                const shorterRate = ltv <= 70 ? shorterFixRates.rate_ltv70 : 
+                                   ltv <= 80 ? shorterFixRates.rate_ltv80 : 
+                                   shorterFixRates.rate_ltv90;
+                if (shorterRate && shorterRate < bestOffer.rate - 0.1) {
+                    smartTip = { 
+                        id: 'smart_fixation', 
+                        title: "💡 Tip na úsporu!", 
+                        message: `5letá fixace má sazbu ${shorterRate}% místo ${bestOffer.rate}%. Ušetříte tisíce měsíčně.` 
+                    };
+                }
+            }
+        }
+        
+        // Check if longer term would help
+        if (!smartTip && effectiveTerm < 30 && age < 40) {
+            const payment30 = calculateMonthlyPayment(loanAmount, bestOffer.rate, 30);
+            if (payment30 < bestOffer.monthlyPayment * 0.85) {
+                const diff = Math.round(bestOffer.monthlyPayment - payment30);
                 smartTip = { 
                     id: 'smart_term', 
-                    title: "💡 Chytrý tip!", 
-                    message: `Prodloužení splatnosti na 30 let by snížilo splátku o ${diff.toLocaleString('cs-CZ')} Kč měsíčně.` 
+                    title: "💡 Prodlužte splatnost!", 
+                    message: `Na 30 let by splátka klesla o ${diff.toLocaleString('cs-CZ')} Kč měsíčně.` 
                 };
             }
         }
 
-        // Calculate fixation details for the best offer
+        // Calculate detailed fixation analysis
         const fixationDetails = finalOffers.length > 0 ? 
-            calculateFixationAnalysis(loanAmount, finalOffers[0].rate, effectiveTerm, fixationInput) : null;
+            calculateFixationAnalysis(loanAmount, bestOffer.rate, effectiveTerm, fixationInput) : null;
         
         return { 
             statusCode: 200, 
@@ -247,7 +338,14 @@ const handler = async (event) => {
                 approvability: score, 
                 smartTip, 
                 tips,
-                fixationDetails 
+                fixationDetails,
+                marketInfo: {
+                    averageRate: 4.29,
+                    bestAvailableRate: 3.69,
+                    yourRate: bestOffer.rate,
+                    ratePosition: bestOffer.rate <= 4.0 ? 'excellent' : 
+                                 bestOffer.rate <= 4.5 ? 'good' : 'average'
+                }
             }) 
         };
     } catch (error) {

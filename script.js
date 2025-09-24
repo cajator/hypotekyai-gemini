@@ -16,11 +16,11 @@ document.addEventListener('DOMContentLoaded', () => {
         chatFormData: {},
         chatHistory: [],
         mobileSidebarOpen: false,
-        activeUsers: Math.floor(Math.random() * 50) + 20, // Simulace aktivních uživatelů
+        activeUsers: Math.floor(Math.random() * 30) + 120, // Stabilnější rozsah 120-150
         formData: {
             propertyValue: 5000000, loanAmount: 4000000,
-            income: 70000, liabilities: 5000, age: 35, children: 1,
-            loanTerm: 25, fixation: 5,
+            income: 50000, liabilities: 0, age: 35, children: 0,
+            loanTerm: 25, fixation: 3,
             purpose: 'koupě', propertyType: 'byt', landValue: 0, reconstructionValue: 0,
             employment: 'zaměstnanec', education: 'středoškolské'
         },
@@ -31,27 +31,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // Simulace aktivních uživatelů podle denní doby
     const updateActiveUsers = () => {
         const hour = new Date().getHours();
-        let baseUsers = 20;
+        let baseUsers = 120;
         
         // Více uživatelů během dne (8-18h)
         if (hour >= 8 && hour <= 18) {
-            baseUsers = 80;
+            baseUsers = 140;
         } else if (hour >= 19 && hour <= 22) {
-            baseUsers = 50;
+            baseUsers = 130;
         } else if (hour >= 6 && hour <= 7) {
-            baseUsers = 30;
+            baseUsers = 125;
         }
         
-        // Přidat náhodnou variaci
-        state.activeUsers = baseUsers + Math.floor(Math.random() * 20) - 10;
+        // Malá náhodná variace (+-5)
+        state.activeUsers = baseUsers + Math.floor(Math.random() * 10) - 5;
         
-        // Aktualizace v UI
-        const counter = document.getElementById('active-users-counter');
-        if (counter) {
-            counter.innerHTML = `<span class="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse mr-1"></span> ${state.activeUsers} lidí právě počítá hypotéku`;
-        }
-        
-        // Aktualizace ve footeru
+        // Aktualizace pouze ve footeru (horní lišta)
         const footerCounter = document.getElementById('active-users-footer');
         if (footerCounter) {
             footerCounter.textContent = `${state.activeUsers} lidí právě počítá hypotéku`;
@@ -870,13 +864,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const parsedValue = (type === 'range' || id.endsWith('-input')) ? parseNumber(value) : value;
             state.formData[baseId] = parsedValue;
             
-            if (type === 'range') {
-                const input = document.getElementById(`${baseId}-input`);
-                if(input) input.value = formatNumber(parsedValue, false);
-            } else if (type !== 'select-one') {
-                const slider = document.getElementById(baseId);
-                if(slider) slider.value = parsedValue;
-            }
+            // Použití requestAnimationFrame pro stabilitu
+            requestAnimationFrame(() => {
+                if (type === 'range') {
+                    const input = document.getElementById(`${baseId}-input`);
+                    if(input && input !== document.activeElement) {
+                        input.value = formatNumber(parsedValue, false);
+                    }
+                } else if (type !== 'select-one') {
+                    const slider = document.getElementById(baseId);
+                    if(slider && slider !== document.activeElement) {
+                        slider.value = parsedValue;
+                    }
+                }
+            });
             
             if (['loanAmount', 'propertyValue'].includes(baseId)) {
                 updateLTVDisplay();
@@ -940,18 +941,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         else if (mode) {
             switchMode(mode);
-            // Scroll na formulář pouze na mobilu po kliknutí
-            if (isMobile()) {
-                setTimeout(() => {
-                    const formId = mode === 'express' ? 'express-form' : 
-                                   mode === 'guided' ? 'guided-form' : 
-                                   'chat-messages';
-                    const form = document.getElementById(formId);
-                    if (form) {
-                        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                }, 100);
-            }
+            // Scroll na formulář pouze po kliknutí, s menším offsetem
+            setTimeout(() => {
+                const targetElement = mode === 'express' ? document.getElementById('express-form') : 
+                                     mode === 'guided' ? document.getElementById('guided-form') : 
+                                     document.getElementById('chat-messages');
+                if (targetElement) {
+                    const yOffset = isMobile() ? -20 : -80; // Menší offset
+                    const y = targetElement.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                    window.scrollTo({ top: y, behavior: 'smooth' });
+                }
+            }, 100);
         }
         else if (action === 'calculate') calculateRates(target);
         else if (action === 'go-to-calculator') {
@@ -968,7 +968,7 @@ document.addEventListener('DOMContentLoaded', () => {
             scrollToTarget('#kontakt');
         }
         else if (action === 'select-offer') {
-            // Nová funkce pro výběr nabídky
+            // Výběr nabídky
             const offerId = target.dataset.offer;
             const offer = state.calculation.offers.find(o => o.id === offerId);
             if (offer) {
@@ -981,6 +981,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 state.calculation.selectedOffer = offer;
                 // Překreslit chart
                 setTimeout(renderResultsChart, 0);
+                // Scroll na výsledky
+                const resultsSection = document.querySelector('#results-container .grid');
+                if (resultsSection) {
+                    const yOffset = -80;
+                    const y = resultsSection.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                    window.scrollTo({ top: y, behavior: 'smooth' });
+                }
             }
         }
         else if (action === 'discuss-with-ai' || action === 'discuss-fixation-with-ai') {
@@ -1191,7 +1198,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const init = () => {
         document.body.addEventListener('click', handleClick);
-        DOMElements.contentContainer.addEventListener('input', handleInput);
+        
+        // Použití event delegation pro lepší stabilitu
+        DOMElements.contentContainer.addEventListener('input', (e) => {
+            if (e.target.matches('input[type="range"], input[type="text"], select')) {
+                handleInput(e);
+            }
+        });
+        
+        // Zabránění mizení při focusu
+        DOMElements.contentContainer.addEventListener('focus', (e) => {
+            if (e.target.matches('input[type="text"]')) {
+                e.target.style.opacity = '1';
+                e.target.style.visibility = 'visible';
+            }
+        }, true);
+        
         if (DOMElements.leadForm) DOMElements.leadForm.addEventListener('submit', handleFormSubmit);
 
         DOMElements.mobileMenuButton?.addEventListener('click', () => {

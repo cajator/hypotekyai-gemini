@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.31">
+    <link rel="stylesheet" href="style.css?v=1.33">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💡</text></svg>">
 </head>
 <body class="bg-gray-50 text-gray-800 antialiased">
@@ -25,7 +25,7 @@
                 <a href="#partneri" class="nav-link scroll-to">Partneři</a>
             </div>
             <div class="flex items-center space-x-4">
-                 <a href="#kontakt" class="nav-btn scroll-to">Chci poradit</a>
+                 <a href="#kontakt" class="nav-btn scroll-to" data-action="show-lead-form-direct">Chci poradit</a>
                  <button id="mobile-menu-button" class="md:hidden p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
                  </button>
@@ -188,7 +188,13 @@
         </div>
     </footer>
 
-    <script src="script.js?v=1.31" defer></script>
+    <!-- GDPR Cookie Banner -->
+    <div id="cookie-banner" class="hidden fixed bottom-0 left-0 right-0 bg-gray-900 text-white p-4 z-50 flex-wrap md:flex-nowrap justify-between items-center gap-4">
+        <p class="text-sm">Tato webová stránka používá soubory cookies k zajištění co nejlepšího zážitku. <a href="#" class="underline hover:text-blue-400">Více informací</a></p>
+        <button id="cookie-accept" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm whitespace-nowrap">Rozumím a souhlasím</button>
+    </div>
+
+    <script src="script.js?v=1.33" defer></script>
 </body>
 </html>
 

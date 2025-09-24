@@ -1,4 +1,4 @@
-// netlify/functions/chat.js - v30.0 - Final Polish & Robust AI Logic
+// netlify/functions/chat.js - v33.0 - Final Polish & Robust AI Logic
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const handler = async (event) => {
@@ -44,7 +44,7 @@ const handler = async (event) => {
 };
 
 function createSystemPrompt(userMessage, context) {
-    const hasContext = context && context.calculation && context.calculation.offers && context.calculation.offers.length > 0;
+    const hasContext = context && context.calculation && context.calculation.selectedOffer;
     const contextString = hasContext ? `Uživatel MÁ namodelovanou hypotéku. Jeho data: ${JSON.stringify(context.calculation, null, 2)}` : 'Uživatel zatím nic nepočítal.';
 
     let prompt = `Jsi Hypoteční Ai, přátelský, a profesionální asistent.
@@ -58,6 +58,9 @@ function createSystemPrompt(userMessage, context) {
     UŽIVATELŮV DOTAZ: "${userMessage}"`;
 
     if (userMessage === "Proveď úvodní analýzu mé situace.") {
+        if (!hasContext) {
+            return `Odpověz POUZE JSON: {"tool":"initialAnalysis","response":"Nejprve si prosím namodelujte hypotéku, abych mohl provést analýzu."}`;
+        }
         return `Uživatel si zobrazil výsledky a chce úvodní analýzu. Vytvoř **stručné, ale informativní** shrnutí na **2 až 3 věty**.
         - Zhodnoť celkové skóre a okomentuj nejlepší nabídku.
         - Příklad: "Vaše celkové skóre ${context.calculation.approvability.total}% je solidní a dává Vám dobrou šanci na schválení. Na základě Vašich údajů jsme našli nabídku s měsíční splátkou ${context.calculation.selectedOffer.monthlyPayment.toLocaleString('cs-CZ')} Kč, což je za současných podmínek velmi konkurenceschopné."

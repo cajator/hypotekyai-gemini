@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
             propertyValue: 5000000, loanAmount: 4000000,
             income: 60000, liabilities: 0, age: 35, children: 0,
             loanTerm: 25, fixation: 5,
-            purpose: 'koupě', propertyType: 'byt', landValue: 0,
+            purpose: 'koupě', propertyType: 'byt', landValue: 0, reconstructionValue: 0,
             employment: 'zaměstnanec', education: 'středoškolské'
         },
         calculation: { offers: [], selectedOffer: null, approvability: { total: 0 }, smartTip: null, tips: [] },
@@ -31,6 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
         leadForm: document.getElementById('lead-form'),
         mobileMenuButton: document.getElementById('mobile-menu-button'),
         mobileMenu: document.getElementById('mobile-menu'),
+        cookieBanner: document.getElementById('cookie-banner'),
+        cookieAcceptBtn: document.getElementById('cookie-accept'),
     };
     
     // --- UTILITIES ---
@@ -76,7 +78,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${createSelect('purpose', 'Účel hypotéky', purposes, state.formData.purpose)}
                     ${createSelect('propertyType', 'Typ nemovitosti', propertyTypes, state.formData.propertyType)}
                     ${createSlider('propertyValue','Hodnota nemovitosti po dokončení',state.formData.propertyValue,500000,30000000,100000, 'col-span-2 md:col-span-1')}
+                    ${createSlider('reconstructionValue','Rozsah rekonstrukce',state.formData.reconstructionValue,0,10000000,50000, 'col-span-2 md:col-span-1 hidden')}
                     ${createSlider('landValue','Hodnota pozemku (u výstavby)',state.formData.landValue,0,10000000,50000, 'col-span-2 md:col-span-1 hidden')}
+                    <div class="col-span-2 md:col-span-1"></div>
                     ${createSlider('loanAmount','Požadovaná výše úvěru',state.formData.loanAmount,200000,20000000,100000, 'col-span-2')}
                     <div class="col-span-2 text-center font-bold text-lg text-green-600" id="ltv-display">Aktuální LTV: ${Math.round((state.formData.loanAmount / state.formData.propertyValue) * 100)}%</div>
                     ${createSlider('loanTerm','Délka splatnosti',state.formData.loanTerm,5,30,1)}
@@ -114,9 +118,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const allTipsHTML = (smartTip ? [smartTip] : []).concat(tips || []).map(tipHTML).join('');
 
         container.innerHTML = `<div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
-            <div class="lg:col-span-3 space-y-6">
-                <div><h3 class="text-3xl font-bold mb-6">Našli jsme pro vás tyto nabídky:</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-6">${offersHTML}</div></div>
-                <div><h3 class="text-3xl font-bold mb-6">Vývoj splácení v čase</h3><div class="bg-white p-6 rounded-xl border shadow-lg"><div class="relative h-96"><canvas id="resultsChart"></canvas></div></div></div>
+            <div class="lg:col-span-3">
+                <h3 class="text-3xl font-bold mb-6">Našli jsme pro vás tyto nabídky:</h3>
+                <div class="results-grid">${offersHTML}</div>
+                <div class="mt-8"><h3 class="text-3xl font-bold mb-6">Vývoj splácení v čase</h3><div class="bg-white p-6 rounded-xl border shadow-lg"><div class="relative h-96"><canvas id="resultsChart"></canvas></div></div></div>
             </div>
             <div class="lg:col-span-2 lg:sticky top-28"><div class="bg-blue-50 p-6 rounded-2xl border border-blue-200">
                 <h4 class="text-xl font-bold mb-4">Přehled a skóre vaší žádosti</h4>
@@ -256,19 +261,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleGuidedFormLogic = () => {
         const purposeSelect = document.getElementById('purpose');
         const landValueGroup = document.getElementById('landValue-group');
-        if (!purposeSelect || !landValueGroup) return;
+        const reconstructionValueGroup = document.getElementById('reconstructionValue-group');
+        if (!purposeSelect || !landValueGroup || !reconstructionValueGroup) return;
+
+        const resetAndHide = (group, valueKey) => {
+            group.classList.add('hidden');
+            if (state.formData[valueKey] > 0) {
+                state.formData[valueKey] = 0;
+                const input = document.getElementById(`${valueKey}-input`);
+                const slider = document.getElementById(valueKey);
+                if (input) input.value = formatNumber(0, false);
+                if (slider) slider.value = 0;
+            }
+        };
 
         if (purposeSelect.value === 'výstavba') {
             landValueGroup.classList.remove('hidden');
+            resetAndHide(reconstructionValueGroup, 'reconstructionValue');
+        } else if (purposeSelect.value === 'rekonstrukce') {
+            reconstructionValueGroup.classList.remove('hidden');
+            resetAndHide(landValueGroup, 'landValue');
         } else {
-            landValueGroup.classList.add('hidden');
-            if (state.formData.landValue > 0) {
-                 state.formData.landValue = 0;
-                 const landValueInput = document.getElementById('landValue-input');
-                 const landValueSlider = document.getElementById('landValue');
-                 if (landValueInput) landValueInput.value = formatNumber(0, false);
-                 if (landValueSlider) landValueSlider.value = 0;
-            }
+            resetAndHide(landValueGroup, 'landValue');
+            resetAndHide(reconstructionValueGroup, 'reconstructionValue');
         }
     };
 
@@ -306,10 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const href = target.getAttribute('href');
             if (href) {
                 e.preventDefault();
-                const actualTarget = document.querySelector(href);
-                if (actualTarget.dataset.action === 'show-lead-form') {
-                    DOMElements.leadFormContainer.classList.remove('hidden');
-                }
+                DOMElements.leadFormContainer.classList.remove('hidden');
                 scrollToTarget(href);
             }
             return;
@@ -319,6 +331,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (targetId) {
             e.preventDefault();
+            if (action === 'show-lead-form-direct') {
+                 DOMElements.leadFormContainer.classList.remove('hidden');
+            }
             scrollToTarget(targetId);
             if (DOMElements.mobileMenu.classList.contains('hidden') === false) {
                  DOMElements.mobileMenu.classList.add('hidden');
@@ -424,23 +439,36 @@ document.addEventListener('DOMContentLoaded', () => {
             handleGuidedFormLogic();
         }
         else if (mode === 'ai') {
+            if (!fromResults) {
+                state.calculation = { offers: [], selectedOffer: null, approvability: { total: 0 }, smartTip: null, tips: [] };
+            }
             DOMElements.contentContainer.innerHTML = getAiLayout();
             const sidebarContainer = document.getElementById('sidebar-container');
             if(sidebarContainer) sidebarContainer.innerHTML = getSidebarHTML();
 
             if (!fromResults) {
-                state.calculation = { offers: [], selectedOffer: null, approvability: { total: 0 }, smartTip: null, tips: [] };
-                if (sidebarContainer) sidebarContainer.innerHTML = getSidebarHTML();
                 addChatMessage('Dobrý den! Jsem Hypoteční stratég. Zeptejte se na cokoliv, nebo si namodelujte hypotéku v panelu vpravo.', 'ai');
             } else {
                  addChatMessage('Vítejte v AI Stratégovi. Vpravo vidíte analýzu vaší situace. Na co se podíváme dál?', 'ai');
                  handleChatMessageSend("Proveď úvodní analýzu mé situace.");
-                 setTimeout(() => renderSidebarChart(), 100); // Added small delay
+                 setTimeout(() => renderSidebarChart(), 100);
             }
             generateAISuggestions();
             document.getElementById('chat-input')?.addEventListener('keydown', handleChatEnter);
             scrollToTarget('#content-container');
         }
+    };
+
+    const handleCookieBanner = () => {
+        if (localStorage.getItem('cookieConsent') === 'true') {
+            DOMElements.cookieBanner.classList.add('hidden');
+        } else {
+            DOMElements.cookieBanner.classList.remove('hidden');
+        }
+        DOMElements.cookieAcceptBtn.addEventListener('click', () => {
+            localStorage.setItem('cookieConsent', 'true');
+            DOMElements.cookieBanner.classList.add('hidden');
+        });
     };
 
     const init = () => {
@@ -452,6 +480,7 @@ document.addEventListener('DOMContentLoaded', () => {
             DOMElements.mobileMenu.classList.toggle('hidden');
         });
 
+        handleCookieBanner();
         switchMode(state.mode);
     };
 

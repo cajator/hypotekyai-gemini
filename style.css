@@ -1,4 +1,4 @@
-/* Hypoteky Ai - ULTRA STABLE CSS v38.0 */
+/* Hypoteky Ai - v40.0 - FINAL CSS */
 :root { 
     --accent-color: #2563eb;
     --success-color: #10b981;
@@ -22,69 +22,6 @@ body {
     scroll-behavior: smooth;
     overflow-x: hidden;
     width: 100%;
-}
-
-/* KRITICKÉ - PERMANENTNÍ CHAT INPUT */
-#permanent-chat-input {
-    opacity: 1 !important;
-    visibility: visible !important;
-    display: block !important;
-    position: relative !important;
-    z-index: 9999 !important;
-    transform: none !important;
-    -webkit-transform: none !important;
-    pointer-events: auto !important;
-    touch-action: auto !important;
-    user-select: text !important;
-    -webkit-user-select: text !important;
-    font-size: 16px !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-    -webkit-appearance: none !important;
-    appearance: none !important;
-}
-
-#permanent-chat-input:focus,
-#permanent-chat-input:active,
-#permanent-chat-input:hover {
-    opacity: 1 !important;
-    visibility: visible !important;
-    display: block !important;
-    font-size: 16px !important;
-}
-
-/* Chat input footer - vždy nahoře */
-#chat-input-footer {
-    position: relative !important;
-    z-index: 10000 !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    display: block !important;
-    background: white !important;
-    transform: none !important;
-    -webkit-transform: none !important;
-}
-
-/* Chat messages wrapper */
-#ai-chat-wrapper {
-    position: relative !important;
-    z-index: 1 !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-}
-
-#chat-messages-wrapper {
-    position: relative !important;
-    z-index: 1 !important;
-}
-
-#chat-messages {
-    position: relative !important;
-    z-index: 1 !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
 }
 
 /* Navigace */
@@ -120,6 +57,30 @@ body {
     box-shadow: none; 
 }
 
+.nav-btn.nav-btn-cta {
+    background: linear-gradient(135deg, var(--success-color), #059669);
+    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+    font-size: 1rem;
+    padding: 14px 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-btn.nav-btn-cta::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.nav-btn.nav-btn-cta:hover::before {
+    left: 100%;
+}
+
 /* Badges */
 .badge { 
     padding: 4px 12px; 
@@ -151,6 +112,9 @@ body {
     z-index: 1;
     opacity: 1 !important;
     visibility: visible !important;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    backface-visibility: hidden;
 }
 
 .modern-input:focus, .modern-select:focus { 
@@ -253,6 +217,21 @@ body {
     box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
 }
 
+.slider-input::-moz-range-track { 
+    background: #e5e7eb; 
+    height: 0.5rem; 
+    border-radius: 1rem; 
+}
+
+.slider-input::-moz-range-thumb { 
+    background-color: var(--accent-color); 
+    height: 1.25rem; 
+    width: 1.25rem; 
+    border-radius: 50%; 
+    border: 2px solid white; 
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+}
+
 .slider-value-input {
     font-weight: bold; 
     font-size: 1rem;
@@ -268,6 +247,8 @@ body {
     z-index: 2;
     opacity: 1 !important;
     visibility: visible !important;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
 }
 
 .slider-value-input:focus, .slider-value-input:hover { 
@@ -428,6 +409,17 @@ body {
     transition: width 0.5s ease-in-out; 
 }
 
+/* Animation utilities */
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-down {
+    animation: fadeInDown 0.5s ease-out forwards;
+}
+.animation-delay-200 { animation-delay: 0.2s; }
+.animation-delay-400 { animation-delay: 0.4s; }
+
 /* AI layout grid */
 .ai-layout-grid {
     display: grid;
@@ -458,67 +450,85 @@ body {
     box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
 }
 
-/* MOBILE KRITICKÉ OPRAVY */
-@media (max-width: 1023px) {
-    /* Ultra stabilní chat input */
-    #permanent-chat-input {
-        font-size: 16px !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-        display: block !important;
-        position: relative !important;
-        z-index: 99999 !important;
-        transform: translateZ(0) !important;
-        -webkit-transform: translateZ(0) !important;
-        backface-visibility: hidden !important;
-        -webkit-backface-visibility: hidden !important;
-        will-change: contents !important;
-        pointer-events: auto !important;
-        touch-action: manipulation !important;
-        user-select: text !important;
-        -webkit-user-select: text !important;
-        -webkit-appearance: none !important;
-        width: calc(100% - 0px) !important;
-        max-width: 100% !important;
-        min-width: 0 !important;
-    }
-    
-    #permanent-chat-send {
-        position: relative !important;
-        z-index: 99999 !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-        pointer-events: auto !important;
-    }
-    
-    #chat-input-footer {
-        position: sticky !important;
-        bottom: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        z-index: 100000 !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-        display: block !important;
-        background: white !important;
-        padding: 12px !important;
-        border-top: 2px solid #2563eb !important;
-        transform: translateZ(0) !important;
-        -webkit-transform: translateZ(0) !important;
-    }
-    
-    #ai-chat-wrapper {
-        height: calc(100vh - 12rem) !important;
-        max-height: 100% !important;
-        overflow: hidden !important;
-    }
-    
-    #chat-messages {
-        height: 100% !important;
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-    }
-    
+.score-bar {
+    height: 12px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, 
+        #ef4444 0%, 
+        #f59e0b 30%, 
+        #eab308 50%, 
+        #84cc16 70%, 
+        #10b981 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.score-indicator {
+    position: absolute;
+    top: -4px;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border: 3px solid var(--accent-color);
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: left 0.5s ease-out;
+}
+
+/* KRITICKÉ OPRAVY PRO AI CHAT NA MOBILU */
+#permanent-chat-input {
+    font-size: 16px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: block !important;
+    position: relative !important;
+    z-index: 9999 !important;
+    transform: none !important;
+    -webkit-transform: none !important;
+    pointer-events: auto !important;
+    touch-action: auto !important;
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+}
+
+#permanent-chat-input:focus,
+#permanent-chat-input:active {
+    font-size: 16px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+#chat-input-footer {
+    position: relative !important;
+    z-index: 10000 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: block !important;
+    background: white !important;
+    transform: none !important;
+    -webkit-transform: none !important;
+}
+
+#ai-chat-wrapper {
+    position: relative !important;
+    z-index: 1 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+#chat-messages {
+    position: relative !important;
+    z-index: 1 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
     body {
         font-size: 0.9375rem;
     }
@@ -619,7 +629,7 @@ body {
     }
 }
 
-/* TABLET */
+/* Tablet styles */
 @media (min-width: 768px) and (max-width: 1023px) {
     .form-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -634,9 +644,15 @@ body {
     .slider-value-input {
         max-width: 160px;
     }
+    
+    #permanent-chat-input {
+        font-size: 16px !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
 }
 
-/* DESKTOP */
+/* Desktop styles */
 @media (min-width: 1024px) {
     .form-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -667,13 +683,12 @@ body {
     }
 }
 
-/* ULTRA AGGRESSIVE ZOOM FIX */
+/* Zoom protection */
 @media screen and (max-device-width: 1024px) {
     input[type="text"],
     input[type="email"],
     input[type="tel"],
     input[type="number"],
-    input[type="password"],
     select,
     textarea {
         font-size: 16px !important;
@@ -687,9 +702,8 @@ body {
     }
 }
 
-/* Viewport scaling protection */
+/* iOS specific fixes */
 @supports (-webkit-touch-callout: none) {
-    /* iOS specific */
     #permanent-chat-input {
         font-size: 16px !important;
         transform: scale(1) !important;
@@ -730,6 +744,70 @@ body {
     border-left-color: var(--warning-color);
 }
 
+/* Pulse animation */
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.9; }
+}
+
+.pulse-animation {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* Tooltips */
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip .tooltip-text {
+    visibility: hidden;
+    width: 200px;
+    background-color: #1f2937;
+    color: white;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.75rem;
+}
+
+.tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Loading skeleton */
+.skeleton {
+    background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s ease-in-out infinite;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Gradient backgrounds */
+.gradient-bg-blue {
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+}
+
+.gradient-bg-green {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+}
+
+.gradient-bg-purple {
+    background: linear-gradient(135deg, #faf5ff, #ede9fe);
+}
+
 /* Shadow utilities */
 .shadow-soft {
     box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
@@ -741,6 +819,11 @@ body {
 
 .shadow-hard {
     box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+}
+
+/* Smooth transitions */
+* {
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Safe area insets for iPhone X+ */
@@ -764,7 +847,7 @@ body {
     outline-offset: 2px;
 }
 
-/* Disable hover na dotykových zařízeních */
+/* Disable hover on touch devices */
 @media (hover: none) and (pointer: coarse) {
     .nav-btn:hover,
     .offer-card:hover,

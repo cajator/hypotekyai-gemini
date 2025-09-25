@@ -715,6 +715,31 @@ document.addEventListener('DOMContentLoaded', () => {
                                 </div>
                             </div>
                             
+                            ${fixationDetails.futureScenario.moderateIncrease ? `
+                            <div class="mt-4 bg-orange-50 p-4 rounded-xl border border-orange-200">
+                                <h5 class="font-bold text-sm mb-2 flex items-center">
+                                    <span class="text-lg mr-1">📈</span> Co kdyby sazby vzrostly o 0.5%?
+                                </h5>
+                                <p class="text-xs text-gray-600 mb-2">
+                                    Pokud by po ${state.formData.fixation} letech vzrostla sazba na ${fixationDetails.futureScenario.moderateIncrease.rate.toFixed(2)}%:
+                                </p>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <span class="text-sm text-gray-600">Nová splátka:</span>
+                                        <strong class="text-orange-600 text-lg block">${formatNumber(fixationDetails.futureScenario.moderateIncrease.newMonthlyPayment)}</strong>
+                                    </div>
+                                    <div>
+                                        <span class="text-sm text-gray-600">Měsíční navýšení:</span>
+                                        <strong class="text-orange-600 text-lg block">+${formatNumber(fixationDetails.futureScenario.moderateIncrease.monthlyIncrease)}</strong>
+                                    </div>
+                                    <div class="col-span-2 pt-2 border-t">
+                                        <span class="text-sm text-gray-600">Celkové roční navýšení:</span>
+                                        <strong class="text-orange-600 text-xl block">+${formatNumber(fixationDetails.futureScenario.moderateIncrease.monthlyIncrease * 12)}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            ` : ''}
+                            
                             <button class="nav-btn bg-blue-600 hover:bg-blue-700 text-white w-full mt-4" data-action="discuss-fixation-with-ai">
                                 <span class="mr-2">🤖</span> Probrat detaily s AI rádcem
                             </button>

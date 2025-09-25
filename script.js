@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
         chatFormData: {},
         chatHistory: [],
         mobileSidebarOpen: false,
-        activeUsers: Math.floor(Math.random() * 30) + 120, // Stabilnější rozsah 120-150
+        activeUsers: Math.floor(Math.random() * 30) + 120,
         formData: {
             propertyValue: 5000000, loanAmount: 4000000,
             income: 50000, liabilities: 0, age: 35, children: 0,
@@ -24,16 +24,15 @@ document.addEventListener('DOMContentLoaded', () => {
             purpose: 'koupě', propertyType: 'byt', landValue: 0, reconstructionValue: 0,
             employment: 'zaměstnanec', education: 'středoškolské'
         },
-        calculation: { offers: [], selectedOffer: null, approvability: { total: 0 }, smartTip: null, tips: [], fixationDetails: null },
+        calculation: { offers: [], selectedOffer: null, approvability: { total: 0 }, smartTip: null, tips: [], fixationDetails: null, isFromOurCalculator: false },
         chart: null,
     };
 
-    // Simulace aktivních uživatelů podle denní doby
+    // Simulace aktivních uživatelů
     const updateActiveUsers = () => {
         const hour = new Date().getHours();
         let baseUsers = 120;
         
-        // Více uživatelů během dne (8-18h)
         if (hour >= 8 && hour <= 18) {
             baseUsers = 140;
         } else if (hour >= 19 && hour <= 22) {
@@ -42,17 +41,14 @@ document.addEventListener('DOMContentLoaded', () => {
             baseUsers = 125;
         }
         
-        // Malá náhodná variace (+-5)
         state.activeUsers = baseUsers + Math.floor(Math.random() * 10) - 5;
         
-        // Aktualizace pouze ve footeru (horní lišta)
         const footerCounter = document.getElementById('active-users-footer');
         if (footerCounter) {
             footerCounter.textContent = `${state.activeUsers} lidí právě počítá hypotéku`;
         }
     };
 
-    // Aktualizace každých 30 sekund
     setInterval(updateActiveUsers, 30000);
 
     // --- DOM ELEMENTS CACHE ---
@@ -115,53 +111,41 @@ document.addEventListener('DOMContentLoaded', () => {
     const getCalculatorLayout = (formHTML) => 
         `<div class="bg-white p-4 md:p-6 lg:p-12 rounded-2xl shadow-xl border">${formHTML}</div>`;
     
+    // KRITICKÁ ZMĚNA - Chat layout s permanentním inputem
     const getAiLayout = () => {
-        if (isMobile()) {
+        const isMobileDevice = isMobile() || window.innerWidth < 1024;
+        
+        if (isMobileDevice) {
+            // MOBILNÍ VERZE - input je součástí fixního footeru
             return `
-                <div class="flex flex-col" style="position: relative; height: calc(100vh - 10rem); max-height: 600px; width: 100%; overflow: hidden;">
-                    <div class="bg-white flex-1 flex flex-col" style="position: relative; height: 100%; overflow: hidden;">
-                        <div id="chat-messages" style="flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0.75rem; min-height: 0;"></div>
-                        <div id="ai-suggestions" style="flex: 0 0 auto; padding: 0.75rem; border-top: 1px solid #e5e7eb; overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap;"></div>
-                        <div style="flex: 0 0 auto; padding: 0.75rem; border-top: 1px solid #e5e7eb; background: white; position: relative; z-index: 10;">
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <input type="text" 
-                                       id="chat-input" 
-                                       class="modern-input" 
-                                       placeholder="Zeptejte se..." 
-                                       style="flex: 1; font-size: 16px; min-width: 0; position: relative; z-index: 10; opacity: 1 !important; visibility: visible !important; -webkit-transform: translateZ(0); transform: translateZ(0);"
-                                       autocomplete="off"
-                                       autocorrect="off"
-                                       autocapitalize="off"
-                                       spellcheck="false">
-                                <button id="chat-send" 
-                                        class="nav-btn" 
-                                        style="flex: 0 0 auto; padding: 0.75rem; position: relative; z-index: 10;" 
-                                        data-action="send-chat">
-                                    <svg style="width: 1.25rem; height: 1.25rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
+                <div id="ai-chat-wrapper" style="position: relative; width: 100%; height: calc(100vh - 12rem); display: flex; flex-direction: column;">
+                    <!-- Chat messages container -->
+                    <div id="chat-messages-wrapper" style="flex: 1; overflow: hidden; position: relative;">
+                        <div id="chat-messages" style="height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 12px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px 8px 0 0;"></div>
+                    </div>
+                    
+                    <!-- Suggestions -->
+                    <div id="ai-suggestions" style="padding: 8px 12px; border: 1px solid #e5e7eb; border-top: none; background: white; overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap;"></div>
+                    
+                    <!-- PERMANENTNÍ INPUT FOOTER - NIKDY SE NEPŘEKRESLUJE -->
+                    <div id="chat-input-footer" style="position: sticky; bottom: 0; left: 0; right: 0; padding: 12px; background: white; border: 1px solid #e5e7eb; border-top: 2px solid #2563eb; border-radius: 0 0 8px 8px; z-index: 1000;">
+                        <!-- Input bude přidán pomocí JavaScript, ne innerHTML -->
                     </div>
                     
                     ${state.calculation.selectedOffer ? `
                     <button id="mobile-sidebar-toggle" 
-                            style="position: fixed; bottom: 1.5rem; right: 1rem; width: 3.5rem; height: 3.5rem; background-color: #2563eb; color: white; border-radius: 50%; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; z-index: 90; border: none;"
+                            style="position: fixed; bottom: 80px; right: 20px; width: 56px; height: 56px; background: #2563eb; color: white; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 900; border: none; cursor: pointer;"
                             data-action="toggle-mobile-sidebar">
-                        <span style="font-size: 1.5rem;">📊</span>
+                        <span style="font-size: 24px;">📊</span>
                     </button>
                     ` : ''}
-                    
-                    <div id="mobile-sidebar-overlay" class="hidden" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 100;" data-action="close-mobile-sidebar">
-                        <div id="sidebar-container" style="position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top-left-radius: 1.5rem; border-top-right-radius: 1.5rem; padding: 1.5rem 1rem; max-height: 70vh; overflow-y: auto; -webkit-overflow-scrolling: touch;" onclick="event.stopPropagation()"></div>
-                    </div>
                 </div>`;
         }
         
+        // DESKTOP VERZE
         return `
             <div class="grid ai-layout-grid gap-8 items-start">
-                <div class="bg-white rounded-2xl shadow-xl border flex flex-col">
+                <div id="ai-chat-desktop-wrapper" class="bg-white rounded-2xl shadow-xl border flex flex-col" style="height: calc(80vh - 100px);">
                     <!-- Info panel -->
                     <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-t-2xl border-b">
                         <div class="flex items-center justify-between">
@@ -186,26 +170,107 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     
                     <!-- Chat messages -->
-                    <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4" style="height: calc(75vh - 200px);"></div>
+                    <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
                     
                     <!-- AI suggestions -->
                     <div id="ai-suggestions" class="p-4 border-t bg-gray-50"></div>
                     
-                    <!-- Input area -->
-                    <div class="p-4 border-t flex items-center space-x-2 bg-white rounded-b-2xl">
-                        <input type="text" id="chat-input" class="modern-input flex-1" 
-                               placeholder="Zeptejte se na cokoliv ohledně hypotéky...">
-                        <button id="chat-send" class="nav-btn" data-action="send-chat">
-                            <span class="hidden sm:inline mr-2">Odeslat</span>
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                      d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                            </svg>
-                        </button>
+                    <!-- PERMANENTNÍ INPUT AREA -->
+                    <div id="chat-input-footer" class="p-4 border-t bg-white rounded-b-2xl">
+                        <!-- Input bude přidán pomocí JavaScript -->
                     </div>
                 </div>
                 <div id="sidebar-container" class="lg:sticky top-28 space-y-6"></div>
             </div>`;
+    };
+    
+    // NOVÁ FUNKCE - Vytvoření permanentního inputu
+    const createPermanentChatInput = () => {
+        const footer = document.getElementById('chat-input-footer');
+        if (!footer) return;
+        
+        // Zkontrolovat, jestli už input neexistuje
+        if (footer.querySelector('#permanent-chat-input')) return;
+        
+        const inputContainer = document.createElement('div');
+        inputContainer.style.cssText = 'display: flex; align-items: center; gap: 8px; width: 100%;';
+        
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.id = 'permanent-chat-input';
+        input.placeholder = 'Napište dotaz k hypotéce...';
+        input.style.cssText = `
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 16px;
+            background: white;
+            box-sizing: border-box;
+            -webkit-appearance: none;
+            appearance: none;
+            opacity: 1 !important;
+            visibility: visible !important;
+            display: block !important;
+            position: relative !important;
+            z-index: 9999 !important;
+        `;
+        
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.id = 'permanent-chat-send';
+        button.innerHTML = '→';
+        button.style.cssText = `
+            padding: 10px 16px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            white-space: nowrap;
+        `;
+        
+        // Event handlery
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleChatMessageSend(input.value.trim());
+                input.value = '';
+            }
+        });
+        
+        button.addEventListener('click', () => {
+            const message = input.value.trim();
+            if (message) {
+                handleChatMessageSend(message);
+                input.value = '';
+            }
+        });
+        
+        inputContainer.appendChild(input);
+        inputContainer.appendChild(button);
+        footer.appendChild(inputContainer);
+        
+        // Sidebar overlay pro mobil
+        if (isMobile() && state.calculation.selectedOffer) {
+            let overlay = document.getElementById('mobile-sidebar-overlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'mobile-sidebar-overlay';
+                overlay.className = 'hidden';
+                overlay.style.cssText = 'position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 800;';
+                overlay.setAttribute('data-action', 'close-mobile-sidebar');
+                
+                const sidebarContent = document.createElement('div');
+                sidebarContent.id = 'sidebar-container';
+                sidebarContent.style.cssText = 'position: fixed; bottom: 0; left: 0; right: 0; background: white; border-radius: 24px 24px 0 0; padding: 24px 16px; max-height: 70vh; overflow-y: auto; -webkit-overflow-scrolling: touch;';
+                sidebarContent.onclick = (e) => e.stopPropagation();
+                
+                overlay.appendChild(sidebarContent);
+                document.body.appendChild(overlay);
+            }
+        }
     };
     
     const getSidebarHTML = () => { 
@@ -331,7 +396,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     <button class="nav-btn bg-purple-600 hover:bg-purple-700 w-full mb-2" 
                             data-action="go-to-calculator">
-                        🔢 Spočítat hypotéku
+                        📢 Spočítat hypotéku
                     </button>
                     
                     <button class="nav-btn bg-green-600 hover:bg-green-700 w-full" 
@@ -403,7 +468,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const getAdditionalTips = (approvability) => {
         const tips = [];
         
-        // Tipy podle LTV
         if (approvability.ltv > 90) {
             tips.push({
                 icon: "🏠",
@@ -416,7 +480,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
         
-        // Tipy podle DSTI
         if (approvability.dsti < 70) {
             tips.push({
                 icon: "⚠️",
@@ -429,7 +492,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
         
-        // Tipy podle bonity
         if (approvability.bonita < 60) {
             tips.push({
                 icon: "📈",
@@ -437,7 +499,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
         
-        // Obecné tipy podle celkového skóre
         if (approvability.total >= 85) {
             tips.push({
                 icon: "🎯",
@@ -527,7 +588,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
         const allTipsHTML = (smartTip ? [smartTip] : []).concat(tips || []).map(tipHTML).join('');
         
-        // Získat dodatečné rychlé tipy
         const additionalTips = getAdditionalTips(approvability);
         const quickTipsHTML = additionalTips.map(tip => `
             <div class="flex items-center bg-white p-2 rounded-lg">
@@ -717,6 +777,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const renderResultsChart = () => renderChart('resultsChart', state.calculation);
 
+    // UPRAVENÁ FUNKCE - Přidává zprávy pomocí appendChild, ne innerHTML
     const addChatMessage = (message, sender) => {
         const container = document.getElementById('chat-messages');
         if (!container) return;
@@ -726,8 +787,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         const bubble = document.createElement('div');
+        
         if (sender === 'ai-typing') {
-            bubble.innerHTML = `<div class="chat-bubble-ai"><div class="loading-spinner-blue !m-0"></div></div>`;
+            bubble.className = 'chat-bubble-ai';
+            bubble.innerHTML = '<div class="loading-spinner-blue" style="margin: 0;"></div>';
             bubble.id = 'typing-indicator';
         } else {
             bubble.className = sender === 'ai' ? 'chat-bubble-ai' : 'chat-bubble-user';
@@ -737,9 +800,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 .replace(/\n/g, '<br>');
             bubble.innerHTML = processedMessage;
         }
+        
         container.appendChild(bubble);
         container.scrollTop = container.scrollHeight;
         
+        // Update sidebar pokud je potřeba
         if (state.mode === 'ai') {
             const sidebarContainer = document.getElementById('sidebar-container');
             if(sidebarContainer) sidebarContainer.innerHTML = getSidebarHTML();
@@ -760,7 +825,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ];
         } else {
             suggestions = [
-                "🔢 Spočítat hypotéku", 
+                "📢 Spočítat hypotéku", 
                 "📈 Aktuální sazby", 
                 "📋 Co potřebuji?", 
                 "📞 Domluvit se specialistou"
@@ -807,7 +872,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(`${CONFIG.API_RATES_ENDPOINT}?${new URLSearchParams(state.formData).toString()}`);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            state.calculation = { ...state.calculation, ...(await response.json()) };
+            state.calculation = { ...state.calculation, ...(await response.json()), isFromOurCalculator: true };
             if (!isSilent) renderResults();
             return true;
         } catch (error) {
@@ -872,7 +937,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const parsedValue = (type === 'range' || id.endsWith('-input')) ? parseNumber(value) : value;
             state.formData[baseId] = parsedValue;
             
-            // Použití requestAnimationFrame pro stabilitu
             requestAnimationFrame(() => {
                 if (type === 'range') {
                     const input = document.getElementById(`${baseId}-input`);
@@ -929,9 +993,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (quickQuestion) {
             if (isMobile()) toggleMobileSidebar();
-            const chatInput = document.getElementById('chat-input');
-            if (chatInput) chatInput.value = quickQuestion;
-            handleChatMessageSend(quickQuestion);
+            const chatInput = document.getElementById('permanent-chat-input');
+            if (chatInput) {
+                chatInput.value = quickQuestion;
+                handleChatMessageSend(quickQuestion);
+            }
             return;
         }
 
@@ -949,13 +1015,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         else if (mode) {
             switchMode(mode);
-            // Scroll na formulář pouze po kliknutí, s menším offsetem
             setTimeout(() => {
                 const targetElement = mode === 'express' ? document.getElementById('express-form') : 
                                      mode === 'guided' ? document.getElementById('guided-form') : 
                                      document.getElementById('chat-messages');
                 if (targetElement) {
-                    const yOffset = isMobile() ? -20 : -80; // Menší offset
+                    const yOffset = isMobile() ? -20 : -80;
                     const y = targetElement.getBoundingClientRect().top + window.pageYOffset + yOffset;
                     window.scrollTo({ top: y, behavior: 'smooth' });
                 }
@@ -966,30 +1031,20 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isMobile()) toggleMobileSidebar();
             switchMode('express');
         }
-        else if (action === 'ask-about-fixation') {
-            if (isMobile()) toggleMobileSidebar();
-            handleChatMessageSend("Řekni mi více o analýze fixace");
-        }
         else if (action === 'show-lead-form') {
             if (isMobile()) toggleMobileSidebar();
             DOMElements.leadFormContainer.classList.remove('hidden');
             scrollToTarget('#kontakt');
         }
         else if (action === 'select-offer') {
-            // Výběr nabídky
             const offerId = target.dataset.offer;
             const offer = state.calculation.offers.find(o => o.id === offerId);
             if (offer) {
-                // Odstranit selected ze všech
                 document.querySelectorAll('.offer-card').forEach(c => c.classList.remove('selected'));
-                // Přidat selected na vybranou
                 const card = document.querySelector(`[data-offer-id="${offerId}"]`);
                 if (card) card.classList.add('selected');
-                // Aktualizovat state
                 state.calculation.selectedOffer = offer;
-                // Překreslit chart
                 setTimeout(renderResultsChart, 0);
-                // Scroll na výsledky
                 const resultsSection = document.querySelector('#results-container .grid');
                 if (resultsSection) {
                     const yOffset = -80;
@@ -1008,23 +1063,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         else if (action === 'reset-chat') {
             state.chatHistory = [];
-            document.getElementById('chat-messages').innerHTML = '';
-            addChatMessage('Dobrý den! Jsem váš hypoteční poradce s AI nástroji. Jak vám mohu pomoci?', 'ai');
+            const chatMessages = document.getElementById('chat-messages');
+            if (chatMessages) chatMessages.innerHTML = '';
+            addChatMessage('Jsem váš hypoteční poradce s AI nástroji. Jak vám mohu pomoci?', 'ai');
             generateAISuggestions();
         }
         else if (action === 'download-summary') {
             alert('Funkce bude brzy dostupná. Mezitím si můžete udělat screenshot nebo zkopírovat data.');
         }
-        else if (action === 'compare-offer') {
-            const offerId = target.dataset.offer;
-            const offer = state.calculation.offers.find(o => o.id === offerId);
-            if (offer) {
-                handleChatMessageSend(`Řekni mi více o nabídce "${offer.title}" a porovnej ji s ostatními`);
-            }
-        }
-        else if (action === 'send-chat' || suggestion) {
-            const input = document.getElementById('chat-input');
-            const message = suggestion || input.value.trim();
+        else if (suggestion) {
+            const input = document.getElementById('permanent-chat-input');
+            const message = suggestion || input?.value.trim();
             if (!message || state.isAiTyping) return;
             if (input) input.value = '';
             handleChatMessageSend(message);
@@ -1058,18 +1107,19 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     const handleChatMessageSend = async (message) => {
+        if (!message || message.trim() === '') return;
+        
         if (state.chatFormState !== 'idle') {
             handleChatFormInput(message);
             return;
         }
 
-        // Mapování zkrácených návrhů na plné otázky
         const suggestionMap = {
-            "📊 Rychlá analýza": "Proveď úvodní analýzu mé situace.",
+            "📊 Rychlá analýza": "Proveď rychlou analýzu mé situace.",
             "💰 Lepší úrok?": "Můžu dostat lepší úrok? Jak?",
             "⏱️ Změnit fixaci": "Chci změnit délku fixace",
             "📞 Domluvit se specialistou": "Chci se domluvit se specialistou",
-            "🔢 Spočítat hypotéku": "Chci spočítat hypotéku",
+            "📢 Spočítat hypotéku": "Chci spočítat hypotéku",
             "📈 Aktuální sazby": "Jaké jsou aktuální sazby?",
             "📋 Co potřebuji?": "Jaké dokumenty potřebuji?"
         };
@@ -1081,16 +1131,21 @@ document.addEventListener('DOMContentLoaded', () => {
         addChatMessage('', 'ai-typing');
         generateAISuggestions();
         
-        const { chart, chatHistory, mobileSidebarOpen, ...cleanContext } = state;
+        const contextToSend = {
+            ...state,
+            isDataFromOurCalculator: state.calculation.isFromOurCalculator,
+            messageCount: state.chatHistory.filter(h => h.sender === 'user').length
+        };
         
-        // Timeout pro dlouhé čekání
+        const { chart, chatHistory, mobileSidebarOpen, ...cleanContext } = contextToSend;
+        
         const timeoutId = setTimeout(() => {
             if (state.isAiTyping) {
                 document.getElementById('typing-indicator')?.remove();
                 addChatMessage('Omlouvám se, zpracování trvá déle než obvykle. Zkuste to prosím znovu nebo se spojte s naším specialistou.', 'ai');
                 state.isAiTyping = false;
             }
-        }, 15000); // 15 sekund timeout
+        }, 15000);
         
         try {
             const response = await fetch(CONFIG.API_CHAT_ENDPOINT, { 
@@ -1124,6 +1179,42 @@ document.addEventListener('DOMContentLoaded', () => {
                 scrollToTarget('#kontakt');
                 addChatMessage(data.response || 'Otevírám formulář pro spojení se specialistou...', 'ai');
             }
+            else if (data.tool === 'showBanksList') {
+                const banksList = `
+                **Spolupracujeme s těmito bankami a institucemi:**
+                
+                **Největší banky:**
+                • Česká spořitelna
+                • ČSOB
+                • Komerční banka
+                • Raiffeisenbank
+                • UniCredit Bank
+                
+                **Hypoteční specialisté:**
+                • Hypoteční banka (ČSOB)
+                • Modrá pyramida (KB)
+                • ČMSS
+                • Raiffeisen stavební spořitelna
+                • Stavební spořitelna České spořitelny (Buřinka)
+                
+                **Moderní banky:**
+                • MONETA Money Bank
+                • mBank
+                • Fio banka
+                • Air Bank
+                • Banka CREDITAS
+                
+                **Další partneři:**
+                • Wüstenrot
+                • TRINITY BANK
+                • Sberbank
+                • Hello bank!
+                • Partners Banka
+                
+                Celkem pracujeme s **19+ institucemi**, což nám umožňuje najít nejlepší řešení pro každého klienta.`;
+                
+                addChatMessage(banksList, 'ai');
+            }
             else {
                 addChatMessage(data.response, 'ai');
             }
@@ -1150,18 +1241,11 @@ document.addEventListener('DOMContentLoaded', () => {
             addChatMessage('Perfektní! 📞 Všechny údaje mám. Náš specialista se Vám ozve do 24 hodin.', 'ai');
             state.chatFormState = 'idle';
             console.log("Captured lead:", state.chatFormData);
-            // Zde by se data odeslala na server
             state.chatFormData = {};
         }
     };
-
-    const handleChatEnter = (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            DOMElements.contentContainer.querySelector('[data-action="send-chat"]')?.click();
-        }
-    };
     
+    // KRITICKÁ ZMĚNA - přepnutí módu bez překreslení celého layoutu
     const switchMode = (mode, fromResults = false) => {
         state.mode = mode;
         DOMElements.modeCards.forEach(card => card.classList.toggle('active', card.dataset.mode === mode));
@@ -1177,49 +1261,42 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!fromResults) {
                 state.chatHistory = [];
             }
+            
+            // Vytvoření základního layoutu
             DOMElements.contentContainer.innerHTML = getAiLayout();
+            
+            // KRITICKÉ - vytvoření permanentního inputu
+            createPermanentChatInput();
+            
+            // Přidání sidebaru
             const sidebarContainer = document.getElementById('sidebar-container');
             if(sidebarContainer) sidebarContainer.innerHTML = getSidebarHTML();
 
+            // Přidání úvodní zprávy
             if (!fromResults) {
-                addChatMessage('Dobrý den! Jsem váš hypoteční poradce s přístupem k datům z 19+ bank. Pomohu vám najít nejlepší řešení pro vaši situaci. Co vás zajímá?', 'ai');
+                addChatMessage('Jsem váš hypoteční poradce s přístupem k datům z 19+ bank. Pomohu vám najít nejlepší řešení pro vaši situaci. Co vás zajímá?', 'ai');
             } else if (state.calculation.selectedOffer) {
-                addChatMessage(`Výborně! Mám vaši analýzu. Splátka **${formatNumber(state.calculation.selectedOffer.monthlyPayment)}** při sazbě **${state.calculation.selectedOffer.rate.toFixed(2)}%** je ${state.calculation.approvability.total > 80 ? 'velmi dobrá' : 'přijatelná'}. Co vás zajímá nejvíc?`, 'ai');
+                addChatMessage(`Mám vaši analýzu z naší kalkulačky. Splátka **${formatNumber(state.calculation.selectedOffer.monthlyPayment)}** při sazbě **${state.calculation.selectedOffer.rate.toFixed(2)}%** je ${state.calculation.approvability.total > 80 ? 'velmi dobrá nabídka' : 'solidní nabídka'}. Co vás zajímá nejvíc?`, 'ai');
             }
-            generateAISuggestions();
             
-            // Speciální handling pro mobilní chat input
-            setTimeout(() => {
-                const chatInput = document.getElementById('chat-input');
-                if (chatInput) {
-                    // Zabránění mizení na mobilu
-                    chatInput.addEventListener('focus', (e) => {
-                        e.target.style.opacity = '1';
-                        e.target.style.visibility = 'visible';
-                        e.target.style.display = 'block';
-                        if (isMobile()) {
-                            // Zabránit scrollování při focusu
-                            e.preventDefault();
-                            setTimeout(() => {
-                                e.target.scrollIntoViewIfNeeded ? e.target.scrollIntoViewIfNeeded() : e.target.scrollIntoView(false);
-                            }, 100);
-                        }
+            // Obnovení historie zpráv pokud existuje
+            if (fromResults && state.chatHistory.length > 0) {
+                const container = document.getElementById('chat-messages');
+                if (container) {
+                    container.innerHTML = '';
+                    state.chatHistory.forEach(msg => {
+                        const bubble = document.createElement('div');
+                        bubble.className = msg.sender === 'ai' ? 'chat-bubble-ai' : 'chat-bubble-user';
+                        let processedMessage = msg.text
+                            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                            .replace(/\n/g, '<br>');
+                        bubble.innerHTML = processedMessage;
+                        container.appendChild(bubble);
                     });
-                    
-                    chatInput.addEventListener('blur', (e) => {
-                        // Nechat input viditelný i po blur
-                        e.target.style.opacity = '1';
-                        e.target.style.visibility = 'visible';
-                    });
-                    
-                    chatInput.addEventListener('keydown', handleChatEnter);
-                    
-                    // Předejití iOS zoom
-                    if (isMobile()) {
-                        chatInput.style.fontSize = '16px';
-                    }
                 }
-            }, 100);
+            }
+            
+            generateAISuggestions();
             
             if (!fromResults || state.mode === 'ai') {
                 scrollToTarget('#content-container');
@@ -1242,20 +1319,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const init = () => {
         document.body.addEventListener('click', handleClick);
         
-        // Použití event delegation pro lepší stabilitu
         DOMElements.contentContainer.addEventListener('input', (e) => {
             if (e.target.matches('input[type="range"], input[type="text"], select')) {
                 handleInput(e);
             }
         });
-        
-        // Zabránění mizení při focusu
-        DOMElements.contentContainer.addEventListener('focus', (e) => {
-            if (e.target.matches('input[type="text"]')) {
-                e.target.style.opacity = '1';
-                e.target.style.visibility = 'visible';
-            }
-        }, true);
         
         if (DOMElements.leadForm) DOMElements.leadForm.addEventListener('submit', handleFormSubmit);
 
@@ -1263,12 +1331,13 @@ document.addEventListener('DOMContentLoaded', () => {
             DOMElements.mobileMenu?.classList.toggle('hidden');
         });
 
+        // Resize handler - ale NEMĚNIT AI layout pokud už existuje
         let resizeTimer;
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(() => {
                 if (state.mode === 'ai') {
-                    DOMElements.contentContainer.innerHTML = getAiLayout();
+                    // NEMĚNIT layout, jen update sidebar
                     const sidebarContainer = document.getElementById('sidebar-container');
                     if(sidebarContainer) sidebarContainer.innerHTML = getSidebarHTML();
                 }
@@ -1277,7 +1346,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         handleCookieBanner();
         switchMode(state.mode);
-        updateActiveUsers(); // Inicializace počtu aktivních uživatelů
+        updateActiveUsers();
     };
 
     init();

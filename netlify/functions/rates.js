@@ -1,4 +1,6 @@
-// netlify/functions/rates.js - v7.0 - Fixed for realistic calculations
+// netlify/functions/rates.js - v7.1 - FIXED version with debugging
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
 const ALL_OFFERS = [
     {
         id: 'offer-1',
@@ -89,7 +91,7 @@ const calculateFixationAnalysis = (loanAmount, rate, loanTerm, fixation) => {
     const pessimisticPayment = remainingMonths > 0 ? 
         calculateMonthlyPayment(remainingBalance, pessimisticRate, remainingYears) : 0;
     
-    const moderateIncreaseRate = rate + 0.5; // Mírný růst - DŮLEŽITÉ!
+    const moderateIncreaseRate = rate + 0.5; // Mírný růst
     const moderateIncreasePayment = remainingMonths > 0 ? 
         calculateMonthlyPayment(remainingBalance, moderateIncreaseRate, remainingYears) : 0;
     
@@ -161,6 +163,8 @@ const handler = async (event) => {
         const education = p.education || 'středoškolské';
         const purpose = p.purpose || 'koupě';
 
+        console.log('Input params:', { loanAmount, propertyValue, income, term, fixationInput });
+
         if (!loanAmount || !propertyValue || !income) { 
             return { statusCode: 200, headers, body: JSON.stringify({ offers: [] }) }; 
         }
@@ -168,23 +172,23 @@ const handler = async (event) => {
         const effectivePropertyValue = purpose === 'výstavba' ? propertyValue + landValue : propertyValue;
         const ltv = (effectivePropertyValue > 0) ? (loanAmount / effectivePropertyValue) * 100 : 0;
         
-        // Income adjustments - UPRAVENO pro realističtější výpočet
+        // Income adjustments
         let adjustedIncome = income;
         
-        // Pro expresní kalkulačku nepřepočítáváme, používáme přímo zadaný příjem
-        // Pouze pro detailní analýzu
-        if (p.employment) {
+        // Pro expresní kalkulačku nepřepočítáváme
+        const isExpressMode = !p.employment && !p.education;
+        if (!isExpressMode && p.employment) {
             if (employment === 'osvc') adjustedIncome = income * 0.7;
             else if (employment === 'jednatel') adjustedIncome = income * 0.85;
         }
         
-        // Vzdělání bonifikace pouze když je explicitně zadáno
-        if (p.education) {
+        // Vzdělání bonifikace
+        if (!isExpressMode && p.education) {
             if (education === 'vysokoškolské') adjustedIncome *= 1.1;
             else if (education === 'středoškolské') adjustedIncome *= 1.05;
         }
         
-        // Living minimum - UPRAVENO na realističtější hodnoty
+        // Living minimum - SNÍŽENO pro větší flexibilitu
         const adultMinimum = 4500;
         const firstChildMinimum = 2700;
         const otherChildMinimum = 2400;
@@ -194,10 +198,9 @@ const handler = async (event) => {
         if (children > 0) livingMinimum += firstChildMinimum;
         if (children > 1) livingMinimum += (children - 1) * otherChildMinimum;
         
-        // Pro expresní kalkulačku používáme jednodušší výpočet
-        const isExpressMode = !p.employment && !p.education;
+        // Pro expresní kalkulačku používáme nižší minimum
         if (isExpressMode) {
-            livingMinimum = 10000; // Fixní minimum pro express mode
+            livingMinimum = 8000; // Sníženo z 10000
         }
         
         const disposableIncome = adjustedIncome - livingMinimum;
@@ -206,11 +209,20 @@ const handler = async (event) => {
         const maxTermByAge = Math.max(5, Math.min(30, 70 - age));
         const effectiveTerm = Math.min(term, maxTermByAge);
 
+        console.log('Processing offers for LTV:', ltv, 'Income:', income, 'Adjusted:', adjustedIncome);
+
         const allQualifiedOffers = ALL_OFFERS
-            .filter(o => ltv <= o.max_ltv)
+            .filter(o => {
+                const ltvOk = ltv <= o.max_ltv;
+                console.log(`Offer ${o.id}: LTV check ${ltv} <= ${o.max_ltv}: ${ltvOk}`);
+                return ltvOk;
+            })
             .map(o => {
                 const ratesForFixation = o.rates[fixationInput] || o.rates['5'];
-                if (!ratesForFixation) return null;
+                if (!ratesForFixation) {
+                    console.log(`Offer ${o.id}: No rates for fixation ${fixationInput}`);
+                    return null;
+                }
 
                 let rate;
                 if (ltv <= 70) {
@@ -224,7 +236,10 @@ const handler = async (event) => {
                     if (rate) rate += 0.3; // Přirážka pro LTV > 90%
                 }
 
-                if (!rate) return null;
+                if (!rate) {
+                    console.log(`Offer ${o.id}: No rate found`);
+                    return null;
+                }
 
                 const monthlyPayment = calculateMonthlyPayment(loanAmount, rate, effectiveTerm);
                 
@@ -236,33 +251,49 @@ const handler = async (event) => {
                 const stressPayment = calculateMonthlyPayment(loanAmount, stressRate, effectiveTerm);
                 const stressDsti = ((stressPayment + liabilities) / income) * 100;
                 
-                // ČNB limity - UPRAVENO pro realističtější podmínky
+                // ČNB limity - UPRAVENO pro větší flexibilitu
                 let dstiLimit, stressDstiLimit;
                 if (income >= 50000) {
+                    dstiLimit = 55; // Zvýšeno z 50%
+                    stressDstiLimit = 60; // Zvýšeno z 55%
+                } else if (income >= 30000) {
                     dstiLimit = 50; // Zvýšeno z 45%
                     stressDstiLimit = 55; // Zvýšeno z 50%
-                } else if (income >= 30000) {
+                } else {
                     dstiLimit = 45; // Zvýšeno z 40%
                     stressDstiLimit = 50; // Zvýšeno z 45%
-                } else {
-                    dstiLimit = 40; // Zvýšeno z 35%
-                    stressDstiLimit = 45; // Zvýšeno z 40%
                 }
                 
-                // Pro expresní mód jsme méně striktní
+                // Pro expresní mód jsme ještě méně striktní
                 if (isExpressMode) {
-                    dstiLimit += 5;
-                    stressDstiLimit += 5;
+                    dstiLimit += 10; // Zvýšeno z 5
+                    stressDstiLimit += 10; // Zvýšeno z 5
                 }
                 
-                // Kontrola limitů
-                if (dsti > dstiLimit) return null;
-                if (stressDsti > stressDstiLimit) return null;
+                console.log(`Offer ${o.id}: DSTI ${dsti.toFixed(1)}% (limit ${dstiLimit}%), Stress ${stressDsti.toFixed(1)}% (limit ${stressDstiLimit}%)`);
                 
-                // Kontrola disponibilního příjmu - UPRAVENO
-                // Musí zbýt alespoň životní minimum po splátce
+                // Kontrola limitů - MÉNĚ STRIKTNÍ
+                if (dsti > dstiLimit * 1.1) { // Povolíme 10% překročení
+                    console.log(`Offer ${o.id}: DSTI exceeds limit by too much`);
+                    return null;
+                }
+                if (stressDsti > stressDstiLimit * 1.15) { // Povolíme 15% překročení u stress testu
+                    console.log(`Offer ${o.id}: Stress DSTI exceeds limit by too much`);
+                    return null;
+                }
+                
+                // Kontrola disponibilního příjmu - MÉNĚ STRIKTNÍ
                 const remainingAfterPayment = income - monthlyPayment - liabilities;
-                if (remainingAfterPayment < livingMinimum * 0.8) return null; // 80% minima musí zbýt
+                const minimumRequired = livingMinimum * 0.6; // Sníženo z 0.8 na 0.6
+                
+                console.log(`Offer ${o.id}: Remaining ${remainingAfterPayment} vs required ${minimumRequired}`);
+                
+                if (remainingAfterPayment < minimumRequired) {
+                    console.log(`Offer ${o.id}: Not enough remaining income`);
+                    return null;
+                }
+                
+                console.log(`Offer ${o.id}: QUALIFIED with rate ${rate}%`);
                 
                 return { 
                     id: o.id, 
@@ -277,7 +308,16 @@ const handler = async (event) => {
                 };
             }).filter(Boolean);
 
-        const finalOffers = allQualifiedOffers.sort((a, b) => a.rate - b.rate).slice(0, 3);
+        console.log('Qualified offers count:', allQualifiedOffers.length);
+        console.log('Qualified offers:', allQualifiedOffers.map(o => o.id));
+
+        // Vezmeme všechny kvalifikované nabídky (ne jen první 3)
+        const finalOffers = allQualifiedOffers.sort((a, b) => a.rate - b.rate);
+        
+        // Pokud máme méně než 3 nabídky, zkusíme být ještě méně striktní
+        if (finalOffers.length < 3) {
+            console.log('WARNING: Less than 3 offers found. Consider adjusting parameters.');
+        }
         
         if (finalOffers.length === 0) { 
             return { statusCode: 200, headers, body: JSON.stringify({ offers: [] }) }; 
@@ -304,7 +344,7 @@ const handler = async (event) => {
         else if (bestOffer.dsti <= 45) dstiScore = 65;
         else dstiScore = 50;
         
-        // Bonita skóre - založené na disponibilním příjmu po splátce
+        // Bonita skóre
         const remainingIncomeAfterPayment = income - bestOffer.monthlyPayment - liabilities;
         let bonitaScore;
         if (remainingIncomeAfterPayment >= 40000) bonitaScore = 100;
@@ -331,13 +371,13 @@ const handler = async (event) => {
         else if (employment === 'jednatel') employmentScore = 80;
         else employmentScore = 70;
         
-        // Celkové skóre - vážený průměr
+        // Celkové skóre
         const totalScore = Math.round(
-            ltvScore * 0.20 +      // LTV 20%
-            dstiScore * 0.35 +     // DSTI 35%
-            bonitaScore * 0.25 +   // Bonita 25%
-            ageScore * 0.10 +      // Věk 10%
-            employmentScore * 0.10 // Zaměstnání 10%
+            ltvScore * 0.20 +      
+            dstiScore * 0.35 +     
+            bonitaScore * 0.25 +   
+            ageScore * 0.10 +      
+            employmentScore * 0.10 
         );
         
         const score = { 
@@ -346,7 +386,7 @@ const handler = async (event) => {
             bonita: bonitaScore,
             age: ageScore,
             employment: employmentScore,
-            total: Math.max(50, Math.min(95, totalScore)) // Omezení mezi 50-95%
+            total: Math.max(50, Math.min(95, totalScore))
         };
 
         // Generate tips
@@ -409,7 +449,7 @@ const handler = async (event) => {
             statusCode: 200, 
             headers, 
             body: JSON.stringify({ 
-                offers: finalOffers, 
+                offers: finalOffers.slice(0, 3), // Vrátíme maximálně 3 nabídky
                 approvability: score, 
                 smartTip, 
                 tips,

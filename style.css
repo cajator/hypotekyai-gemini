@@ -477,13 +477,14 @@ body {
         touch-action: manipulation !important;
         user-select: text !important;
         -webkit-user-select: text !important;
+        appearance: none !important;
         -webkit-appearance: none !important;
         width: calc(100% - 0px) !important;
         max-width: 100% !important;
         min-width: 0 !important;
-    }
-    
-    #permanent-chat-send {
+        }
+        
+        #permanent-chat-send {
         position: relative !important;
         z-index: 99999 !important;
         opacity: 1 !important;

@@ -12,7 +12,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=3.1">
+    <link rel="stylesheet" href="style.css?v=3.0">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💡</text></svg>">
 </head>
 <body class="bg-gray-50 text-gray-800 antialiased">
@@ -30,7 +30,7 @@
                 <a href="#partneri" class="nav-link scroll-to">Partneři</a>
             </div>
             <div class="flex items-center space-x-2 md:space-x-4">
-                 <a href="#kontakt" class="nav-btn scroll-to hidden sm:inline-flex" data-action="show-lead-form-direct" data-target="#kontakt">📞 Spojte se specialistou</a>
+                 <a href="#kontakt" class="nav-btn scroll-to hidden sm:inline-flex" data-action="show-lead-form-direct" data-target="#kontakt">📞 Domluvit se specialistou</a>
                  <a href="#kontakt" class="nav-btn scroll-to sm:hidden" data-action="show-lead-form-direct" data-target="#kontakt">📞</a>
                  <button id="mobile-menu-button" class="md:hidden p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
@@ -56,7 +56,7 @@
                 <span class="text-gray-600">Zabezpečeno SSL</span>
             </div>
             <div class="flex items-center">
-                <span class="text-blue-500 mr-1">✔</span>
+                <span class="text-blue-500 mr-1">✓</span>
                 <span class="text-gray-600">GDPR Compliant</span>
             </div>
             <div class="flex items-center">
@@ -88,13 +88,13 @@
                 </div>
              </div>
             <h2 class="text-2xl md:text-3xl lg:text-5xl font-extrabold text-gray-900 mb-3 md:mb-4 animate-fade-in-down px-2">Profesionální hypoteční analýza s AI</h2>
-            <p class="text-sm md:text-base lg:text-lg text-gray-600 max-w-3xl mx-auto animate-fade-in-down animation-delay-200 px-2">Metodika ČNB a 19+ bank | Aktuální sazby | Přesný scoring v reálném čase</p>
+            <p class="text-sm md:text-base lg:text-lg text-gray-600 max-w-3xl mx-auto animate-fade-in-down animation-delay-200 px-2">Metodika 19+ partnerů | Aktuální sazby | Scoring v reálném čase</p>
         </section>
         
         <div id="kalkulacka" class="mb-12 md:mb-24 scroll-mt-20">
             <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8 mb-8 md:mb-12 items-stretch">
-                <div class="mode-card active" data-mode="express">
-                    <div class="badge badge-yellow !text-yellow-800 !bg-yellow-200">⚡ Rychle za 30 sekund</div>
+                 <div class="mode-card active" data-mode="express">
+                    <div class="badge badge-yellow !text-yellow-800 !bg-yellow-200">⚡ Rychle <span class="hidden sm:inline">za 30 sekund</span></div>
                     <h3 class="font-bold text-xl mb-3">Expresní scoring</h3>
                     <ul class="space-y-2 text-sm text-gray-600 flex-grow">
                         <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Okamžitý výpočet</li>
@@ -106,9 +106,9 @@
                     <div class="badge badge-blue">📊 Doporučeno</div>
                     <h3 class="font-bold text-xl mb-3">Detailní analýza</h3>
                     <ul class="space-y-2 text-sm text-gray-600 flex-grow">
-                        <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Scoring podle metodik ČNB</li>
-                        <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Stress test a DSTI analýza</li>
-                        <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Scénáře růstu/poklesu sazeb</li>
+                        <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Komplexní scoring podle metodik</li>
+                        <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Stress test ČNB a DSTI</li>
+                        <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Inteligentní analýza fixace</li>
                     </ul>
                 </div>
                 <div class="mode-card mode-card-dark" data-mode="ai">
@@ -116,8 +116,8 @@
                     <h3 class="font-bold text-xl mb-3 text-white">AI Hypoteční rádce</h3>
                     <ul class="space-y-2 text-sm text-gray-300 flex-grow">
                          <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-purple-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Interaktivní modelování splátek</li>
-                         <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-purple-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Predikce schválení 97% přesnost</li>
-                         <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-purple-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Odpovědi na složité dotazy</li>
+                         <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-purple-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Predikce schválení 97%</li>
+                         <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-purple-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Rychlá analýza a doporučení</li>
                     </ul>
                 </div>
             </section>
@@ -134,7 +134,7 @@
                 <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
                      <div class="text-4xl mb-4">🤖</div>
                     <h3 class="text-xl font-bold mb-2">Síla umělé inteligence</h3>
-                    <p class="text-gray-600">Naše AI v reálném čase analyzuje desítky parametrů podle metodiky ČNB a porovnává je s kritérii 19+ bank. Získáte tak okamžitý a přesný odhad vašich možností.</p>
+                    <p class="text-gray-600">Naše AI v reálném čase analyzuje desítky parametrů a porovnává je s metodikami bank. Získáte tak okamžitý a přesný odhad vašich možností.</p>
                 </div>
                 <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
                     <div class="text-4xl mb-4">🤝</div>
@@ -144,7 +144,7 @@
                 <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
                     <div class="text-4xl mb-4">📈</div>
                     <h3 class="text-xl font-bold mb-2">Data, kterým můžete věřit</h3>
-                    <p class="text-gray-600">Nejsme jen další srovnávač. Naše platforma pracuje s aktuálními sazbami a přesnými scoringovými modely podle metodiky ČNB, které reflektují skutečnou situaci na trhu.</p>
+                    <p class="text-gray-600">Nejsme jen další srovnávač. Naše platforma pracuje s aktuálními sazbami a scoringovými modely, které reflektují skutečnou situaci na trhu.</p>
                 </div>
             </div>
         </section>
@@ -163,12 +163,12 @@
                 <div class="text-center p-6">
                      <div class="flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 text-blue-600 text-2xl font-bold mx-auto mb-4">2</div>
                     <h3 class="text-xl font-bold mb-2">Získejte analýzu</h3>
-                    <p class="text-gray-600">Naše AI okamžitě vyhodnotí vaši situaci podle metodiky ČNB, ukáže vám předběžné nabídky a odhadne šanci na schválení.</p>
+                    <p class="text-gray-600">Naše AI okamžitě vyhodnotí vaši situaci, ukáže vám předběžné nabídky a odhadne šanci na schválení.</p>
                 </div>
                  <div class="text-center p-6">
                      <div class="flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 text-blue-600 text-2xl font-bold mx-auto mb-4">3</div>
                     <h3 class="text-xl font-bold mb-2">Spojte se se specialistou</h3>
-                    <p class="text-gray-600">Pokud vám analýza dává smysl, jedním kliknutím se spojíte s naším specialistou, který s vámi vše dokoní. Zdarma a nezávazně.</p>
+                    <p class="text-gray-600">Pokud vám analýza dává smysl, jedním kliknutím se spojíte s naším specialistou, který s vámi vše dokončí. Zdarma a nezávazně.</p>
                 </div>
             </div>
         </section>
@@ -208,7 +208,7 @@
                     </div>
                     <div><label for="email" class="form-label">E-mail *</label><input type="email" id="email" name="email" required class="modern-input"></div>
                     
-                    <!-- Kdy kontaktovat -->
+                    <!-- Nové pole - kdy kontaktovat -->
                     <div>
                         <label for="contact-time" class="form-label">Kdy vás můžeme kontaktovat?</label>
                         <select id="contact-time" name="contact-time" class="modern-select">
@@ -253,6 +253,6 @@
         <button id="cookie-accept" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm whitespace-nowrap">Rozumím a souhlasím</button>
     </div>
 
-    <script src="script.js?v=2.2" defer></script>
+    <script src="script.js?v=2.1" defer></script>
 </body>
 </html>

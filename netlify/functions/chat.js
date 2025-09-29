@@ -1,5 +1,5 @@
-// netlify/functions/chat.js - v6.3 - Použití nejnovějšího modelu flash
-import { GoogleGenerativeAI } from "@google/generative-ai";
+// netlify/functions/chat.js - v6.4 - Vynucení stabilní API verze v1
+import { GoogleGenerativeAI, GoogleAIFileManager } from "@google/generative-ai/server";
 
 const handler = async (event) => {
     // Standardní hlavičky a kontrola metody
@@ -11,21 +11,20 @@ const handler = async (event) => {
         const { message, context } = JSON.parse(event.body);
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) {
-            // Je lepší logovat specifickou chybu na serveru
             console.error('GEMINI_API_KEY není nastaven.');
             throw new Error('API klíč pro AI nebyl nakonfigurován.');
         }
 
-        const genAI = new GoogleGenerativeAI(apiKey);
-        // **OPRAVA**: Použití nejnovějšího a nejstabilnějšího modelu "gemini-1.5-flash-latest"
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+        // **HLAVNÍ OPRAVA**: Explicitně specifikujeme stabilní verzi API 'v1'
+        const genAI = new GoogleGenerativeAI(apiKey, { apiVersion: 'v1' });
+        
+        // Používáme ověřený a stabilní název modelu
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         const result = await model.generateContent(createSystemPrompt(message, context));
         
         const response = result.response;
 
-        // **KRITICKÁ OPRAVA**: Kontrola platné odpovědi a kandidátů PŘED pokusem o získání textu.
-        // Toto řeší případy, kdy byl dotaz zablokován z bezpečnostních důvodů.
         if (!response || !response.candidates || response.candidates.length === 0 || !response.candidates[0].content) {
              console.warn('Odpověď od Gemini byla zablokována nebo prázdná. Zpětná vazba:', response?.promptFeedback);
              return { statusCode: 200, headers, body: JSON.stringify({ response: "Omlouvám se, na tento dotaz nemohu odpovědět. Zkuste to prosím formulovat jinak." }) };
@@ -33,7 +32,6 @@ const handler = async (event) => {
         
         const responseText = response.text();
 
-        // Robustní parsování JSON pro volání nástrojů
         const jsonMatch = responseText.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
             try {
@@ -44,13 +42,10 @@ const handler = async (event) => {
             } catch (e) { /* Není platný JSON, pokračuje se k textové odpovědi */ }
         }
         
-        // Vrácení čisté textové odpovědi
         return { statusCode: 200, headers, body: JSON.stringify({ response: responseText.replace(/```json|```/g, "").trim() }) };
 
     } catch (error) {
-        // Logování celé chyby pro ladění na Netlify
         console.error('Chyba ve funkci chatu:', error);
-        // Poskytnutí uživatelsky přívětivé chybové zprávy
         return { statusCode: 500, headers, body: JSON.stringify({ error: `Došlo k chybě na serveru: ${error.message}` }) };
     }
 };

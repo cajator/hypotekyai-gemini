@@ -5,6 +5,7 @@
 
 [functions]
   node_bundler = "esbuild"
+  node_version = "18"
 
 [dev]
   command = "echo 'Starting local dev server'"
@@ -16,4 +17,3 @@
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
-

@@ -1,8 +1,7 @@
-// netlify/functions/chat.js - v7.0 - Přepnuto na CommonJS (require)
+// netlify/functions/chat.js - v8.0 - Zpět k základům: CommonJS + model gemini-pro
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 exports.handler = async (event) => {
-    // Standardní hlavičky a kontrola metody
     const headers = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type', 'Access-Control-Allow-Methods': 'POST, OPTIONS' };
     if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers };
     if (event.httpMethod !== 'POST') return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method Not Allowed' }) };
@@ -11,22 +10,21 @@ exports.handler = async (event) => {
         const { message, context } = JSON.parse(event.body);
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) {
-            console.error('GEMINI_API_KEY není nastaven.');
+            console.error('GEMINI_API_KEY není nastaven v Netlify.');
             throw new Error('API klíč pro AI nebyl nakonfigurován.');
         }
 
-        // Používáme stabilní verzi API v1beta, která je pro serverless funkce často výchozí
         const genAI = new GoogleGenerativeAI(apiKey);
         
-        // Používáme ověřený a stabilní název modelu
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        // **OPRAVA**: Vracíme se k nejzákladnějšímu a nejvíce podporovanému modelu "gemini-pro".
+        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
         const result = await model.generateContent(createSystemPrompt(message, context));
         
         const response = result.response;
 
         if (!response || !response.candidates || response.candidates.length === 0 || !response.candidates[0].content) {
-             console.warn('Odpověď od Gemini byla zablokována nebo prázdná. Zpětná vazba:', response?.promptFeedback);
+             console.warn('Odpověď od Gemini byla zablokována nebo prázdná.', response?.promptFeedback);
              return { statusCode: 200, headers, body: JSON.stringify({ response: "Omlouvám se, na tento dotaz nemohu odpovědět. Zkuste to prosím formulovat jinak." }) };
         }
         
@@ -39,19 +37,18 @@ exports.handler = async (event) => {
                 if (jsonResponse.tool) {
                     return { statusCode: 200, headers, body: JSON.stringify(jsonResponse) };
                 }
-            } catch (e) { /* Není platný JSON, pokračuje se k textové odpovědi */ }
+            } catch (e) { /* Pokračuje k textové odpovědi */ }
         }
         
         return { statusCode: 200, headers, body: JSON.stringify({ response: responseText.replace(/```json|```/g, "").trim() }) };
 
     } catch (error) {
-        console.error('Chyba ve funkci chatu:', error);
-        return { statusCode: 500, headers, body: JSON.stringify({ error: `Došlo k chybě na serveru: ${error.message}` }) };
+        console.error('Kompletní chyba ve funkci chatu:', error);
+        return { statusCode: 500, headers, body: JSON.stringify({ error: `Došlo k chybě na serveru. Zkontrolujte logy na Netlify.` }) };
     }
 };
 
 function createSystemPrompt(userMessage, context) {
-    // ... zbytek souboru zůstává stejný ...
     const hasContext = context && context.calculation && context.calculation.selectedOffer;
     const isFromOurCalculator = context?.isDataFromOurCalculator || context?.calculation?.isFromOurCalculator;
     const messageCount = context?.messageCount || 0;

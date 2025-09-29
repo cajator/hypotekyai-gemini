@@ -1,4 +1,4 @@
-// netlify/functions/chat.js - v6.1 - Vylepšené zpracování chyb a validace odpovědi
+// netlify/functions/chat.js - v6.2 - Oprava názvu modelu
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const handler = async (event) => {
@@ -17,7 +17,8 @@ const handler = async (event) => {
         }
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        // **OPRAVA**: Použití specifického a stabilního názvu modelu "gemini-1.0-pro"
+        const model = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
 
         const result = await model.generateContent(createSystemPrompt(message, context));
         
@@ -55,6 +56,7 @@ const handler = async (event) => {
 };
 
 function createSystemPrompt(userMessage, context) {
+    // ... zbytek souboru zůstává stejný ...
     const hasContext = context && context.calculation && context.calculation.selectedOffer;
     const isFromOurCalculator = context?.isDataFromOurCalculator || context?.calculation?.isFromOurCalculator;
     const messageCount = context?.messageCount || 0;
@@ -309,3 +311,4 @@ function createSystemPrompt(userMessage, context) {
 }
 
 export { handler };
+

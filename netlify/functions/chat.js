@@ -1,7 +1,7 @@
-// netlify/functions/chat.js - v6.4 - Vynucení stabilní API verze v1
-import { GoogleGenerativeAI, GoogleAIFileManager } from "@google/generative-ai/server";
+// netlify/functions/chat.js - v7.0 - Přepnuto na CommonJS (require)
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-const handler = async (event) => {
+exports.handler = async (event) => {
     // Standardní hlavičky a kontrola metody
     const headers = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type', 'Access-Control-Allow-Methods': 'POST, OPTIONS' };
     if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers };
@@ -15,8 +15,8 @@ const handler = async (event) => {
             throw new Error('API klíč pro AI nebyl nakonfigurován.');
         }
 
-        // **HLAVNÍ OPRAVA**: Explicitně specifikujeme stabilní verzi API 'v1'
-        const genAI = new GoogleGenerativeAI(apiKey, { apiVersion: 'v1' });
+        // Používáme stabilní verzi API v1beta, která je pro serverless funkce často výchozí
+        const genAI = new GoogleGenerativeAI(apiKey);
         
         // Používáme ověřený a stabilní název modelu
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -304,6 +304,4 @@ function createSystemPrompt(userMessage, context) {
 
     return prompt;
 }
-
-export { handler };
 

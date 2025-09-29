@@ -1,4 +1,4 @@
-// netlify/functions/chat.js - v6.2 - Oprava názvu modelu
+// netlify/functions/chat.js - v6.3 - Použití nejnovějšího modelu flash
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const handler = async (event) => {
@@ -17,8 +17,8 @@ const handler = async (event) => {
         }
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        // **OPRAVA**: Použití specifického a stabilního názvu modelu "gemini-1.0-pro"
-        const model = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
+        // **OPRAVA**: Použití nejnovějšího a nejstabilnějšího modelu "gemini-1.5-flash-latest"
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
 
         const result = await model.generateContent(createSystemPrompt(message, context));
         

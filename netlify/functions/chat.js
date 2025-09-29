@@ -1,4 +1,4 @@
-// netlify/functions/chat.js - v9.0 - Robustní verze s fallback modelem
+// netlify/functions/chat.js - v10.0 - Finální, nejjednodušší verze
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 exports.handler = async (event) => {
@@ -10,39 +10,25 @@ exports.handler = async (event) => {
         const { message, context } = JSON.parse(event.body);
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) {
-            console.error('Kritická chyba: GEMINI_API_KEY není nastaven v Netlify.');
             throw new Error('API klíč pro AI nebyl nakonfigurován.');
         }
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        let result;
+        
+        // Používáme nejzákladnější a nejstabilnější model
+        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-        try {
-            // Primární pokus s nejnovějším modelem
-            console.log("Pokus o volání primárního modelu: gemini-1.5-flash");
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-            result = await model.generateContent(createSystemPrompt(message, context));
-        } catch (error) {
-            // Pokud primární model selže s chybou 404, zkusíme záložní
-            if (error.toString().includes('404') || error.toString().includes('Not Found')) {
-                console.warn("Primární model 'gemini-1.5-flash' nenalezen. Zkouším záložní model 'gemini-pro'.");
-                const fallbackModel = genAI.getGenerativeModel({ model: "gemini-pro" });
-                result = await fallbackModel.generateContent(createSystemPrompt(message, context));
-            } else {
-                // Pokud to byla jiná chyba, vyhodíme ji dál
-                throw error;
-            }
-        }
+        const result = await model.generateContent(createSystemPrompt(message, context));
         
         const response = result.response;
 
         if (!response || !response.candidates || response.candidates.length === 0 || !response.candidates[0].content) {
-             console.warn('Odpověď od Gemini byla zablokována nebo prázdná.', response?.promptFeedback);
              return { statusCode: 200, headers, body: JSON.stringify({ response: "Omlouvám se, na tento dotaz nemohu odpovědět. Zkuste to prosím formulovat jinak." }) };
         }
         
         const responseText = response.text();
 
+        // Zpracování odpovědi (zůstává stejné)
         const jsonMatch = responseText.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
             try {
@@ -89,7 +75,7 @@ function createSystemPrompt(userMessage, context) {
     } : null;
 
     let prompt = `Jsi profesionální hypoteční poradce s 15 lety zkušeností a AI analytické nástroje k dispozici. 
-    Pracuješ pro platformu Hypoteky Ai, která analyzuje data z ${contextData?.marketInfo?.bankCount || 19} partnerských bank.
+    Pracuješ pro platformu Hypoteky Ai, která analyzu data z ${contextData?.marketInfo?.bankCount || 19} partnerských bank.
     
     KLÍČOVÉ PRINCIPY:
     - Vždy poskytuj KONKRÉTNÍ ČÍSLA a PŘÍKLADY z reálného trhu

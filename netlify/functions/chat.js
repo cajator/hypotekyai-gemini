@@ -1,4 +1,4 @@
-// netlify/functions/chat.js - v8.0 - Zpět k základům: CommonJS + model gemini-pro
+// netlify/functions/chat.js - v9.0 - Robustní verze s fallback modelem
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 exports.handler = async (event) => {
@@ -10,16 +10,29 @@ exports.handler = async (event) => {
         const { message, context } = JSON.parse(event.body);
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) {
-            console.error('GEMINI_API_KEY není nastaven v Netlify.');
+            console.error('Kritická chyba: GEMINI_API_KEY není nastaven v Netlify.');
             throw new Error('API klíč pro AI nebyl nakonfigurován.');
         }
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        
-        // **OPRAVA**: Vracíme se k nejzákladnějšímu a nejvíce podporovanému modelu "gemini-pro".
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        let result;
 
-        const result = await model.generateContent(createSystemPrompt(message, context));
+        try {
+            // Primární pokus s nejnovějším modelem
+            console.log("Pokus o volání primárního modelu: gemini-1.5-flash");
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            result = await model.generateContent(createSystemPrompt(message, context));
+        } catch (error) {
+            // Pokud primární model selže s chybou 404, zkusíme záložní
+            if (error.toString().includes('404') || error.toString().includes('Not Found')) {
+                console.warn("Primární model 'gemini-1.5-flash' nenalezen. Zkouším záložní model 'gemini-pro'.");
+                const fallbackModel = genAI.getGenerativeModel({ model: "gemini-pro" });
+                result = await fallbackModel.generateContent(createSystemPrompt(message, context));
+            } else {
+                // Pokud to byla jiná chyba, vyhodíme ji dál
+                throw error;
+            }
+        }
         
         const response = result.response;
 
@@ -43,11 +56,12 @@ exports.handler = async (event) => {
         return { statusCode: 200, headers, body: JSON.stringify({ response: responseText.replace(/```json|```/g, "").trim() }) };
 
     } catch (error) {
-        console.error('Kompletní chyba ve funkci chatu:', error);
+        console.error('Finální chyba ve funkci chatu:', error.toString());
         return { statusCode: 500, headers, body: JSON.stringify({ error: `Došlo k chybě na serveru. Zkontrolujte logy na Netlify.` }) };
     }
 };
 
+// Funkce createSystemPrompt zůstává beze změny
 function createSystemPrompt(userMessage, context) {
     const hasContext = context && context.calculation && context.calculation.selectedOffer;
     const isFromOurCalculator = context?.isDataFromOurCalculator || context?.calculation?.isFromOurCalculator;

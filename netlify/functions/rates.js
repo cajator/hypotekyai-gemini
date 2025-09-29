@@ -1,6 +1,5 @@
-// netlify/functions/rates.js - v7.2 - Přepnuto na CommonJS (require)
-
-// Poznámka: Import GoogleGenerativeAI zde není potřeba, byl odstraněn.
+// netlify/functions/rates.js - v7.1 - FIXED version with debugging
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const ALL_OFFERS = [
     {
@@ -145,7 +144,7 @@ const calculateFixationAnalysis = (loanAmount, rate, loanTerm, fixation) => {
     };
 };
 
-exports.handler = async (event) => {
+const handler = async (event) => {
     const headers = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
     if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers };
 
@@ -486,4 +485,5 @@ exports.handler = async (event) => {
 
 const formatNumber = (n, currency = true) => n.toLocaleString('cs-CZ', currency ? { style: 'currency', currency: 'CZK', maximumFractionDigits: 0 } : { maximumFractionDigits: 0 });
 
-module.exports = { handler };
+export { handler };
+

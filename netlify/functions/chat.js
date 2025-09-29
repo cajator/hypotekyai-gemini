@@ -1,5 +1,49 @@
-// netlify/functions/chat.js - v10.0 - Finální, nejjednodušší verze
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+// netlify/functions/chat.js - v13.0 - Přechod na model gemini-1.5-flash-latest
+const https = require('https');
+
+// Funkce pro bezpečné volání API, která nahrazuje knihovnu
+function callGenerativeApi(apiKey, model, prompt) {
+    return new Promise((resolve, reject) => {
+        const payload = JSON.stringify({
+            "contents": [{ "parts": [{ "text": prompt }] }]
+        });
+
+        const options = {
+            hostname: 'generativelanguage.googleapis.com',
+            // Používáme stabilní v1 API
+            path: `/v1/models/${model}:generateContent?key=${apiKey}`,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(payload)
+            }
+        };
+
+        const req = https.request(options, (res) => {
+            let data = '';
+            res.on('data', (chunk) => { data += chunk; });
+            res.on('end', () => {
+                if (res.statusCode >= 200 && res.statusCode < 300) {
+                    try {
+                        resolve(JSON.parse(data));
+                    } catch (e) {
+                        reject(new Error('Chyba při parsování odpovědi od API.'));
+                    }
+                } else {
+                    reject(new Error(`API vrátilo chybu ${res.statusCode}: ${data}`));
+                }
+            });
+        });
+
+        req.on('error', (e) => {
+            reject(new Error(`Chyba síťového požadavku: ${e.message}`));
+        });
+
+        req.write(payload);
+        req.end();
+    });
+}
+
 
 exports.handler = async (event) => {
     const headers = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type', 'Access-Control-Allow-Methods': 'POST, OPTIONS' };
@@ -12,23 +56,17 @@ exports.handler = async (event) => {
         if (!apiKey) {
             throw new Error('API klíč pro AI nebyl nakonfigurován.');
         }
-
-        const genAI = new GoogleGenerativeAI(apiKey);
         
-        // Používáme nejzákladnější a nejstabilnější model
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-
-        const result = await model.generateContent(createSystemPrompt(message, context));
+        const prompt = createSystemPrompt(message, context);
+        // ZMĚNA: Používáme novější a dostupnější model
+        const result = await callGenerativeApi(apiKey, 'gemini-1.5-flash-latest', prompt);
         
-        const response = result.response;
+        const responseText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
 
-        if (!response || !response.candidates || response.candidates.length === 0 || !response.candidates[0].content) {
+        if (!responseText) {
              return { statusCode: 200, headers, body: JSON.stringify({ response: "Omlouvám se, na tento dotaz nemohu odpovědět. Zkuste to prosím formulovat jinak." }) };
         }
         
-        const responseText = response.text();
-
-        // Zpracování odpovědi (zůstává stejné)
         const jsonMatch = responseText.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
             try {
@@ -75,7 +113,7 @@ function createSystemPrompt(userMessage, context) {
     } : null;
 
     let prompt = `Jsi profesionální hypoteční poradce s 15 lety zkušeností a AI analytické nástroje k dispozici. 
-    Pracuješ pro platformu Hypoteky Ai, která analyzu data z ${contextData?.marketInfo?.bankCount || 19} partnerských bank.
+    Pracuješ pro platformu Hypoteky Ai, která analyzuje data z ${contextData?.marketInfo?.bankCount || 19} partnerských bank.
     
     KLÍČOVÉ PRINCIPY:
     - Vždy poskytuj KONKRÉTNÍ ČÍSLA a PŘÍKLADY z reálného trhu

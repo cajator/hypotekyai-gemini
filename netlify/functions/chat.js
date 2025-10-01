@@ -484,9 +484,9 @@ const handler = async (event) => {
         };
         
         // PŘÍMÉ VOLÁNÍ NA STABILNÍ v1 API POMOCÍ `fetch`
-        const modelName = "gemini-1.5-flash-latest"; // Používáme nejnovější a nejspolehlivější model
+        const modelName = "gemini-1.5-flash"; // OPRAVA: Použití stabilního názvu modelu místo "latest"
         // OPRAVA: Změna verze API z v1 na v1beta pro kompatibilitu s modelem
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+        const url = `https://generativelace.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
         const apiResponse = await fetch(url, {
             method: 'POST',
@@ -544,3 +544,4 @@ const handler = async (event) => {
 
 // Netlify vyžaduje `handler` jako export
 export { handler };
+

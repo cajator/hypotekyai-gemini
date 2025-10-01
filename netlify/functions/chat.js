@@ -1,53 +1,59 @@
-// netlify/functions/chat.js - v16.0 - FIXED GEMINI API
-// Strategické poradenství + Stress testy + Predikce budoucnosti
+// netlify/functions/chat.js - v16.0 - FULL PREMIUM VERSION
 const https = require('https');
 
-function callGenerativeApi(apiKey, model, prompt) {
+function callGeminiApi(apiKey, prompt, timeoutMs = 25000) {
     return new Promise((resolve, reject) => {
         const payload = JSON.stringify({
-            "contents": [{ "parts": [{ "text": prompt }] }]
+            contents: [{ 
+                parts: [{ text: prompt }] 
+            }],
+            generationConfig: {
+                temperature: 0.7,
+                topK: 40,
+                topP: 0.95,
+                maxOutputTokens: 2048,
+            }
         });
 
         const options = {
             hostname: 'generativelanguage.googleapis.com',
-            // OPRAVA: Změna z v1beta na v1
-            path: `/v1/models/${model}:generateContent?key=${apiKey}`,
+            path: `/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Content-Length': Buffer.byteLength(payload)
             },
-            timeout: 30000
+            timeout: timeoutMs
         };
 
         const req = https.request(options, (res) => {
             let data = '';
-            res.on('data', (chunk) => { data += chunk; });
+            
+            res.on('data', (chunk) => { 
+                data += chunk; 
+            });
+            
             res.on('end', () => {
-                console.log('API Response Status:', res.statusCode);
-                
                 if (res.statusCode >= 200 && res.statusCode < 300) {
                     try {
-                        resolve(JSON.parse(data));
+                        const parsed = JSON.parse(data);
+                        resolve(parsed);
                     } catch (e) {
-                        console.error('Parse error:', e);
-                        reject(new Error('Chyba při parsování odpovědi od API: ' + e.message));
+                        reject(new Error(`Parse error: ${e.message}`));
                     }
                 } else {
-                    console.error('API Error:', data);
-                    reject(new Error(`API vrátilo chybu ${res.statusCode}: ${data}`));
+                    reject(new Error(`API error ${res.statusCode}: ${data}`));
                 }
             });
         });
 
         req.on('error', (e) => {
-            console.error('Request error:', e);
-            reject(new Error(`Chyba síťového požadavku: ${e.message}`));
+            reject(new Error(`Network error: ${e.message}`));
         });
 
         req.on('timeout', () => {
             req.destroy();
-            reject(new Error('API požadavek vypršel (timeout)'));
+            reject(new Error('Request timeout'));
         });
 
         req.write(payload);
@@ -76,79 +82,61 @@ exports.handler = async (event) => {
     }
 
     try {
-        console.log('=== CHAT REQUEST START ===');
-        
         const { message, context } = JSON.parse(event.body);
-        console.log('User message:', message);
         
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) {
-            console.error('GEMINI_API_KEY not configured');
-            throw new Error('API klíč pro AI nebyl nakonfigurován.');
+            throw new Error('GEMINI_API_KEY not configured');
         }
         
-        console.log('API Key exists:', apiKey ? 'YES (length: ' + apiKey.length + ')' : 'NO');
-        
         const prompt = createSystemPrompt(message, context);
-        console.log('Prompt length:', prompt.length);
         
-        // OPRAVA: Aktuální názvy Gemini modelů
-        const models = [
-            'gemini-1.5-flash-latest',  // Nejrychlejší
-            'gemini-1.5-flash',          // Fallback
-            'gemini-1.5-pro-latest'      // Nejpřesnější (ale pomalejší)
-        ];
-        
-        let result = null;
-        let lastError = null;
-        
-        for (const model of models) {
+        // Primární pokus
+        let result;
+        try {
+            result = await callGeminiApi(apiKey, prompt, 25000);
+        } catch (primaryError) {
+            console.error('Primary API call failed:', primaryError.message);
+            
+            // Fallback s kratším timeoutem
             try {
-                console.log('Trying model:', model);
-                result = await callGenerativeApi(apiKey, model, prompt);
-                console.log('Success with model:', model);
-                break;
-            } catch (error) {
-                console.error(`Model ${model} failed:`, error.message);
-                lastError = error;
-                continue;
+                result = await callGeminiApi(apiKey, prompt, 15000);
+            } catch (fallbackError) {
+                console.error('Fallback API call failed:', fallbackError.message);
+                throw new Error('AI service temporarily unavailable');
             }
         }
         
-        if (!result) {
-            console.error('All models failed. Last error:', lastError);
-            throw lastError || new Error('Všechny modely selhaly');
-        }
-        
         const responseText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-        console.log('Response text length:', responseText ? responseText.length : 0);
 
         if (!responseText) {
-            console.error('No response text in result:', JSON.stringify(result, null, 2));
             return { 
                 statusCode: 200, 
                 headers, 
                 body: JSON.stringify({ 
-                    response: "Omlouvám se, na tento dotaz nemohu odpovědět. Zkuste to prosím formulovat jinak nebo se spojte s naším specialistou." 
+                    response: "Omlouvám se, na tento dotaz nemohu odpovědět. Zkuste to prosím formulovat jinak nebo se spojte s naším specialistou na 📞 800 123 456." 
                 }) 
             };
         }
         
+        // Zkusit parsovat JSON response (pro tool calls)
         const jsonMatch = responseText.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
             try {
                 const jsonResponse = JSON.parse(jsonMatch[0]);
                 if (jsonResponse.tool) {
-                    console.log('Returning tool response:', jsonResponse.tool);
                     return { statusCode: 200, headers, body: JSON.stringify(jsonResponse) };
                 }
             } catch (e) { 
-                console.log('JSON parse failed, continuing with text response');
+                // Pokračovat s text response
             }
         }
         
-        const cleanResponse = responseText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-        console.log('=== CHAT REQUEST END ===');
+        // Vyčistit response od markdown
+        const cleanResponse = responseText
+            .replace(/```json\n?/g, "")
+            .replace(/```\n?/g, "")
+            .trim();
         
         return { 
             statusCode: 200, 
@@ -157,17 +145,14 @@ exports.handler = async (event) => {
         };
 
     } catch (error) {
-        console.error('=== CHAT ERROR ===');
-        console.error('Error type:', error.constructor.name);
-        console.error('Error message:', error.message);
-        console.error('Error stack:', error.stack);
+        console.error('Chat error:', error.message);
         
         return { 
             statusCode: 500, 
             headers, 
             body: JSON.stringify({ 
-                error: 'Došlo k chybě při komunikaci s AI. Zkuste to prosím znovu nebo kontaktujte podporu.',
-                details: process.env.NODE_ENV === 'development' ? error.message : undefined
+                error: 'Došlo k chybě při komunikaci s AI. Zkuste to prosím znovu.',
+                fallback: 'Pro okamžitou pomoc volejte našeho specialistu na 📞 800 123 456'
             }) 
         };
     }
@@ -205,65 +190,65 @@ function createSystemPrompt(userMessage, context) {
 
     let prompt = `Jsi PREMIUM hypoteční stratég s AI analytickými nástroji. Tvůj cíl není jen prodat hypotéku, ale vytvořit DLOUHODOBOU STRATEGII pro klienta.
 
-    🎯 TVOJE MISE:
-    - Ukazuj KONKRÉTNÍ scénáře budoucnosti (ne obecnosti!)
-    - Varuj před riziky a ukaž jak se chránit
-    - Najdi skryté příležitosti k úspoře
-    - Vytvoř akční plán s čísly a termíny
-    - Propoj AI analýzu s lidským expertním poradenstvím
-    
-    ⚡ KLÍČOVÉ PRINCIPY:
-    1. VŽDY konkrétní čísla (ne "může", ale "ušetříte 127 000 Kč")
-    2. SCÉNÁŘE "co když" (ztráta práce, růst sazeb, dítě...)
-    3. SROVNÁNÍ alternativ (refinancování vs. předčasné splácení)
-    4. ČASOVÁ OSA (co dělat teď, za rok, za 5 let)
-    5. ${messageCount > 0 ? 'NEPOZDRAV znovu' : 'Krátký úvod při prvním kontaktu'}
-    
-    🦾 NÁSTROJE K DISPOZICI:
-    - Metodiky 19+ bank v reálném čase
-    - ČNB stress testy a predikce
-    - Historická data sazeb (10 let zpět)
-    - Demografické trendy a životní události
-    
-    ${hasContext ? `
-    📊 AKTUÁLNÍ SITUACE KLIENTA:
-    
-    ZÁKLADNÍ DATA:
-    - Hypotéka: ${contextData.loanAmount?.toLocaleString('cs-CZ')} Kč na ${contextData.loanTerm} let
-    - Splátka: ${contextData.monthlyPayment?.toLocaleString('cs-CZ')} Kč (${contextData.rate}% p.a.)
-    - Příjem: ${contextData.income?.toLocaleString('cs-CZ')} Kč/měs
-    - Zbývá po splátce: ${contextData.detailedCalculation?.remainingAfterPayment?.toLocaleString('cs-CZ')} Kč
-    - LTV: ${contextData.ltv}% | DSTI: ${contextData.dsti}%
-    - Věk: ${contextData.age} let | Děti: ${contextData.children}
-    
-    SKÓRE BONITY:
-    - Celkové: ${contextData.totalScore}%
-    - LTV: ${contextData.ltvScore}% | DSTI: ${contextData.dstiScore}% | Bonita: ${contextData.bonita}%
-    
-    ${contextData.fixationDetails ? `
-    ANALÝZA FIXACE (${context.formData?.fixation} let):
-    - Celkem zaplatí: ${contextData.fixationDetails.totalPaymentsInFixation?.toLocaleString('cs-CZ')} Kč
-    - Z toho úroky: ${contextData.fixationDetails.totalInterestForFixation?.toLocaleString('cs-CZ')} Kč
-    - Po fixaci zbude: ${contextData.fixationDetails.remainingBalanceAfterFixation?.toLocaleString('cs-CZ')} Kč
-    
-    PREDIKCE PO FIXACI:
-    - Pokles sazby na ${contextData.fixationDetails.futureScenario?.optimistic?.rate?.toFixed(2)}%: splátka ${contextData.fixationDetails.futureScenario?.optimistic?.newMonthlyPayment?.toLocaleString('cs-CZ')} Kč
-    - Růst +0.5%: splátka ${contextData.fixationDetails.futureScenario?.moderateIncrease?.newMonthlyPayment?.toLocaleString('cs-CZ')} Kč
-    - Růst +1.5%: splátka ${contextData.fixationDetails.futureScenario?.pessimistic?.newMonthlyPayment?.toLocaleString('cs-CZ')} Kč
-    ` : ''}
-    
-    RYCHLÁ ANALÝZA:
-    - Denní náklady: ${contextData.quickAnalysis?.dailyCost?.toLocaleString('cs-CZ')} Kč
-    - Daňová úleva: ${(contextData.quickAnalysis?.taxSavings * 12)?.toLocaleString('cs-CZ')} Kč/rok
-    - Vs. nájem (75%): ${contextData.quickAnalysis?.equivalentRent?.toLocaleString('cs-CZ')} Kč
-    ` : 'Klient zatím nemá spočítanou hypotéku. Nabídni rychlou kalkulačku.'}
-    
-    DOTAZ UŽIVATELE: "${userMessage}"`;
+🎯 TVOJE MISE:
+- Ukazuj KONKRÉTNÍ scénáře budoucnosti (ne obecnosti!)
+- Varuj před riziky a ukaž jak se chránit
+- Najdi skryté příležitosti k úspoře
+- Vytvoř akční plán s čísly a termíny
+- Propoj AI analýzu s lidským expertním poradenstvím
+
+⚡ KLÍČOVÉ PRINCIPY:
+1. VŽDY konkrétní čísla (ne "může", ale "ušetříte 127 000 Kč")
+2. SCÉNÁŘE "co kdyby" (ztráta práce, růst sazeb, dítě...)
+3. SROVNÁNÍ alternativ (refinancování vs. předčasné splácení)
+4. ČASOVÁ OSA (co dělat teď, za rok, za 5 let)
+5. ${messageCount > 0 ? 'NEPOZDRAV znovu' : 'Krátký úvod při prvním kontaktu'}
+
+🦾 NÁSTROJE K DISPOZICI:
+- Metodiky 19+ bank v reálném čase
+- ČNB stress testy a predikce
+- Historická data sazeb (10 let zpět)
+- Demografické trendy a životní události
+
+${hasContext ? `
+📊 AKTUÁLNÍ SITUACE KLIENTA:
+
+ZÁKLADNÍ DATA:
+- Hypotéka: ${contextData.loanAmount?.toLocaleString('cs-CZ')} Kč na ${contextData.loanTerm} let
+- Splátka: ${contextData.monthlyPayment?.toLocaleString('cs-CZ')} Kč (${contextData.rate}% p.a.)
+- Příjem: ${contextData.income?.toLocaleString('cs-CZ')} Kč/měs
+- Zbývá po splátce: ${contextData.detailedCalculation?.remainingAfterPayment?.toLocaleString('cs-CZ')} Kč
+- LTV: ${contextData.ltv}% | DSTI: ${contextData.dsti}%
+- Věk: ${contextData.age} let | Děti: ${contextData.children}
+
+SKÓRE BONITY:
+- Celkové: ${contextData.totalScore}%
+- LTV: ${contextData.ltvScore}% | DSTI: ${contextData.dstiScore}% | Bonita: ${contextData.bonita}%
+
+${contextData.fixationDetails ? `
+ANALÝZA FIXACE (${context.formData?.fixation} let):
+- Celkem zaplatí: ${contextData.fixationDetails.totalPaymentsInFixation?.toLocaleString('cs-CZ')} Kč
+- Z toho úroky: ${contextData.fixationDetails.totalInterestForFixation?.toLocaleString('cs-CZ')} Kč
+- Po fixaci zbude: ${contextData.fixationDetails.remainingBalanceAfterFixation?.toLocaleString('cs-CZ')} Kč
+
+PREDIKCE PO FIXACI:
+- Pokles sazby na ${contextData.fixationDetails.futureScenario?.optimistic?.rate?.toFixed(2)}%: splátka ${contextData.fixationDetails.futureScenario?.optimistic?.newMonthlyPayment?.toLocaleString('cs-CZ')} Kč
+- Růst +0.5%: splátka ${contextData.fixationDetails.futureScenario?.moderateIncrease?.newMonthlyPayment?.toLocaleString('cs-CZ')} Kč
+- Růst +1.5%: splátka ${contextData.fixationDetails.futureScenario?.pessimistic?.newMonthlyPayment?.toLocaleString('cs-CZ')} Kč
+` : ''}
+
+RYCHLÁ ANALÝZA:
+- Denní náklady: ${contextData.quickAnalysis?.dailyCost?.toLocaleString('cs-CZ')} Kč
+- Daňová úleva: ${(contextData.quickAnalysis?.taxSavings * 12)?.toLocaleString('cs-CZ')} Kč/rok
+- Vs. nájem (75%): ${contextData.quickAnalysis?.equivalentRent?.toLocaleString('cs-CZ')} Kč
+` : 'Klient zatím nemá spočítanou hypotéku. Nabídni rychlou kalkulačku.'}
+
+DOTAZ UŽIVATELE: "${userMessage}"`;
 
     // ===== SPECIALIZOVANÉ ANALÝZY =====
     
     // STRESS TESTY
-    if (userMessage.toLowerCase().match(/co když|ztratím|přijdu o|nemoc|nezaměstna|krize|problém|zvládnu|nebezpeč/)) {
+    if (userMessage.toLowerCase().match(/co kdyby|ztratím|přijdu o|nemoc|nezaměstna|krize|problém|zvládnu|nebezpeč/)) {
         if (!hasContext) {
             return prompt + `\n\nOdpověz: "Pro stress test potřebuji znát vaši situaci. Spočítejte si hypotéku rychlou kalkulačkou (30 sekund) a já vám ukážu přesně co se stane při různých scénářích."`;
         }
@@ -272,7 +257,7 @@ function createSystemPrompt(userMessage, context) {
         const remainingAfter = contextData.detailedCalculation?.remainingAfterPayment;
         const emergencyFund = monthlyPayment * 6;
         
-        const stressAnalysis = `<strong>🛡️ STRESS TEST - Co když nastanou problémy?</strong>\n\n`;
+        const stressAnalysis = `<strong>🛡️ STRESS TEST - Co kdyby nastaly problémy?</strong>\n\n`;
         
         let response = stressAnalysis;
         
@@ -292,7 +277,7 @@ function createSystemPrompt(userMessage, context) {
         response += `• Zbude vám: ${Math.round(contextData.income - stressPayment).toLocaleString('cs-CZ')} Kč\n\n`;
         
         response += `<strong>SCÉNÁŘ 3: Přibude dítě</strong>\n`;
-        const childCost = 10000; // Průměrné měsíční náklady na dítě
+        const childCost = 10000;
         response += `• Průměrné náklady na dítě: ${childCost.toLocaleString('cs-CZ')} Kč/měs\n`;
         response += `• Rodičovský příspěvek: 350 000 Kč (max, postupně)\n`;
         response += `• Jeden příjem (mateřská): disponibilní ${Math.round((contextData.income * 0.7 + 15000) - monthlyPayment - childCost).toLocaleString('cs-CZ')} Kč\n`;
@@ -326,7 +311,7 @@ function createSystemPrompt(userMessage, context) {
         const monthlySaving = Math.round((currentRate - bestMarketRate) * contextData.loanAmount * 0.01 / 12);
         const yearlySaving = monthlySaving * 12;
         const totalSaving = monthlySaving * contextData.loanTerm * 12;
-        const reficosts = 15000; // Odhad nákladů na refinancování
+        const reficosts = 15000;
         
         let response = `<strong>💰 ANALÝZA REFINANCOVÁNÍ - Konkrétní čísla</strong>\n\n`;
         
@@ -356,7 +341,7 @@ function createSystemPrompt(userMessage, context) {
         response += `   - Náš specialista vyjedná nejlepší podmínky\n\n`;
         
         response += `3. ALTERNATIVA - Mimořádné splátky:\n`;
-        const extraPayment = Math.round(remainingAfter * 0.3);
+        const extraPayment = Math.round(contextData.detailedCalculation?.remainingAfterPayment * 0.3);
         const yearsReduction = Math.round(extraPayment / contextData.monthlyPayment * 0.8);
         response += `   - Odkládejte ${extraPayment.toLocaleString('cs-CZ')} Kč/měs\n`;
         response += `   - Zkrátíte hypotéku o ~${yearsReduction} let\n`;
@@ -405,7 +390,7 @@ function createSystemPrompt(userMessage, context) {
         response += `• Doporučení: ${currentAge + midPoint < 45 ? 'Zvažte kratší splatnost nebo mimořádné splátky' : 'Začněte budovat důchodovou rezervu'}\n\n`;
         
         response += `<strong>🏠 ZA ${yearsRemaining} LET (${new Date().getFullYear() + yearsRemaining}) - KONEC:</strong>\n`;
-        response += `• Spláceno: ${contextData.loanAmount?.toLocaleString('cs-CZ')} Kč\n`;
+        response += `• Splaceno: ${contextData.loanAmount?.toLocaleString('cs-CZ')} Kč\n`;
         response += `• Váš věk: ${currentAge + yearsRemaining} let\n`;
         response += `• Nemovitost: Vaše (bez dluhů!)\n`;
         response += `• Měsíčně ušetříte: ${contextData.monthlyPayment?.toLocaleString('cs-CZ')} Kč\n`;
@@ -443,7 +428,7 @@ function createSystemPrompt(userMessage, context) {
             return prompt + `\n\nOdpověz: "Po splátce vám zbývá ${contextData.detailedCalculation?.remainingAfterPayment?.toLocaleString('cs-CZ')} Kč. To je příliš málo na efektivní investice. DOPORUČUJI: 1) Nejprve vytvořte rezervu ${Math.round(contextData.monthlyPayment * 6).toLocaleString('cs-CZ')} Kč. 2) Pak zvažte delší splatnost pro uvolnění prostředků. 3) Až budete mít 10k+ měsíčně volných, můžeme řešit investice. Chcete přepočítat hypotéku s delší splatností?"`;
         }
         
-        const investmentReturn = 0.07; // 7% průměrný dlouhodobý výnos
+        const investmentReturn = 0.07;
         const mortgageRate = contextData.rate / 100;
         
         let response = `<strong>📊 INVESTICE VS. SPLÁCENÍ HYPOTÉKY - Matematická analýza</strong>\n\n`;
@@ -535,7 +520,6 @@ function createSystemPrompt(userMessage, context) {
         
         if (contextData.fixationDetails) {
             analysis += `<strong>📊 CO VÁS ČEKÁ:</strong>\n`;
-            const yearsLeft = contextData.loanTerm;
             analysis += `• Za ${contextData.fixation} let (konec fixace): zbude ${contextData.fixationDetails.remainingBalanceAfterFixation?.toLocaleString('cs-CZ')} Kč\n`;
             analysis += `• Splatíte ${Math.round((1 - contextData.fixationDetails.remainingBalanceAfterFixation / contextData.loanAmount) * 100)}% dluhu\n`;
             analysis += `• Pokud sazby klesnou o 0.5%: ušetříte ${contextData.fixationDetails.futureScenario?.optimistic?.monthlySavings?.toLocaleString('cs-CZ')} Kč/měs\n`;
@@ -557,8 +541,8 @@ function createSystemPrompt(userMessage, context) {
             analysis += `3. 💬 PROMLUVTE SE SPECIALISTOU: Najdeme řešení i pro složité případy\n\n`;
         }
         
-        analysis += `Chcete prozkoumat konkrétní scénář? Zeptejte se například:\n`;
-        analysis += `• "Co když ztratím práci?"\n`;
+        analysis += `Chcete prozkoumat konkrétní scénáře? Zeptejte se například:\n`;
+        analysis += `• "Co kdyby ztratím práci?"\n`;
         analysis += `• "Vyplatí se refinancování?"\n`;
         analysis += `• "Jaký bude můj plán na 10 let?"`;
         
@@ -566,7 +550,7 @@ function createSystemPrompt(userMessage, context) {
     }
 
     if (userMessage.toLowerCase().match(/kontakt|specialista|mluvit|poradit|konzultace|telefon|schůzka|sejít|zavolat|domluvit/)) {
-        return prompt + `\n\nKlient chce kontakt. Odpověz POUZE JSON: {"tool":"showLeadForm","response":"📞 Výborně! Připojím vás k našemu PREMIUM týmu hypotečních stratégů. Nejsme jen zprostředkovatelé - vytvoříme vám:\n\n• Kompletní finanční strategii na míru\n• Vyjednání TOP podmínek u bank\n• Dlouhodobý plán (ne jen jednorázovou nabídku)\n• Přístup ke skrytým nabídkám nedostupným online\n\nSpecialista vás kontaktuje do 4 hodin. Otevírám formulář..."}`;
+        return prompt + `\n\nKlient chce kontakt. Odpověz POUZE JSON: {"tool":"showLeadForm","response":"📞 Výborně! Připojím vás k našemu PREMIUM týmu hypotečních stratégů. Nejsme jen zprostředkovatelé - vytvoříme vám:\\n\\nâ€¢ Kompletní finanční strategii na míru\\n• Vyjednání TOP podmínek u bank\\n• Dlouhodobý plán (ne jen jednorázovou nabídku)\\n• Přístup ke skrytým nabídkám nedostupným online\\n\\nSpecialista vás kontaktuje do 4 hodin. Otevírám formulář..."}`;
     }
 
     if (userMessage.match(/\d+/)) {
@@ -606,17 +590,17 @@ function createSystemPrompt(userMessage, context) {
     }
 
     prompt += `\n\n
-    📋 INSTRUKCE PRO ODPOVĚĎ:
-    1. ${messageCount > 0 ? 'BEZ pozdravu - už jste v konverzaci' : 'Stručný úvod pouze při prvním kontaktu'}
-    2. KONKRÉTNÍ čísla v Kč (ne "může ušetřit", ale "ušetříte 127 000 Kč")
-    3. SCÉNÁŘE "co když" s přesnými dopady
-    4. SROVNÁNÍ alternativ (A vs. B s čísly)
-    5. AKČNÍ kroky s termíny (ne "zvažte", ale "HNED/za měsíc/za rok")
-    6. Propoj AI analýzu s nabídkou lidského experta
-    7. Max 4-6 vět, ale s vysokou hodnotou
-    8. Emoji pro strukturu (ne dekorace)
-    
-    Odpovídej jako premium stratég, ne jako kalkulačka. Ukaž HODNOTU nad rámec čísel.`;
+📋 INSTRUKCE PRO ODPOVĚĎ:
+1. ${messageCount > 0 ? 'BEZ pozdravu - už jste v konverzaci' : 'Stručný úvod pouze při prvním kontaktu'}
+2. KONKRÉTNÍ čísla v Kč (ne "může ušetřit", ale "ušetříte 127 000 Kč")
+3. SCÉNÁŘE "co kdyby" s přesnými dopady
+4. SROVNÁNÍ alternativ (A vs. B s čísly)
+5. AKČNÍ kroky s termíny (ne "zvažte", ale "HNED/za měsíc/za rok")
+6. Propoj AI analýzu s nabídkou lidského experta
+7. Max 250 slov, ale s vysokou hodnotou
+8. Používej <strong> pro důležité věci, ne emoji
+
+Odpovídej jako premium stratég, ne jako kalkulačka. Ukaž HODNOTU nad rámec čísel.`;
 
     return prompt;
 }

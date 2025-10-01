@@ -483,10 +483,9 @@ const handler = async (event) => {
             }]
         };
         
-        // PŘÍMÉ VOLÁNÍ NA STABILNÍ v1 API POMOCÍ `fetch`
-        const modelName = "gemini-1.5-flash"; // OPRAVA: Použití stabilního názvu modelu místo "latest"
-        // OPRAVA: Změna verze API z v1 na v1beta pro kompatibilitu s modelem
-        const url = `https://generativelace.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+        const modelName = "gemini-1.5-flash";
+        // FINÁLNÍ OPRAVA: Správná adresa API
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
         const apiResponse = await fetch(url, {
             method: 'POST',
@@ -498,7 +497,7 @@ const handler = async (event) => {
 
         if (!apiResponse.ok) {
             const errorBody = await apiResponse.text();
-            console.error('API Error Body:', errorBody); // Log the detailed error from the API
+            console.error('API Error Body:', errorBody); 
             throw new Error(`Chyba API: ${apiResponse.status} ${apiResponse.statusText}`);
         }
 

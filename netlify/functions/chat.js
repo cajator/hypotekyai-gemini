@@ -484,8 +484,8 @@ const handler = async (event) => {
         };
         
         const modelName = "gemini-pro";
-        // FINÁLNÍ POKUS: Změna na evropský regionální endpoint
-        const url = `https://europe-west1-aiplatform.googleapis.com/v1/projects/YOUR_PROJECT_ID/locations/europe-west1/publishers/google/models/${modelName}:generateContent?key=${apiKey}`;
+        // NÁVRAT K PŮVODNÍ A SPRÁVNÉ ADRESE PRO API KLÍČE
+        const url = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${apiKey}`;
 
         const apiResponse = await fetch(url, {
             method: 'POST',

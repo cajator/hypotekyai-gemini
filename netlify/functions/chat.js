@@ -483,7 +483,7 @@ const handler = async (event) => {
             }]
         };
         
-        const modelName = "gemini-1.5-flash";
+        const modelName = "gemini-pro"; // ZMĚNA: Použití nejstabilnějšího modelu pro ověření funkčnosti
         // FINÁLNÍ OPRAVA: Správná adresa API
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 

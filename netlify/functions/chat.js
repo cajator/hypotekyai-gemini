@@ -483,9 +483,9 @@ const handler = async (event) => {
             }]
         };
         
-        const modelName = "gemini-pro"; // ZMĚNA: Použití nejstabilnějšího modelu pro ověření funkčnosti
-        // POSLEDNÍ POKUS: Přechod na stabilní API v1
-        const url = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${apiKey}`;
+        const modelName = "gemini-pro";
+        // FINÁLNÍ POKUS: Změna na evropský regionální endpoint
+        const url = `https://europe-west1-aiplatform.googleapis.com/v1/projects/YOUR_PROJECT_ID/locations/europe-west1/publishers/google/models/${modelName}:generateContent?key=${apiKey}`;
 
         const apiResponse = await fetch(url, {
             method: 'POST',

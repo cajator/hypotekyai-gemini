@@ -1,7 +1,7 @@
-// netlify/functions/chat.js - v13.0 - Přechod na model gemini-1.5-flash-latest
+// netlify/functions/chat.js - v14.0 - Opravená verze s lepším error handlingem
 const https = require('https');
 
-// Funkce pro bezpečné volání API, která nahrazuje knihovnu
+// Funkce pro bezpečné volání API
 function callGenerativeApi(apiKey, model, prompt) {
     return new Promise((resolve, reject) => {
         const payload = JSON.stringify({
@@ -10,33 +10,45 @@ function callGenerativeApi(apiKey, model, prompt) {
 
         const options = {
             hostname: 'generativelanguage.googleapis.com',
-            // Používáme stabilní v1 API
-            path: `/v1/models/${model}:generateContent?key=${apiKey}`,
+            // Používáme stabilní model bez "latest" aliasu
+            path: `/v1beta/models/${model}:generateContent?key=${apiKey}`,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Content-Length': Buffer.byteLength(payload)
-            }
+            },
+            timeout: 30000
         };
 
         const req = https.request(options, (res) => {
             let data = '';
             res.on('data', (chunk) => { data += chunk; });
             res.on('end', () => {
+                console.log('API Response Status:', res.statusCode);
+                console.log('API Response:', data.substring(0, 500)); // Log prvních 500 znaků
+                
                 if (res.statusCode >= 200 && res.statusCode < 300) {
                     try {
                         resolve(JSON.parse(data));
                     } catch (e) {
-                        reject(new Error('Chyba při parsování odpovědi od API.'));
+                        console.error('Parse error:', e);
+                        reject(new Error('Chyba při parsování odpovědi od API: ' + e.message));
                     }
                 } else {
+                    console.error('API Error:', data);
                     reject(new Error(`API vrátilo chybu ${res.statusCode}: ${data}`));
                 }
             });
         });
 
         req.on('error', (e) => {
+            console.error('Request error:', e);
             reject(new Error(`Chyba síťového požadavku: ${e.message}`));
+        });
+
+        req.on('timeout', () => {
+            req.destroy();
+            reject(new Error('API požadavek vypršel (timeout)'));
         });
 
         req.write(payload);
@@ -44,44 +56,122 @@ function callGenerativeApi(apiKey, model, prompt) {
     });
 }
 
-
 exports.handler = async (event) => {
-    const headers = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type', 'Access-Control-Allow-Methods': 'POST, OPTIONS' };
-    if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers };
-    if (event.httpMethod !== 'POST') return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method Not Allowed' }) };
+    const headers = { 
+        'Access-Control-Allow-Origin': '*', 
+        'Access-Control-Allow-Headers': 'Content-Type', 
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Content-Type': 'application/json'
+    };
+    
+    if (event.httpMethod === 'OPTIONS') {
+        return { statusCode: 204, headers };
+    }
+    
+    if (event.httpMethod !== 'POST') {
+        return { 
+            statusCode: 405, 
+            headers, 
+            body: JSON.stringify({ error: 'Method Not Allowed' }) 
+        };
+    }
 
     try {
+        console.log('=== CHAT REQUEST START ===');
+        
         const { message, context } = JSON.parse(event.body);
+        console.log('User message:', message);
+        
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) {
+            console.error('GEMINI_API_KEY not configured');
             throw new Error('API klíč pro AI nebyl nakonfigurován.');
         }
         
-        const prompt = createSystemPrompt(message, context);
-        // ZMĚNA: Používáme novější a dostupnější model
-        const result = await callGenerativeApi(apiKey, 'gemini-1.5-flash-latest', prompt);
+        console.log('API Key exists:', apiKey ? 'YES (length: ' + apiKey.length + ')' : 'NO');
         
-        const responseText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-        if (!responseText) {
-             return { statusCode: 200, headers, body: JSON.stringify({ response: "Omlouvám se, na tento dotaz nemohu odpovědět. Zkuste to prosím formulovat jinak." }) };
+        const prompt = createSystemPrompt(message, context);
+        console.log('Prompt length:', prompt.length);
+        
+        // Zkusíme několik modelů v pořadí preference
+        const models = [
+            'gemini-1.5-flash',
+            'gemini-1.5-flash-001',
+            'gemini-pro'
+        ];
+        
+        let result = null;
+        let lastError = null;
+        
+        for (const model of models) {
+            try {
+                console.log('Trying model:', model);
+                result = await callGenerativeApi(apiKey, model, prompt);
+                console.log('Success with model:', model);
+                break;
+            } catch (error) {
+                console.error(`Model ${model} failed:`, error.message);
+                lastError = error;
+                continue;
+            }
         }
         
+        if (!result) {
+            console.error('All models failed. Last error:', lastError);
+            throw lastError || new Error('Všechny modely selhaly');
+        }
+        
+        const responseText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+        console.log('Response text length:', responseText ? responseText.length : 0);
+
+        if (!responseText) {
+            console.error('No response text in result:', JSON.stringify(result, null, 2));
+            return { 
+                statusCode: 200, 
+                headers, 
+                body: JSON.stringify({ 
+                    response: "Omlouvám se, na tento dotaz nemohu odpovědět. Zkuste to prosím formulovat jinak nebo se spojte s naším specialistou." 
+                }) 
+            };
+        }
+        
+        // Pokus o extrakci JSON
         const jsonMatch = responseText.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
             try {
                 const jsonResponse = JSON.parse(jsonMatch[0]);
                 if (jsonResponse.tool) {
+                    console.log('Returning tool response:', jsonResponse.tool);
                     return { statusCode: 200, headers, body: JSON.stringify(jsonResponse) };
                 }
-            } catch (e) { /* Pokračuje k textové odpovědi */ }
+            } catch (e) { 
+                console.log('JSON parse failed, continuing with text response');
+            }
         }
         
-        return { statusCode: 200, headers, body: JSON.stringify({ response: responseText.replace(/```json|```/g, "").trim() }) };
+        const cleanResponse = responseText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+        console.log('=== CHAT REQUEST END ===');
+        
+        return { 
+            statusCode: 200, 
+            headers, 
+            body: JSON.stringify({ response: cleanResponse }) 
+        };
 
     } catch (error) {
-        console.error('Finální chyba ve funkci chatu:', error.toString());
-        return { statusCode: 500, headers, body: JSON.stringify({ error: `Došlo k chybě na serveru. Zkontrolujte logy na Netlify.` }) };
+        console.error('=== CHAT ERROR ===');
+        console.error('Error type:', error.constructor.name);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        
+        return { 
+            statusCode: 500, 
+            headers, 
+            body: JSON.stringify({ 
+                error: 'Došlo k chybě při komunikaci s AI. Zkuste to prosím znovu nebo kontaktujte podporu.',
+                details: process.env.NODE_ENV === 'development' ? error.message : undefined
+            }) 
+        };
     }
 };
 
@@ -170,12 +260,12 @@ function createSystemPrompt(userMessage, context) {
     }
 
     // Úvodní analýza
-    if (userMessage === "Proveď úvodní analýzu mé situace." || userMessage === "Rychlá analýza" || userMessage === "🔊 Rychlá analýza") {
+    if (userMessage === "Proveď úvodní analýzu mé situace." || userMessage === "Rychlá analýza" || userMessage === "📊 Rychlá analýza") {
         if (!hasContext) {
             return prompt + `\n\nOdpověz POUZE JSON: {"tool":"initialAnalysis","response":"Nejprve si spočítejte hypotéku pomocí rychlé kalkulačky. Stačí zadat částku úvěru, hodnotu nemovitosti a příjem. Analýza zabere 30 sekund."}`;
         }
         
-        let analysis = `<strong>🔊 Kompletní AI analýza ${isFromOurCalculator ? 'naší nabídky' : 'vaší hypotéky'}:</strong>\n\n`;
+        let analysis = `<strong>📊 Kompletní AI analýza ${isFromOurCalculator ? 'naší nabídky' : 'vaší hypotéky'}:</strong>\n\n`;
         
         // Hlavní hodnocení
         if (isFromOurCalculator) {
@@ -339,4 +429,3 @@ function createSystemPrompt(userMessage, context) {
 
     return prompt;
 }
-

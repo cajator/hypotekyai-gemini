@@ -1,5 +1,4 @@
-// netlify/functions/rates.js - v7.1 - FIXED version with debugging
-import { GoogleGenerativeAI } from "@google/generative-ai";
+// netlify/functions/rates.js - v8.0 - OPRAVENÁ VERZE bez nepoužitého importu
 
 const ALL_OFFERS = [
     {
@@ -163,14 +162,18 @@ const handler = async (event) => {
         const education = p.education || 'středoškolské';
         const purpose = p.purpose || 'koupě';
 
+        console.log('=== RATES CALCULATION START ===');
         console.log('Input params:', { loanAmount, propertyValue, income, term, fixationInput });
 
         if (!loanAmount || !propertyValue || !income) { 
+            console.log('Missing required parameters');
             return { statusCode: 200, headers, body: JSON.stringify({ offers: [] }) }; 
         }
 
         const effectivePropertyValue = purpose === 'výstavba' ? propertyValue + landValue : propertyValue;
         const ltv = (effectivePropertyValue > 0) ? (loanAmount / effectivePropertyValue) * 100 : 0;
+        
+        console.log('LTV calculated:', ltv);
         
         // Income adjustments
         let adjustedIncome = income;
@@ -188,6 +191,8 @@ const handler = async (event) => {
             else if (education === 'středoškolské') adjustedIncome *= 1.05;
         }
         
+        console.log('Adjusted income:', adjustedIncome);
+        
         // Living minimum - SNÍŽENO pro větší flexibilitu
         const adultMinimum = 4500;
         const firstChildMinimum = 2700;
@@ -200,16 +205,15 @@ const handler = async (event) => {
         
         // Pro expresní kalkulačku používáme nižší minimum
         if (isExpressMode) {
-            livingMinimum = 8000; // Sníženo z 10000
+            livingMinimum = 8000;
         }
         
         const disposableIncome = adjustedIncome - livingMinimum;
+        console.log('Living minimum:', livingMinimum, 'Disposable:', disposableIncome);
 
         // Age factor
         const maxTermByAge = Math.max(5, Math.min(30, 70 - age));
         const effectiveTerm = Math.min(term, maxTermByAge);
-
-        console.log('Processing offers for LTV:', ltv, 'Income:', income, 'Adjusted:', adjustedIncome);
 
         const allQualifiedOffers = ALL_OFFERS
             .filter(o => {
@@ -233,7 +237,7 @@ const handler = async (event) => {
                     rate = ratesForFixation.rate_ltv90 || ratesForFixation.rate_ltv80 || ratesForFixation.rate_ltv70;
                 } else {
                     rate = (ratesForFixation.rate_ltv90 || ratesForFixation.rate_ltv80 || ratesForFixation.rate_ltv70);
-                    if (rate) rate += 0.3; // Přirážka pro LTV > 90%
+                    if (rate) rate += 0.3;
                 }
 
                 if (!rate) {
@@ -254,37 +258,37 @@ const handler = async (event) => {
                 // ČNB limity - UPRAVENO pro větší flexibilitu
                 let dstiLimit, stressDstiLimit;
                 if (income >= 50000) {
-                    dstiLimit = 55; // Zvýšeno z 50%
-                    stressDstiLimit = 60; // Zvýšeno z 55%
+                    dstiLimit = 55;
+                    stressDstiLimit = 60;
                 } else if (income >= 30000) {
-                    dstiLimit = 50; // Zvýšeno z 45%
-                    stressDstiLimit = 55; // Zvýšeno z 50%
+                    dstiLimit = 50;
+                    stressDstiLimit = 55;
                 } else {
-                    dstiLimit = 45; // Zvýšeno z 40%
-                    stressDstiLimit = 50; // Zvýšeno z 45%
+                    dstiLimit = 45;
+                    stressDstiLimit = 50;
                 }
                 
-                // Pro expresní mód jsme ještě méně striktní
+                // Pro expresní mód jsme ještě méně strikní
                 if (isExpressMode) {
-                    dstiLimit += 10; // Zvýšeno z 5
-                    stressDstiLimit += 10; // Zvýšeno z 5
+                    dstiLimit += 10;
+                    stressDstiLimit += 10;
                 }
                 
                 console.log(`Offer ${o.id}: DSTI ${dsti.toFixed(1)}% (limit ${dstiLimit}%), Stress ${stressDsti.toFixed(1)}% (limit ${stressDstiLimit}%)`);
                 
-                // Kontrola limitů - MÉNĚ STRIKTNÍ
-                if (dsti > dstiLimit * 1.1) { // Povolíme 10% překročení
+                // Kontrola limitů - MÉNĚ STRIKNÍ
+                if (dsti > dstiLimit * 1.1) {
                     console.log(`Offer ${o.id}: DSTI exceeds limit by too much`);
                     return null;
                 }
-                if (stressDsti > stressDstiLimit * 1.15) { // Povolíme 15% překročení u stress testu
+                if (stressDsti > stressDstiLimit * 1.15) {
                     console.log(`Offer ${o.id}: Stress DSTI exceeds limit by too much`);
                     return null;
                 }
                 
-                // Kontrola disponibilního příjmu - MÉNĚ STRIKTNÍ
+                // Kontrola disponibilního příjmu - MÉNĚ STRIKNÍ
                 const remainingAfterPayment = income - monthlyPayment - liabilities;
-                const minimumRequired = livingMinimum * 0.6; // Sníženo z 0.8 na 0.6
+                const minimumRequired = livingMinimum * 0.6;
                 
                 console.log(`Offer ${o.id}: Remaining ${remainingAfterPayment} vs required ${minimumRequired}`);
                 
@@ -293,7 +297,7 @@ const handler = async (event) => {
                     return null;
                 }
                 
-                console.log(`Offer ${o.id}: QUALIFIED with rate ${rate}%`);
+                console.log(`Offer ${o.id}: ✅ QUALIFIED with rate ${rate}%`);
                 
                 return { 
                     id: o.id, 
@@ -309,17 +313,15 @@ const handler = async (event) => {
             }).filter(Boolean);
 
         console.log('Qualified offers count:', allQualifiedOffers.length);
-        console.log('Qualified offers:', allQualifiedOffers.map(o => o.id));
 
-        // Vezmeme všechny kvalifikované nabídky (ne jen první 3)
         const finalOffers = allQualifiedOffers.sort((a, b) => a.rate - b.rate);
         
-        // Pokud máme méně než 3 nabídky, zkusíme být ještě méně striktní
         if (finalOffers.length < 3) {
-            console.log('WARNING: Less than 3 offers found. Consider adjusting parameters.');
+            console.log('⚠️ WARNING: Less than 3 offers found');
         }
         
         if (finalOffers.length === 0) { 
+            console.log('❌ NO OFFERS QUALIFIED');
             return { statusCode: 200, headers, body: JSON.stringify({ offers: [] }) }; 
         }
         
@@ -389,6 +391,8 @@ const handler = async (event) => {
             total: Math.max(50, Math.min(95, totalScore))
         };
 
+        console.log('Final score:', score);
+
         // Generate tips
         const tips = [];
         
@@ -445,11 +449,14 @@ const handler = async (event) => {
         const fixationDetails = finalOffers.length > 0 ? 
             calculateFixationAnalysis(loanAmount, bestOffer.rate, effectiveTerm, fixationInput) : null;
         
+        console.log('=== RATES CALCULATION END ===');
+        console.log('Returning', finalOffers.length, 'offers');
+        
         return { 
             statusCode: 200, 
             headers, 
             body: JSON.stringify({ 
-                offers: finalOffers.slice(0, 3), // Vrátíme maximálně 3 nabídky
+                offers: finalOffers.slice(0, 3),
                 approvability: score, 
                 smartTip, 
                 tips,
@@ -478,12 +485,17 @@ const handler = async (event) => {
             }) 
         };
     } catch (error) {
-        console.error("Rates function error:", error);
-        return { statusCode: 500, headers, body: JSON.stringify({ error: error.message }) };
+        console.error("=== RATES ERROR ===");
+        console.error("Error:", error);
+        return { 
+            statusCode: 500, 
+            headers, 
+            body: JSON.stringify({ 
+                error: error.message,
+                details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+            }) 
+        };
     }
 };
 
-const formatNumber = (n, currency = true) => n.toLocaleString('cs-CZ', currency ? { style: 'currency', currency: 'CZK', maximumFractionDigits: 0 } : { maximumFractionDigits: 0 });
-
 export { handler };
-

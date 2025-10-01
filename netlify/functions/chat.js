@@ -14,7 +14,7 @@ function initGemini(apiKey) {
 async function callGeminiApi(apiKey, prompt, timeoutMs = 25000) {
     const ai = initGemini(apiKey);
     const model = ai.getGenerativeModel({ 
-        model: 'gemini-1.5-flash-latest',
+        model: 'gemini-1.5-flash',  // Opraveno: odstraněn suffix -latest
         generationConfig: {
             temperature: 0.7,
             topK: 40,

@@ -1,8 +1,178 @@
-// netlify/functions/chat.js - v19.0 - FINÁLNÍ OPRAVA
-// Návrat k vaší plné 600+ řádkové logice.
-// Odstranění problematické Google knihovny a její nahrazení přímým, spolehlivým `fetch` voláním na stabilní v1 API.
+// netlify/functions/chat.js - v18.0 - REST API VERSION (NO SDK)
+// Toto řešení používá přímé REST API volání místo SDK
+// Funguje se všemi modely na v1 API endpointu
 
-// Vaše kompletní, původní a detailní logika pro vytváření promptů. Nic nebylo odstraněno.
+const https = require('https');
+
+function callGeminiRestApi(apiKey, prompt, model = 'gemini-1.5-flash-latest', timeoutMs = 25000) {
+    return new Promise((resolve, reject) => {
+        const payload = JSON.stringify({
+            contents: [{ 
+                parts: [{ text: prompt }] 
+            }],
+            generationConfig: {
+                temperature: 0.7,
+                topK: 40,
+                topP: 0.95,
+                maxOutputTokens: 2048,
+            }
+        });
+
+        // Použití v1 API (ne v1beta)
+        const options = {
+            hostname: 'generativelanguage.googleapis.com',
+            path: `/v1/models/${model}:generateContent?key=${apiKey}`,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(payload)
+            },
+            timeout: timeoutMs
+        };
+
+        const req = https.request(options, (res) => {
+            let data = '';
+            
+            res.on('data', (chunk) => { 
+                data += chunk; 
+            });
+            
+            res.on('end', () => {
+                if (res.statusCode >= 200 && res.statusCode < 300) {
+                    try {
+                        const parsed = JSON.parse(data);
+                        resolve(parsed);
+                    } catch (e) {
+                        reject(new Error(`Parse error: ${e.message}`));
+                    }
+                } else {
+                    reject(new Error(`API error ${res.statusCode}: ${data}`));
+                }
+            });
+        });
+
+        req.on('error', (e) => {
+            reject(new Error(`Network error: ${e.message}`));
+        });
+
+        req.on('timeout', () => {
+            req.destroy();
+            reject(new Error('Request timeout'));
+        });
+
+        req.write(payload);
+        req.end();
+    });
+}
+
+exports.handler = async (event) => {
+    const headers = { 
+        'Access-Control-Allow-Origin': '*', 
+        'Access-Control-Allow-Headers': 'Content-Type', 
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Content-Type': 'application/json'
+    };
+    
+    if (event.httpMethod === 'OPTIONS') {
+        return { statusCode: 204, headers, body: '' };
+    }
+    
+    if (event.httpMethod !== 'POST') {
+        return { 
+            statusCode: 405, 
+            headers, 
+            body: JSON.stringify({ error: 'Method Not Allowed' }) 
+        };
+    }
+
+    try {
+        const { message, context } = JSON.parse(event.body || '{}');
+        
+        if (!message) {
+            return {
+                statusCode: 400,
+                headers,
+                body: JSON.stringify({ error: 'Message is required' })
+            };
+        }
+        
+        const apiKey = process.env.GEMINI_API_KEY;
+        if (!apiKey) {
+            console.error('GEMINI_API_KEY not configured');
+            throw new Error('AI service configuration error');
+        }
+        
+        const prompt = createSystemPrompt(message, context);
+        
+        // Primární pokus s gemini-1.5-flash-latest
+        let result;
+        try {
+            result = await callGeminiRestApi(apiKey, prompt, 'gemini-1.5-flash-latest', 25000);
+        } catch (primaryError) {
+            console.error('Primary API call failed:', primaryError.message);
+            
+            // Fallback na gemini-pro
+            try {
+                console.log('Trying fallback model: gemini-pro');
+                result = await callGeminiRestApi(apiKey, prompt, 'gemini-pro', 15000);
+            } catch (fallbackError) {
+                console.error('Fallback API call failed:', fallbackError.message);
+                throw new Error('AI service temporarily unavailable');
+            }
+        }
+        
+        const responseText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        if (!responseText) {
+            return { 
+                statusCode: 200, 
+                headers, 
+                body: JSON.stringify({ 
+                    response: "Omlouvám se, na tento dotaz nemohu odpovědět. Zkuste to prosím formulovat jinak nebo se spojte s naším specialistou na 📞 800 123 456." 
+                }) 
+            };
+        }
+        
+        // Try to parse JSON response (for tool calls)
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            try {
+                const jsonResponse = JSON.parse(jsonMatch[0]);
+                if (jsonResponse.tool) {
+                    return { statusCode: 200, headers, body: JSON.stringify(jsonResponse) };
+                }
+            } catch (e) { 
+                // Continue with text response
+            }
+        }
+        
+        // Clean response from markdown
+        const cleanResponse = responseText
+            .replace(/```json\n?/g, "")
+            .replace(/```\n?/g, "")
+            .trim();
+        
+        return { 
+            statusCode: 200, 
+            headers, 
+            body: JSON.stringify({ response: cleanResponse }) 
+        };
+
+    } catch (error) {
+        console.error('Chat error:', error.message);
+        
+        return { 
+            statusCode: 500, 
+            headers, 
+            body: JSON.stringify({ 
+                error: 'Došlo k chybě při komunikaci s AI. Zkuste to prosím znovu.',
+                fallback: 'Pro okamžitou pomoc volejte našeho specialistu na 📞 800 123 456',
+                details: process.env.NODE_ENV === 'development' ? error.message : undefined
+            }) 
+        };
+    }
+};
+
 function createSystemPrompt(userMessage, context) {
     const hasContext = context && context.calculation && context.calculation.selectedOffer;
     const isFromOurCalculator = context?.isDataFromOurCalculator || context?.calculation?.isFromOurCalculator;

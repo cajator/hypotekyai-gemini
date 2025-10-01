@@ -484,8 +484,8 @@ const handler = async (event) => {
         };
         
         const modelName = "gemini-pro"; // ZMĚNA: Použití nejstabilnějšího modelu pro ověření funkčnosti
-        // FINÁLNÍ OPRAVA: Správná adresa API
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+        // POSLEDNÍ POKUS: Přechod na stabilní API v1
+        const url = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${apiKey}`;
 
         const apiResponse = await fetch(url, {
             method: 'POST',
@@ -543,4 +543,5 @@ const handler = async (event) => {
 
 // Netlify vyžaduje `handler` jako export
 export { handler };
+
 

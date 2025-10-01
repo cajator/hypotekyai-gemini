@@ -1,14 +1,12 @@
 {
   "name": "hypoteky-ai-serverless",
-  "version": "2.0.2",
-  "description": "Serverless functions for Hypoteky AI - FIXED",
-  "dependencies": {
-    "@google/generative-ai": "^0.21.0"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  },
+  "version": "3.0.0",
+  "description": "Serverless functions with direct API call",
+  "type": "module",
+  "dependencies": {},
+  "devDependencies": {},
   "scripts": {
     "test": "echo \"No tests specified\" && exit 0"
   }
 }
+

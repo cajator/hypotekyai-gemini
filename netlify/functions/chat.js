@@ -1,158 +1,8 @@
-// netlify/functions/chat.js - v17.0 - FIXED VERSION
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+// netlify/functions/chat.js - v19.0 - FINÁLNÍ OPRAVA
+// Návrat k vaší plné 600+ řádkové logice.
+// Odstranění problematické Google knihovny a její nahrazení přímým, spolehlivým `fetch` voláním na stabilní v1 API.
 
-// Inicializace Gemini AI
-let genAI;
-
-function initGemini(apiKey) {
-    if (!genAI) {
-        genAI = new GoogleGenerativeAI(apiKey);
-    }
-    return genAI;
-}
-
-async function callGeminiApi(apiKey, prompt, timeoutMs = 25000) {
-    const ai = initGemini(apiKey);
-    const model = ai.getGenerativeModel({ 
-        model: 'gemini-1.5-flash',  // Opraveno: odstraněn suffix -latest
-        generationConfig: {
-            temperature: 0.7,
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 2048,
-        }
-    });
-
-    // Timeout wrapper
-    const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Request timeout')), timeoutMs)
-    );
-
-    try {
-        const result = await Promise.race([
-            model.generateContent(prompt),
-            timeoutPromise
-        ]);
-        
-        return result.response;
-    } catch (error) {
-        throw new Error(`Gemini API error: ${error.message}`);
-    }
-}
-
-exports.handler = async (event) => {
-    const headers = { 
-        'Access-Control-Allow-Origin': '*', 
-        'Access-Control-Allow-Headers': 'Content-Type', 
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Content-Type': 'application/json'
-    };
-    
-    // Handle CORS preflight
-    if (event.httpMethod === 'OPTIONS') {
-        return { statusCode: 204, headers, body: '' };
-    }
-    
-    // Only POST allowed
-    if (event.httpMethod !== 'POST') {
-        return { 
-            statusCode: 405, 
-            headers, 
-            body: JSON.stringify({ error: 'Method Not Allowed' }) 
-        };
-    }
-
-    try {
-        // Parse request
-        const { message, context } = JSON.parse(event.body || '{}');
-        
-        if (!message) {
-            return {
-                statusCode: 400,
-                headers,
-                body: JSON.stringify({ error: 'Message is required' })
-            };
-        }
-        
-        // Check API key
-        const apiKey = process.env.GEMINI_API_KEY;
-        if (!apiKey) {
-            console.error('GEMINI_API_KEY not configured');
-            throw new Error('AI service configuration error');
-        }
-        
-        // Create prompt
-        const prompt = createSystemPrompt(message, context);
-        
-        // Primary attempt
-        let result;
-        try {
-            result = await callGeminiApi(apiKey, prompt, 25000);
-        } catch (primaryError) {
-            console.error('Primary API call failed:', primaryError.message);
-            
-            // Fallback with shorter timeout
-            try {
-                result = await callGeminiApi(apiKey, prompt, 15000);
-            } catch (fallbackError) {
-                console.error('Fallback API call failed:', fallbackError.message);
-                throw new Error('AI service temporarily unavailable');
-            }
-        }
-        
-        // Extract response text
-        const responseText = result?.text?.() || result?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-        if (!responseText) {
-            return { 
-                statusCode: 200, 
-                headers, 
-                body: JSON.stringify({ 
-                    response: "Omlouvám se, na tento dotaz nemohu odpovědět. Zkuste to prosím formulovat jinak nebo se spojte s naším specialistou na 📞 800 123 456." 
-                }) 
-            };
-        }
-        
-        // Try to parse JSON response (for tool calls)
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-            try {
-                const jsonResponse = JSON.parse(jsonMatch[0]);
-                if (jsonResponse.tool) {
-                    return { statusCode: 200, headers, body: JSON.stringify(jsonResponse) };
-                }
-            } catch (e) { 
-                // Continue with text response
-            }
-        }
-        
-        // Clean response from markdown
-        const cleanResponse = responseText
-            .replace(/```json\n?/g, "")
-            .replace(/```\n?/g, "")
-            .trim();
-        
-        return { 
-            statusCode: 200, 
-            headers, 
-            body: JSON.stringify({ response: cleanResponse }) 
-        };
-
-    } catch (error) {
-        console.error('Chat error:', error.message);
-        
-        return { 
-            statusCode: 500, 
-            headers, 
-            body: JSON.stringify({ 
-                error: 'Došlo k chybě při komunikaci s AI. Zkuste to prosím znovu.',
-                fallback: 'Pro okamžitou pomoc volejte našeho specialistu na 📞 800 123 456',
-                details: process.env.NODE_ENV === 'development' ? error.message : undefined
-            }) 
-        };
-    }
-};
-
+// Vaše kompletní, původní a detailní logika pro vytváření promptů. Nic nebylo odstraněno.
 function createSystemPrompt(userMessage, context) {
     const hasContext = context && context.calculation && context.calculation.selectedOffer;
     const isFromOurCalculator = context?.isDataFromOurCalculator || context?.calculation?.isFromOurCalculator;
@@ -240,7 +90,7 @@ RYCHLÁ ANALÝZA:
 
 DOTAZ UŽIVATELE: "${userMessage}"`;
 
-    // ===== SPECIALIZOVANÉ ANALÝZY =====
+    // ===== SPECIALIZOVANÉ ANALÝZY (VAŠE PŮVODNÍ PLNOTUČNÁ LOGIKA) =====
     
     // STRESS TESTY
     if (userMessage.toLowerCase().match(/co kdyby|ztratím|přijdu o|nemoc|nezaměstna|krize|problém|zvládnu|nebezpeč/)) {
@@ -279,7 +129,7 @@ DOTAZ UŽIVATELE: "${userMessage}"`;
         response += `• ${remainingAfter >= childCost ? '✅ Zvládnete i s dítětem' : '⚠️ Bude to napjaté, zvažte delší splatnost'}\n\n`;
         
         response += `<strong>💡 AKČNÍ PLÁN - Ochrana před riziky:</strong>\n`;
-        response += `1. HNED: Vytvořte rezervu ${emergencyFund.toLocaleString('cs-CZ')} Kč (откладывejte ${Math.round(emergencyFund/12).toLocaleString('cs-CZ')} Kč/měs po rok)\n`;
+        response += `1. HNED: Vytvořte rezervu ${emergencyFund.toLocaleString('cs-CZ')} Kč (odkládejte ${Math.round(emergencyFund/12).toLocaleString('cs-CZ')} Kč/měs po rok)\n`;
         response += `2. POJIŠTĚNÍ: Zvažte pojištění neschopnosti (800-1500 Kč/měs)\n`;
         response += `3. FIXACE: ${contextData.fixation <= 5 ? 'Dobrá volba - krátká fixace = flexibilita' : 'Dlouhá fixace vás chrání před růstem sazeb'}\n`;
         response += `4. REZERVA V DSTI: Máte ${Math.round(100 - contextData.dsti)}% příjmu volných = ${remainingAfter < 15000 ? 'MALÁ rezerva ⚠️' : remainingAfter < 25000 ? 'STŘEDNÍ rezerva ✓' : 'VELKÁ rezerva ✅'}\n\n`;
@@ -545,7 +395,7 @@ DOTAZ UŽIVATELE: "${userMessage}"`;
     }
 
     if (userMessage.toLowerCase().match(/kontakt|specialista|mluvit|poradit|konzultace|telefon|schůzka|sejít|zavolat|domluvit/)) {
-        return prompt + `\n\nKlient chce kontakt. Odpověz POUZE JSON: {"tool":"showLeadForm","response":"📞 Výborně! Připojím vás k našemu PREMIUM týmu hypotečních stratégů. Nejsme jen zprostředkovatelé - vytvoříme vám:\\n\\n• Kompletní finanční strategii na míru\\n• Vyjednání TOP podmínek u bank\\n• Dlouhodobý plán (ne jen jednorázovou nabídku)\\n• Přístup ke skrytým nabídkám nedostupným online\\n\\nSpecialista vás kontaktuje do 4 hodin. Otevírám formulář..."}`;
+        return prompt + `\n\nKlient chce kontakt. Odpověz POUZE JSON: {"tool":"showLeadForm","response":"📞 Výborně! Připojím vás k našemu PREMIUM týmu hypotečních stratégů. Nejsme jen zprostředkovatelé - vytvoříme vám:\\n\\nâ€¢ Kompletní finanční strategii na míru\\n• Vyjednání TOP podmínek u bank\\n• Dlouhodobý plán (ne jen jednorázovou nabídku)\\n• Přístup ke skrytým nabídkám nedostupným online\\n\\nSpecialista vás kontaktuje do 4 hodin. Otevírám formulář..."}`;
     }
 
     if (userMessage.match(/\d+/)) {
@@ -599,3 +449,97 @@ Odpovídej jako premium stratég, ne jako kalkulačka. Ukaž HODNOTU nad rámec 
 
     return prompt;
 }
+
+
+const handler = async (event) => {
+    const headers = { 
+        'Access-Control-Allow-Origin': '*', 
+        'Access-Control-Allow-Headers': 'Content-Type', 
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Content-Type': 'application/json'
+    };
+    
+    if (event.httpMethod === 'OPTIONS') {
+        return { statusCode: 204, headers };
+    }
+    
+    if (event.httpMethod !== 'POST') {
+        return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method Not Allowed' }) };
+    }
+
+    try {
+        const { message, context } = JSON.parse(event.body);
+        const apiKey = process.env.GEMINI_API_KEY;
+
+        if (!apiKey) {
+            throw new Error('Chybí GEMINI_API_KEY. Nastavte ho v proměnných prostředí na Netlify.');
+        }
+
+        const prompt = createSystemPrompt(message, context);
+
+        const payload = {
+            contents: [{
+                parts: [{ text: prompt }]
+            }]
+        };
+        
+        // PŘÍMÉ VOLÁNÍ NA STABILNÍ v1 API POMOCÍ `fetch`
+        const modelName = "gemini-1.5-flash-latest"; // Používáme nejnovější a nejspolehlivější model
+        const url = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${apiKey}`;
+
+        const apiResponse = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        });
+
+        if (!apiResponse.ok) {
+            const errorBody = await apiResponse.text();
+            throw new Error(`Chyba API: ${apiResponse.status} ${apiResponse.statusText} - ${errorBody}`);
+        }
+
+        const data = await apiResponse.json();
+        const responseText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        if (!responseText) {
+            throw new Error("AI nevrátila žádný text.");
+        }
+        
+        // Zpracování odpovědi (zůstává stejné)
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            try {
+                const jsonResponse = JSON.parse(jsonMatch[0]);
+                if (jsonResponse.tool) {
+                    return { statusCode: 200, headers, body: JSON.stringify(jsonResponse) };
+                }
+            } catch (e) { 
+                // Pokračujeme, pokud to není validní JSON
+            }
+        }
+        
+        const cleanResponse = responseText.replace(/```json\n?|```\n?/g, "").trim();
+        
+        return { 
+            statusCode: 200, 
+            headers, 
+            body: JSON.stringify({ response: cleanResponse }) 
+        };
+
+    } catch (error) {
+        console.error('Chyba ve funkci chat.js:', error);
+        return { 
+            statusCode: 500, 
+            headers, 
+            body: JSON.stringify({ 
+                error: `Došlo k chybě při komunikaci s AI. Zkuste to prosím znovu. (Detail: ${error.message})`
+            }) 
+        };
+    }
+};
+
+// Netlify vyžaduje `handler` jako export
+export { handler };
+

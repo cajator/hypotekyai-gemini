@@ -1,13 +1,14 @@
 {
   "name": "hypoteky-ai-serverless",
   "version": "2.0.1",
-  "description": "Opravená verze serverless funkcí pro Hypoteky AI",
+  "description": "Serverless functions for Hypoteky AI with updated dependencies",
   "type": "module",
   "dependencies": {
-    "@google/generative-ai": "^0.7.1"
+    "@google/generative-ai": "^0.15.0"
   },
   "devDependencies": {},
   "scripts": {
     "test": "echo \"No tests specified\" && exit 0"
   }
 }
+

@@ -1,4 +1,4 @@
-// netlify/functions/chat.js - v15.0 - PREMIUM VERSION
+// netlify/functions/chat.js - v16.0 - FIXED GEMINI API
 // Strategické poradenství + Stress testy + Predikce budoucnosti
 const https = require('https');
 
@@ -10,7 +10,8 @@ function callGenerativeApi(apiKey, model, prompt) {
 
         const options = {
             hostname: 'generativelanguage.googleapis.com',
-            path: `/v1beta/models/${model}:generateContent?key=${apiKey}`,
+            // OPRAVA: Změna z v1beta na v1
+            path: `/v1/models/${model}:generateContent?key=${apiKey}`,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -91,10 +92,11 @@ exports.handler = async (event) => {
         const prompt = createSystemPrompt(message, context);
         console.log('Prompt length:', prompt.length);
         
+        // OPRAVA: Aktuální názvy Gemini modelů
         const models = [
-            'gemini-1.5-flash',
-            'gemini-1.5-flash-001',
-            'gemini-pro'
+            'gemini-1.5-flash-latest',  // Nejrychlejší
+            'gemini-1.5-flash',          // Fallback
+            'gemini-1.5-pro-latest'      // Nejpřesnější (ale pomalejší)
         ];
         
         let result = null;
@@ -217,7 +219,7 @@ function createSystemPrompt(userMessage, context) {
     4. ČASOVÁ OSA (co dělat teď, za rok, za 5 let)
     5. ${messageCount > 0 ? 'NEPOZDRAV znovu' : 'Krátký úvod při prvním kontaktu'}
     
-    🏦 NÁSTROJE K DISPOZICI:
+    🦾 NÁSTROJE K DISPOZICI:
     - Metodiky 19+ bank v reálném čase
     - ČNB stress testy a predikce
     - Historická data sazeb (10 let zpět)
@@ -402,7 +404,7 @@ function createSystemPrompt(userMessage, context) {
         response += `• Typická situace: ${currentAge + midPoint < 45 ? 'Děti ve škole, zvyšují se příjmy' : currentAge + midPoint < 55 ? 'Děti odrostly, peak příjmů' : 'Blíží se důchod'}\n`;
         response += `• Doporučení: ${currentAge + midPoint < 45 ? 'Zvažte kratší splatnost nebo mimořádné splátky' : 'Začněte budovat důchodovou rezervu'}\n\n`;
         
-        response += `<strong>🏁 ZA ${yearsRemaining} LET (${new Date().getFullYear() + yearsRemaining}) - KONEC:</strong>\n`;
+        response += `<strong>🏠 ZA ${yearsRemaining} LET (${new Date().getFullYear() + yearsRemaining}) - KONEC:</strong>\n`;
         response += `• Spláceno: ${contextData.loanAmount?.toLocaleString('cs-CZ')} Kč\n`;
         response += `• Váš věk: ${currentAge + yearsRemaining} let\n`;
         response += `• Nemovitost: Vaše (bez dluhů!)\n`;
@@ -472,12 +474,12 @@ function createSystemPrompt(userMessage, context) {
         const netDifference = Math.round(profit * 0.85) - interestSaved;
         response += `<strong>📈 VÝSLEDEK:</strong>\n`;
         response += `Investování je lepší o: <strong>${Math.abs(netDifference).toLocaleString('cs-CZ')} Kč</strong>\n`;
-        response += `Důvod: Výnos 7% > úrok ${contextData.rate}%\n\n`;
+        response += `Důvod: Výnos 7% > Úrok ${contextData.rate}%\n\n`;
         
         response += `<strong>⚠️ ALE POZOR - RIZIKA:</strong>\n`;
         response += `• Investice kolísají (2008: -40%, 2022: -20%)\n`;
         response += `• Hypotéka = jistota\n`;
-        response += `• Psychologická pohoda bezd dlužnosti\n\n`;
+        response += `• Psychologická pohoda bezdlužnosti\n\n`;
         
         response += `<strong>💡 DOPORUČENÁ STRATEGIE "50/50":</strong>\n`;
         const half = Math.round(availableForInvestment / 2);
@@ -522,7 +524,7 @@ function createSystemPrompt(userMessage, context) {
         
         analysis += `<strong>💰 ZÁKLADNÍ PARAMETRY:</strong>\n`;
         analysis += `• Splátka: ${contextData.monthlyPayment?.toLocaleString('cs-CZ')} Kč (${Math.round((contextData.monthlyPayment / contextData.income) * 100)}% příjmu)\n`;
-        analysis += `• Úrok: ${contextData.rate}% - ${contextData.marketInfo?.ratePosition === 'excellent' ? '🌟 EXCELENTNÍ' : contextData.marketInfo?.ratePosition === 'good' ? '👍 DOBRÝ' : '⚠️ DA SE LEPSI'}\n`;
+        analysis += `• Úrok: ${contextData.rate}% - ${contextData.marketInfo?.ratePosition === 'excellent' ? '🌟 EXCELENTNÍ' : contextData.marketInfo?.ratePosition === 'good' ? '👍 DOBRÁ' : '⚠️ DA SE LEPSI'}\n`;
         analysis += `• Zbyde vám: ${contextData.detailedCalculation?.remainingAfterPayment?.toLocaleString('cs-CZ')} Kč/měs\n`;
         analysis += `• To je ${Math.round((contextData.detailedCalculation?.remainingAfterPayment / contextData.monthlyPayment) * 100)}% splátky = ${contextData.detailedCalculation?.remainingAfterPayment > 20000 ? '✅ VÝBORNÁ rezerva' : contextData.detailedCalculation?.remainingAfterPayment > 10000 ? '👍 DOBRÁ rezerva' : '⚠️ TĚSNÁ rezerva'}\n\n`;
         
@@ -552,7 +554,7 @@ function createSystemPrompt(userMessage, context) {
         } else {
             analysis += `1. ⚠️ PRODLUŽTE SPLATNOST: ${contextData.loanTerm < 30 ? `30 let = nižší splátka, lepší DSTI` : 'Už máte maximum'}\n`;
             analysis += `2. 🛡️ POJISTĚTE SE: Pojištění neschopnosti = ochrana splácení\n`;
-            analysis += `3. 👔 PROMLUVTE SE SPECIALISTOU: Najdeme řešení i pro složité případy\n\n`;
+            analysis += `3. 💬 PROMLUVTE SE SPECIALISTOU: Najdeme řešení i pro složité případy\n\n`;
         }
         
         analysis += `Chcete prozkoumat konkrétní scénář? Zeptejte se například:\n`;

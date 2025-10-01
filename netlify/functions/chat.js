@@ -1,5 +1,5 @@
 // netlify/functions/chat.js
-// Opravená verze s využitím oficiálního Google AI SDK a ESM modulů
+// Opravená verze s využitím stabilního názvu modelu
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
@@ -122,7 +122,8 @@ const handler = async (event) => {
 
         // Initialize the SDK
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+        // ZMĚNA ZDE: Použití stabilního názvu modelu
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         const prompt = createSystemPrompt(message, context);
         
@@ -171,3 +172,4 @@ const handler = async (event) => {
 };
 
 export { handler };
+

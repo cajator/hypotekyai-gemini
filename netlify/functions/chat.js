@@ -1,4 +1,4 @@
-// netlify/functions/chat.js - v19.0 - FINÁLNÍ VERZE
+// netlify/functions/chat.js - v19.0 - FINÁLNÍ VERZE S OPRAVOU EXPORTU
 // Vaše kompletní, původní a detailní logika pro vytváření promptů.
 
 function createSystemPrompt(userMessage, context) {
@@ -330,68 +330,6 @@ DOTAZ UŽIVATELE: "${userMessage}"`;
         return prompt + `\n\nKlient se ptá na banky. Odpověz POUZE JSON: {"tool":"showBanksList"}`;
     }
 
-    if (userMessage === "Proveď úvodní analýzu mé situace." || userMessage === "Rychlá analýza" || userMessage === "📊 Rychlá analýza") {
-        if (!hasContext) {
-            return prompt + `\n\nOdpověz POUZE JSON: {"tool":"initialAnalysis","response":"Nejprve si spočítejte hypotéku pomocí rychlé kalkulačky. Stačí zadat částku úvěru, hodnotu nemovitosti a příjem. Analýza zabere 30 sekund."}`;
-        }
-        
-        let analysis = `<strong>🎯 PREMIUM AI ANALÝZA - Vaše hypotéka pod lupou</strong>\n\n`;
-        
-        if (isFromOurCalculator) {
-            if (contextData.totalScore >= 85) {
-                analysis += `✅ <strong>TOP KATEGORIE! Patříte mezi ${100 - contextData.totalScore}% nejlepších klientů!</strong>\n`;
-                analysis += `Banky se o vás budou hádat. Využijte toho!\n\n`;
-            } else if (contextData.totalScore >= 70) {
-                analysis += `✅ <strong>SILNÝ PROFIL! Šance na schválení ${contextData.totalScore}%</strong>\n\n`;
-            } else if (contextData.totalScore >= 50) {
-                analysis += `⚠️ <strong>HRANIČNÍ PŘÍPAD - Potřebujeme optimalizovat</strong>\n\n`;
-            } else {
-                analysis += `🔴 <strong>KOMPLIKOVANÁ SITUACE - Ale řešení existuje!</strong>\n\n`;
-            }
-        }
-        
-        analysis += `<strong>💰 ZÁKLADNÍ PARAMETRY:</strong>\n`;
-        analysis += `• Splátka: ${contextData.monthlyPayment?.toLocaleString('cs-CZ')} Kč (${Math.round((contextData.monthlyPayment / contextData.income) * 100)}% příjmu)\n`;
-        analysis += `• Úrok: ${contextData.rate}% - ${contextData.marketInfo?.ratePosition === 'excellent' ? '🌟 EXCELENTNÍ' : contextData.marketInfo?.ratePosition === 'good' ? '👍 DOBRÁ' : '⚠️ DA SE LEPSI'}\n`;
-        analysis += `• Zbyde vám: ${contextData.detailedCalculation?.remainingAfterPayment?.toLocaleString('cs-CZ')} Kč/měs\n`;
-        analysis += `• To je ${Math.round((contextData.detailedCalculation?.remainingAfterPayment / contextData.monthlyPayment) * 100)}% splátky = ${contextData.detailedCalculation?.remainingAfterPayment > 20000 ? '✅ VÝBORNÁ rezerva' : contextData.detailedCalculation?.remainingAfterPayment > 10000 ? '👍 DOBRÁ rezerva' : '⚠️ TĚSNÁ rezerva'}\n\n`;
-        
-        analysis += `<strong>🔍 DETAILNÍ SKÓRE:</strong>\n`;
-        analysis += `• LTV ${contextData.ltv}%: ${contextData.ltvScore}% ${contextData.ltvScore >= 85 ? '(💎 Málo půjčujete = top sazba)' : contextData.ltvScore >= 70 ? '(✓ Standardní)' : '(⚠️ Hodně půjčujete)'}\n`;
-        analysis += `• DSTI ${contextData.dsti}%: ${contextData.dstiScore}% ${contextData.dstiScore >= 90 ? '(✅ Obrovská rezerva)' : contextData.dstiScore >= 70 ? '(👍 Zdravá rezerva)' : '(⚠️ Na hraně)'}\n`;
-        analysis += `• Bonita: ${contextData.bonita}% ${contextData.bonita >= 85 ? '(🌟 Premium klient)' : contextData.bonita >= 70 ? '(✓ Solidní)' : '(⚠️ Zlepšitelné)'}\n\n`;
-        
-        if (contextData.fixationDetails) {
-            analysis += `<strong>📊 CO VÁS ČEKÁ:</strong>\n`;
-            analysis += `• Za ${contextData.fixation} let (konec fixace): zbude ${contextData.fixationDetails.remainingBalanceAfterFixation?.toLocaleString('cs-CZ')} Kč\n`;
-            analysis += `• Splatíte ${Math.round((1 - contextData.fixationDetails.remainingBalanceAfterFixation / contextData.loanAmount) * 100)}% dluhu\n`;
-            analysis += `• Pokud sazby klesnou o 0.5%: ušetříte ${contextData.fixationDetails.futureScenario?.optimistic?.monthlySavings?.toLocaleString('cs-CZ')} Kč/měs\n`;
-            analysis += `• Pokud vzrostou o 1%: zaplatíte +${contextData.fixationDetails.futureScenario?.moderateIncrease?.monthlyIncrease?.toLocaleString('cs-CZ')} Kč/měs\n\n`;
-        }
-        
-        analysis += `<strong>💡 TOP 3 TIPY PRO VÁS:</strong>\n`;
-        if (contextData.totalScore >= 85) {
-            analysis += `1. 💎 VYJEDNEJTE SLEVU: S vaším profilem máte páky. Zkuste snížit sazbu o 0.1-0.2%\n`;
-            analysis += `2. 💰 INVESTUJTE REZERVU: Máte prostor investovat ${Math.round(contextData.detailedCalculation?.remainingAfterPayment * 0.3).toLocaleString('cs-CZ')} Kč/měs\n`;
-            analysis += `3. ⚡ ZKRAŤTE SPLATNOST: Můžete si dovolit vyšší splátky = tisíce ušetřené na úrocích\n\n`;
-        } else if (contextData.totalScore >= 70) {
-            analysis += `1. 🎯 OPTIMALIZUJTE LTV: ${contextData.ltv > 80 ? `Sežeňte ${Math.round((contextData.ltv - 80) * contextData.propertyValue / 100).toLocaleString('cs-CZ')} Kč navíc → lepší sazba` : 'Máte dobré LTV'}\n`;
-            analysis += `2. 💪 BUDUJTE REZERVU: Cílte na ${Math.round(contextData.monthlyPayment * 6).toLocaleString('cs-CZ')} Kč (6 měsíců)\n`;
-            analysis += `3. 🔄 SLEDUJTE TRH: Za ${contextData.fixation} let refinancujte, potenciál ${Math.round((contextData.rate - contextData.marketInfo?.bestAvailableRate) * contextData.loanAmount * 0.01 / 12).toLocaleString('cs-CZ')} Kč/měs\n\n`;
-        } else {
-            analysis += `1. ⚠️ PRODLUŽTE SPLATNOST: ${contextData.loanTerm < 30 ? `30 let = nižší splátka, lepší DSTI` : 'Už máte maximum'}\n`;
-            analysis += `2. 🛡️ POJISTĚTE SE: Pojištění neschopnosti = ochrana splácení\n`;
-            analysis += `3. 💬 PROMLUVTE SE SPECIALISTOU: Najdeme řešení i pro složité případy\n\n`;
-        }
-        
-        analysis += `Chcete prozkoumat konkrétní scénáře? Zeptejte se například:\n`;
-        analysis += `• "Co kdyby ztratím práci?"\n`;
-        analysis += `• "Vyplatí se refinancování?"\n`;
-        analysis += `• "Jaký bude můj plán na 10 let?"`;
-        
-        return prompt + `\n\nVytvoř premium analýzu. Odpověz POUZE JSON: {"tool":"initialAnalysis","response":"${analysis}"}`;
-    }
-
     if (userMessage.toLowerCase().match(/kontakt|specialista|mluvit|poradit|konzultace|telefon|schůzka|sejít|zavolat|domluvit/)) {
         return prompt + `\n\nKlient chce kontakt. Odpověz POUZE JSON: {"tool":"showLeadForm","response":"📞 Výborně! Připojím vás k našemu PREMIUM týmu hypotečních stratégů. Nejsme jen zprostředkovatelé - vytvoříme vám:\\n\\nâ€¢ Kompletní finanční strategii na míru\\n• Vyjednání TOP podmínek u bank\\n• Dlouhodobý plán (ne jen jednorázovou nabídku)\\n• Přístup ke skrytým nabídkám nedostupným online\\n\\nSpecialista vás kontaktuje do 4 hodin. Otevírám formulář..."}`;
     }
@@ -448,8 +386,7 @@ Odpovídej jako premium stratég, ne jako kalkulačka. Ukaž HODNOTU nad rámec 
     return prompt;
 }
 
-
-export const handler = async (event) => {
+const handler = async (event) => {
     const headers = { 
         'Access-Control-Allow-Origin': '*', 
         'Access-Control-Allow-Headers': 'Content-Type', 
@@ -500,7 +437,7 @@ export const handler = async (event) => {
         }
 
         const data = await apiResponse.json();
-        const responseText = data?.candidates?[0]?.content?.parts?[0]?.text;
+        const responseText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
         if (!responseText) {
             throw new Error("AI nevrátila žádný text. Odpověď API byla: " + JSON.stringify(data));
@@ -537,3 +474,7 @@ export const handler = async (event) => {
         };
     }
 };
+
+// OPRAVA: Použití správné syntaxe pro export v prostředí Netlify (CommonJS)
+module.exports = { handler };
+

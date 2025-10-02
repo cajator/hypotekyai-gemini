@@ -1,5 +1,5 @@
-// netlify/functions/chat.js - v19.0 - FINÁLNÍ VERZE S OPRAVOU EXPORTU
-// Vaše kompletní, původní a detailní logika pro vytváření promptů.
+// netlify/functions/chat.js - FINÁLNÍ VERZE S KOMPLETNÍ LOGIKOU
+// Vaše kompletní logika s opravenou syntaxí pro Netlify.
 
 function createSystemPrompt(userMessage, context) {
     const hasContext = context && context.calculation && context.calculation.selectedOffer;
@@ -386,6 +386,7 @@ Odpovídej jako premium stratég, ne jako kalkulačka. Ukaž HODNOTU nad rámec 
     return prompt;
 }
 
+
 const handler = async (event) => {
     const headers = { 
         'Access-Control-Allow-Origin': '*', 
@@ -418,7 +419,7 @@ const handler = async (event) => {
             }]
         };
         
-        // SPRÁVNÁ VERZE: Návrat k v1beta, která jediná podporuje Gemini modely.
+        // SPRÁVNÁ VERZE: Jediná správná konfigurace pro Gemini modely s API klíčem.
         const modelName = "gemini-pro"; 
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
@@ -475,6 +476,6 @@ const handler = async (event) => {
     }
 };
 
-// OPRAVA: Použití správné syntaxe pro export v prostředí Netlify (CommonJS)
+// Správná syntaxe pro export v prostředí Netlify (CommonJS)
 module.exports = { handler };
 

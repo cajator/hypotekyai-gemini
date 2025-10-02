@@ -1,8 +1,6 @@
-// netlify/functions/chat.js - v19.0 - FINÁLNÍ OPRAVA
-// Návrat k vaší plné 600+ řádkové logice.
-// Odstranění problematické Google knihovny a její nahrazení přímým, spolehlivým `fetch` voláním na stabilní v1 API.
+// netlify/functions/chat.js - v19.0 - PŮVODNÍ KÓD
+// Vaše kompletní, původní a detailní logika pro vytváření promptů.
 
-// Vaše kompletní, původní a detailní logika pro vytváření promptů. Nic nebylo odstraněno.
 function createSystemPrompt(userMessage, context) {
     const hasContext = context && context.calculation && context.calculation.selectedOffer;
     const isFromOurCalculator = context?.isDataFromOurCalculator || context?.calculation?.isFromOurCalculator;
@@ -451,7 +449,7 @@ Odpovídej jako premium stratég, ne jako kalkulačka. Ukaž HODNOTU nad rámec 
 }
 
 
-const handler = async (event) => {
+export const handler = async (event) => {
     const headers = { 
         'Access-Control-Allow-Origin': '*', 
         'Access-Control-Allow-Headers': 'Content-Type', 
@@ -483,9 +481,9 @@ const handler = async (event) => {
             }]
         };
         
-        const modelName = "gemini-pro";
-        // NÁVRAT K PŮVODNÍ A SPRÁVNÉ ADRESE PRO API KLÍČE
-        const url = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${apiKey}`;
+        // SPRÁVNÁ VERZE: Návrat k v1beta, která jediná podporuje Gemini modely.
+        const modelName = "gemini-pro"; 
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
         const apiResponse = await fetch(url, {
             method: 'POST',
@@ -508,7 +506,6 @@ const handler = async (event) => {
             throw new Error("AI nevrátila žádný text. Odpověď API byla: " + JSON.stringify(data));
         }
         
-        // Zpracování odpovědi (zůstává stejné)
         const jsonMatch = responseText.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
             try {
@@ -517,7 +514,7 @@ const handler = async (event) => {
                     return { statusCode: 200, headers, body: JSON.stringify(jsonResponse) };
                 }
             } catch (e) { 
-                // Pokračujeme, pokud to není validní JSON
+                // Pokračujeme
             }
         }
         
@@ -540,8 +537,3 @@ const handler = async (event) => {
         };
     }
 };
-
-// Netlify vyžaduje `handler` jako export
-export { handler };
-
-

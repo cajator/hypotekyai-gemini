@@ -420,7 +420,7 @@ const handler = async (event) => {
         };
         
         // SPRÁVNÁ VERZE: Jediná správná konfigurace pro Gemini modely s API klíčem.
-        const modelName = "gemini-1.5-flash"; 
+        const modelName = "gemini-pro"; 
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
         const apiResponse = await fetch(url, {
@@ -478,3 +478,5 @@ const handler = async (event) => {
 
 // Správná syntaxe pro export v prostředí Netlify (CommonJS)
 module.exports = { handler };
+
+

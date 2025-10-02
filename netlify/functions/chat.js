@@ -1,4 +1,4 @@
-// netlify/functions/chat.js - v19.0 - PŮVODNÍ KÓD
+// netlify/functions/chat.js - v19.0 - FINÁLNÍ VERZE
 // Vaše kompletní, původní a detailní logika pro vytváření promptů.
 
 function createSystemPrompt(userMessage, context) {
@@ -500,7 +500,7 @@ export const handler = async (event) => {
         }
 
         const data = await apiResponse.json();
-        const responseText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        const responseText = data?.candidates?[0]?.content?.parts?[0]?.text;
 
         if (!responseText) {
             throw new Error("AI nevrátila žádný text. Odpověď API byla: " + JSON.stringify(data));
@@ -537,4 +537,3 @@ export const handler = async (event) => {
         };
     }
 };
-

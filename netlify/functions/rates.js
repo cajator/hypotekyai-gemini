@@ -1,5 +1,4 @@
 // netlify/functions/rates.js
-// Beze změn, kód je v pořádku
 
 const ALL_OFFERS = [
     {
@@ -71,6 +70,7 @@ const calculateFixationAnalysis = (loanAmount, rate, loanTerm, fixation) => {
     let totalPrincipal = 0;
     
     for (let i = 0; i < fixation * 12; i++) {
+        if (remainingBalance <= 0) break;
         const interest = remainingBalance * monthlyRate;
         const principal = monthlyPayment - interest;
         totalInterest += interest;
@@ -80,37 +80,21 @@ const calculateFixationAnalysis = (loanAmount, rate, loanTerm, fixation) => {
     
     const totalPaymentsInFixation = monthlyPayment * fixation * 12;
     const remainingYears = loanTerm - fixation;
-    const remainingMonths = remainingYears * 12;
     
     const optimisticRate = Math.max(3.59, rate - 0.6);
-    const optimisticPayment = remainingMonths > 0 ? calculateMonthlyPayment(remainingBalance, optimisticRate, remainingYears) : 0;
-    const moderateIncreaseRate = rate + 0.5;
-    const moderateIncreasePayment = remainingMonths > 0 ? calculateMonthlyPayment(remainingBalance, moderateIncreaseRate, remainingYears) : 0;
-    
-    const quickAnalysis = {
-        dailyCost: Math.round(monthlyPayment / 30),
-        percentOfTotal: Math.round((totalInterest / totalPaymentsInFixation) * 100),
-        equivalentRent: Math.round(monthlyPayment * 0.75),
-        taxSavings: Math.round(totalInterest * 0.15 / (fixation * 12)),
-    };
+    const optimisticPayment = remainingYears > 0 ? calculateMonthlyPayment(remainingBalance, optimisticRate, remainingYears) : 0;
     
     return {
         totalPaymentsInFixation: Math.round(totalPaymentsInFixation),
         totalInterestForFixation: Math.round(totalInterest),
         totalPrincipalForFixation: Math.round(totalPrincipal),
         remainingBalanceAfterFixation: Math.round(remainingBalance),
-        quickAnalysis,
         futureScenario: {
             optimistic: {
                 rate: optimisticRate,
                 newMonthlyPayment: Math.round(optimisticPayment),
                 monthlySavings: Math.round(monthlyPayment - optimisticPayment),
             },
-            moderateIncrease: {
-                rate: moderateIncreaseRate,
-                newMonthlyPayment: Math.round(moderateIncreasePayment),
-                monthlyIncrease: Math.round(moderateIncreasePayment - monthlyPayment),
-            }
         }
     };
 };
@@ -120,28 +104,28 @@ const handler = async (event) => {
     if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers };
 
     try {
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
+
         const p = event.queryStringParameters;
         const loanAmount = parseInt(p.loanAmount) || 0;
         const propertyValue = parseInt(p.propertyValue) || 0;
-        const landValue = parseInt(p.landValue) || 0;
         const income = parseInt(p.income) || 0;
         const liabilities = parseInt(p.liabilities) || 0;
-        const term = parseInt(p.loanTerm) || 25;
+        const term = parseInt(p.loanTerm) || 30;
         const fixationInput = parseInt(p.fixation) || 5;
         const children = parseInt(p.children) || 0;
         const age = parseInt(p.age) || 35;
-        const employment = p.employment || 'zaměstnanec';
-        const education = p.education || 'středoškolské';
         const purpose = p.purpose || 'koupě';
+        const landValue = parseInt(p.landValue) || 0;
+
 
         if (!loanAmount || !propertyValue || !income) { 
             return { statusCode: 200, headers, body: JSON.stringify({ offers: [] }) }; 
         }
 
         const effectivePropertyValue = purpose === 'výstavba' ? propertyValue + landValue : propertyValue;
-        const ltv = (effectivePropertyValue > 0) ? (loanAmount / effectivePropertyValue) * 100 : 0;
+        const ltv = (effectivePropertyValue > 0) ? (loanAmount / effectivePropertyValue) * 100 : 100;
         
-        const disposableIncome = income - (4500 + 7000 + (children > 0 ? 2700 + (children - 1) * 2400 : 0));
         const effectiveTerm = Math.min(term, Math.max(5, 70 - age));
 
         const allQualifiedOffers = ALL_OFFERS
@@ -162,23 +146,23 @@ const handler = async (event) => {
                 const stressPayment = calculateMonthlyPayment(loanAmount, rate + 2, effectiveTerm);
                 const stressDsti = ((stressPayment + liabilities) / income) * 100;
                 
-                const dstiLimit = income >= 50000 ? 55 : income >= 30000 ? 50 : 45;
-                if (dsti > dstiLimit * 1.1 || stressDsti > (dstiLimit + 5) * 1.15) return null;
-                if (income - monthlyPayment - liabilities < (8000 + children * 2000) * 0.6) return null;
+                // Přísnější scoring
+                const dstiLimit = income > 36000 ? 50 : 45;
+                if (dsti > dstiLimit || stressDsti > (dstiLimit + 5)) return null;
                 
-                return { id: o.id, rate: parseFloat(rate.toFixed(2)), monthlyPayment: Math.round(monthlyPayment), dsti: Math.round(dsti), title: o.title, description: o.description, highlights: o.highlights || [] };
+                return { id: o.id, rate: parseFloat(rate.toFixed(2)), monthlyPayment: Math.round(monthlyPayment), dsti: Math.round(dsti), title: o.title, description: o.description };
             }).filter(Boolean);
 
         const finalOffers = allQualifiedOffers.sort((a, b) => a.rate - b.rate);
         if (finalOffers.length === 0) return { statusCode: 200, headers, body: JSON.stringify({ offers: [] }) }; 
         
         const bestOffer = finalOffers[0];
-        const ltvScore = Math.max(50, 100 - (ltv - 60));
-        const dstiScore = Math.max(50, 100 - (bestOffer.dsti - 20) * 2);
-        const bonitaScore = Math.max(50, Math.min(100, (income - bestOffer.monthlyPayment - liabilities) / 300));
-        const totalScore = Math.round(ltvScore * 0.2 + dstiScore * 0.35 + bonitaScore * 0.45);
+        const ltvScore = Math.max(10, 100 - (ltv - 70) * 2);
+        const dstiScore = Math.max(10, 100 - (bestOffer.dsti - 25) * 2.5);
+        const bonitaScore = Math.max(10, Math.min(100, (income - bestOffer.monthlyPayment - liabilities) / 200));
+        const totalScore = Math.round(ltvScore * 0.3 + dstiScore * 0.4 + bonitaScore * 0.3);
         
-        const score = { ltv: ltvScore, dsti: dstiScore, bonita: bonitaScore, total: Math.max(50, Math.min(95, totalScore)) };
+        const score = { ltv: Math.max(0, Math.min(100, Math.round(ltvScore))), dsti: Math.max(0, Math.min(100, Math.round(dstiScore))), bonita: Math.max(0, Math.min(100, Math.round(bonitaScore))), total: Math.max(10, Math.min(98, totalScore)) };
         const fixationDetails = calculateFixationAnalysis(loanAmount, bestOffer.rate, effectiveTerm, fixationInput);
         
         return { statusCode: 200, headers, body: JSON.stringify({ offers: finalOffers.slice(0, 3), approvability: score, fixationDetails }) };

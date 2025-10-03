@@ -111,28 +111,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const getCalculatorLayout = (formHTML) => 
         `<div class="bg-white p-4 md:p-6 lg:p-12 rounded-2xl shadow-xl border">${formHTML}</div>`;
     
-    // VYLEPŠENÝ Chat layout - jednoduchý a funkční
+    // KRITICKÁ ZMĚNA - Chat layout s permanentním inputem
     const getAiLayout = () => {
         const isMobileDevice = isMobile() || window.innerWidth < 1024;
         
         if (isMobileDevice) {
-            // MOBILNÍ VERZE
+            // MOBILNÍ VERZE - input je součástí fixního footeru
             return `
                 <div id="ai-chat-wrapper" style="position: relative; width: 100%; height: calc(100vh - 12rem); display: flex; flex-direction: column;">
-                    <!-- Chat messages -->
+                    <!-- Chat messages container -->
                     <div id="chat-messages-wrapper" style="flex: 1; overflow: hidden; position: relative;">
                         <div id="chat-messages" style="height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 12px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px 8px 0 0;"></div>
                     </div>
                     
-                    <!-- Návrhy -->
+                    <!-- Suggestions -->
                     <div id="ai-suggestions" style="padding: 8px 12px; border: 1px solid #e5e7eb; border-top: none; background: white; overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap;"></div>
                     
-                    <!-- Input -->
+                    <!-- PERMANENTNÍ INPUT FOOTER - NIKDY SE NEPŘEKRESLUJE -->
                     <div id="chat-input-footer" style="position: sticky; bottom: 0; left: 0; right: 0; padding: 12px; background: white; border: 1px solid #e5e7eb; border-top: 2px solid #2563eb; border-radius: 0 0 8px 8px; z-index: 1000;">
-                        <div style="display: flex; gap: 8px;">
-                            <input type="text" id="chat-input-mobile" placeholder="Napište dotaz..." style="flex: 1; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 16px;">
-                            <button type="button" id="chat-send-mobile" style="padding: 12px 20px; background: #2563eb; color: white; border: none; border-radius: 6px; font-weight: bold; white-space: nowrap;">📤</button>
-                        </div>
+                        <!-- Input bude přidán pomocí JavaScript, ne innerHTML -->
                     </div>
                     
                     ${state.calculation.selectedOffer ? `
@@ -149,19 +146,25 @@ document.addEventListener('DOMContentLoaded', () => {
         return `
             <div class="grid ai-layout-grid gap-8 items-start">
                 <div id="ai-chat-desktop-wrapper" class="bg-white rounded-2xl shadow-xl border flex flex-col" style="height: calc(80vh - 100px);">
-                    <!-- Header -->
+                    <!-- Info panel -->
                     <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-t-2xl border-b">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center">
                                 <span class="text-2xl mr-2">🤖</span>
                                 <div>
                                     <h3 class="font-bold text-gray-800">AI Hypoteční stratég</h3>
-                                    <p class="text-xs text-gray-600">💡 Rychlé odpovědi na časté dotazy • Analýza z 19+ bank</p>
+                                    <p class="text-xs text-gray-600">Analýza dat z 19+ bank • Odpovědi do 3 sekund</p>
                                 </div>
                             </div>
                             <div class="flex gap-2">
-                                <button class="text-xs bg-white px-3 py-1 rounded-lg border hover:bg-gray-50" data-action="reset-chat">🔄 Nový chat</button>
-                                <button class="text-xs bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700" data-action="show-lead-form">📞 Specialista</button>
+                                <button class="text-xs bg-white px-3 py-1 rounded-lg border hover:bg-gray-50"
+                                        data-action="reset-chat">
+                                    🔄 Nový chat
+                                </button>
+                                <button class="text-xs bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700"
+                                        data-action="show-lead-form">
+                                    📞 Domluvit se specialistou
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -169,19 +172,105 @@ document.addEventListener('DOMContentLoaded', () => {
                     <!-- Chat messages -->
                     <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
                     
-                    <!-- Návrhy -->
+                    <!-- AI suggestions -->
                     <div id="ai-suggestions" class="p-4 border-t bg-gray-50"></div>
                     
-                    <!-- Input -->
+                    <!-- PERMANENTNÍ INPUT AREA -->
                     <div id="chat-input-footer" class="p-4 border-t bg-white rounded-b-2xl">
-                        <div style="display: flex; gap: 12px; align-items: center;">
-                            <input type="text" id="chat-input-desktop" placeholder="Napište dotaz k hypotéce... (např. 'které banky?')" style="flex: 1; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px;">
-                            <button type="button" id="chat-send-desktop" style="padding: 12px 24px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: 600; white-space: nowrap; cursor: pointer;">📤 Odeslat</button>
-                        </div>
+                        <!-- Input bude přidán pomocí JavaScript -->
                     </div>
                 </div>
                 <div id="sidebar-container" class="lg:sticky top-28 space-y-6"></div>
             </div>`;
+    };
+    
+    // NOVÁ FUNKCE - Vytvoření permanentního inputu
+    const createPermanentChatInput = () => {
+        const footer = document.getElementById('chat-input-footer');
+        if (!footer) return;
+        
+        // Zkontrolovat, jestli už input neexistuje
+        if (footer.querySelector('#permanent-chat-input')) return;
+        
+        const inputContainer = document.createElement('div');
+        inputContainer.style.cssText = 'display: flex; align-items: center; gap: 8px; width: 100%;';
+        
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.id = 'permanent-chat-input';
+        input.placeholder = 'Napište dotaz k hypotéce...';
+        input.style.cssText = `
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 16px;
+            background: white;
+            box-sizing: border-box;
+            -webkit-appearance: none;
+            appearance: none;
+            opacity: 1 !important;
+            visibility: visible !important;
+            display: block !important;
+            position: relative !important;
+            z-index: 9999 !important;
+        `;
+        
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.id = 'permanent-chat-send';
+        button.innerHTML = '→';
+        button.style.cssText = `
+            padding: 10px 16px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            white-space: nowrap;
+        `;
+        
+        // Event handlery
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleChatMessageSend(input.value.trim());
+                input.value = '';
+            }
+        });
+        
+        button.addEventListener('click', () => {
+            const message = input.value.trim();
+            if (message) {
+                handleChatMessageSend(message);
+                input.value = '';
+            }
+        });
+        
+        inputContainer.appendChild(input);
+        inputContainer.appendChild(button);
+        footer.appendChild(inputContainer);
+        
+        // Sidebar overlay pro mobil
+        if (isMobile() && state.calculation.selectedOffer) {
+            let overlay = document.getElementById('mobile-sidebar-overlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'mobile-sidebar-overlay';
+                overlay.className = 'hidden';
+                overlay.style.cssText = 'position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 800;';
+                overlay.setAttribute('data-action', 'close-mobile-sidebar');
+                
+                const sidebarContent = document.createElement('div');
+                sidebarContent.id = 'sidebar-container';
+                sidebarContent.style.cssText = 'position: fixed; bottom: 0; left: 0; right: 0; background: white; border-radius: 24px 24px 0 0; padding: 24px 16px; max-height: 70vh; overflow-y: auto; -webkit-overflow-scrolling: touch;';
+                sidebarContent.onclick = (e) => e.stopPropagation();
+                
+                overlay.appendChild(sidebarContent);
+                document.body.appendChild(overlay);
+            }
+        }
     };
     
     const getSidebarHTML = () => { 
@@ -761,21 +850,19 @@ document.addEventListener('DOMContentLoaded', () => {
             ];
         } else {
             suggestions = [
-                "🏦 Které banky?",
-                "📋 Co potřebuji?",
-                "⏱️ Jak dlouho trvá?",
-                "📊 Aktuální sazby",
-                "🏢 Hypotéka pro OSVČ",
-                "📞 Kontakt na specialistu"
+                "📢 Spočítat hypotéku", 
+                "📈 Aktuální sazby", 
+                "📋 Co potřebuji?", 
+                "📞 Domluvit se specialistou"
             ];
         }
         
         const suggestionsHTML = isMobile() 
             ? `<div class="flex gap-2 overflow-x-auto pb-1">${suggestions.map(s => 
-                `<button class="suggestion-btn whitespace-nowrap flex-shrink-0" data-suggestion="${s}" style="padding: 8px 16px; background: white; border: 1px solid #d1d5db; border-radius: 9999px; font-size: 0.875rem; cursor: pointer; transition: all 0.2s; white-space: nowrap;">${s}</button>`
+                `<button class="suggestion-btn whitespace-nowrap flex-shrink-0" data-suggestion="${s}">${s}</button>`
               ).join('')}</div>`
             : `<div class="flex flex-wrap gap-2">${suggestions.map(s => 
-                `<button class="suggestion-btn" data-suggestion="${s}" style="padding: 8px 16px; background: white; border: 1px solid #d1d5db; border-radius: 9999px; font-size: 0.875rem; cursor: pointer; transition: all 0.2s;">${s}</button>`
+                `<button class="suggestion-btn" data-suggestion="${s}">${s}</button>`
               ).join('')}</div>`;
             
         container.innerHTML = suggestionsHTML;
@@ -1289,3 +1376,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     init();
 });
+

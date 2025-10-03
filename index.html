@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=3.0">
+    <link rel="stylesheet" href="style.css?v=4.0">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💡</text></svg>">
 </head>
 <body class="bg-gray-50 text-gray-800 antialiased">
@@ -24,9 +24,9 @@
             </a>
             <div class="hidden md:flex items-center space-x-6">
                 <a href="#kalkulacka" class="nav-link scroll-to">Kalkulačka</a>
+                <a href="#ai-strateg" class="nav-link scroll-to">AI Stratég</a>
                 <a href="#premium-features" class="nav-link scroll-to">Premium funkce</a>
                 <a href="#o-nas" class="nav-link scroll-to">O nás</a>
-                <a href="#partneri" class="nav-link scroll-to">Partneři</a>
             </div>
             <div class="flex items-center space-x-4">
                  <a href="#kontakt" class="nav-btn scroll-to" data-action="show-lead-form-direct" data-target="#kontakt">📞 Specialista</a>
@@ -37,9 +37,9 @@
         </nav>
         <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200">
             <a href="#kalkulacka" class="block py-3 px-6 text-gray-700 hover:bg-gray-50 scroll-to">Kalkulačka</a>
+            <a href="#ai-strateg" class="block py-3 px-6 text-gray-700 hover:bg-gray-50 scroll-to">AI Stratég</a>
             <a href="#premium-features" class="block py-3 px-6 text-gray-700 hover:bg-gray-50 scroll-to">Premium funkce</a>
             <a href="#o-nas" class="block py-3 px-6 text-gray-700 hover:bg-gray-50 scroll-to">O nás</a>
-            <a href="#partneri" class="block py-3 px-6 text-gray-700 hover:bg-gray-50 scroll-to">Partneři</a>
         </div>
     </header>
 
@@ -97,8 +97,8 @@
                 <a href="#kalkulacka" class="nav-btn bg-blue-600 hover:bg-blue-700 text-lg px-8 py-4 scroll-to">
                     🚀 Začít analýzu zdarma
                 </a>
-                <a href="#premium-features" class="nav-btn bg-white hover:bg-gray-50 text-blue-600 border-2 border-blue-600 text-lg px-8 py-4 scroll-to">
-                    💎 Prozkoumat Premium
+                <a href="#ai-strateg" class="nav-btn bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-lg px-8 py-4 scroll-to">
+                    🤖 Zeptat se AI
                 </a>
             </div>
 
@@ -107,6 +107,119 @@
                 <span class="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse mr-1"></span>
                 <span id="active-users-counter">143 lidí právě používá naše nástroje</span>
             </p>
+        </section>
+
+        <!-- AI Stratég sekce - NOVÁ -->
+        <section id="ai-strateg" class="my-24 scroll-mt-20">
+            <div class="text-center mb-8">
+                <div class="inline-block bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-full font-bold mb-4">
+                    🤖 AI HYPOTEČNÍ STRATÉG
+                </div>
+                <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">
+                    Zeptejte se AI na cokoliv
+                </h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                    Okamžité odpovědi na časté otázky + komplexní analýzy s AI
+                </p>
+            </div>
+
+            <!-- AI Chat Interface -->
+            <div id="ai-chat-container" class="max-w-6xl mx-auto">
+                <!-- Quick Questions -->
+                <div id="quick-questions" class="mb-6">
+                    <p class="text-sm font-semibold text-gray-700 mb-3">⚡ Časté dotazy (okamžitá odpověď):</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        <button class="quick-question-btn text-left p-4 bg-white rounded-lg border border-gray-200 hover:border-blue-500 hover:shadow-md transition-all" 
+                                data-question="Jaké dokumenty potřebuji?">
+                            <span class="text-lg mr-2">📋</span>
+                            <span class="font-semibold text-sm">Jaké dokumenty potřebuji?</span>
+                        </button>
+                        <button class="quick-question-btn text-left p-4 bg-white rounded-lg border border-gray-200 hover:border-blue-500 hover:shadow-md transition-all"
+                                data-question="Kolik si můžu půjčit?">
+                            <span class="text-lg mr-2">💰</span>
+                            <span class="font-semibold text-sm">Kolik si můžu půjčit?</span>
+                        </button>
+                        <button class="quick-question-btn text-left p-4 bg-white rounded-lg border border-gray-200 hover:border-blue-500 hover:shadow-md transition-all"
+                                data-question="Jaká je aktuální průměrná sazba?">
+                            <span class="text-lg mr-2">📊</span>
+                            <span class="font-semibold text-sm">Aktuální sazby na trhu?</span>
+                        </button>
+                        <button class="quick-question-btn text-left p-4 bg-white rounded-lg border border-gray-200 hover:border-blue-500 hover:shadow-md transition-all"
+                                data-question="Jak funguje fixace?">
+                            <span class="text-lg mr-2">🔒</span>
+                            <span class="font-semibold text-sm">Jak funguje fixace?</span>
+                        </button>
+                        <button class="quick-question-btn text-left p-4 bg-white rounded-lg border border-gray-200 hover:border-blue-500 hover:shadow-md transition-all"
+                                data-question="Můžu dostat hypotéku jako OSVČ?">
+                            <span class="text-lg mr-2">🏢</span>
+                            <span class="font-semibold text-sm">Hypotéka pro OSVČ?</span>
+                        </button>
+                        <button class="quick-question-btn text-left p-4 bg-white rounded-lg border border-gray-200 hover:border-blue-500 hover:shadow-md transition-all"
+                                data-question="Co je LTV a DSTI?">
+                            <span class="text-lg mr-2">📈</span>
+                            <span class="font-semibold text-sm">Co je LTV a DSTI?</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Chat Window -->
+                <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden" style="height: 600px; display: flex; flex-direction: column;">
+                    <!-- Chat Header -->
+                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 border-b flex items-center justify-between">
+                        <div class="flex items-center">
+                            <span class="text-2xl mr-3">🤖</span>
+                            <div>
+                                <h3 class="font-bold text-gray-800">AI Hypoteční Stratég</h3>
+                                <p class="text-xs text-gray-600">Analýza dat z 19+ bank • Odpovědi do 3 sekund</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="text-xs bg-white px-3 py-1 rounded-lg border hover:bg-gray-50"
+                                    data-action="reset-chat">
+                                🔄 Nový chat
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Messages Area -->
+                    <div id="chat-messages-area" class="flex-1 overflow-y-auto p-6 space-y-4" style="scroll-behavior: smooth;">
+                        <!-- Messages will be added here -->
+                    </div>
+
+                    <!-- Input Area -->
+                    <div class="border-t bg-white p-4">
+                        <div class="flex items-center gap-3">
+                            <input type="text" 
+                                   id="chat-input-main" 
+                                   placeholder="Napište dotaz k hypotéce..."
+                                   class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                   style="font-size: 16px;">
+                            <button id="chat-send-btn" 
+                                    class="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2">
+                                <span>Odeslat</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">💡 Tip: Použijte rychlé otázky výše pro instant odpověď</p>
+                    </div>
+                </div>
+
+                <!-- CTA pod chatem -->
+                <div class="mt-6 text-center">
+                    <p class="text-sm text-gray-600 mb-3">Potřebujete komplexní analýzu na míru?</p>
+                    <a href="#kalkulacka" class="nav-btn bg-green-600 hover:bg-green-700 scroll-to inline-flex items-center gap-2">
+                        <span>📊</span>
+                        <span>Spočítat v kalkulačce</span>
+                    </a>
+                    <span class="mx-3 text-gray-400">nebo</span>
+                    <a href="#kontakt" class="nav-btn bg-blue-600 hover:bg-blue-700 scroll-to inline-flex items-center gap-2" data-action="show-lead-form-direct">
+                        <span>📞</span>
+                        <span>Domluvit se specialistou</span>
+                    </a>
+                </div>
+            </div>
         </section>
 
         <!-- Premium features showcase -->
@@ -129,7 +242,7 @@
                     <div class="text-5xl mb-4">🛡️</div>
                     <h3 class="text-2xl font-bold mb-3 text-blue-900">Stress Testy</h3>
                     <p class="text-gray-700 mb-4">
-                        Co když ztratíte práci? Přijde dítě? Vzrostou sazby o 2%? 
+                        Co kdyby ztratíte práci? Přijde dítě? Vzrostou sazby o 2%? 
                         <strong>Ukážeme vám přesně co se stane.</strong>
                     </p>
                     <div class="bg-white p-4 rounded-lg border border-blue-200 text-sm">
@@ -199,8 +312,8 @@
 
             <!-- CTA -->
             <div class="text-center mt-12">
-                <a href="#kalkulacka" class="nav-btn bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-lg px-12 py-4 scroll-to inline-block">
-                    🚀 Vyzkoušet Premium Analýzu Zdarma
+                <a href="#ai-strateg" class="nav-btn bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-lg px-12 py-4 scroll-to inline-block">
+                    🤖 Zeptat se AI na detaily
                 </a>
             </div>
         </section>
@@ -208,7 +321,7 @@
         <!-- Kalkulačka -->
         <div id="kalkulacka" class="mb-24 scroll-mt-20">
             <div class="text-center mb-8">
-                <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">Začněte zde</h2>
+                <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">Kalkulačka hypotéky</h2>
                 <p class="text-lg text-gray-600">Vyberte si způsob analýzy</p>
             </div>
 
@@ -231,13 +344,13 @@
                         <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Inteligentní analýza fixace</li>
                     </ul>
                 </div>
-                <div class="mode-card mode-card-dark" data-mode="ai">
+                <div class="mode-card" data-mode="ai-calculator">
                      <div class="badge badge-purple !text-purple-800 !bg-purple-200">🤖 AI Powered</div>
-                    <h3 class="font-bold text-xl mb-3 text-white">Premium AI Stratég</h3>
+                    <h3 class="font-bold text-xl mb-3 text-white">AI s kalkulačkou</h3>
                     <ul class="space-y-2 text-sm text-gray-300 flex-grow">
+                         <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-purple-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Kalkulace + AI dotazy</li>
                          <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-purple-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Stress testy a scénáře</li>
                          <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-purple-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Strategický plán na 20 let</li>
-                         <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-purple-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Investiční poradenství</li>
                     </ul>
                 </div>
             </section>
@@ -349,7 +462,6 @@
         <button id="cookie-accept" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm whitespace-nowrap">Rozumím a souhlasím</button>
     </div>
 
-    <script src="script.js?v=3.0" defer></script>
+    <script src="script.js?v=4.0" defer></script>
 </body>
 </html>
-

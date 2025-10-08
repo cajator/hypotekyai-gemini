@@ -2,6 +2,112 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
+// ========================================
+// QUICK RESPONSE SYSTEM V4.0
+// Okamžité odpovědi na časté otázky
+// ========================================
+
+const QUICK_RESPONSES = {
+    'dokumenty|potřebuji|doklady|podklady': {
+        response: `<strong>📋 Kompletní seznam dokumentů pro hypotéku:</strong>
+
+<strong>ZÁKLADNÍ DOKUMENTY (vždy potřeba):</strong>
+• Občanský průkaz všech žadatelů
+• Potvrzení o příjmu (formulář banky)
+• Výpisy z účtů za poslední 3 měsíce
+• Výpis z katastru nemovitostí (kupovaná nemovitost)
+• Rezervační či kupní smlouva
+
+<strong>PRO ZAMĚSTNANCE:</strong>
+• Poslední 3 výplatní pásky
+• Pracovní smlouva
+• Potvrzení od zaměstnavatele
+
+<strong>PRO OSVČ (navíc):</strong>
+• Daňová přiznání za 2 roky + přílohy
+• Potvrzení o bezdlužnosti (ZP, SP)
+• Výpis z živnostenského rejstříku
+• Faktury a účetnictví
+
+<strong>DALŠÍ DOKUMENTY:</strong>
+• Znalecký posudek (zajistí banka, 5-8k Kč)
+• Pojistná smlouva nemovitosti
+• Energetický štítek budovy
+
+💡 <strong>TIP:</strong> Začněte sbírat dokumenty už teď - šetří to týdny! Náš specialista vás provede procesem krok za krokem.`,
+        instant: true
+    },
+    
+    'kolik.*půjčit|maximální.*úvěr|jakou.*částku|kolik.*dostan': {
+        response: `<strong>💰 Kolik si můžete půjčit - Rychlý výpočet:</strong>
+
+<strong>ZÁKLADNÍ VZOREC:</strong>
+Max. hypotéka = <em>Čistý měsíční příjem × 9</em>
+
+<strong>PŘÍKLADY:</strong>
+• Příjem 30 000 Kč → max. ~2 700 000 Kč
+• Příjem 50 000 Kč → max. ~4 500 000 Kč
+• Příjem 80 000 Kč → max. ~7 200 000 Kč
+
+<strong>CO TO OVLIVŇUJE:</strong>
+• ⚠️ Jiné splátky (sníží max. částku)
+• ⚠️ Počet dětí (vyšší životní minimum)
+• ⚠️ Typ zaměstnání (OSVČ mají koef. 7-8×)
+• ✅ Spolužadatel (přičte se příjem)
+
+<strong>🎯 PRO PŘESNÝ VÝPOČET:</strong>
+Použijte naši kalkulačku výše - za 30 sekund víte přesně kolik a od které banky!`,
+        instant: true
+    },
+    
+    'osvč|podnikatel|živnost|podnikám': {
+        response: `<strong>🏢 Hypotéka pro OSVČ - Kompletní průvodce:</strong>
+
+<strong>PODMÍNKY:</strong>
+• Min. 2 roky podnikání
+• 2 daňová přiznání s kladným výsledkem
+• Stabilní příjmy
+
+<strong>JAK BANKA POČÍTÁ PŘÍJEM:</strong>
+• Průměr čistého zisku za 2 roky
+• Některé odečítají odpisy
+• Koeficient 7-8× (vs. 9× u zaměstnanců)
+
+<strong>VÝHODY:</strong>
+✅ Můžete odečíst úroky z daní
+✅ Některé banky akceptují 1 rok historie
+
+<strong>NEVÝHODY:</strong>
+❌ Nižší maximální částka
+❌ O 0.1-0.3% vyšší úrok
+❌ Více dokumentů
+
+<strong>TOP BANKY PRO OSVČ:</strong>
+1. Raiffeisenbank - nejlépe hodnotí OSVČ
+2. Česká spořitelna - akceptuje kratší historii  
+3. ČSOB - férový přístup
+
+💡 <strong>STRATEGIE:</strong> Optimalizujte daňové přiznání (ne moc nízký zisk!) a zvažte spolužadatele se zaměstnaneckým příjmem.`,
+        instant: true
+    }
+};
+
+const responseCache = new Map();
+
+const findQuickResponse = (message) => {
+    const lowercaseMessage = message.toLowerCase();
+    for (const [pattern, response] of Object.entries(QUICK_RESPONSES)) {
+        const regex = new RegExp(pattern, 'i');
+        if (regex.test(lowercaseMessage)) {
+            return response;
+        }
+    }
+    return null;
+};
+
+
+
+
     // --- CONFIGURATION ---
     const CONFIG = {
         API_CHAT_ENDPOINT: '/api/chat',
@@ -145,7 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // DESKTOP VERZE
         return `
             <div class="grid ai-layout-grid gap-8 items-start">
-                <div id="ai-chat-desktop-wrapper" class="bg-white rounded-2xl shadow-xl border flex flex-col" style="height: calc(80vh - 100px);">
+                <div id="ai-chat-desktop-wrapper" class="bg-white rounded-2xl shadow-xl border flex flex-col" style="height: calc(85vh - 100px);">
                     <!-- Info panel -->
                     <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-t-2xl border-b">
                         <div class="flex items-center justify-between">
@@ -1139,6 +1245,30 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // ========================================
+        // QUICK RESPONSE CHECK - NOVÉ V4.0
+        // ========================================
+        const quickResp = findQuickResponse(message);
+        if (quickResp && quickResp.instant) {
+            addChatMessage(message, 'user');
+            state.isAiTyping = true;
+            addChatMessage('', 'ai-typing');
+            
+            // Simulace "myšlení" pro lepší UX
+            await new Promise(resolve => setTimeout(resolve, 800));
+            
+            document.getElementById('typing-indicator')?.remove();
+            addChatMessage(quickResp.response, 'ai');
+            state.isAiTyping = false;
+            
+            // Cache response
+            responseCache.set(message.toLowerCase(), quickResp.response);
+            
+            generateAISuggestions();
+            return; // Quick response handled, nepokračuj na AI
+        }
+        // ========================================
+
         const suggestionMap = {
             "📊 Rychlá analýza": "Proveď rychlou analýzu mé situace.",
             "💰 Lepší úrok?": "Můžu dostat lepší úrok? Jak?",
@@ -1376,4 +1506,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
     init();
 });
-

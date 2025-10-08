@@ -1,4 +1,4 @@
-/* Hypoteky Ai - ULTRA STABLE CSS v38.0 */
+/* Hypoteky Ai - ULTRA STABLE CSS v4.0 */
 :root { 
     --accent-color: #2563eb;
     --success-color: #10b981;
@@ -659,7 +659,7 @@ body {
     }
     
     #chat-messages {
-        height: calc(75vh - 200px);
+        height: calc(85vh - 200px);
     }
     
     .slider-value-input {
@@ -828,4 +828,3 @@ textarea {
     user-select: text !important;
     -webkit-user-select: text !important;
 }
-

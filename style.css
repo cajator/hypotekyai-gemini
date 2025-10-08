@@ -1,4 +1,4 @@
-/* Hypoteky Ai - ULTRA STABLE CSS v4.0 */
+/* Hypoteky Ai - OPTIMIZED CSS v5.0 - VĚTŠÍ CHAT */
 :root { 
     --accent-color: #2563eb;
     --success-color: #10b981;
@@ -24,7 +24,9 @@ body {
     width: 100%;
 }
 
-/* KRITICKÉ - PERMANENTNÍ CHAT INPUT */
+/* ============================================
+   KRITICKÉ - CHAT INPUT VISIBILITY
+   ============================================ */
 #permanent-chat-input {
     opacity: 1 !important;
     visibility: visible !important;
@@ -65,7 +67,9 @@ body {
     -webkit-transform: none !important;
 }
 
-/* Chat messages wrapper */
+/* ============================================
+   CHAT LAYOUT - ZVĚTŠENÉ OBLASTI
+   ============================================ */
 #ai-chat-wrapper {
     position: relative !important;
     z-index: 1 !important;
@@ -87,17 +91,20 @@ body {
     -webkit-overflow-scrolling: touch !important;
 }
 
-/* Navigace */
+/* ============================================
+   NAVIGACE
+   ============================================ */
 .nav-link { 
     color: #4b5563; 
-    transition: color 0.2s ease-in-out; 
+    transition: color 0.2s ease-in-out;
+    font-weight: 500;
 }
 .nav-link:hover { color: var(--accent-color); }
 
 .nav-btn { 
     background-color: var(--accent-color); 
     color: white; 
-    font-weight: bold; 
+    font-weight: 600; 
     padding: 10px 20px; 
     border-radius: 8px; 
     transition: all 0.2s ease; 
@@ -111,7 +118,7 @@ body {
 .nav-btn:hover { 
     background-color: #1d4ed8; 
     transform: translateY(-1px); 
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15); 
 }
 .nav-btn:disabled { 
     background-color: #9ca3af; 
@@ -120,104 +127,116 @@ body {
     box-shadow: none; 
 }
 
-/* Badges */
+/* ============================================
+   BADGES
+   ============================================ */
 .badge { 
     padding: 4px 12px; 
     border-radius: 9999px; 
     font-weight: 600; 
-    font-size: 0.75rem; 
+    font-size: 0.7rem; 
     display: inline-block; 
     position: absolute; 
-    top: 1rem; 
-    left: 1rem;
+    top: 0.875rem; 
+    left: 0.875rem;
 }
 .badge-yellow { background-color: #fef9c3; color: #ca8a04; }
 .badge-blue { background-color: #dbeafe; color: var(--accent-color); }
 .badge-purple { background-color: #ede9fe; color: #7c3aed; }
 
-/* Formulářové prvky */
+/* ============================================
+   FORMULÁŘOVÉ PRVKY
+   ============================================ */
 .modern-input, .modern-select { 
     width: 100%; 
     background: #f9fafb; 
     border: 1px solid #d1d5db; 
     color: #111827; 
-    padding: 12px 16px; 
+    padding: 10px 14px; 
     border-radius: 8px; 
     transition: all 0.2s; 
-    font-size: 1rem;
+    font-size: 0.9375rem;
     -webkit-appearance: none;
     appearance: none;
     position: relative;
     z-index: 1;
     opacity: 1 !important;
     visibility: visible !important;
-    visibility: visible !important;
 }
 
 .modern-input:focus, .modern-select:focus { 
     background: white; 
     border-color: var(--accent-color); 
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); 
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); 
     outline: none;
     z-index: 2;
 }
 
 .modern-select { 
     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-position: right 1rem center; 
+    background-position: right 0.875rem center; 
     background-repeat: no-repeat; 
-    background-size: 1.2em;
+    background-size: 1.15em;
     padding-right: 2.5rem;
 }
 
-/* Mode karty */
+/* ============================================
+   MODE KARTY
+   ============================================ */
 .mode-card { 
     border: 2px solid #e5e7eb; 
-    padding: 1.5rem; 
+    padding: 1.25rem; 
     border-radius: 1rem; 
     cursor: pointer; 
     transition: all 0.2s ease-in-out; 
     position: relative; 
     display: flex; 
     flex-direction: column; 
-    padding-top: 4rem;
+    padding-top: 3.5rem;
+    background: white;
 }
 .mode-card:hover { 
-    transform: translateY(-5px); 
-    box-shadow: 0 8px 20px -5px rgba(0,0,0,0.08); 
+    transform: translateY(-3px); 
+    box-shadow: 0 8px 20px -5px rgba(0,0,0,0.1); 
+    border-color: #c7d2fe;
 }
 .mode-card.active { 
     border-color: var(--accent-color); 
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2); 
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); 
+    background: linear-gradient(to bottom, #eff6ff, #ffffff);
 }
 .mode-card-dark { 
     background: linear-gradient(135deg, #1e3a8a, #1e293b); 
     color: white; 
 }
 
-/* Formuláře */
+/* ============================================
+   FORMULÁŘOVÉ SEKCE
+   ============================================ */
 .form-label { 
     font-weight: 600; 
-    font-size: 0.875rem; 
+    font-size: 0.8125rem; 
     color: #374151; 
-    margin-bottom: 0.5rem; 
+    margin-bottom: 0.4rem; 
     display: block; 
 }
 .form-section-heading { 
-    font-size: 1.5rem; 
+    font-size: 1.375rem; 
     font-weight: 700; 
     color: #111827; 
-    padding-bottom: 0.75rem; 
-    margin-bottom: 1.5rem; 
+    padding-bottom: 0.625rem; 
+    margin-bottom: 1.25rem; 
     border-bottom: 1px solid #e5e7eb; 
 }
 .form-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 1.25rem;
 }
 
-/* Slider */
+/* ============================================
+   SLIDER
+   ============================================ */
 .slider-container {
     position: relative;
     z-index: 1;
@@ -245,25 +264,25 @@ body {
 .slider-input::-webkit-slider-thumb { 
     -webkit-appearance: none; 
     appearance: none; 
-    margin-top: -6px; 
+    margin-top: -5px; 
     background-color: var(--accent-color); 
-    height: 1.25rem; 
-    width: 1.25rem; 
+    height: 1.125rem; 
+    width: 1.125rem; 
     border-radius: 50%; 
     border: 2px solid white; 
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15); 
 }
 
 .slider-value-input {
-    font-weight: bold; 
-    font-size: 1rem;
+    font-weight: 600; 
+    font-size: 0.9375rem;
     text-align: right; 
     border: 1px solid transparent; 
     background-color: transparent; 
     padding: 2px 8px; 
     border-radius: 6px; 
     transition: all 0.2s ease; 
-    max-width: 120px;
+    max-width: 110px;
     width: auto;
     position: relative;
     z-index: 2;
@@ -276,27 +295,31 @@ body {
     border-color: #d1d5db; 
 }
 
-/* Results grid */
+/* ============================================
+   RESULTS GRID
+   ============================================ */
 .results-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 1rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
-/* Offer cards */
+/* ============================================
+   OFFER CARDS
+   ============================================ */
 .offer-card { 
     background-color: white; 
     border: 2px solid #e5e7eb; 
-    transition: all 0.3s ease; 
+    transition: all 0.25s ease; 
     cursor: pointer; 
     display: flex; 
     flex-direction: column; 
     border-radius: 1rem; 
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     position: relative;
     overflow: hidden;
-    padding: 1.25rem;
+    padding: 1.125rem;
 }
 
 .offer-card::before {
@@ -305,7 +328,7 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    height: 4px;
+    height: 3px;
     background: linear-gradient(90deg, var(--accent-color), #818cf8);
     transform: scaleX(0);
     transition: transform 0.3s ease;
@@ -318,8 +341,8 @@ body {
 
 .offer-card:hover { 
     border-color: #93c5fd; 
-    transform: translateY(-5px); 
-    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+    transform: translateY(-3px); 
+    box-shadow: 0 12px 20px -5px rgba(0,0,0,0.12);
 }
 
 .offer-card.selected { 
@@ -327,130 +350,133 @@ body {
     background: linear-gradient(to bottom right, #eff6ff, #fefefe);
 }
 
-/* Chat bubbles */
+/* ============================================
+   CHAT BUBBLES
+   ============================================ */
 .chat-bubble-ai { 
     background: linear-gradient(to bottom, #f9fafb, #f3f4f6);
     color: #1f2937; 
-    border-radius: 1.25rem 1.25rem 1.25rem 0.25rem; 
-    padding: 14px 18px; 
+    border-radius: 1.125rem 1.125rem 1.125rem 0.25rem; 
+    padding: 12px 16px; 
     max-width: 85%; 
     width: fit-content; 
-    line-height: 1.6;
-    box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1);
-    animation: slideInLeft 0.3s ease-out;
+    line-height: 1.55;
+    box-shadow: 0 1px 3px 0 rgba(0,0,0,0.08);
+    animation: slideInLeft 0.25s ease-out;
     word-wrap: break-word;
     overflow-wrap: break-word;
+    font-size: 0.9375rem;
 }
 
 .chat-bubble-user { 
     background: linear-gradient(135deg, var(--accent-color), #4f46e5);
     color: white; 
-    border-radius: 1.25rem 1.25rem 0.25rem 1.25rem; 
-    padding: 14px 18px; 
+    border-radius: 1.125rem 1.125rem 0.25rem 1.125rem; 
+    padding: 12px 16px; 
     max-width: 85%; 
     width: fit-content; 
     align-self: flex-end; 
-    line-height: 1.6;
-    box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1);
-    animation: slideInRight 0.3s ease-out;
+    line-height: 1.55;
+    box-shadow: 0 1px 3px 0 rgba(0,0,0,0.08);
+    animation: slideInRight 0.25s ease-out;
     word-wrap: break-word;
     overflow-wrap: break-word;
+    font-size: 0.9375rem;
 }
 
 @keyframes slideInLeft {
-    from { opacity: 0; transform: translateX(-20px); }
+    from { opacity: 0; transform: translateX(-15px); }
     to { opacity: 1; transform: translateX(0); }
 }
 
 @keyframes slideInRight {
-    from { opacity: 0; transform: translateX(20px); }
+    from { opacity: 0; transform: translateX(15px); }
     to { opacity: 1; transform: translateX(0); }
 }
 
-/* Loading spinners */
+/* ============================================
+   LOADING SPINNERS
+   ============================================ */
 .loading-spinner-blue { 
     margin: 1rem auto; 
     display: inline-block; 
-    width: 24px; 
-    height: 24px; 
-    border: 3px solid rgba(59, 130, 246, 0.2); 
+    width: 22px; 
+    height: 22px; 
+    border: 2.5px solid rgba(59, 130, 246, 0.2); 
     border-top-color: var(--accent-color); 
     border-radius: 50%; 
-    animation: spin 1s linear infinite; 
+    animation: spin 0.8s linear infinite; 
 }
 .loading-spinner-white { 
     display: inline-block; 
-    width: 20px; 
-    height: 20px; 
-    border: 3px solid rgba(255, 255, 255, 0.3); 
+    width: 18px; 
+    height: 18px; 
+    border: 2.5px solid rgba(255, 255, 255, 0.3); 
     border-top-color: #fff; 
     border-radius: 50%; 
-    animation: spin 1s linear infinite; 
+    animation: spin 0.8s linear infinite; 
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Suggestion buttons */
+/* ============================================
+   SUGGESTION BUTTONS
+   ============================================ */
 .suggestion-btn { 
     background: linear-gradient(to bottom, white, #fafafa);
     border: 1px solid #d1d5db; 
     color: #374151; 
-    padding: 8px 16px; 
+    padding: 7px 14px; 
     border-radius: 9999px; 
-    font-size: 0.875rem; 
+    font-size: 0.8125rem; 
     cursor: pointer; 
     transition: all 0.2s ease;
-    box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+    box-shadow: 0 1px 2px 0 rgba(0,0,0,0.04);
     position: relative;
     overflow: hidden;
     white-space: nowrap;
     display: inline-block;
     margin-right: 0.5rem;
     margin-bottom: 0.5rem;
+    font-weight: 500;
 }
 
 .suggestion-btn:hover { 
     background: linear-gradient(to bottom, #fafafa, #f3f4f6);
     border-color: var(--accent-color);
     color: var(--accent-color);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px -1px rgba(0,0,0,0.1);
 }
 
-/* Approvability bar */
-.approvability-bar-bg { 
-    background-color: #e5e7eb; 
-    border-radius: 9999px; 
-    height: 8px; 
-    overflow: hidden; 
-}
-.approvability-bar { 
-    height: 100%; 
-    border-radius: 9999px; 
-    transition: width 0.5s ease-in-out; 
-}
-
-/* AI layout grid */
+/* ============================================
+   AI LAYOUT GRID
+   ============================================ */
 .ai-layout-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 1.25rem;
 }
 
-/* Quick analysis box */
+/* ============================================
+   QUICK ANALYSIS BOX
+   ============================================ */
 .quick-analysis-box {
     background: linear-gradient(135deg, #fef3c7, #fef9c3);
-    border-left: 4px solid var(--warning-color);
-    padding: 1rem;
-    border-radius: 0.75rem;
-    box-shadow: 0 4px 6px -1px rgba(251, 191, 36, 0.1);
+    border-left: 3px solid var(--warning-color);
+    padding: 0.875rem;
+    border-radius: 0.625rem;
+    box-shadow: 0 2px 4px -1px rgba(251, 191, 36, 0.1);
+    font-size: 0.875rem;
 }
 
-/* Score cards */
+/* ============================================
+   SCORE CARDS
+   ============================================ */
 .score-card {
     background: white;
-    padding: 1rem;
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1);
+    padding: 0.875rem;
+    border-radius: 0.625rem;
+    box-shadow: 0 1px 3px 0 rgba(0,0,0,0.08);
     transition: all 0.2s ease;
 }
 
@@ -459,9 +485,81 @@ body {
     box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
 }
 
-/* MOBILE KRITICKÉ OPRAVY */
+/* ============================================
+   APPROVABILITY BAR
+   ============================================ */
+.approvability-bar-bg { 
+    background-color: #e5e7eb; 
+    border-radius: 9999px; 
+    height: 7px; 
+    overflow: hidden; 
+}
+.approvability-bar { 
+    height: 100%; 
+    border-radius: 9999px; 
+    transition: width 0.5s ease-in-out; 
+}
+
+/* ============================================
+   INFO PANELS
+   ============================================ */
+.info-panel {
+    background: linear-gradient(to right, #f0f9ff, #e0f2fe);
+    border-left: 3px solid var(--accent-color);
+    padding: 0.875rem;
+    border-radius: 0.5rem;
+    margin: 0.875rem 0;
+    font-size: 0.875rem;
+}
+
+.info-panel-success {
+    background: linear-gradient(to right, #f0fdf4, #dcfce7);
+    border-left-color: var(--success-color);
+}
+
+.info-panel-warning {
+    background: linear-gradient(to right, #fffbeb, #fef3c7);
+    border-left-color: var(--warning-color);
+}
+
+/* ============================================
+   OFFER HIGHLIGHT
+   ============================================ */
+.offer-highlight {
+    display: inline-block;
+    padding: 0.2rem 0.625rem;
+    background: linear-gradient(135deg, #dbeafe, #eff6ff);
+    color: var(--accent-color);
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-right: 0.4rem;
+    margin-top: 0.4rem;
+    border: 1px solid #bfdbfe;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+.hidden { display: none !important; }
+
+.shadow-soft {
+    box-shadow: 0 2px 4px -1px rgba(0,0,0,0.05), 0 1px 3px -1px rgba(0,0,0,0.03);
+}
+
+.shadow-medium {
+    box-shadow: 0 8px 12px -3px rgba(0,0,0,0.08), 0 3px 5px -2px rgba(0,0,0,0.04);
+}
+
+.shadow-hard {
+    box-shadow: 0 16px 20px -5px rgba(0,0,0,0.1), 0 8px 8px -5px rgba(0,0,0,0.04);
+}
+
+/* ============================================
+   MOBILE OPTIMIZATIONS (max-width: 1023px)
+   ============================================ */
 @media (max-width: 1023px) {
-    /* Ultra stabilní chat input */
+    /* KRITICKÉ - Ultra stabilní chat input pro mobil */
     #permanent-chat-input {
         font-size: 16px !important;
         opacity: 1 !important;
@@ -479,9 +577,7 @@ body {
         user-select: text !important;
         -webkit-user-select: text !important;
         -webkit-appearance: none !important;
-        width: calc(100% - 0px) !important;
-        max-width: 100% !important;
-        min-width: 0 !important;
+        width: 100% !important;
     }
     
     #permanent-chat-send {
@@ -492,6 +588,7 @@ body {
         pointer-events: auto !important;
     }
     
+    /* ZVĚTŠENÝ CHAT NA MOBILU */
     #chat-input-footer {
         position: sticky !important;
         bottom: 0 !important;
@@ -502,22 +599,25 @@ body {
         visibility: visible !important;
         display: block !important;
         background: white !important;
-        padding: 12px !important;
+        padding: 10px !important;
         border-top: 2px solid #2563eb !important;
         transform: translateZ(0) !important;
         -webkit-transform: translateZ(0) !important;
     }
     
+    /* VĚTŠÍ VÝŠKA CHATU - 70% viewportu */
     #ai-chat-wrapper {
-        height: calc(100vh - 12rem) !important;
-        max-height: 100% !important;
+        height: 70vh !important;
+        max-height: 70vh !important;
         overflow: hidden !important;
     }
     
     #chat-messages {
         height: 100% !important;
+        max-height: 100% !important;
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch !important;
+        padding-bottom: 1rem !important;
     }
     
     body {
@@ -525,12 +625,12 @@ body {
     }
     
     .container {
-        padding: 0 0.75rem;
+        padding: 0 1rem;
     }
     
     .nav-btn {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.875rem;
+        padding: 0.5rem 0.875rem;
+        font-size: 0.8125rem;
     }
     
     .mode-card {
@@ -547,7 +647,7 @@ body {
     }
     
     .form-section-heading {
-        font-size: 1.25rem;
+        font-size: 1.125rem;
         margin-bottom: 1rem;
     }
     
@@ -556,35 +656,35 @@ body {
     }
     
     .modern-input, .modern-select {
-        padding: 0.75rem 1rem;
+        padding: 0.75rem 0.875rem;
         font-size: 16px !important;
     }
     
     .slider-value-input {
-        max-width: 100px;
-        font-size: 0.9375rem;
+        max-width: 95px;
+        font-size: 0.875rem;
     }
     
     .slider-input::-webkit-slider-thumb {
-        height: 1.5rem;
-        width: 1.5rem;
-        margin-top: -8px;
+        height: 1.375rem;
+        width: 1.375rem;
+        margin-top: -7px;
     }
     
     .offer-card {
         padding: 1rem;
-        border-radius: 0.75rem;
+        border-radius: 0.875rem;
     }
     
     .chat-bubble-ai,
     .chat-bubble-user {
-        max-width: 90%;
-        font-size: 0.9rem;
-        padding: 0.75rem 1rem;
+        max-width: 88%;
+        font-size: 0.875rem;
+        padding: 0.7rem 0.95rem;
     }
     
     #ai-suggestions {
-        padding: 0.75rem;
+        padding: 0.625rem;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
         white-space: nowrap;
@@ -593,26 +693,13 @@ body {
     }
     
     .suggestion-btn {
-        font-size: 0.8125rem;
-        padding: 0.5rem 0.875rem;
-    }
-    
-    #mobile-sidebar-overlay {
-        backdrop-filter: blur(5px);
-    }
-    
-    #sidebar-container {
-        animation: slideUp 0.3s ease-out;
-    }
-    
-    @keyframes slideUp {
-        from { transform: translateY(100%); }
-        to { transform: translateY(0); }
+        font-size: 0.75rem;
+        padding: 0.5rem 0.75rem;
     }
     
     .quick-analysis-box {
         padding: 0.75rem;
-        font-size: 0.875rem;
+        font-size: 0.8125rem;
     }
     
     .score-card {
@@ -620,55 +707,82 @@ body {
     }
 }
 
-/* TABLET */
+/* ============================================
+   TABLET (768px - 1023px)
+   ============================================ */
 @media (min-width: 768px) and (max-width: 1023px) {
     .form-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 1.25rem 1.5rem;
+        gap: 1.125rem 1.375rem;
     }
     
     .results-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 1.25rem;
+        gap: 1.125rem;
     }
     
     .slider-value-input {
-        max-width: 160px;
+        max-width: 140px;
+    }
+    
+    /* VĚTŠÍ CHAT PRO TABLET */
+    #ai-chat-wrapper {
+        height: 65vh !important;
+        max-height: 65vh !important;
+    }
+    
+    #chat-messages {
+        height: 100% !important;
     }
 }
 
-/* DESKTOP */
+/* ============================================
+   DESKTOP (min-width: 1024px)
+   ============================================ */
 @media (min-width: 1024px) {
     .form-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 1.5rem 2rem;
+        gap: 1.375rem 1.75rem;
     }
     
     .results-grid {
         grid-template-columns: repeat(3, 1fr);
-        gap: 1.5rem;
+        gap: 1.375rem;
     }
     
     .offer-card {
-        padding: 1.5rem;
+        padding: 1.375rem;
     }
     
     .ai-layout-grid {
         grid-template-columns: 2fr 1fr;
-        gap: 2rem;
+        gap: 1.75rem;
     }
     
+    /* MNOHEM VĚTŠÍ CHAT NA DESKTOPU - 75vh místo 85vh - 200px */
     #chat-messages {
-        height: calc(85vh - 200px);
+        height: 75vh !important;
+        max-height: 75vh !important;
+    }
+    
+    #ai-chat-wrapper {
+        min-height: 75vh !important;
     }
     
     .slider-value-input {
-        max-width: 180px;
-        font-size: 1.125rem;
+        max-width: 160px;
+        font-size: 1rem;
+    }
+    
+    .chat-bubble-ai,
+    .chat-bubble-user {
+        max-width: 80%;
     }
 }
 
-/* ULTRA AGGRESSIVE ZOOM FIX */
+/* ============================================
+   ZOOM FIX - všechny mobile zařízení
+   ============================================ */
 @media screen and (max-device-width: 1024px) {
     input[type="text"],
     input[type="email"],
@@ -688,9 +802,10 @@ body {
     }
 }
 
-/* Viewport scaling protection */
+/* ============================================
+   iOS SPECIFIC
+   ============================================ */
 @supports (-webkit-touch-callout: none) {
-    /* iOS specific */
     #permanent-chat-input {
         font-size: 16px !important;
         transform: scale(1) !important;
@@ -698,99 +813,34 @@ body {
     }
 }
 
-/* Highlight badges */
-.offer-highlight {
-    display: inline-block;
-    padding: 0.25rem 0.75rem;
-    background: linear-gradient(135deg, #dbeafe, #eff6ff);
-    color: var(--accent-color);
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    margin-right: 0.5rem;
-    margin-top: 0.5rem;
-    border: 1px solid #bfdbfe;
-}
-
-/* CTA button enhancement */
-.nav-btn.nav-btn-cta {
-    background: linear-gradient(135deg, var(--success-color), #059669);
-    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
-    font-size: 1rem;
-    padding: 14px 24px;
-    position: relative;
-    overflow: hidden;
-}
-
-.nav-btn.nav-btn-cta::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-    transition: left 0.5s ease;
-}
-
-.nav-btn.nav-btn-cta:hover::before {
-    left: 100%;
-}
-
-/* Info panels */
-.info-panel {
-    background: linear-gradient(to right, #f0f9ff, #e0f2fe);
-    border-left: 4px solid var(--accent-color);
-    padding: 1rem;
-    border-radius: 0.5rem;
-    margin: 1rem 0;
-}
-
-.info-panel-success {
-    background: linear-gradient(to right, #f0fdf4, #dcfce7);
-    border-left-color: var(--success-color);
-}
-
-.info-panel-warning {
-    background: linear-gradient(to right, #fffbeb, #fef3c7);
-    border-left-color: var(--warning-color);
-}
-
-/* Shadow utilities */
-.shadow-soft {
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
-}
-
-.shadow-medium {
-    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04);
-}
-
-.shadow-hard {
-    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
-}
-
-/* Safe area insets for iPhone X+ */
+/* ============================================
+   SAFE AREA INSETS (iPhone X+)
+   ============================================ */
 @supports (padding: max(0px)) {
     header {
         padding-top: max(0px, env(safe-area-inset-top));
     }
     
     #sidebar-container {
-        padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+        padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
     }
     
     #chat-input-footer {
-        padding-bottom: max(12px, env(safe-area-inset-bottom));
+        padding-bottom: max(10px, env(safe-area-inset-bottom));
     }
 }
 
-/* Focus styles for accessibility */
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
 *:focus-visible {
     outline: 2px solid var(--accent-color);
     outline-offset: 2px;
 }
 
-/* Disable hover na dotykových zařízeních */
+/* ============================================
+   TOUCH DEVICES - disable hover
+   ============================================ */
 @media (hover: none) and (pointer: coarse) {
     .nav-btn:hover,
     .offer-card:hover,
@@ -800,7 +850,9 @@ body {
     }
 }
 
-/* Print styles */
+/* ============================================
+   PRINT STYLES
+   ============================================ */
 @media print {
     .nav-btn, 
     #mobile-menu-button, 
@@ -815,10 +867,9 @@ body {
     }
 }
 
-/* Utility classes */
-.hidden { display: none !important; }
-
-/* NUCLEAR OPTION - Force all inputs visible */
+/* ============================================
+   NUCLEAR OPTION - Force all inputs visible
+   ============================================ */
 input:not([type="hidden"]),
 select,
 textarea {

@@ -248,10 +248,10 @@ const findQuickResponse = (message) => {
                 </div>`;
         }
         
-        // DESKTOP VERZE
+        // DESKTOP VERZE - Přepnuto na grid layout
         return `
-            <div class="grid ai-layout-grid gap-8 items-start">
-                <div id="ai-chat-desktop-wrapper" class="bg-white rounded-2xl shadow-xl border flex flex-col" style="height: calc(85vh - 100px);">
+            <div class="lg:grid lg:grid-cols-12 lg:gap-8 items-start">
+                <div id="ai-chat-desktop-wrapper" class="lg:col-span-8 bg-white rounded-2xl shadow-xl border flex flex-col" style="min-height: calc(85vh - 100px);">
                     <!-- Info panel -->
                     <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-t-2xl border-b">
                         <div class="flex items-center justify-between">
@@ -286,7 +286,7 @@ const findQuickResponse = (message) => {
                         <!-- Input bude přidán pomocí JavaScript -->
                     </div>
                 </div>
-                <div id="sidebar-container" class="lg:sticky top-28 space-y-6"></div>
+                <div id="sidebar-container" class="lg:col-span-4 lg:sticky top-28"></div>
             </div>`;
     };
     

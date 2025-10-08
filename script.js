@@ -50,7 +50,7 @@ Max. hypotéka = <em>Čistý měsíční příjem × 9</em>
 • Příjem 80 000 Kč → max. ~7 200 000 Kč
 
 <strong>CO TO OVLIVŇUJE:</strong>
-• ⚠️ Jiné splátky (snižují max. částku)
+• ⚠️ Jiné splátky (sníží max. částku)
 • ⚠️ Počet dětí (vyšší životní minimum)
 • ⚠️ Typ zaměstnání (OSVČ mají koef. 7-8×)
 • ✅ Spolužadatel (přičte se příjem)
@@ -105,6 +105,9 @@ const findQuickResponse = (message) => {
     return null;
 };
 
+
+
+
     // --- CONFIGURATION ---
     const CONFIG = {
         API_CHAT_ENDPOINT: '/api/chat',
@@ -119,7 +122,6 @@ const findQuickResponse = (message) => {
         chatFormData: {},
         chatHistory: [],
         mobileSidebarOpen: false,
-        sidebarMinimized: true, // NOVÉ - defaultně minimalizovaný
         activeUsers: Math.floor(Math.random() * 30) + 120,
         formData: {
             propertyValue: 5000000, loanAmount: 4000000,
@@ -215,56 +217,76 @@ const findQuickResponse = (message) => {
     const getCalculatorLayout = (formHTML) => 
         `<div class="bg-white p-4 md:p-6 lg:p-12 rounded-2xl shadow-xl border">${formHTML}</div>`;
     
-    // ========================================
-    // PLOVOUCÍ SIDEBAR IMPLEMENTATION
-    // ========================================
-    
+    // KRITICKÁ ZMĚNA - Chat layout s permanentním inputem
     const getAiLayout = () => {
         const isMobileDevice = isMobile() || window.innerWidth < 1024;
         
+        if (isMobileDevice) {
+            // MOBILNÍ VERZE - input je součástí fixního footeru
+            return `
+                <div id="ai-chat-wrapper" style="position: relative; width: 100%; height: calc(100vh - 12rem); display: flex; flex-direction: column;">
+                    <!-- Chat messages container -->
+                    <div id="chat-messages-wrapper" style="flex: 1; overflow: hidden; position: relative;">
+                        <div id="chat-messages" style="height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 12px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px 8px 0 0;"></div>
+                    </div>
+                    
+                    <!-- Suggestions -->
+                    <div id="ai-suggestions" style="padding: 8px 12px; border: 1px solid #e5e7eb; border-top: none; background: white; overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap;"></div>
+                    
+                    <!-- PERMANENTNÍ INPUT FOOTER - NIKDY SE NEPŘEKRESLUJE -->
+                    <div id="chat-input-footer" style="position: sticky; bottom: 0; left: 0; right: 0; padding: 12px; background: white; border: 1px solid #e5e7eb; border-top: 2px solid #2563eb; border-radius: 0 0 8px 8px; z-index: 1000;">
+                        <!-- Input bude přidán pomocí JavaScript, ne innerHTML -->
+                    </div>
+                    
+                    ${state.calculation.selectedOffer ? `
+                    <button id="mobile-sidebar-toggle" 
+                            style="position: fixed; bottom: 80px; right: 20px; width: 56px; height: 56px; background: #2563eb; color: white; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 900; border: none; cursor: pointer;"
+                            data-action="toggle-mobile-sidebar">
+                        <span style="font-size: 24px;">📊</span>
+                    </button>
+                    ` : ''}
+                </div>`;
+        }
+        
+        // DESKTOP VERZE
         return `
-            <div style="position: relative; width: 100%;">
-                <!-- CHAT AREA - celá šířka -->
-                <div id="ai-chat-wrapper" style="position: relative; width: 100%; min-height: ${isMobileDevice ? 'calc(100vh - 200px)' : 'calc(100vh - 250px)'};">
-                    <!-- Chat container -->
-                    <div class="bg-white rounded-2xl shadow-xl border" style="height: 100%; display: flex; flex-direction: column;">
-                        <!-- Header -->
-                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-3 sm:p-4 rounded-t-2xl border-b">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center">
-                                    <span class="text-xl sm:text-2xl mr-2">🤖</span>
-                                    <div>
-                                        <h3 class="font-bold text-sm sm:text-base text-gray-800">AI Hypoteční stratég</h3>
-                                        <p class="text-xs text-gray-600">Analýza dat z 19+ bank • Odpovědi do 3 sekund</p>
-                                    </div>
-                                </div>
-                                <div class="flex gap-2">
-                                    ${!isMobileDevice ? `
-                                    <button class="text-xs bg-white px-3 py-1 rounded-lg border hover:bg-gray-50"
-                                            data-action="reset-chat">
-                                        🔄 Nový chat
-                                    </button>
-                                    ` : ''}
-                                    <button class="text-xs sm:text-sm bg-green-600 text-white px-2 sm:px-3 py-1 rounded-lg hover:bg-green-700"
-                                            data-action="show-lead-form">
-                                        📞 Specialista
-                                    </button>
+            <div class="grid ai-layout-grid gap-8 items-start">
+                <div id="ai-chat-desktop-wrapper" class="bg-white rounded-2xl shadow-xl border flex flex-col" style="height: calc(85vh - 100px);">
+                    <!-- Info panel -->
+                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-t-2xl border-b">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <span class="text-2xl mr-2">🤖</span>
+                                <div>
+                                    <h3 class="font-bold text-gray-800">AI Hypoteční stratég</h3>
+                                    <p class="text-xs text-gray-600">Analýza dat z 19+ bank • Odpovědi do 3 sekund</p>
                                 </div>
                             </div>
-                        </div>
-                        
-                        <!-- Chat messages -->
-                        <div id="chat-messages" class="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3" style="min-height: 400px;"></div>
-                        
-                        <!-- AI suggestions -->
-                        <div id="ai-suggestions" class="px-3 sm:px-4 py-2 border-t bg-gray-50"></div>
-                        
-                        <!-- PERMANENT INPUT AREA -->
-                        <div id="chat-input-footer" class="p-3 sm:p-4 border-t bg-white rounded-b-2xl">
-                            <!-- Input bude přidán pomocí JavaScript -->
+                            <div class="flex gap-2">
+                                <button class="text-xs bg-white px-3 py-1 rounded-lg border hover:bg-gray-50"
+                                        data-action="reset-chat">
+                                    🔄 Nový chat
+                                </button>
+                                <button class="text-xs bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700"
+                                        data-action="show-lead-form">
+                                    📞 Domluvit se specialistou
+                                </button>
+                            </div>
                         </div>
                     </div>
+                    
+                    <!-- Chat messages -->
+                    <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
+                    
+                    <!-- AI suggestions -->
+                    <div id="ai-suggestions" class="p-4 border-t bg-gray-50"></div>
+                    
+                    <!-- PERMANENTNÍ INPUT AREA -->
+                    <div id="chat-input-footer" class="p-4 border-t bg-white rounded-b-2xl">
+                        <!-- Input bude přidán pomocí JavaScript -->
+                    </div>
                 </div>
+                <div id="sidebar-container" class="lg:sticky top-28 space-y-6"></div>
             </div>`;
     };
     
@@ -335,158 +357,160 @@ const findQuickResponse = (message) => {
         inputContainer.appendChild(input);
         inputContainer.appendChild(button);
         footer.appendChild(inputContainer);
-    };
-    
-    // ========================================
-    // PLOVOUCÍ SIDEBAR - kompaktní přehled
-    // ========================================
-    
-    const createFloatingSidebar = () => {
-        // Odstranit existující sidebar pokud je
-        const existing = document.getElementById('floating-sidebar');
-        if (existing) existing.remove();
         
-        if (!state.calculation.selectedOffer) return;
-        
-        const { loanAmount, propertyValue, loanTerm, fixation } = state.formData;
-        const monthlyPayment = state.calculation.selectedOffer.monthlyPayment;
-        const rate = state.calculation.selectedOffer.rate;
-        const quickAnalysis = state.calculation.fixationDetails?.quickAnalysis;
-        
-        const sidebar = document.createElement('div');
-        sidebar.id = 'floating-sidebar';
-        sidebar.className = state.sidebarMinimized ? 'minimized' : '';
-        
-        sidebar.innerHTML = `
-            <!-- Toggle Button -->
-            <button class="sidebar-toggle" onclick="window.toggleFloatingSidebar()" aria-label="Toggle sidebar">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                </svg>
-            </button>
-            
-            <!-- Mini Preview Icons -->
-            <div class="sidebar-mini-preview">
-                <div class="sidebar-mini-item" onclick="window.toggleFloatingSidebar()" title="Váš plán">💼</div>
-                <div class="sidebar-mini-item" onclick="window.toggleFloatingSidebar()" title="Splátka">💰</div>
-                <div class="sidebar-mini-item" onclick="window.toggleFloatingSidebar()" title="Analýza">⚡</div>
-            </div>
-            
-            <!-- Plný Obsah -->
-            <div class="sidebar-content-wrapper">
-                <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: #1f2937;">
-                    💼 Váš hypoteční plán
-                </h3>
+        // Sidebar overlay pro mobil
+        if (isMobile() && state.calculation.selectedOffer) {
+            let overlay = document.getElementById('mobile-sidebar-overlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'mobile-sidebar-overlay';
+                overlay.className = 'hidden';
+                overlay.style.cssText = 'position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 800;';
+                overlay.setAttribute('data-action', 'close-mobile-sidebar');
                 
-                <!-- Základní údaje -->
-                <div class="plan-summary-card">
-                    <div class="plan-summary-header">📊 Základní údaje</div>
-                    <div class="plan-summary-row">
-                        <span class="plan-summary-label">Úvěr:</span>
-                        <span class="plan-summary-value">${formatNumber(loanAmount)}</span>
-                    </div>
-                    <div class="plan-summary-row">
-                        <span class="plan-summary-label">Nemovitost:</span>
-                        <span class="plan-summary-value">${formatNumber(propertyValue)}</span>
-                    </div>
-                    <div class="plan-summary-row">
-                        <span class="plan-summary-label">Fixace:</span>
-                        <span class="plan-summary-value">${fixation} let</span>
-                    </div>
-                    <div class="plan-summary-row">
-                        <span class="plan-summary-label">Splatnost:</span>
-                        <span class="plan-summary-value">${loanTerm} let</span>
-                    </div>
-                </div>
+                const sidebarContent = document.createElement('div');
+                sidebarContent.id = 'sidebar-container';
+                sidebarContent.style.cssText = 'position: fixed; bottom: 0; left: 0; right: 0; background: white; border-radius: 24px 24px 0 0; padding: 24px 16px; max-height: 70vh; overflow-y: auto; -webkit-overflow-scrolling: touch;';
+                sidebarContent.onclick = (e) => e.stopPropagation();
                 
-                <!-- Měsíční splátka -->
-                <div class="plan-summary-card">
-                    <div class="plan-summary-header">💰 Měsíční splátka</div>
-                    <div class="plan-summary-highlight">${formatNumber(monthlyPayment)}</div>
-                    <div style="text-align: center; font-size: 12px; color: #6b7280; margin-top: 4px;">
-                        Úrok: ${rate.toFixed(2)}% p.a.
-                    </div>
-                </div>
-                
-                ${quickAnalysis ? `
-                <!-- Rychlá analýza -->
-                <div class="plan-summary-card" style="background: linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%); border-color: #fbbf24;">
-                    <div class="plan-summary-header">⚡ Rychlá analýza</div>
-                    <div class="plan-summary-row">
-                        <span class="plan-summary-label">💰 Denně platíte:</span>
-                        <span class="plan-summary-value">${formatNumber(quickAnalysis.dailyCost)}</span>
-                    </div>
-                    <div class="plan-summary-row">
-                        <span class="plan-summary-label">🍕 Vs. nájmu:</span>
-                        <span class="plan-summary-value">≈ ${formatNumber(quickAnalysis.equivalentRent)}</span>
-                    </div>
-                    <div class="plan-summary-row">
-                        <span class="plan-summary-label">💡 Daňová úleva:</span>
-                        <span class="plan-summary-value">± ${formatNumber(quickAnalysis.taxSavings)}/měs</span>
-                    </div>
-                </div>
-                ` : ''}
-                
-                <!-- Rychlé akce -->
-                <div style="margin-top: 12px;">
-                    <button class="plan-action-compact" data-quick-question="Chci změnit výši úvěru">
-                        <span class="plan-action-icon">💰</span>
-                        <span>Změnit výši úvěru</span>
-                    </button>
-                    
-                    <button class="plan-action-compact" data-quick-question="Chci jinou fixaci">
-                        <span class="plan-action-icon">🔧</span>
-                        <span>Změnit fixaci</span>
-                    </button>
-                    
-                    <button class="plan-action-compact" data-quick-question="Udělej mi stress test">
-                        <span class="plan-action-icon">🛡️</span>
-                        <span>Stress testy</span>
-                    </button>
-                    
-                    <button class="plan-action-compact" data-quick-question="Ukaž mi dlouhodobý plán">
-                        <span class="plan-action-icon">📅</span>
-                        <span>Dlouhodobý plán</span>
-                    </button>
-                </div>
-                
-                <button class="nav-btn" onclick="document.querySelector('[data-action=\\'show-lead-form\\']').click()" 
-                        style="width: 100%; margin-top: 16px; background: linear-gradient(135deg, #10b981, #059669); font-size: 13px; padding: 10px; justify-content: center;">
-                    📞 Domluvit se specialistou
-                </button>
-            </div>
-        `;
-        
-        document.body.appendChild(sidebar);
-        
-        // Adjust chat wrapper margin
-        const chatWrapper = document.getElementById('ai-chat-wrapper');
-        if (chatWrapper && window.innerWidth >= 1024 && !state.sidebarMinimized) {
-            chatWrapper.style.marginRight = '380px';
+                overlay.appendChild(sidebarContent);
+                document.body.appendChild(overlay);
+            }
         }
-    };
-    
-    // Global funkce pro toggle sidebaru
-    window.toggleFloatingSidebar = () => {
-        state.sidebarMinimized = !state.sidebarMinimized;
-        const sidebar = document.getElementById('floating-sidebar');
-        const chatWrapper = document.getElementById('ai-chat-wrapper');
-        
-        if (sidebar) {
-            sidebar.classList.toggle('minimized');
-        }
-        
-        if (chatWrapper && window.innerWidth >= 1024) {
-            chatWrapper.style.marginRight = state.sidebarMinimized ? '0' : '380px';
-        }
-        
-        // Uložit stav
-        localStorage.setItem('sidebarMinimized', state.sidebarMinimized);
     };
     
     const getSidebarHTML = () => { 
-        // Tato funkce je deprecated - používáme plovoucí sidebar
-        return '';
+        if (state.calculation.offers && state.calculation.offers.length > 0 && state.calculation.selectedOffer) {
+            const { loanAmount, propertyValue, loanTerm, fixation } = state.formData;
+            const monthlyPayment = state.calculation.selectedOffer.monthlyPayment;
+            const rate = state.calculation.selectedOffer.rate;
+            const quickAnalysis = state.calculation.fixationDetails?.quickAnalysis;
+            
+            return `
+                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-2xl border border-blue-200">
+                    <h3 class="text-xl font-bold mb-4 flex items-center">
+                        <span class="text-2xl mr-2">💼</span> Váš hypoteční plán
+                    </h3>
+                    
+                    <!-- Hlavní parametry -->
+                    <div class="bg-white p-4 rounded-xl mb-4 shadow-sm">
+                        <div class="grid grid-cols-2 gap-3 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Úvěr:</span>
+                                <strong>${formatNumber(loanAmount)}</strong>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Nemovitost:</span>
+                                <strong>${formatNumber(propertyValue)}</strong>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Fixace:</span>
+                                <strong>${fixation} let</strong>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Splatnost:</span>
+                                <strong>${loanTerm} let</strong>
+                            </div>
+                        </div>
+                        <div class="mt-3 pt-3 border-t">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Měsíční splátka:</span>
+                                <span class="text-2xl font-bold text-blue-600">${formatNumber(monthlyPayment)}</span>
+                            </div>
+                            <div class="flex justify-between mt-1">
+                                <span class="text-gray-600 text-xs">Úrok:</span>
+                                <span class="text-sm font-semibold">${rate.toFixed(2)}% p.a.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${quickAnalysis ? `
+                    <!-- Rychlá analýza -->
+                    <div class="bg-yellow-50 p-3 rounded-lg mb-4 border border-yellow-200">
+                        <p class="text-xs font-semibold text-yellow-800 mb-2">⚡ Rychlá analýza</p>
+                        <div class="text-xs text-gray-700 space-y-1">
+                            <div>📅 Denně platíte: <strong>${formatNumber(quickAnalysis.dailyCost)}</strong></div>
+                            <div>🏠 Vs. nájem: ušetříte cca <strong>${formatNumber(Math.max(0, quickAnalysis.equivalentRent - monthlyPayment))}/měs</strong></div>
+                            <div>💰 Daňová úleva: až <strong>${formatNumber(quickAnalysis.taxSavings)}/měs</strong></div>
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    <!-- Rychlé úpravy -->
+                    <div class="mb-4">
+                        <p class="text-xs font-semibold text-gray-700 mb-2">Upravit parametry:</p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button class="text-xs bg-white px-3 py-2 rounded-lg hover:bg-gray-50 border" 
+                                    data-quick-question="Chci změnit výši úvěru">
+                                💰 Výše úvěru
+                            </button>
+                            <button class="text-xs bg-white px-3 py-2 rounded-lg hover:bg-gray-50 border"
+                                    data-quick-question="Chci jinou fixaci">
+                                📊 Fixace
+                            </button>
+                            <button class="text-xs bg-white px-3 py-2 rounded-lg hover:bg-gray-50 border"
+                                    data-quick-question="Jak změnit splatnost?">
+                                ⏱️ Splatnost
+                            </button>
+                            <button class="text-xs bg-white px-3 py-2 rounded-lg hover:bg-gray-50 border"
+                                    data-quick-question="Můžu dostat lepší sazbu?">
+                                📉 Lepší sazba
+                            </button>
+                        </div>
+                    </div>
+
+                    <button class="nav-btn bg-green-600 hover:bg-green-700 text-white w-full mb-2" 
+                            data-action="show-lead-form">
+                        📞 Domluvit se specialistou
+                    </button>
+                    
+                    <button class="text-xs text-center w-full text-gray-600 hover:text-blue-600 underline" 
+                            data-action="download-summary">
+                        Stáhnout souhrn (PDF)
+                    </button>
+                </div>`;
+        } else {
+            // Když nejsou data
+            return `
+                <div class="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-2xl border border-purple-200">
+                    <h3 class="text-xl font-bold mb-4 flex items-center">
+                        <span class="text-2xl mr-2">🎯</span> Rychlý start
+                    </h3>
+                    
+                    <div class="space-y-3 mb-4">
+                        <button class="w-full text-left p-3 bg-white rounded-lg hover:shadow-md transition-shadow" 
+                                data-quick-question="Kolik si můžu půjčit s příjmem 50 tisíc?">
+                            <span class="text-purple-600 font-semibold">💰</span>
+                            <span class="text-sm ml-2">Kolik si můžu půjčit?</span>
+                        </button>
+                        <button class="w-full text-left p-3 bg-white rounded-lg hover:shadow-md transition-shadow"
+                                data-quick-question="Jaký je rozdíl mezi fixací na 5 a 10 let?">
+                            <span class="text-purple-600 font-semibold">📊</span>
+                            <span class="text-sm ml-2">Porovnat fixace</span>
+                        </button>
+                        <button class="w-full text-left p-3 bg-white rounded-lg hover:shadow-md transition-shadow"
+                                data-quick-question="Můžu dostat hypotéku jako OSVČ?">
+                            <span class="text-purple-600 font-semibold">🏢</span>
+                            <span class="text-sm ml-2">Hypotéka pro OSVČ</span>
+                        </button>
+                        <button class="w-full text-left p-3 bg-white rounded-lg hover:shadow-md transition-shadow"
+                                data-quick-question="Jaké dokumenty potřebuji?">
+                            <span class="text-purple-600 font-semibold">📋</span>
+                            <span class="text-sm ml-2">Checklist dokumentů</span>
+                        </button>
+                    </div>
+
+                    <button class="nav-btn bg-purple-600 hover:bg-purple-700 w-full mb-2" 
+                            data-action="go-to-calculator">
+                        📢 Spočítat hypotéku
+                    </button>
+                    
+                    <button class="nav-btn bg-green-600 hover:bg-green-700 w-full" 
+                            data-action="show-lead-form">
+                        📞 Domluvit se specialistou
+                    </button>
+                </div>`;
+        }
     };
     
     const getExpressHTML = () => getCalculatorLayout(`
@@ -774,6 +798,54 @@ const findQuickResponse = (message) => {
                             </div>
                             ` : ''}
                             
+                            <div class="mt-4 bg-blue-50 p-4 rounded-xl border border-blue-200">
+                                <h5 class="font-bold text-sm mb-2 flex items-center">
+                                    <span class="text-lg mr-1">💡</span> Co kdyby klesly sazby?
+                                </h5>
+                                <p class="text-xs text-gray-600 mb-2">
+                                    Pokud by po ${state.formData.fixation} letech klesla sazba na ${fixationDetails.futureScenario.optimistic.rate.toFixed(2)}%:
+                                </p>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <span class="text-sm text-gray-600">Nová splátka:</span>
+                                        <strong class="text-green-600 text-lg block">${formatNumber(fixationDetails.futureScenario.optimistic.newMonthlyPayment)}</strong>
+                                    </div>
+                                    <div>
+                                        <span class="text-sm text-gray-600">Měsíční úspora:</span>
+                                        <strong class="text-green-600 text-lg block">${formatNumber(fixationDetails.futureScenario.optimistic.monthlySavings)}</strong>
+                                    </div>
+                                    <div class="col-span-2 pt-2 border-t">
+                                        <span class="text-sm text-gray-600">Celková roční úspora:</span>
+                                        <strong class="text-green-600 text-xl block">${formatNumber(fixationDetails.futureScenario.optimistic.monthlySavings * 12)}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            ${fixationDetails.futureScenario && fixationDetails.futureScenario.moderateIncrease ? `
+                            <div class="mt-4 bg-orange-50 p-4 rounded-xl border border-orange-200">
+                                <h5 class="font-bold text-sm mb-2 flex items-center">
+                                    <span class="text-lg mr-1">📈</span> Co kdyby vzrostly sazby o 0.5%?
+                                </h5>
+                                <p class="text-xs text-gray-600 mb-2">
+                                    Pokud by po ${state.formData.fixation} letech vzrostla sazba na ${fixationDetails.futureScenario.moderateIncrease.rate.toFixed(2)}%:
+                                </p>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <span class="text-sm text-gray-600">Nová splátka:</span>
+                                        <strong class="text-orange-600 text-lg block">${formatNumber(fixationDetails.futureScenario.moderateIncrease.newMonthlyPayment)}</strong>
+                                    </div>
+                                    <div>
+                                        <span class="text-sm text-gray-600">Měsíční navýšení:</span>
+                                        <strong class="text-orange-600 text-lg block">+${formatNumber(fixationDetails.futureScenario.moderateIncrease.monthlyIncrease)}</strong>
+                                    </div>
+                                    <div class="col-span-2 pt-2 border-t">
+                                        <span class="text-sm text-gray-600">Celkové roční navýšení:</span>
+                                        <strong class="text-orange-600 text-xl block">+${formatNumber(fixationDetails.futureScenario.moderateIncrease.monthlyIncrease * 12)}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            ` : ''}
+                            
                             <button class="nav-btn bg-blue-600 hover:bg-blue-700 text-white w-full mt-4" data-action="discuss-fixation-with-ai">
                                 <span class="mr-2">🤖</span> Probrat detaily s AI rádcem
                             </button>
@@ -862,6 +934,12 @@ const findQuickResponse = (message) => {
         
         container.appendChild(bubble);
         container.scrollTop = container.scrollHeight;
+        
+        // Update sidebar pokud je potřeba
+        if (state.mode === 'ai') {
+            const sidebarContainer = document.getElementById('sidebar-container');
+            if(sidebarContainer) sidebarContainer.innerHTML = getSidebarHTML();
+        }
     };
 
     const generateAISuggestions = () => {
@@ -878,7 +956,7 @@ const findQuickResponse = (message) => {
             ];
         } else {
             suggestions = [
-                "🔢 Spočítat hypotéku", 
+                "📢 Spočítat hypotéku", 
                 "📈 Aktuální sazby", 
                 "📋 Co potřebuji?", 
                 "📞 Domluvit se specialistou"
@@ -1013,6 +1091,20 @@ const findQuickResponse = (message) => {
         }
     };
 
+    const toggleMobileSidebar = () => {
+        const overlay = document.getElementById('mobile-sidebar-overlay');
+        if (!overlay) return;
+        
+        if (state.mobileSidebarOpen) {
+            overlay.classList.add('hidden');
+            document.body.style.overflow = '';
+        } else {
+            overlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        state.mobileSidebarOpen = !state.mobileSidebarOpen;
+    };
+
     const handleClick = async (e) => {
         let target = e.target.closest('[data-action], .offer-card, .suggestion-btn, [data-mode], .scroll-to, [data-quick-question]');
         if (!target) return;
@@ -1020,12 +1112,22 @@ const findQuickResponse = (message) => {
         const { action, mode, suggestion, target: targetId } = target.dataset;
         const quickQuestion = target.dataset.quickQuestion;
 
+        if (action === 'toggle-mobile-sidebar') {
+            toggleMobileSidebar();
+            return;
+        }
+        
+        if (action === 'close-mobile-sidebar') {
+            toggleMobileSidebar();
+            return;
+        }
+
         if (quickQuestion) {
+            if (isMobile()) toggleMobileSidebar();
             const chatInput = document.getElementById('permanent-chat-input');
             if (chatInput) {
                 chatInput.value = quickQuestion;
                 handleChatMessageSend(quickQuestion);
-                chatInput.value = '';
             }
             return;
         }
@@ -1057,9 +1159,11 @@ const findQuickResponse = (message) => {
         }
         else if (action === 'calculate') calculateRates(target);
         else if (action === 'go-to-calculator') {
+            if (isMobile()) toggleMobileSidebar();
             switchMode('express');
         }
         else if (action === 'show-lead-form') {
+            if (isMobile()) toggleMobileSidebar();
             DOMElements.leadFormContainer.classList.remove('hidden');
             scrollToTarget('#kontakt');
         }
@@ -1071,10 +1175,6 @@ const findQuickResponse = (message) => {
                 const card = document.querySelector(`[data-offer-id="${offerId}"]`);
                 if (card) card.classList.add('selected');
                 state.calculation.selectedOffer = offer;
-                
-                // Update plovoucí sidebar
-                createFloatingSidebar();
-                
                 setTimeout(renderResultsChart, 0);
                 const resultsSection = document.querySelector('#results-container .grid');
                 if (resultsSection) {
@@ -1113,10 +1213,6 @@ const findQuickResponse = (message) => {
             document.querySelectorAll('.offer-card').forEach(c => c.classList.remove('selected'));
             target.classList.add('selected');
             state.calculation.selectedOffer = state.calculation.offers.find(o => o.id === target.dataset.offerId);
-            
-            // Update plovoucí sidebar
-            createFloatingSidebar();
-            
             setTimeout(renderResultsChart, 0);
         }
     };
@@ -1135,7 +1231,7 @@ const findQuickResponse = (message) => {
             form.style.display = 'none';
             document.getElementById('form-success').style.display = 'block';
         } catch (error) {
-            alert('Odesílání se nezdařilo. Zkuste to prosím znovu.');
+            alert('Odeslání se nezdařilo. Zkuste to prosím znovu.');
             btn.disabled = false;
             btn.textContent = '📞 Odeslat nezávazně';
         }
@@ -1178,7 +1274,7 @@ const findQuickResponse = (message) => {
             "💰 Lepší úrok?": "Můžu dostat lepší úrok? Jak?",
             "⏱️ Změnit fixaci": "Chci změnit délku fixace",
             "📞 Domluvit se specialistou": "Chci se domluvit se specialistou",
-            "🔢 Spočítat hypotéku": "Chci spočítat hypotéku",
+            "📢 Spočítat hypotéku": "Chci spočítat hypotéku",
             "📈 Aktuální sazby": "Jaké jsou aktuální sazby?",
             "📋 Co potřebuji?": "Jaké dokumenty potřebuji?"
         };
@@ -1196,7 +1292,7 @@ const findQuickResponse = (message) => {
             messageCount: state.chatHistory.filter(h => h.sender === 'user').length
         };
         
-        const { chart, chatHistory, mobileSidebarOpen, sidebarMinimized, ...cleanContext } = contextToSend;
+        const { chart, chatHistory, mobileSidebarOpen, ...cleanContext } = contextToSend;
         
         const timeoutId = setTimeout(() => {
             if (state.isAiTyping) {
@@ -1224,9 +1320,6 @@ const findQuickResponse = (message) => {
                 const success = await calculateRates(null, true);
                 if (success && state.calculation.selectedOffer) {
                     addChatMessage(`Výborně! Pro **${formatNumber(state.formData.loanAmount)}** na **${state.formData.loanTerm} let** vychází splátka **${formatNumber(state.calculation.selectedOffer.monthlyPayment)}**.`, 'ai');
-                    
-                    // Vytvořit plovoucí sidebar
-                    createFloatingSidebar();
                 }
             }
             else if (data.tool === 'initialAnalysis') {
@@ -1307,19 +1400,10 @@ const findQuickResponse = (message) => {
         }
     };
     
-    // UPRAVENÁ switchMode funkce
+    // KRITICKÁ ZMĚNA - přepnutí módu bez překreslení celého layoutu
     const switchMode = (mode, fromResults = false) => {
         state.mode = mode;
         DOMElements.modeCards.forEach(card => card.classList.toggle('active', card.dataset.mode === mode));
-        
-        // Odstranit plovoucí sidebar pokud není AI mód
-        if (mode !== 'ai') {
-            const existingSidebar = document.getElementById('floating-sidebar');
-            if (existingSidebar) existingSidebar.remove();
-            
-            const chatWrapper = document.getElementById('ai-chat-wrapper');
-            if (chatWrapper) chatWrapper.style.marginRight = '0';
-        }
         
         if (mode === 'express') {
             DOMElements.contentContainer.innerHTML = getExpressHTML();
@@ -1339,6 +1423,10 @@ const findQuickResponse = (message) => {
             // KRITICKÉ - vytvoření permanentního inputu
             createPermanentChatInput();
             
+            // Přidání sidebaru
+            const sidebarContainer = document.getElementById('sidebar-container');
+            if(sidebarContainer) sidebarContainer.innerHTML = getSidebarHTML();
+
             // Přidání úvodní zprávy
             if (!fromResults) {
                 addChatMessage('Jsem váš hypoteční poradce s přístupem k datům z 19+ bank. Pomohu vám najít nejlepší řešení pro vaši situaci. Co vás zajímá?', 'ai');
@@ -1364,11 +1452,6 @@ const findQuickResponse = (message) => {
             }
             
             generateAISuggestions();
-            
-            // Vytvořit plovoucí sidebar pokud jsou data
-            if (state.calculation.selectedOffer) {
-                createFloatingSidebar();
-            }
             
             if (!fromResults || state.mode === 'ai') {
                 scrollToTarget('#content-container');
@@ -1403,22 +1486,18 @@ const findQuickResponse = (message) => {
             DOMElements.mobileMenu?.classList.toggle('hidden');
         });
 
-        // Resize handler
+        // Resize handler - ale NEMĚNIT AI layout pokud už existuje
         let resizeTimer;
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(() => {
-                if (state.mode === 'ai' && state.calculation.selectedOffer) {
-                    createFloatingSidebar();
+                if (state.mode === 'ai') {
+                    // NEMĚNIT layout, jen update sidebar
+                    const sidebarContainer = document.getElementById('sidebar-container');
+                    if(sidebarContainer) sidebarContainer.innerHTML = getSidebarHTML();
                 }
             }, 250);
         });
-
-        // Restore sidebar stav
-        const savedState = localStorage.getItem('sidebarMinimized');
-        if (savedState !== null) {
-            state.sidebarMinimized = savedState === 'true';
-        }
 
         handleCookieBanner();
         switchMode(state.mode);

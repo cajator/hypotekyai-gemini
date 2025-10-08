@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style-v6-floating.css">
+    <link rel="stylesheet" href="style.css?v=5.0">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💡</text></svg>">
 </head>
 <body class="bg-gray-50 text-gray-800 antialiased">
@@ -46,8 +46,9 @@
     <div id="top"></div>
 
     <main class="container mx-auto px-4 sm:px-6 py-6 md:py-8">
-        <!-- Hero sekce -->
+        <!-- Hero sekce - KOMPAKTNĚJŠÍ -->
         <section class="text-center mb-8 md:mb-10">
+            <!-- Social proof v jednom kompaktním řádku -->
             <div class="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-xl p-4 sm:p-5 mb-6 border border-blue-100 shadow-sm">
                 <div class="flex justify-center items-center divide-x divide-gray-300">
                     <div class="px-3 sm:px-6 lg:px-8">
@@ -65,6 +66,7 @@
                 </div>
             </div>
 
+            <!-- Main headline - kompaktnější, ale výrazný -->
             <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-3 leading-tight">
                 <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">🤖 AI Asistent</span>
                 <span class="text-gray-900"> + </span>
@@ -74,6 +76,7 @@
                 Okamžité AI odpovědi na běžné otázky + lidští experti pro složité případy. <strong>Nejlepší z obou světů.</strong>
             </p>
 
+            <!-- USP badges v kompaktním gridu -->
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-5 max-w-3xl mx-auto">
                 <div class="bg-blue-50 px-2 py-2.5 rounded-lg border border-blue-200 hover:border-blue-300 transition-all hover:shadow-md">
                     <div class="text-2xl mb-1">⚡</div>
@@ -93,6 +96,7 @@
                 </div>
             </div>
 
+            <!-- CTA buttony - kompaktnější -->
             <div class="flex flex-col sm:flex-row gap-2.5 sm:gap-3 justify-center items-center mb-3">
                 <a href="#kalkulacka" class="w-full sm:w-auto nav-btn bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-sm sm:text-base px-5 sm:px-8 py-2.5 sm:py-3 scroll-to shadow-lg hover:shadow-xl transition-all">
                     🚀 Začít kalkulaci
@@ -102,13 +106,14 @@
                 </a>
             </div>
 
+            <!-- Trust indicator -->
             <p class="text-xs text-gray-500">
                 <span class="inline-block w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse mr-1"></span>
                 <span id="active-users-counter">143 lidí právě používá naše nástroje</span>
             </p>
         </section>
 
-        <!-- Premium features -->
+        <!-- Premium features showcase - KOMPAKTNĚJŠÍ -->
         <section id="premium-features" class="my-12 md:my-16 scroll-mt-20">
             <div class="text-center mb-8">
                 <div class="inline-block bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-1.5 rounded-full font-bold text-xs sm:text-sm mb-3">
@@ -123,6 +128,7 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                <!-- AI Chat -->
                 <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-5 sm:p-6 md:p-7 rounded-xl sm:rounded-2xl border-2 border-blue-200 shadow-lg hover:shadow-xl transition-shadow">
                     <div class="text-4xl sm:text-5xl mb-3">🤖</div>
                     <h3 class="text-xl sm:text-2xl font-bold mb-2 text-blue-900">AI Asistent 24/7</h3>
@@ -140,6 +146,7 @@
                     </div>
                 </div>
 
+                <!-- Lidští experti -->
                 <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-5 sm:p-6 md:p-7 rounded-xl sm:rounded-2xl border-2 border-green-200 shadow-lg hover:shadow-xl transition-shadow">
                     <div class="text-4xl sm:text-5xl mb-3">👨‍💼</div>
                     <h3 class="text-xl sm:text-2xl font-bold mb-2 text-green-900">Profesionální Poradci</h3>
@@ -157,6 +164,7 @@
                     </div>
                 </div>
 
+                <!-- Stress testy -->
                 <div class="bg-gradient-to-br from-purple-50 to-pink-50 p-5 sm:p-6 md:p-7 rounded-xl sm:rounded-2xl border-2 border-purple-200 shadow-lg hover:shadow-xl transition-shadow">
                     <div class="text-4xl sm:text-5xl mb-3">🛡️</div>
                     <h3 class="text-xl sm:text-2xl font-bold mb-2 text-purple-900">Stress Testy & Scénáře</h3>
@@ -174,6 +182,7 @@
                     </div>
                 </div>
 
+                <!-- Dlouhodobý plán -->
                 <div class="bg-gradient-to-br from-orange-50 to-amber-50 p-5 sm:p-6 md:p-7 rounded-xl sm:rounded-2xl border-2 border-orange-200 shadow-lg hover:shadow-xl transition-shadow">
                     <div class="text-4xl sm:text-5xl mb-3">📅</div>
                     <h3 class="text-xl sm:text-2xl font-bold mb-2 text-orange-900">Strategický Plán na 20 Let</h3>
@@ -192,6 +201,7 @@
                 </div>
             </div>
 
+            <!-- CTA -->
             <div class="text-center mt-8">
                 <a href="#kalkulacka" class="nav-btn bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-base sm:text-lg px-8 sm:px-12 py-3 sm:py-4 scroll-to inline-block shadow-xl hover:shadow-2xl transition-all">
                     🚀 Vyzkoušet Premium Analýzu Zdarma
@@ -343,6 +353,6 @@
         <button id="cookie-accept" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-xs sm:text-sm whitespace-nowrap">Rozumím a souhlasím</button>
     </div>
 
-    <script src="script.js" defer></script>
+    <script src="script.js?v=5.0" defer></script>
 </body>
 </html>

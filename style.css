@@ -1,9 +1,10 @@
-/* Hypoteky Ai - OPTIMIZED CSS v5.0 - VĚTŠÍ CHAT */
+/* Hypoteky Ai - REVOLUTIONARY CHAT LAYOUT v6.0 */
 :root { 
     --accent-color: #2563eb;
     --success-color: #10b981;
     --warning-color: #f59e0b;
     --danger-color: #ef4444;
+    --sidebar-width: 360px;
 }
 
 /* Reset a základy */
@@ -55,7 +56,6 @@ body {
     font-size: 16px !important;
 }
 
-/* Chat input footer - vždy nahoře */
 #chat-input-footer {
     position: relative !important;
     z-index: 10000 !important;
@@ -68,13 +68,135 @@ body {
 }
 
 /* ============================================
-   CHAT LAYOUT - ZVĚTŠENÉ OBLASTI
+   PLOVOUCÍ SIDEBAR - KOMPLETNĚ NOVÝ PŘÍSTUP
    ============================================ */
+
+/* Sidebar container - plovoucí overlay */
+#sidebar-container {
+    position: fixed !important;
+    top: 70px;
+    right: 0;
+    width: var(--sidebar-width);
+    max-width: 90vw;
+    height: calc(100vh - 90px);
+    background: white;
+    box-shadow: -4px 0 24px rgba(0,0,0,0.12);
+    z-index: 1000;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateX(0);
+    overflow-y: auto;
+    border-left: 2px solid #e5e7eb;
+}
+
+/* Sidebar minimalizovaný stav */
+#sidebar-container.minimized {
+    transform: translateX(calc(100% - 48px));
+}
+
+#sidebar-container.hidden {
+    transform: translateX(100%);
+}
+
+/* Toggle button pro sidebar */
+.sidebar-toggle {
+    position: absolute;
+    left: -40px;
+    top: 20px;
+    width: 40px;
+    height: 40px;
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-right: none;
+    border-radius: 8px 0 0 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: -2px 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+    z-index: 1;
+}
+
+.sidebar-toggle:hover {
+    background: #f9fafb;
+    left: -42px;
+}
+
+.sidebar-toggle svg {
+    width: 20px;
+    height: 20px;
+    color: #6b7280;
+    transition: transform 0.3s ease;
+}
+
+#sidebar-container.minimized .sidebar-toggle svg {
+    transform: rotate(180deg);
+}
+
+/* Mini sidebar preview když je minimalizovaný */
+.sidebar-mini-preview {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 48px;
+    height: 100%;
+    background: linear-gradient(to bottom, #eff6ff, #f9fafb);
+    border-left: 2px solid #bfdbfe;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 8px;
+    gap: 12px;
+}
+
+.sidebar-mini-item {
+    width: 32px;
+    height: 32px;
+    background: white;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid #e5e7eb;
+}
+
+.sidebar-mini-item:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Sidebar content wrapper */
+.sidebar-content-wrapper {
+    padding: 20px;
+    opacity: 1;
+    transition: opacity 0.2s ease;
+}
+
+#sidebar-container.minimized .sidebar-content-wrapper {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ============================================
+   CHAT LAYOUT - FULLSCREEN MODE
+   ============================================ */
+
+/* Chat wrapper - zabírá celou šířku když je sidebar minimalizovaný */
 #ai-chat-wrapper {
     position: relative !important;
     z-index: 1 !important;
     opacity: 1 !important;
     visibility: visible !important;
+    width: 100% !important;
+    transition: margin-right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Když je sidebar viditelný, posunout chat */
+body:not(.sidebar-minimized):not(.sidebar-hidden) #ai-chat-wrapper {
+    margin-right: calc(var(--sidebar-width) + 20px);
 }
 
 #chat-messages-wrapper {
@@ -89,6 +211,110 @@ body {
     visibility: visible !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch !important;
+    padding: 16px;
+}
+
+/* ============================================
+   KOMPAKTNÍ SIDEBAR DESIGN
+   ============================================ */
+
+.plan-summary-card {
+    background: linear-gradient(135deg, #eff6ff 0%, #f9fafb 100%);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border: 1px solid #bfdbfe;
+}
+
+.plan-summary-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.plan-summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 13px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.plan-summary-row:last-child {
+    border-bottom: none;
+}
+
+.plan-summary-label {
+    color: #6b7280;
+}
+
+.plan-summary-value {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.plan-summary-highlight {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--accent-color);
+    text-align: center;
+    padding: 12px 0;
+}
+
+/* Kompaktní akční tlačítka */
+.plan-action-compact {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.plan-action-compact:hover {
+    background: #f9fafb;
+    border-color: var(--accent-color);
+    transform: translateX(-2px);
+}
+
+.plan-action-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+/* Expand/collapse sections */
+.plan-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    color: #374151;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 8px;
+}
+
+.plan-section-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.plan-section-content.expanded {
+    max-height: 500px;
 }
 
 /* ============================================
@@ -357,31 +583,33 @@ body {
     background: linear-gradient(to bottom, #f9fafb, #f3f4f6);
     color: #1f2937; 
     border-radius: 1.125rem 1.125rem 1.125rem 0.25rem; 
-    padding: 12px 16px; 
+    padding: 14px 18px; 
     max-width: 85%; 
     width: fit-content; 
-    line-height: 1.55;
+    line-height: 1.6;
     box-shadow: 0 1px 3px 0 rgba(0,0,0,0.08);
     animation: slideInLeft 0.25s ease-out;
     word-wrap: break-word;
     overflow-wrap: break-word;
     font-size: 0.9375rem;
+    margin-bottom: 12px;
 }
 
 .chat-bubble-user { 
     background: linear-gradient(135deg, var(--accent-color), #4f46e5);
     color: white; 
     border-radius: 1.125rem 1.125rem 0.25rem 1.125rem; 
-    padding: 12px 16px; 
+    padding: 14px 18px; 
     max-width: 85%; 
     width: fit-content; 
     align-self: flex-end; 
-    line-height: 1.55;
+    line-height: 1.6;
     box-shadow: 0 1px 3px 0 rgba(0,0,0,0.08);
     animation: slideInRight 0.25s ease-out;
     word-wrap: break-word;
     overflow-wrap: break-word;
     font-size: 0.9375rem;
+    margin-bottom: 12px;
 }
 
 @keyframes slideInLeft {
@@ -425,7 +653,7 @@ body {
     background: linear-gradient(to bottom, white, #fafafa);
     border: 1px solid #d1d5db; 
     color: #374151; 
-    padding: 7px 14px; 
+    padding: 8px 14px; 
     border-radius: 9999px; 
     font-size: 0.8125rem; 
     cursor: pointer; 
@@ -449,116 +677,68 @@ body {
 }
 
 /* ============================================
-   AI LAYOUT GRID
-   ============================================ */
-.ai-layout-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.25rem;
-}
-
-/* ============================================
-   QUICK ANALYSIS BOX
-   ============================================ */
-.quick-analysis-box {
-    background: linear-gradient(135deg, #fef3c7, #fef9c3);
-    border-left: 3px solid var(--warning-color);
-    padding: 0.875rem;
-    border-radius: 0.625rem;
-    box-shadow: 0 2px 4px -1px rgba(251, 191, 36, 0.1);
-    font-size: 0.875rem;
-}
-
-/* ============================================
-   SCORE CARDS
-   ============================================ */
-.score-card {
-    background: white;
-    padding: 0.875rem;
-    border-radius: 0.625rem;
-    box-shadow: 0 1px 3px 0 rgba(0,0,0,0.08);
-    transition: all 0.2s ease;
-}
-
-.score-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-}
-
-/* ============================================
-   APPROVABILITY BAR
-   ============================================ */
-.approvability-bar-bg { 
-    background-color: #e5e7eb; 
-    border-radius: 9999px; 
-    height: 7px; 
-    overflow: hidden; 
-}
-.approvability-bar { 
-    height: 100%; 
-    border-radius: 9999px; 
-    transition: width 0.5s ease-in-out; 
-}
-
-/* ============================================
-   INFO PANELS
-   ============================================ */
-.info-panel {
-    background: linear-gradient(to right, #f0f9ff, #e0f2fe);
-    border-left: 3px solid var(--accent-color);
-    padding: 0.875rem;
-    border-radius: 0.5rem;
-    margin: 0.875rem 0;
-    font-size: 0.875rem;
-}
-
-.info-panel-success {
-    background: linear-gradient(to right, #f0fdf4, #dcfce7);
-    border-left-color: var(--success-color);
-}
-
-.info-panel-warning {
-    background: linear-gradient(to right, #fffbeb, #fef3c7);
-    border-left-color: var(--warning-color);
-}
-
-/* ============================================
-   OFFER HIGHLIGHT
-   ============================================ */
-.offer-highlight {
-    display: inline-block;
-    padding: 0.2rem 0.625rem;
-    background: linear-gradient(135deg, #dbeafe, #eff6ff);
-    color: var(--accent-color);
-    border-radius: 9999px;
-    font-size: 0.7rem;
-    font-weight: 600;
-    margin-right: 0.4rem;
-    margin-top: 0.4rem;
-    border: 1px solid #bfdbfe;
-}
-
-/* ============================================
    UTILITY CLASSES
    ============================================ */
 .hidden { display: none !important; }
-
-.shadow-soft {
-    box-shadow: 0 2px 4px -1px rgba(0,0,0,0.05), 0 1px 3px -1px rgba(0,0,0,0.03);
-}
-
-.shadow-medium {
-    box-shadow: 0 8px 12px -3px rgba(0,0,0,0.08), 0 3px 5px -2px rgba(0,0,0,0.04);
-}
-
-.shadow-hard {
-    box-shadow: 0 16px 20px -5px rgba(0,0,0,0.1), 0 8px 8px -5px rgba(0,0,0,0.04);
-}
 
 /* ============================================
    MOBILE OPTIMIZATIONS (max-width: 1023px)
    ============================================ */
 @media (max-width: 1023px) {
+    /* Sidebar jako BOTTOM SHEET na mobilu */
+    #sidebar-container {
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        max-width: 100%;
+        height: 50vh;
+        max-height: 80vh;
+        border-left: none;
+        border-top: 2px solid #e5e7eb;
+        border-radius: 16px 16px 0 0;
+        transform: translateY(0);
+        box-shadow: 0 -4px 24px rgba(0,0,0,0.15);
+    }
+    
+    #sidebar-container.minimized {
+        transform: translateY(calc(100% - 56px));
+    }
+    
+    #sidebar-container.hidden {
+        transform: translateY(100%);
+    }
+    
+    .sidebar-toggle {
+        left: 50%;
+        transform: translateX(-50%);
+        top: -40px;
+        border: 2px solid #e5e7eb;
+        border-bottom: none;
+        border-radius: 8px 8px 0 0;
+        width: 60px;
+        height: 40px;
+    }
+    
+    #sidebar-container.minimized .sidebar-toggle svg {
+        transform: rotate(0deg);
+    }
+    
+    #sidebar-container:not(.minimized) .sidebar-toggle svg {
+        transform: rotate(180deg);
+    }
+    
+    .sidebar-mini-preview {
+        display: none;
+    }
+    
+    /* Chat zabírá celou šířku na mobilu */
+    #ai-chat-wrapper {
+        margin-right: 0 !important;
+        width: 100% !important;
+    }
+    
     /* KRITICKÉ - Ultra stabilní chat input pro mobil */
     #permanent-chat-input {
         font-size: 16px !important;
@@ -588,7 +768,6 @@ body {
         pointer-events: auto !important;
     }
     
-    /* ZVĚTŠENÝ CHAT NA MOBILU */
     #chat-input-footer {
         position: sticky !important;
         bottom: 0 !important;
@@ -605,10 +784,10 @@ body {
         -webkit-transform: translateZ(0) !important;
     }
     
-    /* VĚTŠÍ VÝŠKA CHATU - 70% viewportu */
+    /* PLNÁ VÝŠKA CHATU NA MOBILU */
     #ai-chat-wrapper {
-        height: 70vh !important;
-        max-height: 70vh !important;
+        height: calc(100vh - 180px) !important;
+        max-height: calc(100vh - 180px) !important;
         overflow: hidden !important;
     }
     
@@ -617,93 +796,18 @@ body {
         max-height: 100% !important;
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch !important;
-        padding-bottom: 1rem !important;
-    }
-    
-    body {
-        font-size: 0.9375rem;
-    }
-    
-    .container {
-        padding: 0 1rem;
-    }
-    
-    .nav-btn {
-        padding: 0.5rem 0.875rem;
-        font-size: 0.8125rem;
-    }
-    
-    .mode-card {
-        padding: 1rem;
-        padding-top: 3rem;
-        margin-bottom: 0.75rem;
-    }
-    
-    .badge {
-        font-size: 0.625rem;
-        padding: 3px 8px;
-        top: 0.75rem;
-        left: 0.75rem;
-    }
-    
-    .form-section-heading {
-        font-size: 1.125rem;
-        margin-bottom: 1rem;
-    }
-    
-    .form-label {
-        font-size: 0.8125rem;
-    }
-    
-    .modern-input, .modern-select {
-        padding: 0.75rem 0.875rem;
-        font-size: 16px !important;
-    }
-    
-    .slider-value-input {
-        max-width: 95px;
-        font-size: 0.875rem;
-    }
-    
-    .slider-input::-webkit-slider-thumb {
-        height: 1.375rem;
-        width: 1.375rem;
-        margin-top: -7px;
-    }
-    
-    .offer-card {
-        padding: 1rem;
-        border-radius: 0.875rem;
+        padding: 12px !important;
     }
     
     .chat-bubble-ai,
     .chat-bubble-user {
-        max-width: 88%;
+        max-width: 90%;
         font-size: 0.875rem;
-        padding: 0.7rem 0.95rem;
+        padding: 12px 14px;
     }
     
-    #ai-suggestions {
-        padding: 0.625rem;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        white-space: nowrap;
-        position: relative !important;
-        z-index: 2 !important;
-    }
-    
-    .suggestion-btn {
-        font-size: 0.75rem;
-        padding: 0.5rem 0.75rem;
-    }
-    
-    .quick-analysis-box {
-        padding: 0.75rem;
-        font-size: 0.8125rem;
-    }
-    
-    .score-card {
-        padding: 0.75rem;
+    .modern-input, .modern-select {
+        font-size: 16px !important;
     }
 }
 
@@ -711,6 +815,10 @@ body {
    TABLET (768px - 1023px)
    ============================================ */
 @media (min-width: 768px) and (max-width: 1023px) {
+    :root {
+        --sidebar-width: 320px;
+    }
+    
     .form-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 1.125rem 1.375rem;
@@ -719,20 +827,6 @@ body {
     .results-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 1.125rem;
-    }
-    
-    .slider-value-input {
-        max-width: 140px;
-    }
-    
-    /* VĚTŠÍ CHAT PRO TABLET */
-    #ai-chat-wrapper {
-        height: 65vh !important;
-        max-height: 65vh !important;
-    }
-    
-    #chat-messages {
-        height: 100% !important;
     }
 }
 
@@ -750,38 +844,38 @@ body {
         gap: 1.375rem;
     }
     
-    .offer-card {
-        padding: 1.375rem;
-    }
-    
-    .ai-layout-grid {
-        grid-template-columns: 2fr 1fr;
-        gap: 1.75rem;
-    }
-    
-    /* MNOHEM VĚTŠÍ CHAT NA DESKTOPU - 75vh místo 85vh - 200px */
+    /* MAXIMÁLNÍ PROSTOR PRO CHAT */
     #chat-messages {
-        height: 75vh !important;
-        max-height: 75vh !important;
+        height: calc(100vh - 250px) !important;
+        min-height: calc(100vh - 250px) !important;
     }
     
     #ai-chat-wrapper {
-        min-height: 75vh !important;
-    }
-    
-    .slider-value-input {
-        max-width: 160px;
-        font-size: 1rem;
+        min-height: calc(100vh - 200px) !important;
     }
     
     .chat-bubble-ai,
     .chat-bubble-user {
-        max-width: 80%;
+        max-width: 75%;
     }
 }
 
 /* ============================================
-   ZOOM FIX - všechny mobile zařízení
+   LARGE DESKTOP (min-width: 1440px)
+   ============================================ */
+@media (min-width: 1440px) {
+    :root {
+        --sidebar-width: 400px;
+    }
+    
+    .chat-bubble-ai,
+    .chat-bubble-user {
+        max-width: 70%;
+    }
+}
+
+/* ============================================
+   ZOOM FIX
    ============================================ */
 @media screen and (max-device-width: 1024px) {
     input[type="text"],
@@ -802,9 +896,6 @@ body {
     }
 }
 
-/* ============================================
-   iOS SPECIFIC
-   ============================================ */
 @supports (-webkit-touch-callout: none) {
     #permanent-chat-input {
         font-size: 16px !important;
@@ -813,9 +904,6 @@ body {
     }
 }
 
-/* ============================================
-   SAFE AREA INSETS (iPhone X+)
-   ============================================ */
 @supports (padding: max(0px)) {
     header {
         padding-top: max(0px, env(safe-area-inset-top));
@@ -830,17 +918,11 @@ body {
     }
 }
 
-/* ============================================
-   ACCESSIBILITY
-   ============================================ */
 *:focus-visible {
     outline: 2px solid var(--accent-color);
     outline-offset: 2px;
 }
 
-/* ============================================
-   TOUCH DEVICES - disable hover
-   ============================================ */
 @media (hover: none) and (pointer: coarse) {
     .nav-btn:hover,
     .offer-card:hover,
@@ -850,26 +932,16 @@ body {
     }
 }
 
-/* ============================================
-   PRINT STYLES
-   ============================================ */
 @media print {
     .nav-btn, 
     #mobile-menu-button, 
     #cookie-banner,
-    #mobile-sidebar-toggle,
-    #permanent-chat-send {
+    #sidebar-container,
+    .sidebar-toggle {
         display: none !important;
-    }
-    
-    .offer-card {
-        page-break-inside: avoid;
     }
 }
 
-/* ============================================
-   NUCLEAR OPTION - Force all inputs visible
-   ============================================ */
 input:not([type="hidden"]),
 select,
 textarea {

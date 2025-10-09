@@ -1,11 +1,11 @@
-// netlify/functions/chat.js - FINÁLNÍ VERZE S KOMPLETNÍ LOGIKOU A OPRAVENOU URL
+// netlify/functions/chat.js - FINÁLNÍ VERZE S KOMPLETNÍ PŮVODNÍ LOGIKOU A VAŠÍ API KONFIGURACÍ
 
 function createSystemPrompt(userMessage, context) {
     const hasContext = context && context.calculation && context.calculation.selectedOffer;
     const isFromOurCalculator = context?.isDataFromOurCalculator || context?.calculation?.isFromOurCalculator;
     const messageCount = context?.messageCount || 0;
-
-    // ===== LOGIKA PRO PŘÍMÝ VÝPOČET =====
+    
+    // ===== PŘIDANÁ LOGIKA PRO ZJEDNODUŠENÍ PRVNÍHO DOTAZU NA VÝPOČET =====
     if (userMessage.toLowerCase().match(/spočítat|kalkulačk|kolik.*dostanu|jakou.*splátku/) && !hasContext) {
         return `Uživatel chce spočítat hypotéku, ale zatím nemáme žádná data. Reaguj stručně a veď ho k akci. Nepoužívej slova jako "strategie". Nabídni mu dvě jednoduché cesty: zadat data přímo do chatu, nebo použít kalkulačku.
         
@@ -19,6 +19,7 @@ function createSystemPrompt(userMessage, context) {
         
         DOTAZ UŽIVATELE: "${userMessage}"`;
     }
+    // =========================================================================
     
     const contextData = hasContext ? {
         loanAmount: context.formData?.loanAmount,
@@ -102,7 +103,7 @@ RYCHLÁ ANALÝZA:
 
 DOTAZ UŽIVATELE: "${userMessage}"`;
 
-    // ===== SPECIÁLNÍ ANALÝZY (PLNOHODNOTNÁ PŮVODNÍ LOGIKA) =====
+    // ===== SPECIALIZOVANÉ ANALÝZY (VAŠE PŮVODNÍ PLNOTUČNÁ LOGIKA) =====
     
     // STRESS TESTY
     if (userMessage.toLowerCase().match(/co kdyby|ztratím|přijdu o|nemoc|nezaměstna|krize|problém|zvládnu|nebezpeč/)) {
@@ -339,22 +340,23 @@ DOTAZ UŽIVATELE: "${userMessage}"`;
     }
 
     // ZÁKLADNÍ ROUTY
+    
     if (userMessage.toLowerCase().match(/bank|které banky|seznam bank|s kým spoluprac|partner/)) {
         return prompt + `\n\nKlient se ptá na banky. Odpověz POUZE JSON: {"tool":"showBanksList"}`;
     }
 
     if (userMessage.toLowerCase().match(/kontakt|specialista|mluvit|poradit|konzultace|telefon|schůzka|sejít|zavolat|domluvit/)) {
-        return prompt + `\n\nKlient chce kontakt. Odpověz POUZE JSON: {"tool":"showLeadForm","response":"📞 Výborně! Připojím vás k našemu PREMIUM týmu hypotečních stratégů. Otevírám formulář..."}`;
+        return prompt + `\n\nKlient chce kontakt. Odpověz POUZE JSON: {"tool":"showLeadForm","response":"📞 Výborně! Připojím vás k našemu PREMIUM týmu hypotečních stratégů. Nejsme jen zprostředkovatelé - vytvoříme vám:\\n\\nâ€¢ Kompletní finanční strategii na míru\\n• Vyjednání TOP podmínek u bank\\n• Dlouhodobý plán (ne jen jednorázovou nabídku)\\n• Přístup ke skrytým nabídkám nedostupným online\\n\\nSpecialista vás kontaktuje do 4 hodin. Otevírám formulář..."}`;
     }
 
-    if (userMessage.match(/\d+/) && (!userMessage.toLowerCase().includes("kolik je") && !userMessage.toLowerCase().includes("co je"))) {
-        const numbers = userMessage.match(/\d[\d\s]*/g).map(s => parseInt(s.replace(/\s/g, '')));
+    if (userMessage.match(/\d+/)) {
+        const numbers = userMessage.match(/\d+/g);
         const text = userMessage.toLowerCase();
         
         let params = {};
         
         if (text.match(/mil|mega|milion/)) {
-            const amount = numbers[0] > 1000 ? numbers[0] : numbers[0] * 1000000;
+            const amount = parseInt(numbers[0]) * 1000000;
             if (text.match(/půjčit|úvěr|hypotéka|potřebuj|chtěl|chci/)) {
                 params.loanAmount = amount;
                 params.propertyValue = Math.round(amount * 1.25);
@@ -363,14 +365,18 @@ DOTAZ UŽIVATELE: "${userMessage}"`;
                 params.loanAmount = Math.round(amount * 0.8);
             }
         } else if (text.match(/tisíc|tis\.|příjem|vydělávám|plat/)) {
-            const amount = numbers[0] > 1000 ? numbers[0] : numbers[0] * 1000;
+            const amount = parseInt(numbers[0]) * 1000;
             if (text.match(/příjem|vydělávám|mám|plat|výplat/)) {
                 params.income = amount;
+                const maxMonthlyPayment = amount * 0.45;
+                const maxLoan = maxMonthlyPayment * 12 * 9;
+                params.loanAmount = Math.round(maxLoan * 0.9);
+                params.propertyValue = Math.round(maxLoan);
             }
         }
         
         if (text.match(/let|rok/)) {
-            const years = numbers.find(n => parseInt(n) >= 5 && parseInt(n) <= 40);
+            const years = numbers.find(n => parseInt(n) >= 5 && parseInt(n) <= 30);
             if (years) params.loanTerm = parseInt(years);
         }
         
@@ -388,11 +394,13 @@ DOTAZ UŽIVATELE: "${userMessage}"`;
 5. AKČNÍ kroky s termíny (ne "zvažte", ale "HNED/za měsíc/za rok")
 6. Propoj AI analýzu s nabídkou lidského experta
 7. Max 250 slov, ale s vysokou hodnotou
-8. Používej <strong> pro důležité věci.
+8. Používej <strong> pro důležité věci, ne emoji
+
 Odpovídej jako premium stratég, ne jako kalkulačka. Ukaž HODNOTU nad rámec čísel.`;
 
     return prompt;
 }
+
 
 const handler = async (event) => {
     const headers = { 
@@ -426,11 +434,9 @@ const handler = async (event) => {
             }]
         };
         
-        // ===== ZÁLOŽNÍ FUNKČNÍ KONFIGURACE =====
-        const modelName = "gemini-pro";
-        // ZDE BYLA OPRAVENA ADRESA - PŘEKLEP
+        // SPRÁVNÁ VERZE: Jediná správná konfigurace pro Gemini modely s API klíčem.
+        const modelName = "gemini-2.5-flash";
         const url = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${apiKey}`;
-        // =======================================
 
         const apiResponse = await fetch(url, {
             method: 'POST',
@@ -450,8 +456,7 @@ const handler = async (event) => {
         const responseText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
         if (!responseText) {
-            console.error("AI nevrátila žádný text. Odpověď API:", JSON.stringify(data, null, 2));
-            throw new Error("AI nevrátila žádný text.");
+            throw new Error("AI nevrátila žádný text. Odpověď API byla: " + JSON.stringify(data));
         }
         
         const jsonMatch = responseText.match(/\{[\s\S]*\}/);
@@ -462,7 +467,7 @@ const handler = async (event) => {
                     return { statusCode: 200, headers, body: JSON.stringify(jsonResponse) };
                 }
             } catch (e) { 
-                // Pokud se JSON nepodaří naparsovat, pokračujeme a vrátíme text.
+                // Pokračujeme
             }
         }
         
@@ -486,4 +491,5 @@ const handler = async (event) => {
     }
 };
 
+// Správná syntaxe pro export v prostředí Netlify (CommonJS)
 module.exports = { handler };

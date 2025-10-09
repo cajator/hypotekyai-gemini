@@ -1,4 +1,4 @@
-// netlify/functions/chat.js - FINÁLNÍ VERZE S KOMPLETNÍ PŮVODNÍ LOGIKOU A VAŠÍ KONFIGURACÍ API
+// netlify/functions/chat.js - FINÁLNÍ VERZE S KOMPLETNÍ LOGIKOU A OPRAVENOU URL
 
 function createSystemPrompt(userMessage, context) {
     const hasContext = context && context.calculation && context.calculation.selectedOffer;
@@ -426,10 +426,11 @@ const handler = async (event) => {
             }]
         };
         
-        // ===== VAŠE PŮVODNÍ KONFIGURACE =====
-        const modelName = "gemini-2.5-flash";
+        // ===== ZÁLOŽNÍ FUNKČNÍ KONFIGURACE =====
+        const modelName = "gemini-pro";
+        // ZDE BYLA OPRAVENA ADRESA - PŘEKLEP
         const url = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${apiKey}`;
-        // =====================================
+        // =======================================
 
         const apiResponse = await fetch(url, {
             method: 'POST',

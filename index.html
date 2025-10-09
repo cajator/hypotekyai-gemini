@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=5.0">
+    <link rel="stylesheet" href="style.css?v=6.0">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💡</text></svg>">
 </head>
 <body class="bg-gray-50 text-gray-800 antialiased">
@@ -46,9 +46,9 @@
     <div id="top"></div>
 
     <main class="container mx-auto px-4 sm:px-6 py-6 md:py-8">
-        <!-- Hero sekce - KOMPAKTNĚJŠÍ -->
+        <!-- Hero sekce - PŘEPRACOVÁNO -->
         <section class="text-center mb-8 md:mb-10">
-            <!-- Social proof v jednom kompaktním řádku -->
+            <!-- Social proof -->
             <div class="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-xl p-4 sm:p-5 mb-6 border border-blue-100 shadow-sm">
                 <div class="flex justify-center items-center divide-x divide-gray-300">
                     <div class="px-3 sm:px-6 lg:px-8">
@@ -66,7 +66,7 @@
                 </div>
             </div>
 
-            <!-- Main headline - kompaktnější, ale výrazný -->
+            <!-- Hlavní nadpis -->
             <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-3 leading-tight">
                 <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">🤖 AI Asistent</span>
                 <span class="text-gray-900"> + </span>
@@ -76,7 +76,7 @@
                 Okamžité AI odpovědi na běžné otázky + lidští experti pro složité případy. <strong>Nejlepší z obou světů.</strong>
             </p>
 
-            <!-- USP badges v kompaktním gridu -->
+            <!-- USP odznaky -->
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-5 max-w-3xl mx-auto">
                 <div class="bg-blue-50 px-2 py-2.5 rounded-lg border border-blue-200 hover:border-blue-300 transition-all hover:shadow-md">
                     <div class="text-2xl mb-1">⚡</div>
@@ -96,24 +96,24 @@
                 </div>
             </div>
 
-            <!-- CTA buttony - kompaktnější -->
+            <!-- CTA tlačítka -->
             <div class="flex flex-col sm:flex-row gap-2.5 sm:gap-3 justify-center items-center mb-3">
                 <a href="#kalkulacka" class="w-full sm:w-auto nav-btn bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-sm sm:text-base px-5 sm:px-8 py-2.5 sm:py-3 scroll-to shadow-lg hover:shadow-xl transition-all">
                     🚀 Začít kalkulaci
                 </a>
-                <a href="#premium-features" class="w-full sm:w-auto nav-btn bg-white hover:bg-gray-50 text-blue-600 border-2 border-blue-600 text-sm sm:text-base px-5 sm:px-8 py-2.5 sm:py-3 scroll-to transition-all">
+                <a href="#kalkulacka" data-mode-target="ai" class="w-full sm:w-auto nav-btn bg-white hover:bg-gray-50 text-blue-600 border-2 border-blue-600 text-sm sm:text-base px-5 sm:px-8 py-2.5 sm:py-3 scroll-to transition-all">
                     💬 Vyzkoušet AI chat
                 </a>
             </div>
 
-            <!-- Trust indicator -->
+            <!-- Indikátor důvěry -->
             <p class="text-xs text-gray-500">
                 <span class="inline-block w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse mr-1"></span>
                 <span id="active-users-counter">143 lidí právě používá naše nástroje</span>
             </p>
         </section>
 
-        <!-- Premium features showcase - KOMPAKTNĚJŠÍ -->
+        <!-- NOVÁ SEKCE: Premium funkce -->
         <section id="premium-features" class="my-12 md:my-16 scroll-mt-20">
             <div class="text-center mb-8">
                 <div class="inline-block bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-1.5 rounded-full font-bold text-xs sm:text-sm mb-3">
@@ -299,7 +299,7 @@
         </section>
         
         <!-- Kontakt -->
-        <section id="kontakt" class="my-12 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 sm:p-8 md:p-10 rounded-xl sm:rounded-2xl border-blue-200 border scroll-mt-20 hidden">
+        <section id="kontakt" class="my-12 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 sm:p-8 md:p-10 rounded-xl sm:rounded-2xl border-blue-200 border scroll-mt-20">
              <div class="text-center max-w-2xl mx-auto">
                 <h2 class="text-2xl sm:text-3xl font-bold mb-2">Získejte osobní nabídku od specialisty</h2>
                 <p class="text-sm sm:text-base text-gray-600 mb-6">Naše služby jsou pro vás zcela zdarma. Ozveme se do 24 hodin.</p>
@@ -353,6 +353,6 @@
         <button id="cookie-accept" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-xs sm:text-sm whitespace-nowrap">Rozumím a souhlasím</button>
     </div>
 
-    <script src="script.js?v=5.0" defer></script>
+    <script src="script.js?v=6.0" defer></script>
 </body>
 </html>

@@ -1,11 +1,26 @@
-// netlify/functions/chat.js - FINÁLNÍ VERZE S KOMPLETNÍ LOGIKOU
-// Vaše kompletní logika s opravenou syntaxí pro Netlify.
+// netlify/functions/chat.js - VERZE S UPRAVENÝM PROMPTEM
 
 function createSystemPrompt(userMessage, context) {
     const hasContext = context && context.calculation && context.calculation.selectedOffer;
     const isFromOurCalculator = context?.isDataFromOurCalculator || context?.calculation?.isFromOurCalculator;
     const messageCount = context?.messageCount || 0;
     
+    // ===== NOVÁ LOGIKA PRO PŘÍMÝ VÝPOČET =====
+    if (userMessage.toLowerCase().match(/spočítat|kalkulačk|kolik.*dostanu|jakou.*splátku/) && !hasContext) {
+        return `Uživatel chce spočítat hypotéku, ale zatím nemáme žádná data. Reaguj stručně a veď ho k akci. Nepoužívej slova jako "strategie". Nabídni mu dvě jednoduché cesty: zadat data přímo do chatu, nebo použít kalkulačku.
+        
+        Příklad odpovědi:
+        "Jasně, pojďme na to. Abych vám mohl dát přesná čísla, potřebuji znát 3 základní údaje:
+        1. Cenu nemovitosti
+        2. Váš čistý měsíční příjem
+        3. Kolik si chcete půjčit
+        
+        Můžete mi je napsat sem, nebo je zadat do naší [Expresní kalkulačky](#kalkulacka) pro okamžitý výsledek."
+        
+        DOTAZ UŽIVATELE: "${userMessage}"`;
+    }
+    // ===========================================
+
     const contextData = hasContext ? {
         loanAmount: context.formData?.loanAmount,
         propertyValue: context.formData?.propertyValue,
@@ -419,9 +434,8 @@ const handler = async (event) => {
             }]
         };
         
-        // SPRÁVNÁ VERZE: Jediná správná konfigurace pro Gemini modely s API klíčem.
-        const modelName = "gemini-2.5-flash";
-        const url = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${apiKey}`;
+        const modelName = "gemini-1.5-flash";
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
         const apiResponse = await fetch(url, {
             method: 'POST',
@@ -476,5 +490,4 @@ const handler = async (event) => {
     }
 };
 
-// Správná syntaxe pro export v prostředí Netlify (CommonJS)
 module.exports = { handler };

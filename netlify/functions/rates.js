@@ -1,5 +1,5 @@
 // netlify/functions/rates.js
-// Beze změn, kód je v pořádku
+// VERZE S OPRAVAMI A VYLEPŠENÍMI
 
 const ALL_OFFERS = [
     {
@@ -62,7 +62,7 @@ const calculateMonthlyPayment = (p, r, t) => {
     return (p * mR * Math.pow(1 + mR, n)) / (Math.pow(1 + mR, n) - 1); 
 };
 
-const calculateFixationAnalysis = (loanAmount, rate, loanTerm, fixation) => {
+const calculateFixationAnalysis = (loanAmount, propertyValue, rate, loanTerm, fixation) => {
     const monthlyPayment = calculateMonthlyPayment(loanAmount, rate, loanTerm);
     const monthlyRate = rate / 100 / 12;
     
@@ -90,7 +90,7 @@ const calculateFixationAnalysis = (loanAmount, rate, loanTerm, fixation) => {
     const quickAnalysis = {
         dailyCost: Math.round(monthlyPayment / 30),
         percentOfTotal: Math.round((totalInterest / totalPaymentsInFixation) * 100),
-        equivalentRent: Math.round(monthlyPayment * 0.75),
+        estimatedRent: Math.round((propertyValue * 0.035) / 12),
         taxSavings: Math.round(totalInterest * 0.15 / (fixation * 12)),
     };
     
@@ -178,8 +178,13 @@ const handler = async (event) => {
         const bonitaScore = Math.max(50, Math.min(100, (income - bestOffer.monthlyPayment - liabilities) / 300));
         const totalScore = Math.round(ltvScore * 0.2 + dstiScore * 0.35 + bonitaScore * 0.45);
         
-        const score = { ltv: ltvScore, dsti: dstiScore, bonita: bonitaScore, total: Math.max(50, Math.min(95, totalScore)) };
-        const fixationDetails = calculateFixationAnalysis(loanAmount, bestOffer.rate, effectiveTerm, fixationInput);
+        const score = {
+            ltv: Math.round(ltvScore),
+            dsti: Math.round(dstiScore),
+            bonita: Math.round(bonitaScore),
+            total: Math.max(50, Math.min(95, totalScore))
+        };
+        const fixationDetails = calculateFixationAnalysis(loanAmount, propertyValue, bestOffer.rate, effectiveTerm, fixationInput);
         
         return { statusCode: 200, headers, body: JSON.stringify({ offers: finalOffers.slice(0, 3), approvability: score, fixationDetails }) };
     } catch (error) {

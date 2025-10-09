@@ -820,3 +820,59 @@ textarea {
     user-select: text !important;
     -webkit-user-select: text !important;
 }
+
+/* === NOVÉ STYLY PRO INTERAKTIVNÍ NÁPOVĚDU === */
+.info-icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    background-color: #d1d5db;
+    color: white;
+    border-radius: 50%;
+    text-align: center;
+    font-size: 12px;
+    line-height: 16px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+.info-icon:hover {
+    background-color: var(--accent-color);
+    transform: scale(1.1);
+}
+
+.info-tooltip {
+    position: absolute;
+    background: #1f2937;
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    width: 280px;
+    z-index: 100;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, transform 0.2s;
+    transform: translateY(10px);
+}
+
+.info-tooltip.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.info-tooltip .ask-ai-btn {
+    display: block;
+    margin-top: 10px;
+    padding: 6px 10px;
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    text-align: center;
+}

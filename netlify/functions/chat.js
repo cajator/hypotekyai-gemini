@@ -1,11 +1,11 @@
-// netlify/functions/chat.js - FINÁLNÍ VERZE S KOMPLETNÍ PŮVODNÍ LOGIKOU A OPRAVOU API
+// netlify/functions/chat.js - FINÁLNÍ VERZE S KOMPLETNÍ PŮVODNÍ LOGIKOU A VAŠÍ KONFIGURACÍ API
 
 function createSystemPrompt(userMessage, context) {
     const hasContext = context && context.calculation && context.calculation.selectedOffer;
     const isFromOurCalculator = context?.isDataFromOurCalculator || context?.calculation?.isFromOurCalculator;
     const messageCount = context?.messageCount || 0;
 
-    // ===== NOVÁ LOGIKA PRO PŘÍMÝ VÝPOČET (ZŮSTÁVÁ) =====
+    // ===== LOGIKA PRO PŘÍMÝ VÝPOČET =====
     if (userMessage.toLowerCase().match(/spočítat|kalkulačk|kolik.*dostanu|jakou.*splátku/) && !hasContext) {
         return `Uživatel chce spočítat hypotéku, ale zatím nemáme žádná data. Reaguj stručně a veď ho k akci. Nepoužívej slova jako "strategie". Nabídni mu dvě jednoduché cesty: zadat data přímo do chatu, nebo použít kalkulačku.
         
@@ -19,7 +19,6 @@ function createSystemPrompt(userMessage, context) {
         
         DOTAZ UŽIVATELE: "${userMessage}"`;
     }
-    // ===========================================
     
     const contextData = hasContext ? {
         loanAmount: context.formData?.loanAmount,
@@ -103,7 +102,7 @@ RYCHLÁ ANALÝZA:
 
 DOTAZ UŽIVATELE: "${userMessage}"`;
 
-    // ===== OBNOVENÉ SPECIÁLNÍ ANALÝZY (VAŠE PLNOHODNOTNÁ PŮVODNÍ LOGIKA) =====
+    // ===== SPECIÁLNÍ ANALÝZY (PLNOHODNOTNÁ PŮVODNÍ LOGIKA) =====
     
     // STRESS TESTY
     if (userMessage.toLowerCase().match(/co kdyby|ztratím|přijdu o|nemoc|nezaměstna|krize|problém|zvládnu|nebezpeč/)) {
@@ -427,10 +426,10 @@ const handler = async (event) => {
             }]
         };
         
-        // ===== SPRÁVNÁ A FUNKČNÍ KONFIGURACE PRO GEMINI 1.5 FLASH =====
-        const modelName = "gemini-1.5-flash-latest";
-        const url = `https://generativelen/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
-        // =============================================================
+        // ===== VAŠE PŮVODNÍ KONFIGURACE =====
+        const modelName = "gemini-2.5-flash";
+        const url = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${apiKey}`;
+        // =====================================
 
         const apiResponse = await fetch(url, {
             method: 'POST',

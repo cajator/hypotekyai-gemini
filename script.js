@@ -1135,6 +1135,8 @@ const findQuickResponse = (message) => {
 
     // ZAČÁTEK NOVÉHO BLOKU
 const handleClick = async (e) => {
+    // Přidáváme e.preventDefault(), abychom zabránili jakémukoli nechtěnému skrolování
+    e.preventDefault();
     let target = e.target.closest('[data-action], .offer-card, .suggestion-btn, [data-mode], .scroll-to, [data-quick-question]');
     if (!target) return;
     
@@ -1142,7 +1144,7 @@ const handleClick = async (e) => {
     const quickQuestion = target.dataset.quickQuestion;
 
     if(action === 'ask-ai-from-calc') {
-            const questionKey = target.dataset.questionKey;
+        const questionKey = target.dataset.questionKey;
         const questions = {
             'propertyValue': "Jak hodnota nemovitosti ovlivňuje hypotéku?",
             'loanAmount': "Proč je důležité správně nastavit výši úvěru?",
@@ -1156,9 +1158,7 @@ const handleClick = async (e) => {
         const question = questions[questionKey] || `Řekni mi více o poli ${questionKey}.`;
         
         switchMode('ai');
-        setTimeout(() => {
-            handleChatMessageSend(question);
-        }, 300);
+        setTimeout(() => handleChatMessageSend(question), 300);
         return;
     }
 
@@ -1179,13 +1179,10 @@ const handleClick = async (e) => {
     }
 
     if (targetId) {
-        e.preventDefault();
         if (action === 'show-lead-form' || action === 'show-lead-form-direct') {
             DOMElements.leadFormContainer.classList.remove('hidden');
-            scrollToTarget('#kontakt');
-        } else {
-            scrollToTarget(targetId);
         }
+        scrollToTarget(targetId);
         if (DOMElements.mobileMenu && !DOMElements.mobileMenu.classList.contains('hidden')) {
             DOMElements.mobileMenu.classList.add('hidden');
         }
@@ -1211,33 +1208,21 @@ const handleClick = async (e) => {
             const card = document.querySelector(`[data-offer-id="${offerId}"]`);
             if (card) card.classList.add('selected');
             state.calculation.selectedOffer = offer;
-            setTimeout(renderResultsChart, 0);
-            const resultsSection = document.querySelector('#results-container .grid');
-            if (resultsSection) {
-                const yOffset = -80;
-                const y = resultsSection.getBoundingClientRect().top + window.pageYOffset + yOffset;
-                window.scrollTo({ top: y, behavior: 'smooth' });
-            }
+            // Nechceme zde renderovat graf, může to způsobovat problémy
         }
     }
+    // ===== ZJEDNODUŠENÍ ZDE =====
+    // Tato sekce má nyní jediný úkol: přepnout režim. O zbytek se postará `switchMode`.
     else if (action === 'discuss-with-ai' || action === 'discuss-fixation-with-ai') {
         switchMode('ai', true);
-        if (action === 'discuss-fixation-with-ai') {
-            setTimeout(() => {
-                // OPRAVA TEXTU ZDE
-                handleChatMessageSend("Vysvětli mi analýzu kalkulace");
-            }, 500);
-        }
     }
+    // =============================
     else if (action === 'reset-chat') {
         state.chatHistory = [];
         const chatMessages = document.getElementById('chat-messages');
         if (chatMessages) chatMessages.innerHTML = '';
         addChatMessage('Jsem váš hypoteční poradce s AI nástroji. Jak vám mohu pomoci?', 'ai');
         generateAISuggestions();
-    }
-    else if (action === 'download-summary') {
-        alert('Funkce bude brzy dostupná. Mezitím si můžete udělat screenshot nebo zkopírovat data.');
     }
     else if (suggestion) {
         const input = document.getElementById('permanent-chat-input');
@@ -1250,7 +1235,7 @@ const handleClick = async (e) => {
         document.querySelectorAll('.offer-card').forEach(c => c.classList.remove('selected'));
         target.classList.add('selected');
         state.calculation.selectedOffer = state.calculation.offers.find(o => o.id === target.dataset.offerId);
-        setTimeout(renderResultsChart, 0);
+        // Nechceme zde renderovat graf
     }
 };
 // KONEC NOVÉHO BLOKU
@@ -1418,8 +1403,7 @@ const handleClick = async (e) => {
     state.mode = mode;
     DOMElements.modeCards.forEach(card => card.classList.toggle('active', card.dataset.mode === mode));
     
-    // Vždy vyčistíme kontejner, aby se obsah nepřekrýval
-    DOMElements.contentContainer.innerHTML = "";
+    DOMElements.contentContainer.innerHTML = ""; // Vždy vyčistíme kontejner
 
     if (mode === 'ai') {
         if (!fromResults) { 
@@ -1435,35 +1419,33 @@ const handleClick = async (e) => {
         // Obnovení existující historie nebo start nové konverzace
         const container = document.getElementById('chat-messages');
         if (container && state.chatHistory.length > 0) {
-             state.chatHistory.forEach(msg => {
+            state.chatHistory.forEach(msg => {
                 const bubble = document.createElement('div');
-                // Zkontrolujeme, zda je zpráva od AI a zda obsahuje tlačítko
-                if (msg.sender === 'ai' && msg.text.includes('<button')) {
-                    bubble.className = 'chat-bubble-ai';
-                    bubble.innerHTML = msg.text; // Vložíme HTML přímo
-                } else {
-                    bubble.className = msg.sender === 'ai' ? 'chat-bubble-ai' : 'chat-bubble-user';
-                    bubble.innerHTML = msg.text.replace(/\n/g, '<br>').replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" data-action="scroll-to-chat-link" class="font-bold text-blue-600 underline">$1</a>');
-                }
+                bubble.className = msg.sender === 'ai' ? 'chat-bubble-ai' : 'chat-bubble-user';
+                bubble.innerHTML = msg.text.replace(/\n/g, '<br>');
                 container.appendChild(bubble);
             });
-        } else if (fromResults) {
-            // TOTO JE KLÍČOVÁ ZMĚNA: AI začne konverzaci proaktivní analýzou
+        } 
+        // ===== ZDE JE CENTRÁLNÍ LOGIKA PRO START KONVERZACE =====
+        else if (fromResults) {
+            // Po kliknutí na tlačítko se odešle POUZE TENTO JEDEN dotaz.
             setTimeout(() => handleChatMessageSend("Stručně zanalyzuj klíčové body mé kalkulace."), 100);
         } else {
+            // Standardní úvod, pokud uživatel klikne na "Premium AI Stratég"
             addChatMessage('Jsem váš hypoteční poradce s přístupem k datům z 19+ bank. Co vás zajímá?', 'ai');
         }
+        // ========================================================
         
         generateAISuggestions();
+        // Zajistíme skrolování na správné místo
+        scrollToTarget('#content-container');
 
     } else if (mode === 'express') {
         DOMElements.contentContainer.innerHTML = getExpressHTML();
+        scrollToTarget('#content-container');
     } else if (mode === 'guided') {
         DOMElements.contentContainer.innerHTML = getGuidedHTML();
         handleGuidedFormLogic();
-    }
-    
-    if (!fromResults) {
         scrollToTarget('#content-container');
     }
 };

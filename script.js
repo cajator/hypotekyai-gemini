@@ -69,8 +69,8 @@ Použijte naši kalkulačku výše - za 30 sekund víte přesně kolik a od kter
 • Stabilní příjmy
 
 <strong>JAK BANKA POČÍTÁ PŘÍJEM:</strong>
-• Průměr čistého zisku za 2 roky
-• Některé odečítají odpisy
+• Průměr čistého zisku za 1-2 roky
+• Některé odečítají odpisy nebo úvěry na IČO
 • Koeficient 7-8× (vs. 9× u zaměstnanců)
 
 <strong>VÝHODY:</strong>
@@ -79,13 +79,14 @@ Použijte naši kalkulačku výše - za 30 sekund víte přesně kolik a od kter
 
 <strong>NEVÝHODY:</strong>
 ❌ Nižší maximální částka
-❌ O 0.1-0.3% vyšší úrok
+❌ Zohlednění historie podnikání
 ❌ Více dokumentů
 
 <strong>TOP BANKY PRO OSVČ:</strong>
 1. Raiffeisenbank - nejlépe hodnotí OSVČ
-2. Česká spořitelna - akceptuje kratší historii  
-3. ČSOB - férový přístup
+2. Česká spořitelna -  příjmy z obratu
+3. ČSOB - akceptuje kratší historii 
+4. UCB - vyšší akceptace příjmů z paušální daně
 
 💡 <strong>STRATEGIE:</strong> Optimalizujte daňové přiznání (ne moc nízký zisk!) a zvažte spolužadatele se zaměstnaneckým příjmem.`,
         instant: true

@@ -540,12 +540,17 @@ const findQuickResponse = (message) => {
                 <div class="form-grid" style="${isMobile() ? 'display: flex; flex-direction: column; gap: 1rem;' : ''}">
                     ${createSelect('purpose', 'Účel hypotéky', purposes, state.formData.purpose)}
                     ${createSelect('propertyType', 'Typ nemovitosti', propertyTypes, state.formData.propertyType)}
-                    ${createSlider('propertyValue','Hodnota nemovitosti po dokončení',state.formData.propertyValue,500000,30000000,100000, '', 'Cena, za kterou nemovitost kupujete, nebo její odhadní cena po výstavbě/rekonstrukci.')}
+                   ${createSlider('propertyValue','Hodnota samotné stavby',state.formData.propertyValue,500000,30000000,100000, '', 'Náklady na výstavbu domu (bez pozemku).')}
                     ${createSlider('reconstructionValue','Rozsah rekonstrukce',state.formData.reconstructionValue,0,10000000,50000, 'hidden')}
-                    ${createSlider('landValue','Hodnota pozemku (u výstavby)',state.formData.landValue,0,10000000,50000, 'hidden')}
+                    ${createSlider('landValue','Hodnota pozemku',state.formData.landValue,0,10000000,50000, 'hidden', 'Cena pozemku, na kterém budete stavět.')}
+                    
+                    <div style="${isMobile() ? 'width: 100%;' : 'grid-column: span 2;'} text-align: center; font-size: 0.9rem; color: #374151; background: #f3f4f6; padding: 8px; border-radius: 8px;" id="total-property-value-display" class="hidden">
+                        Celková budoucí hodnota: <strong>${formatNumber(state.formData.propertyValue + state.formData.landValue)}</strong>
+                    </div>
+
                     ${createSlider('loanAmount','Požadovaná výše úvěru',state.formData.loanAmount,200000,20000000,100000, '', 'Částka, kterou si potřebujete půjčit od banky.')}
-                    <div style="${isMobile() ? 'width: 100%;' : 'grid-column: span 2;'} text-align: center; font-weight: bold; font-size: 1rem; color: #10b981;" id="ltv-display">
-                        Aktuální LTV: ${Math.round((state.formData.loanAmount / state.formData.propertyValue) * 100)}%
+                    <div style="${isMobile() ? 'width: 100%;' : 'grid-column: span 2;'} text-align: center; font-weight: bold; font-size: 1.1rem; transition: color 0.3s;" id="ltv-display">
+                        Aktuální LTV: ${Math.round((state.formData.loanAmount / (state.formData.propertyValue + state.formData.landValue)) * 100)}%
                     </div>
                     ${createSlider('loanTerm','Délka splatnosti',state.formData.loanTerm,5,30,1, '', 'Čím delší doba, tím niží splátka, ale více zaplatíte na úrocích.')}
                     ${createSlider('fixation','Délka fixace',state.formData.fixation,3,10,1, '', 'Doba, po kterou vám banka garantuje úrokovou sazbu. Kratší fixace je flexibilnější, delší je jistější.')}
@@ -1018,11 +1023,26 @@ const findQuickResponse = (message) => {
     };
     
     const updateLTVDisplay = () => {
-        const { loanAmount, propertyValue } = state.formData;
-        const ltv = propertyValue > 0 ? Math.round((loanAmount / propertyValue) * 100) : 0;
-        const display = document.getElementById('ltv-display');
-        if (display) display.textContent = `Aktuální LTV: ${ltv}%`;
-    };
+    const { loanAmount, propertyValue, landValue, purpose } = state.formData;
+
+    // Zjistíme celkovou budoucí hodnotu nemovitosti
+    const effectivePropertyValue = purpose === 'výstavba' ? propertyValue + landValue : propertyValue;
+
+    const ltv = effectivePropertyValue > 0 ? Math.round((loanAmount / effectivePropertyValue) * 100) : 0;
+    const display = document.getElementById('ltv-display');
+    if (display) {
+        display.textContent = `Aktuální LTV: ${ltv}%`;
+        // Změníme barvu textu, pokud je LTV příliš vysoké
+        display.style.color = ltv > 100 ? '#ef4444' : '#10b981';
+    }
+
+    // Zobrazíme i celkovou hodnotu nemovitosti pro lepší přehlednost
+    const totalValueDisplay = document.getElementById('total-property-value-display');
+    if (totalValueDisplay) {
+        totalValueDisplay.innerHTML = `Celková budoucí hodnota: <strong>${formatNumber(effectivePropertyValue)}</strong>`;
+        totalValueDisplay.classList.toggle('hidden', purpose !== 'výstavba');
+    }
+};
     
     const handleGuidedFormLogic = () => {
         const purposeSelect = document.getElementById('purpose');

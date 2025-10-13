@@ -1,4 +1,4 @@
-// netlify/functions/chat.js - INTELIGENTNÍ VERZE S DYNAMICKÝMI EXPERTNÍMI TIPY
+// netlify/functions/chat.js - INTELIGENTNÍ VERZE S DATOVĚ PODLOŽENOU ODPOVĚDÍ O SAZBÁCH
 
 function createSystemPrompt(userMessage, context) {
     const hasContext = context && context.calculation && context.calculation.selectedOffer;
@@ -30,16 +30,12 @@ function createSystemPrompt(userMessage, context) {
     } : null;
 
     // Hlavní systémový prompt
-    let prompt = `Jsi PREMIUM AI hypoteční stratég. Tvým úkolem je poskytovat skutečné, stručné a kontextuální poradenství.
+    let prompt = `Jsi PREMIUM AI hypoteční stratég. Tvým úkolem je poskytovat skutečné, stručné a kontextuální poradenství, které vede ke generování leadu.
     
     PRAVIDLA:
-    1.  **Naslouchej:** Vždy reaguj na to, co uživatel napsal jako poslední. Neopakuj staré informace.
-    2.  **Stručnost a hodnota:** Odpovídej krátce, v bodech. Max 120 slov. Každá odpověď musí obsahovat konkrétní radu nebo "insider" tip.
+    1.  **Stručnost a hodnota:** Odpovídej krátce, v bodech. Max 120 slov. Každá odpověď musí obsahovat konkrétní radu nebo "insider" tip.
+    2.  **Nikdy si nevymýšlej data:** Pokud neznáš přesné číslo, uveď bezpečné rozpětí nebo vysvětli princip.
     3.  **Cíl je lead:** Vždy na konci nabídni další krok a směřuj ke kontaktu se specialistou.
-
-    JAK ANALYZOVAT A RADIT:
-    * **Přizpůsob "Expertní tip":** Na základě profilu klienta (věk, zaměstnání, LTV) vygeneruj JEDEN relevantní tip. Pro OSVČ zmiň metodiky příjmu, pro mladé výhody LTV, pro zaměstnance neveřejné slevy. Buď kreativní a neopakuj se.
-    * **Nikdy nejmenuj konkrétní banky.**
 
     ${hasContext ? `
     AKTUÁLNÍ DATA KLIENTA (PRO NOVOU HYPOTÉKU):
@@ -52,38 +48,34 @@ function createSystemPrompt(userMessage, context) {
 
     DOTAZ UŽIVATELE: "${userMessage}"`;
 
-    // ===== NOVÁ LOGIKA PRO SROVNÁNÍ S NÁJMEM =====
-    if (userMessage.toLowerCase().match(/nájem|nájmu|platím za byt|porovnání/)) {
-        if (!hasContext) return prompt + `\n\nOdpověz: "Rád porovnám vaši situaci s nájmem. Nejprve si prosím spočítejte orientační splátku v naší kalkulačce."`;
+    // ===== NOVÁ, CHYTRÁ ODPOVĚĎ NA "AKTUÁLNÍ SAZBY" =====
+    if (userMessage.toLowerCase().match(/aktuální sazby/)) {
+        let response = `Aktuálně se nejlepší nabídky na trhu pohybují v rozpětí zhruba **od 4,1 % do 5,5 %**. Přesná sazba ale vždy záleží na vaší individuální situaci.\n\n`;
+        response += `Klíčové faktory, které rozhodují, jsou:\n`;
+        response += `• **LTV (poměr úvěru k ceně nemovitosti):** Nižší LTV znamená nižší riziko pro banku a tedy i lepší sazbu.\n`;
+        response += `• **Délka fixace:** Kratší fixace mívají obvykle o něco nižší sazbu než ty dlouhodobé.\n`;
+        response += `• **Vaše bonita:** Jak banka vyhodnotí vaše příjmy a stabilitu.\n\n`;
+        response += `<strong>💡 Expertní tip:</strong> Banky často inzerují nejnižší sazby, které jsou ale dostupné jen pro "ideální" klienty (nízké LTV, vysoké příjmy). Naši specialisté vědí, jak připravit a prezentovat vaši finanční situaci tak, abyste se pro banku stali ideálním klientem a na nejlepší sazbu dosáhli, i když na první pohled nesplňujete tabulkové podmínky.\n\n`;
+        response += `Chcete si udělat rychlou kalkulaci a zjistit, do jaké sazby byste se vešel právě vy?`;
         
-        const rentMatch = userMessage.match(/(\d[\d\s]*\d)/);
-        const rentAmount = rentMatch ? parseInt(rentMatch[0].replace(/\s/g, '')) : 20000; // default pokud nenajde číslo
-
-        let response = `Rozumím, porovnání s nájmem je klíčové rozhodnutí.\n\n`;
-        response += `• Vaše orientační splátka <strong>${contextData.monthlyPayment.toLocaleString('cs-CZ')} Kč</strong> je velmi blízko vašemu nájmu (~${rentAmount.toLocaleString('cs-CZ')} Kč).\n`;
-        response += `• Hlavní rozdíl je, že s hypotékou každý měsíc splácíte svůj majetek, zatímco nájem je čistý náklad.\n\n`;
-        response += `<strong>💡 Expertní tip:</strong> Banky se na to dívají podobně. Pokud prokážete, že jste schopni dlouhodobě platit nájem, považují vás za spolehlivého klienta. Náš specialista to umí použít jako silný argument při vyjednávání lepších podmínek.\n\n`;
-        response += `Chcete, abychom pro vás spočítali, jak velkou část první splátky budou tvořit úroky a kolik půjde na splacení jistiny?`;
-        
-        return prompt + `\n\nOdpověz stručně na základě tohoto textu, reaguj na uživatelovu zprávu o nájmu: "${response}"`;
+        return prompt + `\n\nOdpověz srozumitelně na základě tohoto textu, vysvětli aktuální sazby: "${response}"`;
     }
 
     // Speciální inteligentní analýza pro první dotaz z kalkulačky
     if (userMessage.toLowerCase().match(/analyzuj|klíčové body mé kalkulace/)) {
-        if (!hasContext) return prompt + `\n\nOdpověz: "Nejprve si prosím spočítejte nabídku v kalkulačce."`;
+        if (!hasContext) return prompt + `\n\nOdpověz: "Nejprve si prosím spočítejte nabídku v kalkulaci."`;
         
         let response = `<strong>Klíčové body vaší kalkulace:</strong>\n\n`;
         response += `• Vaše orientační splátka vychází na <strong>${contextData.monthlyPayment.toLocaleString('cs-CZ')} Kč</strong> při sazbě <strong>${contextData.rate}%</strong>.\n`;
-        response += `• Tuto sazbu ovlivňuje především vaše LTV (poměr úvěru k ceně nemovitosti), které je <strong>${contextData.ltv}%</strong>. Cokoli pod 80 % je pro banky skvělý signál.\n\n`;
+        response += `• Tuto sazbu ovlivňuje především vaše LTV (poměr úvěru k ceně nemovitosti), které je <strong>${contextData.ltv}%</strong>.\n\n`;
         
-        // --- DYNAMICKÝ EXPERTNÍ TIP ---
         response += `<strong>💡 Expertní tip pro vás:</strong>\n`;
         if (contextData.employment === 'osvc') {
-            response += `Jako OSVČ je pro vás klíčové, jak banka posuzuje příjem. Některé banky umí počítat příjem z obratu, nikoliv jen z daňového přiznání, což může výrazně navýšit vaši bonitu. Náš specialista přesně ví, kde a jaké podklady předložit.\n\n`;
+            response += `Jako OSVČ je pro vás klíčové, jak banka posuzuje příjem. Některé banky umí počítat příjem z obratu, což může výrazně navýšit vaši bonitu. Náš specialista přesně ví, kde a jaké podklady předložit.\n\n`;
         } else if (contextData.age < 36) {
-            response += `Protože je vám pod 36 let, některé banky jsou k vám vstřícnější a často získáte standardní sazbu i s vyšším LTV (až 90 %). Náš specialista zná neveřejné akce a podmínky pro mladé a umí je využít ve váš prospěch.\n\n`;
+            response += `Protože je vám pod 36 let, některé banky jsou k vám vstřícnější a často získáte standardní sazbu i s vyšším LTV. Náš specialista zná neveřejné akce a podmínky pro mladé a umí je využít ve váš prospěch.\n\n`;
         } else {
-            response += `U standardního zaměstnání je největší prostor pro vyjednání individuální slevy, která není v online kalkulačkách. Náš specialista díky objemu hypoték ví, která banka je ochotná slevit nejvíce (např. za aktivní účet) a ušetří vám tak desítky tisíc.\n\n`;
+            response += `U standardního zaměstnání je největší prostor pro vyjednání individuální slevy, která není v online kalkulačkách. Náš specialista díky objemu hypoték ví, která banka je ochotná slevit nejvíce a ušetří vám tak desítky tisíc.\n\n`;
         }
         
         response += `Toto je jen jedna z mnoha "kliček", které naši specialisté denně využívají. Chcete, abychom pro vás našli tu nejvýhodnější cestu, nebo se chcete podívat na analýzu rizik?`;
@@ -136,10 +128,8 @@ const handler = async (event) => {
             }]
         };
         
-        // ===== VAŠE PŮVODNÍ, SPECIFICKÁ KONFIGURACE =====
         const modelName = "gemini-2.5-flash";
         const url = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${apiKey}`;
-        // ===============================================
 
         const apiResponse = await fetch(url, {
             method: 'POST',

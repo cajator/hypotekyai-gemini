@@ -913,17 +913,22 @@ const findQuickResponse = (message) => {
             bubble.id = 'typing-indicator';
         } else {
             bubble.className = sender === 'ai' ? 'chat-bubble-ai' : 'chat-bubble-user';
+            
+            // ===== ZMĚNA ZDE =====
+            // Původní verze negenerovala správné atributy pro posouvání.
+            // Nová verze přidává class="scroll-to" a data-target="$2", aby se odkaz choval správně.
             let processedMessage = message
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\[(.*?)\]\((#.*?)\)/g, '<a href="$2" data-action="scroll-to-chat-link" class="font-bold text-blue-600 underline">$1</a>')
+                .replace(/\[(.*?)\]\((#.*?)\)/g, '<a href="$2" data-target="$2" class="scroll-to font-bold text-blue-600 underline">$1</a>')
                 .replace(/\n/g, '<br>');
+            // ======================
+
             bubble.innerHTML = processedMessage;
         }
         
         container.appendChild(bubble);
         container.scrollTop = container.scrollHeight;
         
-        // Update sidebar pokud je potřeba
         if (state.mode === 'ai') {
             const sidebarContainer = document.getElementById('sidebar-container');
             if(sidebarContainer) sidebarContainer.innerHTML = getSidebarHTML();

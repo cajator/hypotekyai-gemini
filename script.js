@@ -485,7 +485,7 @@ const findQuickResponse = (message) => {
                             <span class="text-sm ml-2">Kolik si můžu půjčit?</span>
                         </button>
                         <button class="w-full text-left p-3 bg-white rounded-lg hover:shadow-md transition-shadow"
-                                data-quick-question="Jaký je rozdíl mezi fixací na 5 a 10 let?">
+                                data-quick-question="Jaký je rozdíl mezi fixací na 3, 5 a 10 let?">
                             <span class="text-purple-600 font-semibold">📊</span>
                             <span class="text-sm ml-2">Porovnat fixace</span>
                         </button>
@@ -1230,17 +1230,25 @@ const handleClick = async (e) => {
         generateAISuggestions();
     }
     else if (suggestion) {
+        // ===== ZMĚNA ZDE =====
+        // Pokud uživatel klikne na specifické tlačítko pro kontakt,
+        // provedeme akci okamžitě bez čekání na AI.
+        if (suggestion === '📞 Domluvit se specialistou') {
+            addChatMessage("Chci se domluvit se specialistou.", 'user');
+            // Přidáme zprávu od "AI", která potvrzuje akci.
+            addChatMessage("Výborně! Přesouvám vás na formulář pro spojení s naším specialistou.", 'ai');
+            DOMElements.leadFormContainer.classList.remove('hidden');
+            scrollToTarget('#kontakt');
+            return; // Ukončíme funkci zde
+        }
+        // ======================
+
+        // Pro všechna ostatní suggestion tlačítka se zachová původní chování
         const input = document.getElementById('permanent-chat-input');
         const message = suggestion || input?.value.trim();
         if (!message || state.isAiTyping) return;
         if (input) input.value = '';
         handleChatMessageSend(message);
-    }
-    else if (target.matches('.offer-card')) {
-        document.querySelectorAll('.offer-card').forEach(c => c.classList.remove('selected'));
-        target.classList.add('selected');
-        state.calculation.selectedOffer = state.calculation.offers.find(o => o.id === target.dataset.offerId);
-        // Nechceme zde renderovat graf
     }
 };
 // KONEC NOVÉHO BLOKU

@@ -876,3 +876,30 @@ textarea {
     width: 100%;
     text-align: center;
 }
+/* ============================================
+   STYLY PRO PARTNERY
+   ============================================ */
+#partneri .flex-wrap span {
+    color: #6b7280; /* Neutrální šedá barva textu */
+    transition: all 0.2s ease-in-out;
+    filter: grayscale(50%); /* Lehce odbarvený text pro decentní vzhled */
+    opacity: 0.8;
+}
+
+#partneri .flex-wrap span:hover {
+    color: #111827; /* Při najetí myší text ztmavne */
+    filter: grayscale(0%);
+    opacity: 1;
+    transform: scale(1.05);
+}
+/* ============================================
+   OPRAVA LAYOUTU KONTAKTNÍHO FORMULÁŘE
+   ============================================ */
+
+/* Na zařízeních širších než 768px (tablety a desktopy) 
+   se první řádek formuláře rozdělí do dvou sloupců. */
+@media (min-width: 768px) {
+    #lead-form .grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

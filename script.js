@@ -1122,124 +1122,126 @@ const findQuickResponse = (message) => {
         setTimeout(() => tooltip.classList.add('visible'), 10);
     };
 
-    const handleClick = async (e) => {
-        let target = e.target.closest('[data-action], .offer-card, .suggestion-btn, [data-mode], .scroll-to, [data-quick-question]');
-        if (!target) return;
+    // ZAČÁTEK BLOKU K NAHRAZENÍ
+const handleClick = async (e) => {
+    let target = e.target.closest('[data-action], .offer-card, .suggestion-btn, [data-mode], .scroll-to, [data-quick-question]');
+    if (!target) return;
+    
+    const { action, mode, suggestion, target: targetId } = target.dataset;
+    const quickQuestion = target.dataset.quickQuestion;
+
+    if(action === 'ask-ai-from-calc') {
+            const questionKey = target.dataset.questionKey;
+        const questions = {
+            'propertyValue': "Jak hodnota nemovitosti ovlivňuje hypotéku?",
+            'loanAmount': "Proč je důležité správně nastavit výši úvěru?",
+            'income': "Jak banky posuzují můj příjem a co všechno se započítává?",
+            'loanTerm': "Jaký je rozdíl ve splátce a úrocích při splatnosti 20 vs 30 let?",
+            'fixation': "Jaká je nejlepší strategie pro volbu fixace?",
+            'liabilities': "Jak mé ostatní půjčky ovlivňují šanci na získání hypotéky?",
+            'age': "Proč je můj věk důležitý pro banku?",
+            'children': "Jak počet dětí ovlivňuje výpočet bonity?"
+        };
+        const question = questions[questionKey] || `Řekni mi více o poli ${questionKey}.`;
         
-        const { action, mode, suggestion, target: targetId } = target.dataset;
-        const quickQuestion = target.dataset.quickQuestion;
+        switchMode('ai');
+        setTimeout(() => {
+            handleChatMessageSend(question);
+        }, 300);
+        return;
+    }
 
-        if(action === 'ask-ai-from-calc') {
-             const questionKey = target.dataset.questionKey;
-            const questions = {
-                'propertyValue': "Jak hodnota nemovitosti ovlivňuje hypotéku?",
-                'loanAmount': "Proč je důležité správně nastavit výši úvěru?",
-                'income': "Jak banky posuzují můj příjem a co všechno se započítává?",
-                'loanTerm': "Jaký je rozdíl ve splátce a úrocích při splatnosti 20 vs 30 let?",
-                'fixation': "Jaká je nejlepší strategie pro volbu fixace?",
-                'liabilities': "Jak mé ostatní půjčky ovlivňují šanci na získání hypotéky?",
-                'age': "Proč je můj věk důležitý pro banku?",
-                'children': "Jak počet dětí ovlivňuje výpočet bonity?"
-            };
-            const question = questions[questionKey] || `Řekni mi více o poli ${questionKey}.`;
-            
-            switchMode('ai');
-            setTimeout(() => {
-                handleChatMessageSend(question);
-            }, 300);
-            return;
-        }
+    if (action === 'toggle-mobile-sidebar' || action === 'close-mobile-sidebar') {
+        toggleMobileSidebar();
+        return;
+    }
 
-        if (action === 'toggle-mobile-sidebar' || action === 'close-mobile-sidebar') {
-            toggleMobileSidebar();
-            return;
+    if (quickQuestion) {
+        if (isMobile()) toggleMobileSidebar();
+        const chatInput = document.getElementById('permanent-chat-input');
+        if (chatInput) {
+            chatInput.value = quickQuestion;
+            handleChatMessageSend(quickQuestion);
+            chatInput.value = '';
         }
+        return;
+    }
 
-        if (quickQuestion) {
-            if (isMobile()) toggleMobileSidebar();
-            const chatInput = document.getElementById('permanent-chat-input');
-            if (chatInput) {
-                chatInput.value = quickQuestion;
-                handleChatMessageSend(quickQuestion);
-                chatInput.value = '';
-            }
-            return;
-        }
-
-        if (targetId) {
-            e.preventDefault();
-            if (action === 'show-lead-form' || action === 'show-lead-form-direct') {
-                DOMElements.leadFormContainer.classList.remove('hidden');
-                scrollToTarget('#kontakt');
-            } else {
-                scrollToTarget(targetId);
-            }
-            if (DOMElements.mobileMenu && !DOMElements.mobileMenu.classList.contains('hidden')) {
-                DOMElements.mobileMenu.classList.add('hidden');
-            }
-        }
-        else if (mode) {
-            switchMode(mode);
-        }
-        else if (action === 'calculate') calculateRates(target);
-        else if (action === 'go-to-calculator') {
-            if (isMobile()) toggleMobileSidebar();
-            switchMode('express');
-        }
-        else if (action === 'show-lead-form') {
-            if (isMobile()) toggleMobileSidebar();
+    if (targetId) {
+        e.preventDefault();
+        if (action === 'show-lead-form' || action === 'show-lead-form-direct') {
             DOMElements.leadFormContainer.classList.remove('hidden');
             scrollToTarget('#kontakt');
+        } else {
+            scrollToTarget(targetId);
         }
-        else if (action === 'select-offer') {
-            const offerId = target.dataset.offer;
-            const offer = state.calculation.offers.find(o => o.id === offerId);
-            if (offer) {
-                document.querySelectorAll('.offer-card').forEach(c => c.classList.remove('selected'));
-                const card = document.querySelector(`[data-offer-id="${offerId}"]`);
-                if (card) card.classList.add('selected');
-                state.calculation.selectedOffer = offer;
-                setTimeout(renderResultsChart, 0);
-                const resultsSection = document.querySelector('#results-container .grid');
-                if (resultsSection) {
-                    const yOffset = -80;
-                    const y = resultsSection.getBoundingClientRect().top + window.pageYOffset + yOffset;
-                    window.scrollTo({ top: y, behavior: 'smooth' });
-                }
-            }
+        if (DOMElements.mobileMenu && !DOMElements.mobileMenu.classList.contains('hidden')) {
+            DOMElements.mobileMenu.classList.add('hidden');
         }
-        else if (action === 'discuss-with-ai' || action === 'discuss-fixation-with-ai') {
-            switchMode('ai', true);
-            if (action === 'discuss-fixation-with-ai') {
-                setTimeout(() => {
-                    handleChatMessageSend("Vysvětli mi detailně analýzu fixace");
-                }, 500);
-            }
-        }
-        else if (action === 'reset-chat') {
-            state.chatHistory = [];
-            const chatMessages = document.getElementById('chat-messages');
-            if (chatMessages) chatMessages.innerHTML = '';
-            addChatMessage('Jsem váš hypoteční poradce s AI nástroji. Jak vám mohu pomoci?', 'ai');
-            generateAISuggestions();
-        }
-        else if (action === 'download-summary') {
-            alert('Funkce bude brzy dostupná. Mezitím si můžete udělat screenshot nebo zkopírovat data.');
-        }
-        else if (suggestion) {
-            const input = document.getElementById('permanent-chat-input');
-            const message = suggestion || input?.value.trim();
-            if (!message || state.isAiTyping) return;
-            if (input) input.value = '';
-            handleChatMessageSend(message);
-        }
-        else if (target.matches('.offer-card')) {
+    }
+    else if (mode) {
+        switchMode(mode);
+    }
+    else if (action === 'calculate') calculateRates(target);
+    else if (action === 'go-to-calculator') {
+        if (isMobile()) toggleMobileSidebar();
+        switchMode('express');
+    }
+    else if (action === 'show-lead-form') {
+        if (isMobile()) toggleMobileSidebar();
+        DOMElements.leadFormContainer.classList.remove('hidden');
+        scrollToTarget('#kontakt');
+    }
+    else if (action === 'select-offer') {
+        const offerId = target.dataset.offer;
+        const offer = state.calculation.offers.find(o => o.id === offerId);
+        if (offer) {
             document.querySelectorAll('.offer-card').forEach(c => c.classList.remove('selected'));
-            target.classList.add('selected');
-            state.calculation.selectedOffer = state.calculation.offers.find(o => o.id === target.dataset.offerId);
+            const card = document.querySelector(`[data-offer-id="${offerId}"]`);
+            if (card) card.classList.add('selected');
+            state.calculation.selectedOffer = offer;
             setTimeout(renderResultsChart, 0);
+            const resultsSection = document.querySelector('#results-container .grid');
+            if (resultsSection) {
+                const yOffset = -80;
+                const y = resultsSection.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                window.scrollTo({ top: y, behavior: 'smooth' });
+            }
         }
-    };
+    }
+    else if (action === 'discuss-with-ai' || action === 'discuss-fixation-with-ai') {
+        switchMode('ai', true);
+        if (action === 'discuss-fixation-with-ai') {
+            setTimeout(() => {
+                handleChatMessageSend("Vysvětli mi detailně analýzu fixace");
+            }, 500);
+        }
+    }
+    else if (action === 'reset-chat') {
+        state.chatHistory = [];
+        const chatMessages = document.getElementById('chat-messages');
+        if (chatMessages) chatMessages.innerHTML = '';
+        addChatMessage('Jsem váš hypoteční poradce s AI nástroji. Jak vám mohu pomoci?', 'ai');
+        generateAISuggestions();
+    }
+    else if (action === 'download-summary') {
+        alert('Funkce bude brzy dostupná. Mezitím si můžete udělat screenshot nebo zkopírovat data.');
+    }
+    else if (suggestion) {
+        const input = document.getElementById('permanent-chat-input');
+        const message = suggestion || input?.value.trim();
+        if (!message || state.isAiTyping) return;
+        if (input) input.value = '';
+        handleChatMessageSend(message);
+    }
+    else if (target.matches('.offer-card')) {
+        document.querySelectorAll('.offer-card').forEach(c => c.classList.remove('selected'));
+        target.classList.add('selected');
+        state.calculation.selectedOffer = state.calculation.offers.find(o => o.id === target.dataset.offerId);
+        setTimeout(renderResultsChart, 0);
+    }
+};
+// KONEC BLOKU K NAHRAZENÍ
 
     const handleFormSubmit = async (e) => {
         e.preventDefault();
@@ -1261,6 +1263,7 @@ const findQuickResponse = (message) => {
         }
     };
     
+    // ZAČÁTEK NOVÉHO BLOKU
     const handleChatMessageSend = async (message) => {
         if (!message || message.trim() === '') return;
         
@@ -1269,29 +1272,23 @@ const findQuickResponse = (message) => {
             return;
         }
 
-        // ========================================
-        // QUICK RESPONSE CHECK - NOVÉ V4.0
-        // ========================================
         const quickResp = findQuickResponse(message);
         if (quickResp && quickResp.instant) {
             addChatMessage(message, 'user');
             state.isAiTyping = true;
             addChatMessage('', 'ai-typing');
             
-            // Simulace "myšlení" pro lepší UX
             await new Promise(resolve => setTimeout(resolve, 800));
             
             document.getElementById('typing-indicator')?.remove();
             addChatMessage(quickResp.response, 'ai');
             state.isAiTyping = false;
             
-            // Cache response
             responseCache.set(message.toLowerCase(), quickResp.response);
             
             generateAISuggestions();
-            return; // Quick response handled, nepokračuj na AI
+            return;
         }
-        // ========================================
 
         const suggestionMap = {
             "📊 Rychlá analýza": "Proveď rychlou analýzu mé situace.",
@@ -1321,10 +1318,12 @@ const findQuickResponse = (message) => {
         const timeoutId = setTimeout(() => {
             if (state.isAiTyping) {
                 document.getElementById('typing-indicator')?.remove();
-                addChatMessage('Omlouvám se, zpracování trvá déle než obvykle. Zkuste to prosím znovu nebo se spojte s naším specialistou.', 'ai');
+                const timeoutMessage = `Omlouvám se, zpracování trvá déle než obvykle. Nejlepší bude, když se na to podívá přímo náš specialista.
+                <br><br><button class="nav-btn" data-action="show-lead-form" style="background-color: var(--success-color); margin-top: 8px;">📞 Domluvit se specialistou</button>`;
+                addChatMessage(timeoutMessage, 'ai');
                 state.isAiTyping = false;
             }
-        }, 15000);
+        }, 30000); // Zvýšený timeout na 30 sekund
         
         try {
             const response = await fetch(CONFIG.API_CHAT_ENDPOINT, { 
@@ -1361,36 +1360,10 @@ const findQuickResponse = (message) => {
             else if (data.tool === 'showBanksList') {
                 const banksList = `
                 **Spolupracujeme s těmito bankami a institucemi:**
-                
-                **Největší banky:**
-                • Česká spořitelna
-                • ČSOB
-                • Komerční banka
-                • Raiffeisenbank
-                • UniCredit Bank
-                
-                **Hypoteční specialisté:**
-                • Hypoteční banka (ČSOB)
-                • Modrá pyramida (KB)
-                • ČMSS
-                • Raiffeisen stavební spořitelna
-                • Stavební spořitelna České spořitelny (Buřinka)
-                
-                **Moderní banky:**
-                • MONETA Money Bank
-                • mBank
-                • Fio banka
-                • Air Bank
-                • Banka CREDITAS
-                
-                **Další partneři:**
-                • Wüstenrot
-                • TRINITY BANK
-                • Sberbank
-                • Hello bank!
-                • Partners Banka
-                
-                Celkem pracujeme s **19+ institucemi**, což nám umožňuje najít nejlepší řešení pro každého klienta.`;
+                • Česká spořitelna, ČSOB, Komerční banka, Raiffeisenbank, UniCredit Bank
+                • Hypoteční banka, Modrá pyramida, ČMSS, Buřinka
+                • MONETA, mBank, Fio banka, Air Bank, Banka CREDITAS
+                a další. Celkem pracujeme s **19+ institucemi**.`;
                 
                 addChatMessage(banksList, 'ai');
             }
@@ -1400,11 +1373,15 @@ const findQuickResponse = (message) => {
         } catch (error) {
             clearTimeout(timeoutId);
             document.getElementById('typing-indicator')?.remove();
-            addChatMessage(`Omlouvám se, došlo k chybě. Zkuste to prosím znovu nebo volejte přímo na 800 123 456.`, 'ai');
+            // ZMĚNA ZDE
+            const errorMessage = `Omlouvám se, došlo k chybě. Nejlepší bude, když se na to podívá přímo náš specialista.
+            <br><br><button class="nav-btn" data-action="show-lead-form" style="background-color: var(--success-color); margin-top: 8px;">📞 Domluvit se specialistou</button>`;
+            addChatMessage(errorMessage, 'ai');
         } finally {
             state.isAiTyping = false;
         }
     };
+    // KONEC NOVÉHO BLOKU
 
     const handleChatFormInput = (message) => {
         if (state.chatFormState === 'awaiting_name') {

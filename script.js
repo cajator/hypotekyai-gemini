@@ -1122,7 +1122,7 @@ const findQuickResponse = (message) => {
         setTimeout(() => tooltip.classList.add('visible'), 10);
     };
 
-    // ZAČÁTEK BLOKU K NAHRAZENÍ
+    // ZAČÁTEK NOVÉHO BLOKU
 const handleClick = async (e) => {
     let target = e.target.closest('[data-action], .offer-card, .suggestion-btn, [data-mode], .scroll-to, [data-quick-question]');
     if (!target) return;
@@ -1213,7 +1213,8 @@ const handleClick = async (e) => {
         switchMode('ai', true);
         if (action === 'discuss-fixation-with-ai') {
             setTimeout(() => {
-                handleChatMessageSend("Vysvětli mi detailně analýzu fixace");
+                // OPRAVA TEXTU ZDE
+                handleChatMessageSend("Vysvětli mi analýzu kalkulace");
             }, 500);
         }
     }
@@ -1241,7 +1242,7 @@ const handleClick = async (e) => {
         setTimeout(renderResultsChart, 0);
     }
 };
-// KONEC BLOKU K NAHRAZENÍ
+// KONEC NOVÉHO BLOKU
 
     const handleFormSubmit = async (e) => {
         e.preventDefault();

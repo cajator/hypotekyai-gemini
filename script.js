@@ -64,9 +64,9 @@ Použijte naši kalkulačku výše - za 30 sekund víte přesně kolik a od kter
         response: `<strong>🏢 Hypotéka pro OSVČ - Kompletní průvodce:</strong>
 
 <strong>PODMÍNKY:</strong>
-• Min. 2 roky podnikání
-• 2 daňová přiznání s kladným výsledkem
-• Stabilní příjmy
+• Min. 1 rok podnikání
+• 1-2 daňová přiznání s kladným výsledkem
+• Stabilní výhled příjmů
 
 <strong>JAK BANKA POČÍTÁ PŘÍJEM:</strong>
 • Průměr čistého zisku za 1-2 roky
@@ -75,7 +75,9 @@ Použijte naši kalkulačku výše - za 30 sekund víte přesně kolik a od kter
 
 <strong>VÝHODY:</strong>
 ✅ Můžete odečíst úroky z daní
-✅ Některé banky akceptují 1 rok historie
+✅ Některé banky akceptují 1 rok historii
+✅ Některé banky akceptují příjmy z obratu
+✅ Některé banky akceptují paušální daň
 
 <strong>NEVÝHODY:</strong>
 ❌ Nižší maximální částka

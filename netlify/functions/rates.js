@@ -9,10 +9,10 @@ const ALL_OFFERS = [
         highlights: ["Schválení do 5 dnů", "Nejnižší úrok na trhu", "Online podání"],
         max_ltv: 90,
         rates: {
-            '3': { rate_ltv70: 4.09, rate_ltv80: 4.29, rate_ltv90: 4.72 },
-            '5': { rate_ltv70: 4.14, rate_ltv80: 4.29, rate_ltv90: 4.89 },
+            '3': { rate_ltv70: 4.19, rate_ltv80: 4.29, rate_ltv90: 4.72 },
+            '5': { rate_ltv70: 4.24, rate_ltv80: 4.34, rate_ltv90: 4.89 },
             '7': { rate_ltv70: 4.59, rate_ltv80: 4.69, rate_ltv90: 4.99 },
-            '10': { rate_ltv70: 4.69, rate_ltv80: 4.79, rate_ltv90: 5.19 }
+            '10': { rate_ltv70: 4.69, rate_ltv80: 4.79, rate_ltv90: 5.09 }
         }
     },
     {
@@ -48,8 +48,8 @@ const ALL_OFFERS = [
         highlights: ["Osobní bankéř", "Prémiové služby", "Expresní vyřízení"],
         max_ltv: 70,
         rates: {
-            '3': { rate_ltv70: 4.09 },
-            '5': { rate_ltv70: 4.19 },  
+            '3': { rate_ltv70: 4.19 },
+            '5': { rate_ltv70: 4.29 },  
             '7': { rate_ltv70: 4.49 },
             '10': { rate_ltv70: 4.54 }
         }

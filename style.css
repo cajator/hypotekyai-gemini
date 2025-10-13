@@ -892,14 +892,21 @@ textarea {
     opacity: 1;
     transform: scale(1.05);
 }
+
 /* ============================================
-   OPRAVA LAYOUTU KONTAKTNÍHO FORMULÁŘE
+   FINÁLNÍ OPRAVA LAYOUTU KONTAKTNÍHO FORMULÁŘE
    ============================================ */
 
+/* Cílíme přímo na kontejner s poli "Jméno" a "Telefon" uvnitř formuláře s ID "lead-form" */
+#lead-form > div:first-of-type {
+    display: grid;
+    gap: 1rem; /* Mezera mezi poli */
+}
+
 /* Na zařízeních širších než 768px (tablety a desktopy) 
-   se první řádek formuláře rozdělí do dvou sloupců. */
+   se tento kontejner rozdělí do dvou sloupců. */
 @media (min-width: 768px) {
-    #lead-form .grid {
+    #lead-form > div:first-of-type {
         grid-template-columns: repeat(2, 1fr);
     }
 }

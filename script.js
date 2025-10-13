@@ -106,9 +106,6 @@ const findQuickResponse = (message) => {
     return null;
 };
 
-
-
-
     // --- CONFIGURATION ---
     const CONFIG = {
         API_CHAT_ENDPOINT: '/.netlify/functions/chat',

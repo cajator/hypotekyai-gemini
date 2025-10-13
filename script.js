@@ -14,25 +14,25 @@ const QUICK_RESPONSES = {
 <strong>ZÁKLADNÍ DOKUMENTY (vždy potřeba):</strong>
 • Občanský průkaz všech žadatelů
 • Potvrzení o příjmu (formulář banky)
-• Výpisy z účtů za poslední 3 měsíce
+• Výpisy z účtů za poslední 3 až 12 měsíců
 • Výpis z katastru nemovitostí (kupovaná nemovitost)
-• Rezervační či kupní smlouva
+• Rezervační smlouva
+• Návrh kupní nebo budoucí kupní smlouvy
 
-<strong>PRO ZAMĚSTNANCE:</strong>
-• Poslední 3 výplatní pásky
-• Pracovní smlouva
+<strong>PRO ZAMĚSTNANCI:</strong>
+• Min. 3 měs. zkušební doba
 • Potvrzení od zaměstnavatele
 
 <strong>PRO OSVČ (navíc):</strong>
-• Daňová přiznání za 2 roky + přílohy
+• Daňová přiznání za 1-2 roky + přílohy
 • Potvrzení o bezdlužnosti (ZP, SP)
-• Výpis z živnostenského rejstříku
-• Faktury a účetnictví
+• Doklad o zaplacení daně
 
 <strong>DALŠÍ DOKUMENTY:</strong>
-• Znalecký posudek (zajistí banka, 5-8k Kč)
+• Znalecký posudek (zajistí banka, 3-6 000 Kč) nebo zdarma
 • Pojistná smlouva nemovitosti
 • Energetický štítek budovy
+• Životní pojištění
 
 💡 <strong>TIP:</strong> Začněte sbírat dokumenty už teď - šetří to týdny! Náš specialista vás provede procesem krok za krokem.`,
         instant: true

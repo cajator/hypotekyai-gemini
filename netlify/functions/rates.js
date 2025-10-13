@@ -173,7 +173,7 @@ const handler = async (event) => {
         if (finalOffers.length === 0) return { statusCode: 200, headers, body: JSON.stringify({ offers: [] }) }; 
         
         const bestOffer = finalOffers[0];
-        const ltvScore = Math.max(50, 100 - (ltv - 60));
+        const ltvScore = Math.max(50, Math.min(100, 100 - (ltv - 80)));
         const dstiScore = Math.max(50, 100 - (bestOffer.dsti - 20) * 2);
         const bonitaScore = Math.max(50, Math.min(100, (income - bestOffer.monthlyPayment - liabilities) / 300));
         const totalScore = Math.round(ltvScore * 0.2 + dstiScore * 0.35 + bonitaScore * 0.45);

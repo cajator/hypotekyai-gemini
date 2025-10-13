@@ -1415,64 +1415,58 @@ const handleClick = async (e) => {
     
     // KRITICKÁ ZMĚNA - přepnutí módu bez překreslení celého layoutu
     const switchMode = (mode, fromResults = false) => {
-        state.mode = mode;
-        DOMElements.modeCards.forEach(card => card.classList.toggle('active', card.dataset.mode === mode));
-        
-        if (mode === 'express') {
-            DOMElements.contentContainer.innerHTML = getExpressHTML();
-        }
-        else if (mode === 'guided') {
-            DOMElements.contentContainer.innerHTML = getGuidedHTML();
-            handleGuidedFormLogic();
-        }
-        else if (mode === 'ai') {
-            if (!fromResults) {
-                state.chatHistory = [];
-                state.calculation = {};
-            }
-            
-            // Vytvoření základního layoutu
-            DOMElements.contentContainer.innerHTML = getAiLayout();
-            
-            // KRITICKÉ - vytvoření permanentního inputu
-            createPermanentChatInput();
-            
-            // Přidání sidebaru
-            const sidebarContainer = document.getElementById('sidebar-container');
-            if(sidebarContainer) sidebarContainer.innerHTML = getSidebarHTML();
+    state.mode = mode;
+    DOMElements.modeCards.forEach(card => card.classList.toggle('active', card.dataset.mode === mode));
+    
+    // Vždy vyčistíme kontejner, aby se obsah nepřekrýval
+    DOMElements.contentContainer.innerHTML = "";
 
-            // Přidání úvodní zprávy
-            if (!fromResults) {
-                addChatMessage('Jsem váš hypoteční poradce s přístupem k datům z 19+ bank. Pomohu vám najít nejlepší řešení pro vaši situaci. Co vás zajímá?', 'ai');
-            } else if (state.calculation.selectedOffer) {
-                addChatMessage(`Mám vaši analýzu z naší kalkulačky. Splátka **${formatNumber(state.calculation.selectedOffer.monthlyPayment)}** při sazbě **${state.calculation.selectedOffer.rate.toFixed(2)}%** je ${state.calculation.approvability.total > 80 ? 'velmi dobrá nabídka' : 'solidní nabídka'}. Co vás zajímá nejvíc?`, 'ai');
-            }
-            
-            // Obnovení historie zpráv pokud existuje
-            if (fromResults && state.chatHistory.length > 0) {
-                const container = document.getElementById('chat-messages');
-                if (container) {
-                    container.innerHTML = '';
-                    state.chatHistory.forEach(msg => {
-                        const bubble = document.createElement('div');
-                        bubble.className = msg.sender === 'ai' ? 'chat-bubble-ai' : 'chat-bubble-user';
-                        let processedMessage = msg.text
-                            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                            .replace(/\[(.*?)\]\((#.*?)\)/g, '<a href="$2" data-action="scroll-to-chat-link" class="font-bold text-blue-600 underline">$1</a>')
-                            .replace(/\n/g, '<br>');
-                        bubble.innerHTML = processedMessage;
-                        container.appendChild(bubble);
-                    });
-                }
-            }
-            
-            generateAISuggestions();
-            
-            if (!fromResults || state.mode === 'ai') {
-                scrollToTarget('#content-container');
-            }
+    if (mode === 'ai') {
+        if (!fromResults) { 
+            state.chatHistory = []; 
+            state.calculation = { offers: [] }; 
         }
-    };
+        DOMElements.contentContainer.innerHTML = getAiLayout();
+        createPermanentChatInput();
+        
+        const sidebarContainer = document.getElementById('sidebar-container');
+        if (sidebarContainer) sidebarContainer.innerHTML = getSidebarHTML();
+
+        // Obnovení existující historie nebo start nové konverzace
+        const container = document.getElementById('chat-messages');
+        if (container && state.chatHistory.length > 0) {
+             state.chatHistory.forEach(msg => {
+                const bubble = document.createElement('div');
+                // Zkontrolujeme, zda je zpráva od AI a zda obsahuje tlačítko
+                if (msg.sender === 'ai' && msg.text.includes('<button')) {
+                    bubble.className = 'chat-bubble-ai';
+                    bubble.innerHTML = msg.text; // Vložíme HTML přímo
+                } else {
+                    bubble.className = msg.sender === 'ai' ? 'chat-bubble-ai' : 'chat-bubble-user';
+                    bubble.innerHTML = msg.text.replace(/\n/g, '<br>').replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" data-action="scroll-to-chat-link" class="font-bold text-blue-600 underline">$1</a>');
+                }
+                container.appendChild(bubble);
+            });
+        } else if (fromResults) {
+            // TOTO JE KLÍČOVÁ ZMĚNA: AI začne konverzaci proaktivní analýzou
+            setTimeout(() => handleChatMessageSend("Stručně zanalyzuj klíčové body mé kalkulace."), 100);
+        } else {
+            addChatMessage('Jsem váš hypoteční poradce s přístupem k datům z 19+ bank. Co vás zajímá?', 'ai');
+        }
+        
+        generateAISuggestions();
+
+    } else if (mode === 'express') {
+        DOMElements.contentContainer.innerHTML = getExpressHTML();
+    } else if (mode === 'guided') {
+        DOMElements.contentContainer.innerHTML = getGuidedHTML();
+        handleGuidedFormLogic();
+    }
+    
+    if (!fromResults) {
+        scrollToTarget('#content-container');
+    }
+};
 
     const handleCookieBanner = () => {
         if (localStorage.getItem('cookieConsent') === 'true') {

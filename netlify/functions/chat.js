@@ -1,10 +1,10 @@
-// netlify/functions/chat.js - FINÁLNÍ VERZE S KOMPLETNÍ LOGIKOU A UPRAVENÝM PROMPTEM PRO STRUČNOST
+// netlify/functions/chat.js - INTELIGENTNÍ VERZE S EXPERTNÍMI TIPY A ANONYMIZOVANÝMI METODIKAMI
 
 function createSystemPrompt(userMessage, context) {
     const hasContext = context && context.calculation && context.calculation.selectedOffer;
-    const isFromOurCalculator = context?.isDataFromOurCalculator || context?.calculation?.isFromOurCalculator;
     const messageCount = context?.messageCount || 0;
     
+    // Zjednodušený start konverzace pro obecné dotazy na výpočet
     if (userMessage.toLowerCase().match(/spočítat|kalkulačk|kolik.*dostanu|jakou.*splátku/) && !hasContext) {
         return `Uživatel chce spočítat hypotéku. Reaguj stručně. Nabídni mu dvě cesty: zadat data do chatu, nebo použít kalkulačku.
         Příklad odpovědi:
@@ -16,6 +16,7 @@ function createSystemPrompt(userMessage, context) {
         DOTAZ UŽIVATELE: "${userMessage}"`;
     }
     
+    // Příprava inteligentního kontextu pro AI
     const contextData = hasContext ? {
         loanAmount: context.formData?.loanAmount,
         propertyValue: context.formData?.propertyValue,
@@ -23,78 +24,67 @@ function createSystemPrompt(userMessage, context) {
         fixation: context.formData?.fixation,
         income: context.formData?.income,
         age: context.formData?.age,
-        children: context.formData?.children,
         employment: context.formData?.employment,
-        liabilities: context.formData?.liabilities,
         monthlyPayment: context.calculation?.selectedOffer?.monthlyPayment,
         rate: context.calculation?.selectedOffer?.rate,
-        totalScore: context.calculation?.approvability?.total,
         ltv: Math.round((context.formData?.loanAmount / context.formData?.propertyValue) * 100),
-        fixationDetails: context.calculation?.fixationDetails,
     } : null;
 
-    // ===== ZMĚNA ZDE: Přidány stručné instrukce na začátek =====
-    let prompt = `Jsi PREMIUM hypoteční stratég. Tvým úkolem je poskytovat hodnotné analýzy, ale STRUČNĚ.
+    // Hlavní systémový prompt
+    let prompt = `Jsi PREMIUM AI hypoteční stratég. Tvým úkolem je poskytovat skutečné, stručné poradenství, které vede ke generování leadu.
     
-    KLÍČOVÉ PRAVIDLO: Tvoje odpovědi musí být krátké (max 100 slov), ideálně v bodech. Vždy na konci nabídni další krok nebo se zeptej, zda chce uživatel vědět více detailů. NIKDY neposílej dlouhý monolog.
+    PRAVIDLA:
+    1.  **Stručnost a hodnota:** Odpovídej krátce, v bodech. Max 120 slov. Každá odpověď musí obsahovat konkrétní radu.
+    2.  **Kontext a poradenství:** VŽDY předpokládej, že data z kalkulačky jsou pro NOVOU hypotéku, ne refinancování. Vysvětluj pojmy (jako LTV) a upozorňuj na neveřejné tipy z praxe.
+    3.  **Cíl je lead:** Vždy na konci nabídni další krok a směřuj ke kontaktu se specialistou, který zná tyto "kličky" a ušetří klientovi peníze.
+
+    JAK ANALYZOVAT A RADIT:
+    * **Vysvětli LTV:** Vždy stručně zmiň, že LTV je "poměr úvěru k ceně nemovitosti" a jak ovlivňuje sazbu.
+    * **Zohledni věk:** Pokud je klient < 36 let, ZMIŇ VÝHODY (i při LTV do 90 % může dosáhnout na lepší sazby).
+    * **Přidej expertní tip:** Na základě situace (OSVČ, zaměstnanec) přidej jeden konkrétní tip o metodikách bank, ale NIKDY NEJMENUJ KONKRÉTNÍ BANKU.
 
     ${hasContext ? `
-    AKTUÁLNÍ DATA KLIENTA:
-    - Hypotéka: ${contextData.loanAmount?.toLocaleString('cs-CZ')} Kč na ${contextData.loanTerm} let
-    - Splátka: ${contextData.monthlyPayment?.toLocaleString('cs-CZ')} Kč (${contextData.rate}% p.a.)
+    AKTUÁLNÍ DATA KLIENTA (PRO NOVOU HYPOTÉKU):
+    - Splátka z kalkulace: ${contextData.monthlyPayment?.toLocaleString('cs-CZ')} Kč
+    - Orientační sazba: ${contextData.rate}%
+    - LTV: ${contextData.ltv}%
+    - Věk: ${contextData.age} let
+    - Zaměstnání: ${contextData.employment}
     ` : 'Klient zatím nemá spočítanou hypotéku.'}
 
     DOTAZ UŽIVATELE: "${userMessage}"`;
 
-    // ===== SPECIALIZOVANÉ ANALÝZY (VAŠE PŮVODNÍ PLNOTUČNÁ LOGIKA) =====
-    
-    // Vysvětlení analýzy kalkulace
-    if (userMessage.toLowerCase().match(/vysvětli mi analýzu kalkulace/)) {
+    // Speciální inteligentní analýza pro první dotaz z kalkulačky
+    if (userMessage.toLowerCase().match(/analyzuj|klíčové body mé kalkulace/)) {
         if (!hasContext) return prompt + `\n\nOdpověz: "Nejprve si prosím spočítejte nabídku v kalkulačce, abych měl data pro analýzu."`;
         
-        const fixationDetails = contextData.fixationDetails;
-        let response = `<strong>Shrnutí vaší kalkulace:</strong>\n\n`;
-        response += `• Celkem za ${contextData.fixation} roky fixace zaplatíte <strong>${fixationDetails.totalPaymentsInFixation.toLocaleString('cs-CZ')} Kč</strong>.\n`;
-        response += `• Z toho <strong>${fixationDetails.totalInterestForFixation.toLocaleString('cs-CZ')} Kč</strong> tvoří úroky.\n`;
-        response += `• Po skončení fixace vám zbude dluh <strong>${fixationDetails.remainingBalanceAfterFixation.toLocaleString('cs-CZ')} Kč</strong>.\n\n`;
-        response += `Toto je klíčový moment pro refinancování. Chcete probrat strategii, jak zde ušetřit nejvíce peněz?`;
-
-        // ===== ZMĚNA ZDE: Instrukce pro stručnou odpověď =====
-        return prompt + `\n\nStručně shrň analýzu kalkulace podle tohoto textu. Buď věcný a krátký. Odpověz: "${response}"`;
-    }
-    
-    // STRESS TESTY
-    if (userMessage.toLowerCase().match(/co kdyby|ztratím|přijdu o|nemoc|nezaměstna|krize|problém|zvládnu|nebezpeč/)) {
-        if (!hasContext) {
-            return prompt + `\n\nOdpověz: "Pro stress test potřebuji znát vaši situaci. Spočítejte si hypotéku v kalkulačce."`;
+        let response = `<strong>Klíčové body vaší kalkulace:</strong>\n\n`;
+        response += `• Vaše orientační splátka vychází na <strong>${contextData.monthlyPayment.toLocaleString('cs-CZ')} Kč</strong> při sazbě <strong>${contextData.rate}%</strong>.\n`;
+        response += `• Tuto sazbu ovlivňuje především vaše LTV (poměr úvěru k ceně nemovitosti), které je <strong>${contextData.ltv}%</strong>. Cokoli pod 80 % je pro banky skvělý signál.\n\n`;
+        
+        // --- EXPERTNÍ TIP ---
+        response += `<strong>💡 Expertní tip pro vás:</strong>\n`;
+        if (contextData.employment === 'osvc') {
+            response += `Jako OSVČ je pro vás klíčové, jak banka posuzuje příjem. **Některé banky** umí v určitých oborech počítat příjem z obratu, nikoliv jen z daňového přiznání, což může výrazně navýšit vaši bonitu. Náš specialista přesně ví, kde a jaké podklady předložit.\n\n`;
+        } else if (contextData.age < 36) {
+            response += `Protože je vám pod 36 let, banky jsou k vám vstřícnější a často získáte standardní sazbu i s vyšším LTV (až 90 %). Náš specialista zná neveřejné akce a podmínky pro mladé a umí je využít ve váš prospěch.\n\n`;
+        } else {
+            response += `U standardního zaměstnání je největší prostor pro **vyjednání individuální slevy**, která není v online kalkulačkách. Náš specialista díky objemu hypoték ví, která banka je ochotná slevit nejvíce (např. za aktivní účet) a ušetří vám tak desítky tisíc.\n\n`;
         }
         
-        const monthlyPayment = contextData.monthlyPayment;
-        const emergencyFund = monthlyPayment * 6;
-        let response = `<strong>Analýza hlavních rizik:</strong>\n\n`;
-        response += `• <strong>Ztráta příjmu:</strong> Pro pokrytí vaší splátky doporučujeme vytvořit rezervu alespoň <strong>${emergencyFund.toLocaleString('cs-CZ')} Kč</strong>.\n`;
-        response += `• <strong>Růst sazeb:</strong> Pokud by sazba po fixaci vzrostla o 2 %, vaše splátka by se mohla zvýšit přibližně o 2 000 - 3 000 Kč měsíčně.\n\n`;
-        response += `Proti těmto rizikům se lze efektivně chránit. Chcete probrat možnosti pojištění nebo volby správné délky fixace?`;
+        response += `Toto je jen jedna z mnoha "kliček", které naši specialisté denně využívají. Chcete, abychom pro vás našli tu nejvýhodnější cestu, nebo se chcete podívat na analýzu rizik?`;
         
-        // ===== ZMĚNA ZDE: Instrukce pro stručnou odpověď =====
-        return prompt + `\n\nProveď stručný stress test na základě tohoto textu. Buď věcný a krátký. Odpověz: "${response}"`;
+        return prompt + `\n\nOdpověz stručně a srozumitelně na základě tohoto textu: "${response}"`;
     }
-    
-    // Ostatní detailní bloky (refinancování, investice atd.) by měly následovat stejný princip:
-    // 1. Připravit si data.
-    // 2. Vytvořit stručnou odpověď v bodech.
-    // 3. Na konci se zeptat na další krok.
-    // 4. Předat to AI s instrukcí, aby odpověděla stručně podle připraveného textu.
 
-    // ZÁKLADNÍ ROUTY
-    if (userMessage.toLowerCase().match(/bank|které banky|seznam bank/)) {
+    // Ostatní routy (kontakt, banky atd.)
+    if (userMessage.toLowerCase().match(/bank|které banky/)) {
         return prompt + `\n\nKlient se ptá na banky. Odpověz POUZE JSON: {"tool":"showBanksList"}`;
     }
-
     if (userMessage.toLowerCase().match(/kontakt|specialista/)) {
         return prompt + `\n\nKlient chce kontakt. Odpověz POUZE JSON: {"tool":"showLeadForm","response":"📞 Výborně! Otevírám formulář pro spojení se specialistou."}`;
     }
-
+    
     prompt += `\n\nOdpověz na dotaz uživatele stručně a věcně podle pravidel.`;
     return prompt;
 }

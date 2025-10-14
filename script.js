@@ -1274,56 +1274,113 @@ const handleClick = async (e) => {
 // KONEC NOVÉHO BLOKU
 
     // ZAČÁTEK NOVÉHO BLOKU
-    const handleFormSubmit = async (e) => {
-        e.preventDefault();
-        const form = e.target;
-        const btn = form.querySelector('button[type="submit"]');
-        btn.disabled = true;
-        btn.textContent = '📤 Odesílám...';
+    const handleClick = async (e) => {
+        let target = e.target.closest('[data-action], .offer-card, .suggestion-btn, [data-mode], .scroll-to, [data-quick-question]');
+        if (!target) return; // Pokud kliknutí není na interaktivní prvek, nic nedělej
+        
+        // e.preventDefault() je nyní voláno POUZE tam, kde je potřeba (u odkazů s #)
+        if (target.matches('a[href^="#"]')) {
+            e.preventDefault();
+        }
+        
+        const { action, mode, suggestion, target: targetId } = target.dataset;
+        const quickQuestion = target.dataset.quickQuestion;
 
-        try {
-            // 1. Ručně posbíráme data z viditelných polí formuláře
-            const bodyParams = new URLSearchParams();
-            bodyParams.append('form-name', form.getAttribute('name'));
-            bodyParams.append('name', form.querySelector('#name').value);
-            bodyParams.append('phone', form.querySelector('#phone').value);
-            bodyParams.append('email', form.querySelector('#email').value);
-            bodyParams.append('contact-time', form.querySelector('#contact-time').value);
-            bodyParams.append('note', form.querySelector('#note').value);
-
-            // 2. Připravíme bezpečná "extra data" bez komplexních objektů
-            const safeCalculationData = {
-                offers: state.calculation.offers,
-                selectedOffer: state.calculation.selectedOffer,
-                approvability: state.calculation.approvability,
-                fixationDetails: state.calculation.fixationDetails,
+        if(action === 'ask-ai-from-calc') {
+            const questionKey = target.dataset.questionKey;
+            const questions = {
+                'propertyValue': "Jak hodnota nemovitosti ovlivňuje hypotéku?",
+                'loanAmount': "Proč je důležité správně nastavit výši úvěru?",
+                'income': "Jak banky posuzují můj příjem a co všechno se započítává?",
+                'loanTerm': "Jaký je rozdíl ve splátce a úrocích při splatnosti 20 vs 30 let?",
+                'fixation': "Jaká je nejlepší strategie pro volbu fixace?",
+                'liabilities': "Jak mé ostatní půjčky ovlivňují šanci na získání hypotéky?",
+                'age': "Proč je můj věk důležitý pro banku?",
+                'children': "Jak počet dětí ovlivňuje výpočet bonity?"
             };
+            const question = questions[questionKey] || `Řekni mi více o poli ${questionKey}.`;
             
-            const extraData = {
-                calculation: safeCalculationData,
-                chatHistory: state.chatHistory,
-                formData: state.formData
-            };
+            switchMode('ai');
+            setTimeout(() => handleChatMessageSend(question), 300);
+            return;
+        }
 
-            // 3. Přidáme extra data do těla požadavku
-            bodyParams.append('extraData', JSON.stringify(extraData, null, 2));
+        if (action === 'toggle-mobile-sidebar' || action === 'close-mobile-sidebar') {
+            toggleMobileSidebar();
+            return;
+        }
 
-            // 4. Odešleme data
-            await fetch('/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: bodyParams.toString()
-            });
-            
-            // Zobrazíme úspěšnou hlášku
-            form.style.display = 'none';
-            document.getElementById('form-success').style.display = 'block';
+        if (quickQuestion) {
+            if (isMobile()) toggleMobileSidebar();
+            const chatInput = document.getElementById('permanent-chat-input');
+            if (chatInput) {
+                chatInput.value = quickQuestion;
+                handleChatMessageSend(quickQuestion);
+                chatInput.value = '';
+            }
+            return;
+        }
 
-        } catch (error) {
-            console.error('Chyba při odesílání formuláře:', error);
-            alert('Odeslání se nezdařilo. Zkuste to prosím znovu, nebo nás kontaktujte přímo.');
-            btn.disabled = false;
-            btn.textContent = '📞 Odeslat nezávazně';
+        if (targetId) {
+            if (action === 'show-lead-form' || action === 'show-lead-form-direct') {
+                DOMElements.leadFormContainer.classList.remove('hidden');
+            }
+            scrollToTarget(targetId);
+            if (DOMElements.mobileMenu && !DOMElements.mobileMenu.classList.contains('hidden')) {
+                DOMElements.mobileMenu.classList.add('hidden');
+            }
+        }
+        else if (mode) {
+            switchMode(mode);
+        }
+        else if (action === 'calculate') calculateRates(target);
+        else if (action === 'go-to-calculator') {
+            if (isMobile()) toggleMobileSidebar();
+            switchMode('express');
+        }
+        else if (action === 'show-lead-form') {
+            if (isMobile()) toggleMobileSidebar();
+            DOMElements.leadFormContainer.classList.remove('hidden');
+            scrollToTarget('#kontakt');
+        }
+        else if (action === 'select-offer') {
+            const offerId = target.dataset.offer;
+            const offer = state.calculation.offers.find(o => o.id === offerId);
+            if (offer) {
+                document.querySelectorAll('.offer-card').forEach(c => c.classList.remove('selected'));
+                const card = document.querySelector(`[data-offer-id="${offerId}"]`);
+                if (card) card.classList.add('selected');
+                state.calculation.selectedOffer = offer;
+            }
+        }
+        else if (action === 'discuss-with-ai' || action === 'discuss-fixation-with-ai') {
+            switchMode('ai', true);
+        }
+        else if (action === 'reset-chat') {
+            state.chatHistory = [];
+            const chatMessages = document.getElementById('chat-messages');
+            if (chatMessages) chatMessages.innerHTML = '';
+            addChatMessage('Jsem váš hypoteční poradce s AI nástroji. Jak vám mohu pomoci?', 'ai');
+            generateAISuggestions();
+        }
+        else if (suggestion) {
+            if (suggestion === '📞 Domluvit se specialistou') {
+                addChatMessage("Chci se domluvit se specialistou.", 'user');
+                addChatMessage("Výborně! Přesouvám vás na formulář pro spojení s naším specialistou.", 'ai');
+                DOMElements.leadFormContainer.classList.remove('hidden');
+                scrollToTarget('#kontakt');
+                return;
+            }
+            const input = document.getElementById('permanent-chat-input');
+            const message = suggestion || input?.value.trim();
+            if (!message || state.isAiTyping) return;
+            if (input) input.value = '';
+            handleChatMessageSend(message);
+        }
+        else if (target.matches('.offer-card')) {
+            document.querySelectorAll('.offer-card').forEach(c => c.classList.remove('selected'));
+            target.classList.add('selected');
+            state.calculation.selectedOffer = state.calculation.offers.find(o => o.id === target.dataset.offerId);
         }
     };
     // KONEC NOVÉHO BLOKU

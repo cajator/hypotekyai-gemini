@@ -647,7 +647,7 @@ body {
 /* ============================================
    UTILITY CLASSES
    ============================================ */
-.hidden { display: none !important; }
+.hidden { display: none; }
 
 /* ============================================
    MOBILE OPTIMIZATIONS (max-width: 1023px)
@@ -909,4 +909,23 @@ textarea {
     #lead-form > div:first-of-type {
         grid-template-columns: repeat(2, 1fr);
     }
+}
+
+/* ============================================
+   OPRAVA ZOBRAZENÍ POSUVNÍKŮ PRO FIREFOX
+   ============================================ */
+.slider-input::-moz-range-track {
+    background: #e5e7eb;
+    height: 0.5rem;
+    border-radius: 1rem;
+}
+
+.slider-input::-moz-range-thumb {
+    background-color: var(--accent-color);
+    height: 1.125rem;
+    width: 1.125rem;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    cursor: pointer;
 }

@@ -1430,58 +1430,53 @@ const handleClick = async (e) => {
             state.chatFormData = {};
         }
     };
-    
-    // KRITICKÁ ZMĚNA - přepnutí módu bez překreslení celého layoutu
-    const switchMode = (mode, fromResults = false) => {
-    state.mode = mode;
-    DOMElements.modeCards.forEach(card => card.classList.toggle('active', card.dataset.mode === mode));
-    
-    DOMElements.contentContainer.innerHTML = ""; // Vždy vyčistíme kontejner
-
-    if (mode === 'ai') {
-        if (!fromResults) { 
-            state.chatHistory = []; 
-            state.calculation = { offers: [] }; 
-        }
-        DOMElements.contentContainer.innerHTML = getAiLayout();
-        createPermanentChatInput();
+   
+    const switchMode = (mode, fromResults = false, isInitialLoad = false) => {
+        state.mode = mode;
+        DOMElements.modeCards.forEach(card => card.classList.toggle('active', card.dataset.mode === mode));
         
-        const sidebarContainer = document.getElementById('sidebar-container');
-        if (sidebarContainer) sidebarContainer.innerHTML = getSidebarHTML();
+        DOMElements.contentContainer.innerHTML = ""; // Vždy vyčistíme kontejner
 
-        // Obnovení existující historie nebo start nové konverzace
-        const container = document.getElementById('chat-messages');
-        if (container && state.chatHistory.length > 0) {
-            state.chatHistory.forEach(msg => {
-                const bubble = document.createElement('div');
-                bubble.className = msg.sender === 'ai' ? 'chat-bubble-ai' : 'chat-bubble-user';
-                bubble.innerHTML = msg.text.replace(/\n/g, '<br>');
-                container.appendChild(bubble);
-            });
-        } 
-        // ===== ZDE JE CENTRÁLNÍ LOGIKA PRO START KONVERZACE =====
-        else if (fromResults) {
-            // Po kliknutí na tlačítko se odešle POUZE TENTO JEDEN dotaz.
-            setTimeout(() => handleChatMessageSend("Stručně zanalyzuj klíčové body mé kalkulace."), 100);
-        } else {
-            // Standardní úvod, pokud uživatel klikne na "Premium AI Stratég"
-            addChatMessage('Jsem váš hypoteční poradce s přístupem k datům z 19+ bank. Co vás zajímá?', 'ai');
+        if (mode === 'ai') {
+            if (!fromResults) { 
+                state.chatHistory = []; 
+                state.calculation = { offers: [] }; 
+            }
+            DOMElements.contentContainer.innerHTML = getAiLayout();
+            createPermanentChatInput();
+            
+            const sidebarContainer = document.getElementById('sidebar-container');
+            if (sidebarContainer) sidebarContainer.innerHTML = getSidebarHTML();
+
+            const container = document.getElementById('chat-messages');
+            if (container && state.chatHistory.length > 0) {
+                state.chatHistory.forEach(msg => {
+                    const bubble = document.createElement('div');
+                    bubble.className = msg.sender === 'ai' ? 'chat-bubble-ai' : 'chat-bubble-user';
+                    bubble.innerHTML = msg.text.replace(/\n/g, '<br>');
+                    container.appendChild(bubble);
+                });
+            } 
+            else if (fromResults) {
+                setTimeout(() => handleChatMessageSend("Stručně zanalyzuj klíčové body mé kalkulace."), 100);
+            } else {
+                addChatMessage('Jsem váš hypoteční poradce s přístupem k datům z 19+ bank. Co vás zajímá?', 'ai');
+            }
+            
+            generateAISuggestions();
+
+        } else if (mode === 'express') {
+            DOMElements.contentContainer.innerHTML = getExpressHTML();
+        } else if (mode === 'guided') {
+            DOMElements.contentContainer.innerHTML = getGuidedHTML();
+            handleGuidedFormLogic();
         }
-        // ========================================================
-        
-        generateAISuggestions();
-        // Zajistíme skrolování na správné místo
-        scrollToTarget('#content-container');
 
-    } else if (mode === 'express') {
-        DOMElements.contentContainer.innerHTML = getExpressHTML();
-        scrollToTarget('#content-container');
-    } else if (mode === 'guided') {
-        DOMElements.contentContainer.innerHTML = getGuidedHTML();
-        handleGuidedFormLogic();
-        scrollToTarget('#content-container');
-    }
-};
+        // Provedeme skrolování pouze pokud to NENÍ první načtení stránky
+        if (!isInitialLoad) {
+            scrollToTarget('#content-container');
+        }
+    };
 
     const handleCookieBanner = () => {
         if (localStorage.getItem('cookieConsent') === 'true') {
@@ -1524,7 +1519,7 @@ const handleClick = async (e) => {
         });
 
         handleCookieBanner();
-        switchMode(state.mode);
+        switchMode(state.mode, false, true); // Třetí parametr 'true' zabrání skrolování při startu
         updateActiveUsers();
     };
 

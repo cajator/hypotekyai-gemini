@@ -1274,24 +1274,48 @@ const handleClick = async (e) => {
 // KONEC NOVÉHO BLOKU
 
     const handleFormSubmit = async (e) => {
-        e.preventDefault();
-        const form = e.target, btn = form.querySelector('button[type="submit"]');
-        btn.disabled = true;
-        btn.textContent = '📤 Odesílám...';
-        try {
-            await fetch("/", { 
-                method: "POST", 
-                headers: { "Content-Type": "application/x-form-urlencoded" }, 
-                body: new URLSearchParams(new FormData(form)).toString() 
-            });
-            form.style.display = 'none';
-            document.getElementById('form-success').style.display = 'block';
-        } catch (error) {
-            alert('Odeslání se nezdařilo. Zkuste to prosím znovu.');
-            btn.disabled = false;
-            btn.textContent = '📞 Odeslat nezávazně';
-        }
+    e.preventDefault();
+    const form = e.target;
+    const btn = form.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.textContent = '📤 Odesílám...';
+
+    // 1. Připravíme extra data z kalkulačky a chatu
+    const extraData = {
+        calculation: state.calculation,
+        chatHistory: state.chatHistory,
+        formData: state.formData // Přidáme i data z formuláře kalkulačky
     };
+
+    // 2. Vložíme je jako text do skrytého pole
+    const extraDataInput = form.querySelector('input[name="extraData"]');
+    if (extraDataInput) {
+        extraDataInput.value = JSON.stringify(extraData);
+    }
+    
+    // 3. Připravíme data pro odeslání
+    const formData = new FormData(form);
+    const body = new URLSearchParams(formData).toString();
+
+    try {
+        // 4. Odešleme formulář pomocí JavaScriptu na Netlify
+        await fetch('/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: body
+        });
+        
+        // Zobrazíme úspěšnou hlášku
+        form.style.display = 'none';
+        document.getElementById('form-success').style.display = 'block';
+
+    } catch (error) {
+        console.error('Chyba při odesílání formuláře:', error);
+        alert('Odeslání se nezdařilo. Zkuste to prosím znovu, nebo nás kontaktujte přímo.');
+        btn.disabled = false;
+        btn.textContent = '📞 Odeslat nezávazně';
+    }
+};
     
     // ZAČÁTEK NOVÉHO BLOKU
     const handleChatMessageSend = async (message) => {

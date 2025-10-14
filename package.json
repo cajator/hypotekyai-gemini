@@ -2,10 +2,10 @@
   "name": "hypoteky-ai-serverless",
   "version": "3.0.0",
   "description": "Serverless functions with direct API call",
-  "dependencies": {},
-  "devDependencies": {},
+  "dependencies": {
+    "@sendgrid/mail": "^8.1.6"
+  },
   "scripts": {
     "test": "echo \"No tests specified\" && exit 0"
   }
 }
-

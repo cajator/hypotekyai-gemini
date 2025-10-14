@@ -1273,49 +1273,51 @@ const handleClick = async (e) => {
 };
 // KONEC NOVÉHO BLOKU
 
+    // ZAČÁTEK NOVÉHO BLOKU
     const handleFormSubmit = async (e) => {
-    e.preventDefault();
-    const form = e.target;
-    const btn = form.querySelector('button[type="submit"]');
-    btn.disabled = true;
-    btn.textContent = '📤 Odesílám...';
+        e.preventDefault();
+        const form = e.target;
+        const btn = form.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        btn.textContent = '📤 Odesílám...';
 
-    // 1. Připravíme extra data z kalkulačky a chatu
-    const extraData = {
-        calculation: state.calculation,
-        chatHistory: state.chatHistory,
-        formData: state.formData // Přidáme i data z formuláře kalkulačky
-    };
-
-    // 2. Vložíme je jako text do skrytého pole
-    const extraDataInput = form.querySelector('input[name="extraData"]');
-    if (extraDataInput) {
-        extraDataInput.value = JSON.stringify(extraData);
-    }
-    
-    // 3. Připravíme data pro odeslání
-    const formData = new FormData(form);
-    const body = new URLSearchParams(formData).toString();
-
-    try {
-        // 4. Odešleme formulář pomocí JavaScriptu na Netlify
-        await fetch('/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: body
-        });
+        // ===== ZMĚNA ZDE: Vytvoříme "čistá" data bez problematického grafu =====
+        const { chart, ...cleanCalculationState } = state.calculation;
         
-        // Zobrazíme úspěšnou hlášku
-        form.style.display = 'none';
-        document.getElementById('form-success').style.display = 'block';
+        const extraData = {
+            calculation: cleanCalculationState, // Použijeme data bez grafu
+            chatHistory: state.chatHistory,
+            formData: state.formData
+        };
+        // ====================================================================
 
-    } catch (error) {
-        console.error('Chyba při odesílání formuláře:', error);
-        alert('Odeslání se nezdařilo. Zkuste to prosím znovu, nebo nás kontaktujte přímo.');
-        btn.disabled = false;
-        btn.textContent = '📞 Odeslat nezávazně';
-    }
-};
+        const extraDataInput = form.querySelector('input[name="extraData"]');
+        if (extraDataInput) {
+            // Nyní už JSON.stringify proběhne bez chyby
+            extraDataInput.value = JSON.stringify(extraData, null, 2); // Přidáno formátování pro lepší čitelnost v e-mailu
+        }
+        
+        const formData = new FormData(form);
+        const body = new URLSearchParams(formData).toString();
+
+        try {
+            await fetch('/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-form-urlencoded' },
+                body: body
+            });
+            
+            form.style.display = 'none';
+            document.getElementById('form-success').style.display = 'block';
+
+        } catch (error) {
+            console.error('Chyba při odesílání formuláře:', error);
+            alert('Odeslání se nezdařilo. Zkuste to prosím znovu, nebo nás kontaktujte přímo.');
+            btn.disabled = false;
+            btn.textContent = '📞 Odeslat nezávazně';
+        }
+    };
+    // KONEC NOVÉHO BLOKU
     
     // ZAČÁTEK NOVÉHO BLOKU
     const handleChatMessageSend = async (message) => {

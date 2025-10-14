@@ -929,3 +929,25 @@ textarea {
     box-shadow: 0 1px 3px rgba(0,0,0,0.15);
     cursor: pointer;
 }
+
+/* ============================================
+   FINÁLNÍ OPRAVA LAYOUTU KONTAKTNÍHO FORMULÁŘE
+   ============================================ */
+
+/* Toto pravidlo zajistí, že se grid uvnitř formuláře bude chovat správně */
+#lead-form .grid {
+    display: grid;
+    gap: 1rem;
+}
+
+/* Na zařízeních širších než 768px se grid rozdělí do dvou sloupců */
+@media (min-width: 768px) {
+    #lead-form .grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    /* Toto zajistí, že se pole pro e-mail a další roztáhnou přes oba sloupce */
+    #lead-form .md\:col-span-2 {
+        grid-column: span 2 / span 2;
+    }
+}

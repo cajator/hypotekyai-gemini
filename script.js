@@ -1281,29 +1281,35 @@ const handleClick = async (e) => {
         btn.disabled = true;
         btn.textContent = '📤 Odesílám...';
 
-        // ===== ZMĚNA ZDE: Vytvoříme "čistá" data bez problematického grafu =====
-        const { chart, ...cleanCalculationState } = state.calculation;
-        
-        const extraData = {
-            calculation: cleanCalculationState, // Použijeme data bez grafu
-            chatHistory: state.chatHistory,
-            formData: state.formData
-        };
-        // ====================================================================
-
-        const extraDataInput = form.querySelector('input[name="extraData"]');
-        if (extraDataInput) {
-            // Nyní už JSON.stringify proběhne bez chyby
-            extraDataInput.value = JSON.stringify(extraData, null, 2); // Přidáno formátování pro lepší čitelnost v e-mailu
-        }
-        
-        const formData = new FormData(form);
-        const body = new URLSearchParams(formData).toString();
-
         try {
+            // ===== ZMĚNA ZDE: Vytvoříme "čistá" data bez problematického grafu =====
+            // Tato nová verze ručně posbírá jen bezpečná data a ignoruje komplexní objekty.
+            const safeCalculationData = {
+                offers: state.calculation.offers,
+                selectedOffer: state.calculation.selectedOffer,
+                approvability: state.calculation.approvability,
+                fixationDetails: state.calculation.fixationDetails,
+            };
+            
+            const extraData = {
+                calculation: safeCalculationData, // Použijeme data bez grafu
+                chatHistory: state.chatHistory,
+                formData: state.formData
+            };
+            // ====================================================================
+
+            const extraDataInput = form.querySelector('input[name="extraData"]');
+            if (extraDataInput) {
+                // Nyní už JSON.stringify proběhne bez chyby
+                extraDataInput.value = JSON.stringify(extraData, null, 2); // Formátování pro lepší čitelnost v e-mailu
+            }
+            
+            const formData = new FormData(form);
+            const body = new URLSearchParams(formData).toString();
+
             await fetch('/', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/x-form-urlencoded' },
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: body
             });
             

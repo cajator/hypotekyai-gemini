@@ -14,25 +14,25 @@ const QUICK_RESPONSES = {
 <strong>ZÁKLADNÍ DOKUMENTY (vždy potřeba):</strong>
 • Občanský průkaz všech žadatelů
 • Potvrzení o příjmu (formulář banky)
-• Výpisy z účtů za poslední 3 až 12 měsíců
+• Výpisy z účtů za poslední 3 měsíce
 • Výpis z katastru nemovitostí (kupovaná nemovitost)
-• Rezervační smlouva
-• Návrh kupní nebo budoucí kupní smlouvy
+• Rezervační či kupní smlouva
 
-<strong>PRO ZAMĚSTNANCI:</strong>
-• Min. 3 měs. zkušební doba
+<strong>PRO ZAMĚSTNANCE:</strong>
+• Poslední 3 výplatní pásky
+• Pracovní smlouva
 • Potvrzení od zaměstnavatele
 
 <strong>PRO OSVČ (navíc):</strong>
-• Daňová přiznání za 1-2 roky + přílohy
+• Daňová přiznání za 2 roky + přílohy
 • Potvrzení o bezdlužnosti (ZP, SP)
-• Doklad o zaplacení daně
+• Výpis z živnostenského rejstříku
+• Faktury a účetnictví
 
 <strong>DALŠÍ DOKUMENTY:</strong>
-• Znalecký posudek (zajistí banka, 3-6 000 Kč) nebo zdarma
+• Znalecký posudek (zajistí banka, 5-8k Kč)
 • Pojistná smlouva nemovitosti
 • Energetický štítek budovy
-• Životní pojištění
 
 💡 <strong>TIP:</strong> Začněte sbírat dokumenty už teď - šetří to týdny! Náš specialista vás provede procesem krok za krokem.`,
         instant: true
@@ -64,38 +64,29 @@ Použijte naši kalkulačku výše - za 30 sekund víte přesně kolik a od kter
         response: `<strong>🏢 Hypotéka pro OSVČ - Kompletní průvodce:</strong>
 
 <strong>PODMÍNKY:</strong>
-• Min. 1 rok podnikání
-• 1-2 daňová přiznání s kladným výsledkem
-• Stabilní výhled příjmů
+• Min. 2 roky podnikání
+• 2 daňová přiznání s kladným výsledkem
+• Stabilní příjmy
 
 <strong>JAK BANKA POČÍTÁ PŘÍJEM:</strong>
-• Průměr čistého zisku za 1-2 roky
-• Některé odečítají odpisy nebo úvěry na IČO
+• Průměr čistého zisku za 2 roky
+• Některé odečítají odpisy
 • Koeficient 7-8× (vs. 9× u zaměstnanců)
 
 <strong>VÝHODY:</strong>
 ✅ Můžete odečíst úroky z daní
-✅ Některé banky akceptují 1 rok historii
-✅ Některé banky akceptují příjmy z obratu
-✅ Některé banky akceptují paušální daň
+✅ Některé banky akceptují 1 rok historie
 
 <strong>NEVÝHODY:</strong>
 ❌ Nižší maximální částka
-❌ Zohlednění historie podnikání
+❌ O 0.1-0.3% vyšší úrok
 ❌ Více dokumentů
 
 <strong>TOP BANKY PRO OSVČ:</strong>
-1. Raiffeisenbank - nejlépe hodnotí OSVČ
-2. Česká spořitelna -  příjmy z obratu
-3. ČSOB - akceptuje kratší historii 
-4. UCB - vyšší akceptace příjmů z paušální daně
-
-💡 <strong>STRATEGIE:</strong> Optimalizujte daňové přiznání (ne moc nízký zisk!) a zvažte spolužadatele se zaměstnaneckým příjmem.`,
+Náš specialista zná přesné metodiky bank, které nejlépe hodnotí OSVČ a umí připravit podklady tak, abyste dosáhli na co nejvyšší hypotéku.`,
         instant: true
     }
 };
-
-const responseCache = new Map();
 
 const findQuickResponse = (message) => {
     const lowercaseMessage = message.toLowerCase();
@@ -108,92 +99,58 @@ const findQuickResponse = (message) => {
     return null;
 };
 
-    // --- CONFIGURATION ---
-    const CONFIG = {
-        API_CHAT_ENDPOINT: '/.netlify/functions/chat',
-        API_RATES_ENDPOINT: '/.netlify/functions/rates',
-    };
+// --- CONFIGURATION ---
+const CONFIG = {
+    API_CHAT_ENDPOINT: '/.netlify/functions/chat',
+    API_RATES_ENDPOINT: '/.netlify/functions/rates',
+};
 
-    // --- STATE MANAGEMENT ---
-    const state = {
-        mode: 'express',
-        isAiTyping: false,
-        chatFormState: 'idle', 
-        chatFormData: {},
-        chatHistory: [],
-        mobileSidebarOpen: false,
-        activeUsers: Math.floor(Math.random() * 30) + 120,
-        formData: {
-            propertyValue: 5000000, loanAmount: 4000000,
-            income: 50000, liabilities: 0, age: 35, children: 0,
-            loanTerm: 25, fixation: 3,
-            purpose: 'koupě', propertyType: 'byt', landValue: 0, reconstructionValue: 0,
-            employment: 'zaměstnanec', education: 'středoškolské'
-        },
-        calculation: { offers: [], selectedOffer: null, approvability: { total: 0 }, smartTip: null, tips: [], fixationDetails: null, isFromOurCalculator: false },
-        chart: null,
-    };
+// --- STATE MANAGEMENT ---
+const state = {
+    mode: 'express',
+    isAiTyping: false,
+    chatFormState: 'idle', 
+    chatFormData: {},
+    chatHistory: [],
+    mobileSidebarOpen: false,
+    activeUsers: Math.floor(Math.random() * 30) + 120,
+    formData: {
+        propertyValue: 5000000, loanAmount: 4000000,
+        income: 50000, liabilities: 0, age: 35, children: 0,
+        loanTerm: 25, fixation: 3,
+        purpose: 'koupě', propertyType: 'byt', landValue: 0, reconstructionValue: 0,
+        employment: 'zaměstnanec', education: 'středoškolské'
+    },
+    calculation: { offers: [], selectedOffer: null, approvability: { total: 0 }, smartTip: null, tips: [], fixationDetails: null, isFromOurCalculator: false },
+    chart: null,
+};
 
-    // Simulace aktivních uživatelů
-    const updateActiveUsers = () => {
-        const hour = new Date().getHours();
-        let baseUsers = 120;
-        
-        if (hour >= 8 && hour <= 18) {
-            baseUsers = 140;
-        } else if (hour >= 19 && hour <= 22) {
-            baseUsers = 130;
-        } else if (hour >= 6 && hour <= 7) {
-            baseUsers = 125;
-        }
-        
-        state.activeUsers = baseUsers + Math.floor(Math.random() * 10) - 5;
-        
-        const footerCounter = document.getElementById('active-users-counter');
-        if (footerCounter) {
-            footerCounter.textContent = `${state.activeUsers} lidí právě používá naše nástroje`;
-        }
-    };
+// --- DOM ELEMENTS CACHE ---
+const DOMElements = {
+    contentContainer: document.getElementById('content-container'),
+    modeCards: document.querySelectorAll('.mode-card'),
+    leadFormContainer: document.getElementById('kontakt'),
+    leadForm: document.getElementById('lead-form'),
+    mobileMenuButton: document.getElementById('mobile-menu-button'),
+    mobileMenu: document.getElementById('mobile-menu'),
+    cookieBanner: document.getElementById('cookie-banner'),
+    cookieAcceptBtn: document.getElementById('cookie-accept'),
+};
 
-    setInterval(updateActiveUsers, 30000);
+// --- UTILITIES ---
+const parseNumber = (s) => parseFloat(String(s).replace(/[^0-9]/g, '')) || 0;
+const formatNumber = (n, currency = true) => n.toLocaleString('cs-CZ', currency ? { style: 'currency', currency: 'CZK', maximumFractionDigits: 0 } : { maximumFractionDigits: 0 });
+const scrollToTarget = (targetId) => document.querySelector(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+const isMobile = () => window.innerWidth < 768;
 
-    // --- DOM ELEMENTS CACHE ---
-    const DOMElements = {
-        contentContainer: document.getElementById('content-container'),
-        modeCards: document.querySelectorAll('.mode-card'),
-        leadFormContainer: document.getElementById('kontakt'),
-        leadForm: document.getElementById('lead-form'),
-        mobileMenuButton: document.getElementById('mobile-menu-button'),
-        mobileMenu: document.getElementById('mobile-menu'),
-        cookieBanner: document.getElementById('cookie-banner'),
-        cookieAcceptBtn: document.getElementById('cookie-accept'),
-    };
-    
-    // --- UTILITIES ---
-    const parseNumber = (s) => parseFloat(String(s).replace(/[^0-9]/g, '')) || 0;
-    const formatNumber = (n, currency = true) => n.toLocaleString('cs-CZ', currency ? { style: 'currency', currency: 'CZK', maximumFractionDigits: 0 } : { maximumFractionDigits: 0 });
-    const scrollToTarget = (targetId) => {
-        const targetElement = document.querySelector(targetId);
-        if (targetElement) {
-            targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-    };
-    
-    const isMobile = () => window.innerWidth < 768;
-    const isTablet = () => window.innerWidth >= 768 && window.innerWidth < 1024;
-    const isTouchDevice = () => 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    
-    // --- COMPONENT FACTORIES ---
-    const createSlider = (id, label, value, min, max, step, containerClass = '', infoText = '') => {
-    // ===== OPRAVA LOGIKY ZDE =====
-    // Tato vylepšená logika správně určuje jednotku pro každý posuvník.
-    let suffix = ' Kč'; // Výchozí jednotka je Kč.
+// --- COMPONENT FACTORIES ---
+const createSlider = (id, label, value, min, max, step, containerClass = '', infoText = '') => {
+    let suffix = ' Kč';
     if (id.includes('Term') || id.includes('age') || id.includes('fixation')) {
-        suffix = ' let'; // Pro dobu splatnosti, věk a fixaci je jednotka 'let'.
+        suffix = ' let';
     } else if (id.includes('children')) {
-        suffix = ''; // Pro počet dětí se nezobrazí žádná jednotka.
+        suffix = '';
     }
-    // =============================
 
     const isMobileDevice = isMobile();
     const infoIcon = infoText ? `<span class="info-icon" data-info-key="${id}" data-info-text="${infoText}">?</span>` : '';
@@ -215,16 +172,16 @@ const findQuickResponse = (message) => {
         </div>
     </div>`;
 };
-    
-    const createSelect = (id, label, options, selectedValue, containerClass = '') => {
-        const optionsHTML = Object.entries(options).map(([key, val]) => 
-            `<option value="${key}" ${key === selectedValue ? 'selected' : ''}>${val}</option>`
-        ).join('');
-        return `<div class="${containerClass}" style="width: 100%;">
-            <label for="${id}" class="form-label" style="font-size: ${isMobile() ? '0.875rem' : '0.9375rem'};">${label}</label>
-            <select id="${id}" name="${id}" class="modern-select" style="font-size: ${isMobile() ? '1rem' : '0.9375rem'};">${optionsHTML}</select>
-        </div>`;
-    };
+
+const createSelect = (id, label, options, selectedValue, containerClass = '') => {
+    const optionsHTML = Object.entries(options).map(([key, val]) => 
+        `<option value="${key}" ${key === selectedValue ? 'selected' : ''}>${val}</option>`
+    ).join('');
+    return `<div class="${containerClass}" style="width: 100%;">
+        <label for="${id}" class="form-label" style="font-size: ${isMobile() ? '0.875rem' : '0.9375rem'};">${label}</label>
+        <select id="${id}" name="${id}" class="modern-select" style="font-size: ${isMobile() ? '1rem' : '0.9375rem'};">${optionsHTML}</select>
+    </div>`;
+};
     
     // --- DYNAMIC CONTENT & LAYOUTS ---
     const getCalculatorLayout = (formHTML) => 

@@ -1282,8 +1282,16 @@ const handleClick = async (e) => {
         btn.textContent = '📤 Odesílám...';
 
         try {
-            // ===== ZMĚNA ZDE: Vytvoříme "čistá" data bez problematického grafu =====
-            // Tato nová verze ručně posbírá jen bezpečná data a ignoruje komplexní objekty.
+            // 1. Ručně posbíráme data z viditelných polí formuláře
+            const bodyParams = new URLSearchParams();
+            bodyParams.append('form-name', form.getAttribute('name'));
+            bodyParams.append('name', form.querySelector('#name').value);
+            bodyParams.append('phone', form.querySelector('#phone').value);
+            bodyParams.append('email', form.querySelector('#email').value);
+            bodyParams.append('contact-time', form.querySelector('#contact-time').value);
+            bodyParams.append('note', form.querySelector('#note').value);
+
+            // 2. Připravíme bezpečná "extra data" bez komplexních objektů
             const safeCalculationData = {
                 offers: state.calculation.offers,
                 selectedOffer: state.calculation.selectedOffer,
@@ -1292,27 +1300,22 @@ const handleClick = async (e) => {
             };
             
             const extraData = {
-                calculation: safeCalculationData, // Použijeme data bez grafu
+                calculation: safeCalculationData,
                 chatHistory: state.chatHistory,
                 formData: state.formData
             };
-            // ====================================================================
 
-            const extraDataInput = form.querySelector('input[name="extraData"]');
-            if (extraDataInput) {
-                // Nyní už JSON.stringify proběhne bez chyby
-                extraDataInput.value = JSON.stringify(extraData, null, 2); // Formátování pro lepší čitelnost v e-mailu
-            }
-            
-            const formData = new FormData(form);
-            const body = new URLSearchParams(formData).toString();
+            // 3. Přidáme extra data do těla požadavku
+            bodyParams.append('extraData', JSON.stringify(extraData, null, 2));
 
+            // 4. Odešleme data
             await fetch('/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: body
+                body: bodyParams.toString()
             });
             
+            // Zobrazíme úspěšnou hlášku
             form.style.display = 'none';
             document.getElementById('form-success').style.display = 'block';
 

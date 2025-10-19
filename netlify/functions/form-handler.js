@@ -81,7 +81,7 @@ exports.handler = async (event) => {
         `;
 
         const internalMsg = {
-            to: 'vas-email@hypotekyai.cz', // <-- ZMĚŇTE NA VÁŠ PRACOVNÍ E-MAIL
+            to: 'info@hypotekyai.cz', // <-- ZMĚŇTE NA VÁŠ PRACOVNÍ E-MAIL
             from: 'info@hypotekyai.cz', // E-mail, který jste verifikovali v SendGrid
             subject: '🚀 Nový lead na hypotéku!',
             html: internalEmailHtml,

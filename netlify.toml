@@ -20,3 +20,16 @@
   to = "/.netlify/functions/:splat"
   status = 200
 
+# netlify.toml
+
+[build]
+  # Váš build command (pokud nějaký máte)
+  # command = "..." 
+  publish = "/" # Adresář s vaším webem (pravděpodobně kořenový)
+  functions = "netlify/functions" # Cesta k vašim Netlify funkcím
+
+# Propojení formuláře s funkcí
+[functions]
+  # Tato funkce se spustí po úspěšném odeslání formuláře "lead-form"
+  # Název funkce zde musí odpovídat názvu vašeho souboru (bez .js)
+  submission-created = { function = "form-handler" }

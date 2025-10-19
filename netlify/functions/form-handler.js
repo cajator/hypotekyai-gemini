@@ -1,26 +1,23 @@
+// ZAČÁTEK NOVÉHO BLOKU
 // netlify/functions/form-handler.js
-
-// Budeme potřebovat balíček pro odesílání e-mailů, nainstalujte ho pomocí:
-// npm install @sendgrid/mail
 const sgMail = require('@sendgrid/mail');
-
-// Nastavení API klíčů z proměnných prostředí Netlify
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 const crmApiKey = process.env.CRM_API_KEY;
 const crmApiUrl = process.env.CRM_API_URL;
 
 exports.handler = async (event) => {
-    if (event.httpMethod !== 'POST') {
-        return { statusCode: 405, body: 'Method Not Allowed' };
-    }
-
+    // Funkce spuštěná událostí nemá httpMethod, kontrola není nutná.
+    
     try {
-        const payload = new URLSearchParams(event.body);
-        const name = payload.get('name');
-        const email = payload.get('email');
-        const phone = payload.get('phone');
-        const note = payload.get('note');
-        const extraData = JSON.parse(payload.get('extraData') || '{}');
+        // Data z formuláře přijdou v event.payload.data
+        const formData = event.payload.data;
+        const name = formData.name;
+        const email = formData.email;
+        const phone = formData.phone;
+        const note = formData.note;
+        // Naše extra data jsou v poli extraData
+        const extraData = JSON.parse(formData.extraData || '{}');
+// KONEC NOVÉHO BLOKU (zbytek funkce zůstává stejný)
 
         // --- 1. ODESLÁNÍ DAT DO CRM ---
         const crmPayload = {

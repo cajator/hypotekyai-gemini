@@ -1273,7 +1273,7 @@ const handleClick = async (e) => {
     }
 };
 // KONEC NOVÉHO BLOKU handleClick
-    // ZAČÁTEK NOVÉ FUNKCE handleFormSubmit
+    // ZAČÁTEK KOMPLETNÍ FUNKCE handleFormSubmit
 const handleFormSubmit = async (e) => {
     e.preventDefault();
     const form = e.target;
@@ -1310,25 +1310,36 @@ const handleFormSubmit = async (e) => {
         bodyParams.append('extraData', JSON.stringify(extraData, null, 2)); // Přidáno formátování pro lepší čitelnost
 
         // 4. Odešleme data
-        await fetch('/', {
+        const response = await fetch('/', { // Uložíme si odpověď
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: bodyParams.toString()
         });
         
-        // Zobrazíme úspěšnou hlášku
-        form.style.display = 'none';
-        const successMessage = document.getElementById('form-success');
-        if (successMessage) successMessage.style.display = 'block';
+        // 5. Zkontrolujeme, zda Netlify formulář úspěšně přijal
+        if (response.ok) {
+            form.style.display = 'none';
+            const successMessage = document.getElementById('form-success');
+            if (successMessage) successMessage.style.display = 'block';
+             // Můžeme přidat i skrolování k úspěšné hlášce
+             setTimeout(() => scrollToTarget('#kontakt'), 100);
+        } else {
+             // Pokud Netlify vrátí chybu, zobrazíme ji
+             throw new Error(`Netlify form submission failed: ${response.statusText}`);
+        }
 
-    } catch (error) {
+    } catch (error) { // TATO ČÁST CHYBĚLA
         console.error('Chyba při odesílání formuláře:', error);
         alert('Odeslání se nezdařilo. Zkuste to prosím znovu, nebo nás kontaktujte přímo.');
-        btn.disabled = false;
-        btn.textContent = '📞 Odeslat nezávazně';
+        // Tlačítko povolíme, jen pokud ještě existuje (nebylo skryto)
+        if (btn) {
+             btn.disabled = false;
+             btn.textContent = '📞 Odeslat nezávazně';
+        }
     }
+    // Nepotřebujeme `finally`, protože tlačítko už obsluhujeme v `catch`
 };
-// KONEC NOVÉ FUNKCE handleFormSubmit
+// KONEC KOMPLETNÍ FUNKCE handleFormSubmit
 
     // ZAČÁTEK NOVÉHO BLOKU
     const handleChatMessageSend = async (message) => {

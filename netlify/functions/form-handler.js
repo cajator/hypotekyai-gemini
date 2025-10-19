@@ -22,28 +22,43 @@ exports.handler = async (event) => {
         const extraData = JSON.parse(formData.get('extraData') || '{}');
 // KONEC NOVÉHO BLOKU (zbytek funkce zůstává stejný)
 
-        // --- 1. ODESLÁNÍ DAT DO CRM ---
-        const crmPayload = {
-            // ZDE UPRAVTE STRUKTURU PODLE VAŠEHO CRM
-            jmeno_prijmeni: name,
-            email_adresa: email,
-            telefonni_cislo: phone,
-            poznamka_klienta: note,
-            kalkulacka_vysledky: extraData.calculation,
-            historie_chatu: extraData.chatHistory,
-        };
-        
-        // Použijte `fetch` pro odeslání dat do vašeho CRM API
-        // Tento kód je POUZE PŘÍKLAD, upravte ho podle dokumentace vašeho CRM
-        await fetch(crmApiUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${crmApiKey}`
-            },
-            body: JSON.stringify(crmPayload)
-        });
+        // // ZAČÁTEK NOVÉHO BLOKU
+        // --- 1. ODESLÁNÍ DAT DO CRM (POUZE POKUD JE NASTAVENO) ---
+        if (crmApiUrl && crmApiKey) {
+            try {
+                const crmPayload = {
+                    // ZDE UPRAVTE STRUKTURU PODLE VAŠEHO CRM
+                    jmeno_prijmeni: name,
+                    email_adresa: email,
+                    telefonni_cislo: phone,
+                    poznamka_klienta: note,
+                    kalkulacka_vysledky: extraData.calculation,
+                    historie_chatu: extraData.chatHistory,
+                    data_z_formulare: extraData.formData // Přidáno pro úplnost
+                };
+                
+                const crmResponse = await fetch(crmApiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${crmApiKey}` // Nebo jiný typ autorizace podle vašeho CRM
+                    },
+                    body: JSON.stringify(crmPayload)
+                });
 
+                if (!crmResponse.ok) {
+                    // Logujeme chybu CRM, ale neukončujeme funkci, e-maily se stále odešlou
+                    console.error(`Chyba při odesílání do CRM: ${crmResponse.status} ${crmResponse.statusText}`, await crmResponse.text());
+                } else {
+                    console.log('Data úspěšně odeslána do CRM.');
+                }
+            } catch (crmError) {
+                console.error('Chyba při komunikaci s CRM:', crmError);
+            }
+        } else {
+            console.log('CRM API URL nebo klíč není nastaven, přeskočeno odesílání do CRM.');
+        }
+// KONEC NOVÉHO BLOKU
 
         // --- 2. ODESLÁNÍ E-MAILU VÁM ---
         const internalEmailHtml = `

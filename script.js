@@ -1310,7 +1310,7 @@ const handleFormSubmit = async (e) => {
         bodyParams.append('extraData', JSON.stringify(extraData, null, 2)); // Přidáno formátování pro lepší čitelnost
 
         // 4. Odešleme data
-        const response = await fetch('/', { // Uložíme si odpověď
+        const response = await fetch('/.netlify/functions/form-handler', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: bodyParams.toString()

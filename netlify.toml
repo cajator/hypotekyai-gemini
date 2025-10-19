@@ -8,8 +8,7 @@
 # Jediná sekce [functions] obsahující obě nastavení
 [functions]
   node_bundler = "esbuild"
-  submission-created = { function = "form-handler" } 
-
+  
 [dev]
   command = "echo 'Starting local dev server'"
   targetPort = 8888

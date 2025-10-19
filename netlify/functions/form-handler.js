@@ -6,17 +6,20 @@ const crmApiKey = process.env.CRM_API_KEY;
 const crmApiUrl = process.env.CRM_API_URL;
 
 exports.handler = async (event) => {
-    // Funkce spuštěná událostí nemá httpMethod, kontrola není nutná.
+    // Pokud je voláno přímo, ověříme metodu
+    if (event.httpMethod !== 'POST') {
+        return { statusCode: 405, body: 'Method Not Allowed' };
+    }
     
     try {
-        // Data z formuláře přijdou v event.payload.data
-        const formData = event.payload.data;
-        const name = formData.name;
-        const email = formData.email;
-        const phone = formData.phone;
-        const note = formData.note;
+        // Data nyní přijdou přímo v event.body jako URL encoded string
+        const formData = new URLSearchParams(event.body);
+        const name = formData.get('name');
+        const email = formData.get('email');
+        const phone = formData.get('phone');
+        const note = formData.get('note');
         // Naše extra data jsou v poli extraData
-        const extraData = JSON.parse(formData.extraData || '{}');
+        const extraData = JSON.parse(formData.get('extraData') || '{}');
 // KONEC NOVÉHO BLOKU (zbytek funkce zůstává stejný)
 
         // --- 1. ODESLÁNÍ DAT DO CRM ---

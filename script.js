@@ -14,25 +14,25 @@ const QUICK_RESPONSES = {
 <strong>ZÁKLADNÍ DOKUMENTY (vždy potřeba):</strong>
 • Občanský průkaz všech žadatelů
 • Potvrzení o příjmu (formulář banky)
-• Výpisy z účtů za poslední 3 měsíce
+• Výpisy z účtů za poslední 3 až 12 měsíců
 • Výpis z katastru nemovitostí (kupovaná nemovitost)
-• Rezervační či kupní smlouva
+• Rezervační smlouva
+• Návrh kupní nebo budoucí kupní smlouvy
 
-<strong>PRO ZAMĚSTNANCE:</strong>
-• Poslední 3 výplatní pásky
-• Pracovní smlouva
+<strong>PRO ZAMĚSTNANCI:</strong>
+• Min. 3 měs. zkušební doba
 • Potvrzení od zaměstnavatele
 
 <strong>PRO OSVČ (navíc):</strong>
-• Daňová přiznání za 2 roky + přílohy
+• Daňová přiznání za 1-2 roky + přílohy
 • Potvrzení o bezdlužnosti (ZP, SP)
-• Výpis z živnostenského rejstříku
-• Faktury a účetnictví
+• Doklad o zaplacení daně
 
 <strong>DALŠÍ DOKUMENTY:</strong>
-• Znalecký posudek (zajistí banka, 5-8k Kč)
+• Znalecký posudek (zajistí banka, 3-6 000 Kč) nebo zdarma
 • Pojistná smlouva nemovitosti
 • Energetický štítek budovy
+• Životní pojištění
 
 💡 <strong>TIP:</strong> Začněte sbírat dokumenty už teď - šetří to týdny! Náš specialista vás provede procesem krok za krokem.`,
         instant: true
@@ -64,29 +64,38 @@ Použijte naši kalkulačku výše - za 30 sekund víte přesně kolik a od kter
         response: `<strong>🏢 Hypotéka pro OSVČ - Kompletní průvodce:</strong>
 
 <strong>PODMÍNKY:</strong>
-• Min. 2 roky podnikání
-• 2 daňová přiznání s kladným výsledkem
-• Stabilní příjmy
+• Min. 1 rok podnikání
+• 1-2 daňová přiznání s kladným výsledkem
+• Stabilní výhled příjmů
 
 <strong>JAK BANKA POČÍTÁ PŘÍJEM:</strong>
-• Průměr čistého zisku za 2 roky
-• Některé odečítají odpisy
+• Průměr čistého zisku za 1-2 roky
+• Některé odečítají odpisy nebo úvěry na IČO
 • Koeficient 7-8× (vs. 9× u zaměstnanců)
 
 <strong>VÝHODY:</strong>
 ✅ Můžete odečíst úroky z daní
-✅ Některé banky akceptují 1 rok historie
+✅ Některé banky akceptují 1 rok historii
+✅ Některé banky akceptují příjmy z obratu
+✅ Některé banky akceptují paušální daň
 
 <strong>NEVÝHODY:</strong>
 ❌ Nižší maximální částka
-❌ O 0.1-0.3% vyšší úrok
+❌ Zohlednění historie podnikání
 ❌ Více dokumentů
 
 <strong>TOP BANKY PRO OSVČ:</strong>
-Náš specialista zná přesné metodiky bank, které nejlépe hodnotí OSVČ a umí připravit podklady tak, abyste dosáhli na co nejvyšší hypotéku.`,
+1. Raiffeisenbank - nejlépe hodnotí OSVČ
+2. Česká spořitelna -  příjmy z obratu
+3. ČSOB - akceptuje kratší historii 
+4. UCB - vyšší akceptace příjmů z paušální daně
+
+💡 <strong>STRATEGIE:</strong> Optimalizujte daňové přiznání (ne moc nízký zisk!) a zvažte spolužadatele se zaměstnaneckým příjmem.`,
         instant: true
     }
 };
+
+const responseCache = new Map();
 
 const findQuickResponse = (message) => {
     const lowercaseMessage = message.toLowerCase();
@@ -99,58 +108,92 @@ const findQuickResponse = (message) => {
     return null;
 };
 
-// --- CONFIGURATION ---
-const CONFIG = {
-    API_CHAT_ENDPOINT: '/.netlify/functions/chat',
-    API_RATES_ENDPOINT: '/.netlify/functions/rates',
-};
+    // --- CONFIGURATION ---
+    const CONFIG = {
+        API_CHAT_ENDPOINT: '/.netlify/functions/chat',
+        API_RATES_ENDPOINT: '/.netlify/functions/rates',
+    };
 
-// --- STATE MANAGEMENT ---
-const state = {
-    mode: 'express',
-    isAiTyping: false,
-    chatFormState: 'idle', 
-    chatFormData: {},
-    chatHistory: [],
-    mobileSidebarOpen: false,
-    activeUsers: Math.floor(Math.random() * 30) + 120,
-    formData: {
-        propertyValue: 5000000, loanAmount: 4000000,
-        income: 50000, liabilities: 0, age: 35, children: 0,
-        loanTerm: 25, fixation: 3,
-        purpose: 'koupě', propertyType: 'byt', landValue: 0, reconstructionValue: 0,
-        employment: 'zaměstnanec', education: 'středoškolské'
-    },
-    calculation: { offers: [], selectedOffer: null, approvability: { total: 0 }, smartTip: null, tips: [], fixationDetails: null, isFromOurCalculator: false },
-    chart: null,
-};
+    // --- STATE MANAGEMENT ---
+    const state = {
+        mode: 'express',
+        isAiTyping: false,
+        chatFormState: 'idle', 
+        chatFormData: {},
+        chatHistory: [],
+        mobileSidebarOpen: false,
+        activeUsers: Math.floor(Math.random() * 30) + 120,
+        formData: {
+            propertyValue: 5000000, loanAmount: 4000000,
+            income: 50000, liabilities: 0, age: 35, children: 0,
+            loanTerm: 25, fixation: 3,
+            purpose: 'koupě', propertyType: 'byt', landValue: 0, reconstructionValue: 0,
+            employment: 'zaměstnanec', education: 'středoškolské'
+        },
+        calculation: { offers: [], selectedOffer: null, approvability: { total: 0 }, smartTip: null, tips: [], fixationDetails: null, isFromOurCalculator: false },
+        chart: null,
+    };
 
-// --- DOM ELEMENTS CACHE ---
-const DOMElements = {
-    contentContainer: document.getElementById('content-container'),
-    modeCards: document.querySelectorAll('.mode-card'),
-    leadFormContainer: document.getElementById('kontakt'),
-    leadForm: document.getElementById('lead-form'),
-    mobileMenuButton: document.getElementById('mobile-menu-button'),
-    mobileMenu: document.getElementById('mobile-menu'),
-    cookieBanner: document.getElementById('cookie-banner'),
-    cookieAcceptBtn: document.getElementById('cookie-accept'),
-};
+    // Simulace aktivních uživatelů
+    const updateActiveUsers = () => {
+        const hour = new Date().getHours();
+        let baseUsers = 120;
+        
+        if (hour >= 8 && hour <= 18) {
+            baseUsers = 140;
+        } else if (hour >= 19 && hour <= 22) {
+            baseUsers = 130;
+        } else if (hour >= 6 && hour <= 7) {
+            baseUsers = 125;
+        }
+        
+        state.activeUsers = baseUsers + Math.floor(Math.random() * 10) - 5;
+        
+        const footerCounter = document.getElementById('active-users-counter');
+        if (footerCounter) {
+            footerCounter.textContent = `${state.activeUsers} lidí právě používá naše nástroje`;
+        }
+    };
 
-// --- UTILITIES ---
-const parseNumber = (s) => parseFloat(String(s).replace(/[^0-9]/g, '')) || 0;
-const formatNumber = (n, currency = true) => n.toLocaleString('cs-CZ', currency ? { style: 'currency', currency: 'CZK', maximumFractionDigits: 0 } : { maximumFractionDigits: 0 });
-const scrollToTarget = (targetId) => document.querySelector(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-const isMobile = () => window.innerWidth < 768;
+    setInterval(updateActiveUsers, 30000);
 
-// --- COMPONENT FACTORIES ---
-const createSlider = (id, label, value, min, max, step, containerClass = '', infoText = '') => {
-    let suffix = ' Kč';
+    // --- DOM ELEMENTS CACHE ---
+    const DOMElements = {
+        contentContainer: document.getElementById('content-container'),
+        modeCards: document.querySelectorAll('.mode-card'),
+        leadFormContainer: document.getElementById('kontakt'),
+        leadForm: document.getElementById('lead-form'),
+        mobileMenuButton: document.getElementById('mobile-menu-button'),
+        mobileMenu: document.getElementById('mobile-menu'),
+        cookieBanner: document.getElementById('cookie-banner'),
+        cookieAcceptBtn: document.getElementById('cookie-accept'),
+    };
+    
+    // --- UTILITIES ---
+    const parseNumber = (s) => parseFloat(String(s).replace(/[^0-9]/g, '')) || 0;
+    const formatNumber = (n, currency = true) => n.toLocaleString('cs-CZ', currency ? { style: 'currency', currency: 'CZK', maximumFractionDigits: 0 } : { maximumFractionDigits: 0 });
+    const scrollToTarget = (targetId) => {
+        const targetElement = document.querySelector(targetId);
+        if (targetElement) {
+            targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    };
+    
+    const isMobile = () => window.innerWidth < 768;
+    const isTablet = () => window.innerWidth >= 768 && window.innerWidth < 1024;
+    const isTouchDevice = () => 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    
+    // --- COMPONENT FACTORIES ---
+    const createSlider = (id, label, value, min, max, step, containerClass = '', infoText = '') => {
+    // ===== OPRAVA LOGIKY ZDE =====
+    // Tato vylepšená logika správně určuje jednotku pro každý posuvník.
+    let suffix = ' Kč'; // Výchozí jednotka je Kč.
     if (id.includes('Term') || id.includes('age') || id.includes('fixation')) {
-        suffix = ' let';
+        suffix = ' let'; // Pro dobu splatnosti, věk a fixaci je jednotka 'let'.
     } else if (id.includes('children')) {
-        suffix = '';
+        suffix = ''; // Pro počet dětí se nezobrazí žádná jednotka.
     }
+    // =============================
 
     const isMobileDevice = isMobile();
     const infoIcon = infoText ? `<span class="info-icon" data-info-key="${id}" data-info-text="${infoText}">?</span>` : '';
@@ -172,16 +215,16 @@ const createSlider = (id, label, value, min, max, step, containerClass = '', inf
         </div>
     </div>`;
 };
-
-const createSelect = (id, label, options, selectedValue, containerClass = '') => {
-    const optionsHTML = Object.entries(options).map(([key, val]) => 
-        `<option value="${key}" ${key === selectedValue ? 'selected' : ''}>${val}</option>`
-    ).join('');
-    return `<div class="${containerClass}" style="width: 100%;">
-        <label for="${id}" class="form-label" style="font-size: ${isMobile() ? '0.875rem' : '0.9375rem'};">${label}</label>
-        <select id="${id}" name="${id}" class="modern-select" style="font-size: ${isMobile() ? '1rem' : '0.9375rem'};">${optionsHTML}</select>
-    </div>`;
-};
+    
+    const createSelect = (id, label, options, selectedValue, containerClass = '') => {
+        const optionsHTML = Object.entries(options).map(([key, val]) => 
+            `<option value="${key}" ${key === selectedValue ? 'selected' : ''}>${val}</option>`
+        ).join('');
+        return `<div class="${containerClass}" style="width: 100%;">
+            <label for="${id}" class="form-label" style="font-size: ${isMobile() ? '0.875rem' : '0.9375rem'};">${label}</label>
+            <select id="${id}" name="${id}" class="modern-select" style="font-size: ${isMobile() ? '1rem' : '0.9375rem'};">${optionsHTML}</select>
+        </div>`;
+    };
     
     // --- DYNAMIC CONTENT & LAYOUTS ---
     const getCalculatorLayout = (formHTML) => 
@@ -1115,120 +1158,178 @@ const createSelect = (id, label, options, selectedValue, containerClass = '') =>
         setTimeout(() => tooltip.classList.add('visible'), 10);
     };
 
-    // KONEC NOVÉHO BLOKU
+    // ZAČÁTEK NOVÉHO BLOKU handleClick
+const handleClick = async (e) => {
+    let target = e.target.closest('[data-action], .offer-card, .suggestion-btn, [data-mode], .scroll-to, [data-quick-question]');
+    if (!target) return; // Pokud kliknutí není na interaktivní prvek, nic nedělej
 
-    // ZAČÁTEK NOVÉHO BLOKU
-    const handleClick = async (e) => {
-        let target = e.target.closest('[data-action], .offer-card, .suggestion-btn, [data-mode], .scroll-to, [data-quick-question]');
-        if (!target) return; // Pokud kliknutí není na interaktivní prvek, nic nedělej
-        
-        // e.preventDefault() je nyní voláno POUZE tam, kde je potřeba (u odkazů s #)
-        if (target.matches('a[href^="#"]')) {
-            e.preventDefault();
-        }
-        
-        const { action, mode, suggestion, target: targetId } = target.dataset;
-        const quickQuestion = target.dataset.quickQuestion;
-
-        if(action === 'ask-ai-from-calc') {
-            const questionKey = target.dataset.questionKey;
-            const questions = {
-                'propertyValue': "Jak hodnota nemovitosti ovlivňuje hypotéku?",
-                'loanAmount': "Proč je důležité správně nastavit výši úvěru?",
-                'income': "Jak banky posuzují můj příjem a co všechno se započítává?",
-                'loanTerm': "Jaký je rozdíl ve splátce a úrocích při splatnosti 20 vs 30 let?",
-                'fixation': "Jaká je nejlepší strategie pro volbu fixace?",
-                'liabilities': "Jak mé ostatní půjčky ovlivňují šanci na získání hypotéky?",
-                'age': "Proč je můj věk důležitý pro banku?",
-                'children': "Jak počet dětí ovlivňuje výpočet bonity?"
-            };
-            const question = questions[questionKey] || `Řekni mi více o poli ${questionKey}.`;
-            
-            switchMode('ai');
-            setTimeout(() => handleChatMessageSend(question), 300);
-            return;
-        }
-
-        if (action === 'toggle-mobile-sidebar' || action === 'close-mobile-sidebar') {
-            toggleMobileSidebar();
-            return;
-        }
-
-        if (quickQuestion) {
-            if (isMobile()) toggleMobileSidebar();
-            const chatInput = document.getElementById('permanent-chat-input');
-            if (chatInput) {
-                chatInput.value = quickQuestion;
-                handleChatMessageSend(quickQuestion);
-                chatInput.value = '';
-            }
-            return;
-        }
-
-        if (targetId) {
-            if (action === 'show-lead-form' || action === 'show-lead-form-direct') {
-                DOMElements.leadFormContainer.classList.remove('hidden');
-            }
-            scrollToTarget(targetId);
-            if (DOMElements.mobileMenu && !DOMElements.mobileMenu.classList.contains('hidden')) {
-                DOMElements.mobileMenu.classList.add('hidden');
-            }
-        }
-        else if (mode) {
-            switchMode(mode);
-        }
-        else if (action === 'calculate') calculateRates(target);
-        else if (action === 'go-to-calculator') {
-            if (isMobile()) toggleMobileSidebar();
-            switchMode('express');
-        }
-        else if (action === 'show-lead-form') {
-            if (isMobile()) toggleMobileSidebar();
-            DOMElements.leadFormContainer.classList.remove('hidden');
-            scrollToTarget('#kontakt');
-        }
-        else if (action === 'select-offer') {
-            const offerId = target.dataset.offer;
-            const offer = state.calculation.offers.find(o => o.id === offerId);
-            if (offer) {
-                document.querySelectorAll('.offer-card').forEach(c => c.classList.remove('selected'));
-                const card = document.querySelector(`[data-offer-id="${offerId}"]`);
-                if (card) card.classList.add('selected');
-                state.calculation.selectedOffer = offer;
-            }
-        }
-        else if (action === 'discuss-with-ai' || action === 'discuss-fixation-with-ai') {
-            switchMode('ai', true);
-        }
-        else if (action === 'reset-chat') {
-            state.chatHistory = [];
-            const chatMessages = document.getElementById('chat-messages');
-            if (chatMessages) chatMessages.innerHTML = '';
-            addChatMessage('Jsem váš hypoteční poradce s AI nástroji. Jak vám mohu pomoci?', 'ai');
-            generateAISuggestions();
-        }
-        else if (suggestion) {
-            if (suggestion === '📞 Domluvit se specialistou') {
-                addChatMessage("Chci se domluvit se specialistou.", 'user');
-                addChatMessage("Výborně! Přesouvám vás na formulář pro spojení s naším specialistou.", 'ai');
-                DOMElements.leadFormContainer.classList.remove('hidden');
-                scrollToTarget('#kontakt');
-                return;
-            }
-            const input = document.getElementById('permanent-chat-input');
-            const message = suggestion || input?.value.trim();
-            if (!message || state.isAiTyping) return;
-            if (input) input.value = '';
-            handleChatMessageSend(message);
-        }
-        else if (target.matches('.offer-card')) {
-            document.querySelectorAll('.offer-card').forEach(c => c.classList.remove('selected'));
-            target.classList.add('selected');
-            state.calculation.selectedOffer = state.calculation.offers.find(o => o.id === target.dataset.offerId);
-        }
-    };
-    // KONEC NOVÉHO BLOKU
+    // e.preventDefault() je nyní voláno POUZE tam, kde je potřeba (u odkazů s #)
+    if (target.matches('a[href^="#"]')) {
+        e.preventDefault();
+    }
     
+    const { action, mode, suggestion, target: targetId } = target.dataset;
+    const quickQuestion = target.dataset.quickQuestion;
+
+    if(action === 'ask-ai-from-calc') {
+        const questionKey = target.dataset.questionKey;
+        const questions = {
+            'propertyValue': "Jak hodnota nemovitosti ovlivňuje hypotéku?",
+            'loanAmount': "Proč je důležité správně nastavit výši úvěru?",
+            'income': "Jak banky posuzují můj příjem a co všechno se započítává?",
+            'loanTerm': "Jaký je rozdíl ve splátce a úrocích při splatnosti 20 vs 30 let?",
+            'fixation': "Jaká je nejlepší strategie pro volbu fixace?",
+            'liabilities': "Jak mé ostatní půjčky ovlivňují šanci na získání hypotéky?",
+            'age': "Proč je můj věk důležitý pro banku?",
+            'children': "Jak počet dětí ovlivňuje výpočet bonity?"
+        };
+        const question = questions[questionKey] || `Řekni mi více o poli ${questionKey}.`;
+        
+        switchMode('ai');
+        setTimeout(() => handleChatMessageSend(question), 300);
+        return;
+    }
+
+    if (action === 'toggle-mobile-sidebar' || action === 'close-mobile-sidebar') {
+        toggleMobileSidebar(); // Předpokládáme, že tato funkce existuje
+        return;
+    }
+
+    if (quickQuestion) {
+        if (isMobile()) toggleMobileSidebar(); // Předpokládáme, že tato funkce existuje
+        const chatInput = document.getElementById('permanent-chat-input');
+        if (chatInput) {
+            chatInput.value = quickQuestion;
+            handleChatMessageSend(quickQuestion);
+            chatInput.value = '';
+        }
+        return;
+    }
+
+    if (targetId) {
+        if (action === 'show-lead-form' || action === 'show-lead-form-direct') {
+            DOMElements.leadFormContainer.classList.remove('hidden');
+        }
+        scrollToTarget(targetId);
+        if (DOMElements.mobileMenu && !DOMElements.mobileMenu.classList.contains('hidden')) {
+            DOMElements.mobileMenu.classList.add('hidden');
+        }
+    }
+    else if (mode) {
+        switchMode(mode);
+    }
+    else if (action === 'calculate') {
+        calculateRates(target); // Předpokládáme, že tato funkce existuje
+    }
+    else if (action === 'go-to-calculator') {
+        if (isMobile()) toggleMobileSidebar(); // Předpokládáme, že tato funkce existuje
+        switchMode('express');
+    }
+    else if (action === 'show-lead-form') {
+        if (isMobile()) toggleMobileSidebar(); // Předpokládáme, že tato funkce existuje
+        DOMElements.leadFormContainer.classList.remove('hidden');
+        scrollToTarget('#kontakt');
+    }
+    else if (action === 'select-offer') {
+        const offerId = target.dataset.offer;
+        const offer = state.calculation.offers.find(o => o.id === offerId);
+        if (offer) {
+            document.querySelectorAll('.offer-card').forEach(c => c.classList.remove('selected'));
+            const card = document.querySelector(`[data-offer-id="${offerId}"]`);
+            if (card) card.classList.add('selected');
+            state.calculation.selectedOffer = offer;
+            // Zde by mohlo být volání renderResultsChart(), pokud existuje
+        }
+    }
+    else if (action === 'discuss-with-ai' || action === 'discuss-fixation-with-ai') {
+        switchMode('ai', true);
+    }
+    else if (action === 'reset-chat') {
+        state.chatHistory = [];
+        const chatMessages = document.getElementById('chat-messages');
+        if (chatMessages) chatMessages.innerHTML = '';
+        addChatMessage('Jsem váš hypoteční poradce s AI nástroji. Jak vám mohu pomoci?', 'ai');
+        generateAISuggestions(); // Předpokládáme, že tato funkce existuje
+    }
+    else if (suggestion) {
+        if (suggestion === '📞 Domluvit se specialistou') {
+            addChatMessage("Chci se domluvit se specialistou.", 'user');
+            addChatMessage("Výborně! Přesouvám vás na formulář pro spojení s naším specialistou.", 'ai');
+            DOMElements.leadFormContainer.classList.remove('hidden');
+            setTimeout(() => scrollToTarget('#kontakt'), 100);
+            return;
+        }
+        const input = document.getElementById('permanent-chat-input');
+        const message = suggestion || input?.value.trim();
+        if (!message || state.isAiTyping) return;
+        if (input) input.value = '';
+        handleChatMessageSend(message); // Předpokládáme, že tato funkce existuje
+    }
+     else if (target.matches('.offer-card')) {
+        document.querySelectorAll('.offer-card').forEach(c => c.classList.remove('selected'));
+        target.classList.add('selected');
+        state.calculation.selectedOffer = state.calculation.offers.find(o => o.id === target.dataset.offerId);
+         // Zde by mohlo být volání renderResultsChart(), pokud existuje
+    }
+};
+// KONEC NOVÉHO BLOKU handleClick
+    // ZAČÁTEK NOVÉ FUNKCE handleFormSubmit
+const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const btn = form.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.textContent = '📤 Odesílám...';
+
+    try {
+        // 1. Ručně posbíráme data z viditelných polí formuláře
+        const bodyParams = new URLSearchParams();
+        bodyParams.append('form-name', form.getAttribute('name'));
+        bodyParams.append('name', form.querySelector('#name').value);
+        bodyParams.append('phone', form.querySelector('#phone').value);
+        bodyParams.append('email', form.querySelector('#email').value);
+        bodyParams.append('contact-time', form.querySelector('#contact-time').value);
+        bodyParams.append('note', form.querySelector('#note').value);
+
+        // 2. Připravíme bezpečná "extra data" bez komplexních objektů
+        const safeCalculationData = {
+            offers: state.calculation.offers,
+            selectedOffer: state.calculation.selectedOffer,
+            approvability: state.calculation.approvability,
+            // Pokud fixationDetails existuje, přidáme ho, jinak ne
+            ...(state.calculation.fixationDetails && { fixationDetails: state.calculation.fixationDetails })
+        };
+        
+        const extraData = {
+            calculation: safeCalculationData,
+            chatHistory: state.chatHistory,
+            formData: state.formData
+        };
+
+        // 3. Přidáme extra data do těla požadavku
+        bodyParams.append('extraData', JSON.stringify(extraData, null, 2)); // Přidáno formátování pro lepší čitelnost
+
+        // 4. Odešleme data
+        await fetch('/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: bodyParams.toString()
+        });
+        
+        // Zobrazíme úspěšnou hlášku
+        form.style.display = 'none';
+        const successMessage = document.getElementById('form-success');
+        if (successMessage) successMessage.style.display = 'block';
+
+    } catch (error) {
+        console.error('Chyba při odesílání formuláře:', error);
+        alert('Odeslání se nezdařilo. Zkuste to prosím znovu, nebo nás kontaktujte přímo.');
+        btn.disabled = false;
+        btn.textContent = '📞 Odeslat nezávazně';
+    }
+};
+// KONEC NOVÉ FUNKCE handleFormSubmit
+
     // ZAČÁTEK NOVÉHO BLOKU
     const handleChatMessageSend = async (message) => {
         if (!message || message.trim() === '') return;

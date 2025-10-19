@@ -60,7 +60,56 @@ exports.handler = async (event) => {
         }
 // KONEC NOVÉHO BLOKU
 
+        // ZAČÁTEK NOVÉHO BLOKU
         // --- 2. ODESLÁNÍ E-MAILU VÁM ---
+
+        // Helper funkce pro formátování objektů
+        const formatObjectToHtml = (obj, title) => {
+            if (!obj || Object.keys(obj).length === 0) return '';
+            let html = `<h3>${title}:</h3><ul>`;
+            for (const key in obj) {
+                if (typeof obj[key] === 'object' && obj[key] !== null) {
+                    // Ignorujeme vnořené objekty pro přehlednost, nebo je můžeme rekurzivně formátovat
+                    html += `<li><strong>${key}:</strong> [Data objektu]</li>`; 
+                } else {
+                     // Jednoduché formátování Kč a let
+                    let value = obj[key];
+                    if (typeof value === 'number' && (key.toLowerCase().includes('amount') || key.toLowerCase().includes('value') || key.toLowerCase().includes('income') || key.toLowerCase().includes('liabilities') || key.toLowerCase().includes('payment') || key.toLowerCase().includes('savings') || key.toLowerCase().includes('balance'))) {
+                         value = value.toLocaleString('cs-CZ', { style: 'currency', currency: 'CZK', maximumFractionDigits: 0 });
+                    } else if (typeof value === 'number' && (key.toLowerCase().includes('term') || key.toLowerCase().includes('age') || key.toLowerCase().includes('fixation') )) {
+                         value += ' let';
+                    } else if (typeof value === 'number' && key.toLowerCase().includes('rate')) {
+                         value += ' %';
+                    } else if (key.toLowerCase().includes('children') && typeof value === 'number') {
+                         value = value; // Bez jednotky
+                    }
+                    html += `<li><strong>${key}:</strong> ${value}</li>`;
+                }
+            }
+            html += '</ul>';
+            return html;
+        };
+
+        const formatCalculationToHtml = (calc) => {
+            if (!calc || !calc.selectedOffer) return '<h3>Výsledky z kalkulačky:</h3><p>Žádná data z kalkulačky.</p>';
+            let html = `<h3>Výsledky z kalkulačky:</h3>`;
+            html += `<ul>`;
+            html += `<li><strong>Vybraná nabídka:</strong> ${calc.selectedOffer.title || 'Neznámá'}</li>`;
+            html += `<li><strong>Splátka:</strong> ${formatNumber(calc.selectedOffer.monthlyPayment)}</li>`;
+            html += `<li><strong>Sazba:</strong> ${calc.selectedOffer.rate} %</li>`;
+            if (calc.approvability) {
+                html += `<li><strong>Skóre LTV:</strong> ${calc.approvability.ltv}%</li>`;
+                html += `<li><strong>Skóre DSTI:</strong> ${calc.approvability.dsti}%</li>`;
+                html += `<li><strong>Skóre Bonita:</strong> ${calc.approvability.bonita}%</li>`;
+                html += `<li><strong>Celkové skóre:</strong> ${calc.approvability.total}%</li>`;
+            }
+            if (calc.fixationDetails && calc.fixationDetails.quickAnalysis) {
+                html += `<li><strong>Odhad nájmu:</strong> ${formatNumber(calc.fixationDetails.quickAnalysis.estimatedRent)}</li>`;
+            }
+            html += `</ul>`;
+            return html;
+        }
+
         const internalEmailHtml = `
             <h1>Nový lead z Hypoteky Ai</h1>
             <h2>Kontaktní údaje:</h2>
@@ -68,17 +117,27 @@ exports.handler = async (event) => {
                 <li><strong>Jméno:</strong> ${name}</li>
                 <li><strong>E-mail:</strong> ${email}</li>
                 <li><strong>Telefon:</strong> ${phone}</li>
+                <li><strong>Preferovaný čas:</strong> ${payload.get('contact-time') || 'Nespecifikováno'}</li>
                 <li><strong>Poznámka:</strong> ${note || 'Není'}</li>
             </ul>
             <hr>
+            <h2>Data zadaná do kalkulačky:</h2>
+            ${formatObjectToHtml(extraData.formData, '')} 
+            <hr>
             <h2>Výsledky z kalkulačky:</h2>
-            <pre>${JSON.stringify(extraData.calculation, null, 2)}</pre>
+            ${formatCalculationToHtml(extraData.calculation)}
             <hr>
             <h2>Historie chatu:</h2>
-            <ul>
-                ${extraData.chatHistory.map(msg => `<li><strong>${msg.sender === 'user' ? 'Klient' : 'AI'}:</strong> ${msg.text}</li>`).join('')}
-            </ul>
+            <div style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 20px;">
+                ${extraData.chatHistory.length > 0 ? 
+                    extraData.chatHistory.map(msg => `<p style="margin: 5px 0;"><strong>${msg.sender === 'user' ? 'Klient' : 'AI'}:</strong> ${msg.text.replace(/\n/g, '<br>')}</p>`).join('') :
+                    '<p>Žádná historie chatu.</p>'
+                }
+            </div>
+            <hr>
+            <p><small>Odesláno: ${new Date().toLocaleString('cs-CZ')}</small></p>
         `;
+// KONEC NOVÉHO BLOKU (zbytek funkce pokračuje)
 
         const internalMsg = {
             to: 'info@hypotekyai.cz', // <-- ZMĚŇTE NA VÁŠ PRACOVNÍ E-MAIL

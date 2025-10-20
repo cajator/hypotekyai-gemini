@@ -368,9 +368,22 @@
     </footer>
 
     <!-- GDPR Cookie Banner -->
-    <div id="cookie-banner" class="hidden fixed bottom-0 left-0 right-0 bg-gray-900 text-white p-3 sm:p-4 z-50 flex flex-wrap md:flex-nowrap justify-between items-center gap-3 sm:gap-4">
-        <p class="text-xs sm:text-sm">Tato webová stránka používá soubory cookies k zajištění co nejlepšího zážitku. <a href="#" class="underline hover:text-blue-400">Více informací</a></p>
-        <button id="cookie-accept" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-xs sm:text-sm whitespace-nowrap">Rozumím a souhlasím</button>
+    <div id="cookie-banner-wrapper" class="fixed bottom-0 left-0 right-0 bg-gray-900 text-white z-50 transition-all duration-300">
+        <div class="p-3 sm:p-4 flex flex-wrap md:flex-nowrap justify-between items-center gap-3 sm:gap-4">
+            <p class="text-xs sm:text-sm">Tato webová stránka používá soubory cookies k zajištění co nejlepšího zážitku. 
+                <button id="cookie-more-info-btn" class="underline hover:text-blue-400 focus:outline-none">Více informací</button>
+            </p>
+            <button id="cookie-accept" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-xs sm:text-sm whitespace-nowrap flex-shrink-0">Rozumím a souhlasím</button>
+        </div>
+        <div id="cookie-details" class="hidden p-4 border-t border-gray-700 text-xs text-gray-300">
+            <h4 class="font-semibold text-sm text-white mb-2">Jaké cookies používáme?</h4>
+            <p class="mb-2">Používáme technické cookies nezbytné pro chod webu a analytické cookies, které nám pomáhají web vylepšovat.</p>
+            <ul class="list-disc list-inside space-y-1 mb-2">
+                <li><strong>Google Analytics:</strong> Anonymně sledujeme návštěvnost a chování uživatelů, abychom pochopili, jak je web využíván.</li>
+                <li><strong>Reklamní systémy (Google Ads, Facebook Pixel - pokud používáte):</strong> Můžeme používat cookies pro měření efektivity našich reklamních kampaní a cílení relevantní reklamy (remarketing). Tato data jsou anonymizovaná.</li>
+            </ul>
+            <p>Váš souhlas nám umožňuje tato data využívat. Svůj souhlas můžete kdykoli odvolat. <a href="/ochrana-udaju" class="underline hover:text-blue-400">Více v Zásadách ochrany osobních údajů</a>.</p>
+        </div>
     </div>
 
     <script src="script.js?v=6.0" defer></script>

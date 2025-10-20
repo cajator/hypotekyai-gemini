@@ -951,3 +951,28 @@ textarea {
         grid-column: span 2 / span 2;
     }
 }
+
+/* ============================================
+   STYLY PRO COOKIE LIŠTU
+   ============================================ */
+#cookie-details {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+#cookie-details.expanded {
+    max-height: 500px; /* Dostatečně velká hodnota */
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+/* Skryjeme původní #cookie-banner, pokud existuje */
+#cookie-banner { display: none !important; }
+
+/* Zajistíme, že wrapper je skrytý, pokud není potřeba */
+#cookie-banner-wrapper.hidden {
+    display: none;
+}

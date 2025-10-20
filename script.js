@@ -174,9 +174,20 @@ const findQuickResponse = (message) => {
     const formatNumber = (n, currency = true) => n.toLocaleString('cs-CZ', currency ? { style: 'currency', currency: 'CZK', maximumFractionDigits: 0 } : { maximumFractionDigits: 0 });
     const scrollToTarget = (targetId) => {
         const targetElement = document.querySelector(targetId);
-        if (targetElement) {
-            targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+        if (!targetElement) return;
+
+        // Najdeme výšku fixního headeru
+        const header = document.querySelector('header');
+        const headerHeight = header ? header.offsetHeight : 0;
+        
+        // Vypočítáme cílovou pozici s odsazením o výšku headeru a malou rezervou (např. 20px)
+        const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight - 20;
+
+        // Plynule posuneme na vypočítanou pozici
+        window.scrollTo({
+            top: targetPosition,
+            behavior: 'smooth'
+        });
     };
     
     const isMobile = () => window.innerWidth < 768;
@@ -1527,15 +1538,34 @@ const handleFormSubmit = async (e) => {
     };
 
     const handleCookieBanner = () => {
+        const bannerWrapper = document.getElementById('cookie-banner-wrapper');
+        const acceptBtn = document.getElementById('cookie-accept');
+        const moreInfoBtn = document.getElementById('cookie-more-info-btn');
+        const detailsPanel = document.getElementById('cookie-details');
+
+        if (!bannerWrapper || !acceptBtn || !moreInfoBtn || !detailsPanel) return; // Pokud prvky neexistují, nic nedělej
+
         if (localStorage.getItem('cookieConsent') === 'true') {
-            DOMElements.cookieBanner?.classList.add('hidden');
+            bannerWrapper.classList.add('hidden');
         } else {
-            DOMElements.cookieBanner?.classList.remove('hidden');
+            bannerWrapper.classList.remove('hidden');
         }
-        DOMElements.cookieAcceptBtn?.addEventListener('click', () => {
+
+        acceptBtn.addEventListener('click', () => {
             localStorage.setItem('cookieConsent', 'true');
-            DOMElements.cookieBanner?.classList.add('hidden');
+            bannerWrapper.style.transition = 'opacity 0.3s ease-out'; // Přidáme fade-out efekt
+            bannerWrapper.style.opacity = '0';
+            setTimeout(() => bannerWrapper.classList.add('hidden'), 300); // Skryjeme po dokončení animace
         });
+
+        moreInfoBtn.addEventListener('click', () => {
+            detailsPanel.classList.toggle('expanded');
+            // Změníme text tlačítka podle stavu
+            moreInfoBtn.textContent = detailsPanel.classList.contains('expanded') ? 'Méně informací' : 'Více informací';
+        });
+
+        // Zajistíme, aby se starý banner nezobrazoval, pokud by tam náhodou zůstal
+        DOMElements.cookieBanner?.classList.add('hidden');
     };
 
     const init = () => {

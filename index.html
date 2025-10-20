@@ -311,7 +311,10 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label for="name" class="form-label">Jméno a příjmení *</label>
-                            <input type="text" id="name" name="name" required class="modern-input">
+                            <input type="text" id="name" name="name" required 
+                                pattern="^[A-Za-zÀ-ž\s]{2,}(\s[A-Za-zÀ-ž\s]{2,})?$" 
+                                title="Zadejte prosím platné jméno a příjmení (alespoň 2 znaky)." 
+                                class="modern-input">
                         </div>
                         
                         <div>

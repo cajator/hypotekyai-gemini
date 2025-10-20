@@ -206,7 +206,47 @@ exports.handler = async (event) => {
         // --- 3. ODESLÁNÍ POTVRZOVACÍHO E-MAILU KLIENTOVI ---
         if (email && email.includes('@')) {
             console.log("Sestavování potvrzovacího e-mailu pro:", email);
-            const userConfirmationHtml = `... Váš HTML kód pro potvrzovací e-mail ...`; // Vložte sem váš HTML kód
+            const userConfirmationHtml = `
+                <!DOCTYPE html>
+                <html lang="cs">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <style>
+                        body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                        .container { max-width: 600px; margin: 20px auto; padding: 25px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #f9f9f9; }
+                        h1 { color: #1e3a8a; font-size: 24px; margin-bottom: 15px; }
+                        p { margin-bottom: 15px; }
+                        .footer { margin-top: 25px; font-size: 0.9em; color: #777; border-top: 1px solid #e0e0e0; padding-top: 15px; }
+                        .footer a { color: #2563eb; text-decoration: none; }
+                        .highlight { font-weight: bold; }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <h1>Potvrzení vaší poptávky | Hypoteky Ai</h1>
+                        
+                        <p>Dobrý den${name ? ` <span class="highlight">${name}</span>` : ''},</p>
+                        
+                        <p>děkujeme, že jste využili naši platformu Hypoteky Ai pro vaši hypoteční kalkulaci a analýzu.</p>
+                        
+                        <p>Váš požadavek jsme v pořádku přijali a <span class="highlight">co nejdříve</span> (obvykle do 24 hodin v pracovní dny) se vám ozve jeden z našich <span class="highlight">zkušených hypotečních specialistů</span>. Projde s vámi detaily, zodpoví vaše dotazy a pomůže najít tu nejlepší možnou nabídku na trhu.</p>
+                        
+                        <p>Pokud byste mezitím měli jakékoli dotazy, neváhejte nám odpovědět na tento e-mail.</p>
+                        
+                        <p>Těšíme se na spolupráci!</p>
+                        
+                        <div class="footer">
+                            S pozdravem,<br>
+                            <span class="highlight">Tým Hypoteky Ai</span><br>
+                            <a href="https://hypotekyai.cz">hypotekyai.cz</a>
+                            <br><br>
+                            <small>Toto je automaticky generovaný e-mail. Prosím, neodpovídejte přímo, pokud nemáte dotaz k vaší poptávce.</small>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `;
             const userMsg = { to: email, from: senderEmail, subject: 'Potvrzení poptávky | Hypoteky Ai', html: userConfirmationHtml };
             console.log("Pokus o odeslání e-mailu klientovi...");
             await sgMail.send(userMsg);

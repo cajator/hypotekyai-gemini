@@ -137,7 +137,7 @@ exports.handler = async (event) => {
             </ul>
             
             ${extraData.formData ? `<hr>${formatObjectSimple(extraData.formData, 'Data zadaná do kalkulačky')}` : ''}
-            ${extraData.calculation ? `<hr>${formatCalculationSimple(extraData.calculation)}` : ''}
+            ${extraData.calculation ? `<hr>${formatCalculationToHtml(extraData.calculation)}` : ''}
             
             <hr>
             <h2>Historie chatu:</h2>

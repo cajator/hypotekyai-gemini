@@ -1288,7 +1288,18 @@ const handleClick = async (e) => {
 const handleFormSubmit = async (e) => {
     e.preventDefault();
     const form = e.target;
-    const btn = form.querySelector('button[type="submit"]');
+    // ===== ZMĚNA ZDE: Hledáme tlačítko podle jeho ID =====
+    const btn = document.getElementById('submit-lead-btn'); 
+
+    // Přidáme kontrolu, zda bylo tlačítko nalezeno
+    if (!btn) {
+        console.error("Chyba: Odesílací tlačítko (submit-lead-btn) nebylo nalezeno!");
+        // Můžeme zobrazit chybu uživateli, nebo jen logovat
+        alert('Došlo k chybě při odesílání, zkuste to prosím znovu.');
+        return; // Ukončíme funkci, pokud tlačítko není
+    }
+    // ======================================================
+    
     btn.disabled = true;
     btn.textContent = '📤 Odesílám...';
 

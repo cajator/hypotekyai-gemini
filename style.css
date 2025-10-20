@@ -956,17 +956,18 @@ textarea {
    STYLY PRO COOKIE LIŠTU
    ============================================ */
 #cookie-details {
-    max-height: 0;
+    max-height: 0; /* Ve výchozím stavu skryto */
     overflow: hidden;
     transition: max-height 0.3s ease-out, padding 0.3s ease-out;
-    padding-top: 0;
-    padding-bottom: 0;
+    padding-top: 0 !important;  /* Vynutíme nulový padding */
+    padding-bottom: 0 !important; /* Vynutíme nulový padding */
+    box-sizing: border-box; /* Zajistí správný výpočet výšky */
 }
 
 #cookie-details.expanded {
-    max-height: 500px; /* Dostatečně velká hodnota */
-    padding-top: 1rem;
-    padding-bottom: 1rem;
+    max-height: 500px; /* Dostatečně velká hodnota pro rozbalení */
+    padding-top: 1rem !important; /* Obnovíme padding */
+    padding-bottom: 1rem !important; /* Obnovíme padding */
 }
 
 /* Skryjeme původní #cookie-banner, pokud existuje */

@@ -125,7 +125,7 @@ exports.handler = async (event) => {
         }
         const chatHistoryHtml = formatChatSimple(extraData.chatHistory);
         const internalEmailHtml = `
-            <!DOCTYPE html><html><head><style>body{font-family: sans-serif; line-height: 1.5;} ul{list-style: none; padding-left: 0;} li{margin-bottom: 5px;} strong{min-width: 150px; display: inline-block;}</style></head><body>
+            <!DOCTYPE html><html><head><style>body{font-family: sans-serif; line-height: 1.5;} ul{list-style: none; padding-left: 0;} li{margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 8px;} strong{min-width: 150px; display: inline-block; color: #555;} h1, h2, h3 { color: #333; border-bottom: 2px solid #0054a6; padding-bottom: 5px; margin-top: 30px;} hr { border: none; border-top: 1px solid #eee; margin: 20px 0; }</style></head><body>
             <h1>🚀 Nový lead z Hypoteky Ai</h1>
             <h2>Kontaktní údaje:</h2>
             <ul>
@@ -135,14 +135,14 @@ exports.handler = async (event) => {
                 <li><strong>Preferovaný čas:</strong> ${formatValue(contactTime)}</li>
                 <li><strong>Poznámka:</strong> ${formatValue(note)}</li>
             </ul>
-            <hr>
-            ${formDataHtml}
-            <hr>
-            ${calculationHtml}
+            
+            ${extraData.formData ? `<hr>${formatObjectSimple(extraData.formData, 'Data zadaná do kalkulačky')}` : ''}
+            ${extraData.calculation ? `<hr>${formatCalculationSimple(extraData.calculation)}` : ''}
+            
             <hr>
             <h2>Historie chatu:</h2>
             <div style="max-height: 400px; overflow-y: auto; border: 1px solid #eee; padding: 10px; margin-bottom: 20px; background-color: #f9f9f9; font-size: 0.9em;">
-                ${chatHistoryHtml}
+                ${formatChatSimple(extraData.chatHistory)}
             </div>
             <hr>
             <p><small>Odesláno: ${new Date().toLocaleString('cs-CZ')}</small></p>

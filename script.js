@@ -132,6 +132,7 @@ const findQuickResponse = (message) => {
         },
         calculation: { offers: [], selectedOffer: null, approvability: { total: 0 }, smartTip: null, tips: [], fixationDetails: null, isFromOurCalculator: false },
         chart: null,
+        calculatorInteracted: false // <-- NOVÁ PROMĚNNÁ
     };
 
     // Simulace aktivních uživatelů
@@ -997,6 +998,7 @@ const findQuickResponse = (message) => {
     };
 
     const calculateRates = async (button = null, isSilent = false) => {
+        state.calculatorInteracted = true;
         if (!isSilent) {
             const spinner = button?.querySelector('.loading-spinner-white');
             if (button) { 
@@ -1113,6 +1115,7 @@ const findQuickResponse = (message) => {
                 handleGuidedFormLogic();
             }
         }
+        state.calculatorInteracted = true;
     };
 
     const toggleMobileSidebar = () => {
@@ -1314,19 +1317,28 @@ const handleFormSubmit = async (e) => {
         bodyParams.append('note', form.querySelector('#note').value);
 
         // 2. Připravíme bezpečná "extra data" bez komplexních objektů
-        const safeCalculationData = {
-            offers: state.calculation.offers,
-            selectedOffer: state.calculation.selectedOffer,
-            approvability: state.calculation.approvability,
-            // Pokud fixationDetails existuje, přidáme ho, jinak ne
-            ...(state.calculation.fixationDetails && { fixationDetails: state.calculation.fixationDetails })
-        };
-        
         const extraData = {
-            calculation: safeCalculationData,
-            chatHistory: state.chatHistory,
-            formData: state.formData
+            chatHistory: state.chatHistory // Historie chatu se posílá vždy
         };
+
+        if (state.calculatorInteracted) {
+            const safeCalculationData = {
+                offers: state.calculation.offers,
+                selectedOffer: state.calculation.selectedOffer,
+                approvability: state.calculation.approvability,
+                ...(state.calculation.fixationDetails && { fixationDetails: state.calculation.fixationDetails })
+            };
+            extraData.calculation = safeCalculationData;
+            extraData.formData = state.formData; // Přidáme i vstupní data kalkulačky
+            console.log("Přidávám data z kalkulačky."); // Log pro kontrolu
+        } else {
+            console.log("Kalkulačka nebyla použita, data nepřidávám."); // Log pro kontrolu
+        }
+
+        // 3. Přidáme extra data do těla požadavku (pokud nějaká jsou)
+        if (Object.keys(extraData).length > 0) {
+            bodyParams.append('extraData', JSON.stringify(extraData, null, 2));
+        }
 
         // 3. Přidáme extra data do těla požadavku
         bodyParams.append('extraData', JSON.stringify(extraData, null, 2)); // Přidáno formátování pro lepší čitelnost

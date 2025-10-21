@@ -1768,7 +1768,7 @@ const handleFormSubmit = async (e) => {
 
     const init = () => {
     // Registrace hlavního listeneru pro kliknutí - MUSÍ BÝT JEN JEDEN PRO CELOU STRÁNKU
-    document.body.addEventListener('click', handleClick);
+    document.body.addEventListener('click', (e) => handleInfoTooltip(e), true);
 
     // Registrace listeneru pro tooltipy - přidá se k document, aby zachytil vše
     document.body.addEventListener('click', (e) => handleInfoTooltip(e), true); // Připojíme k body a použijeme capturing fázi

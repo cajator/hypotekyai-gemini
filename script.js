@@ -800,22 +800,32 @@ const findQuickResponse = (message) => {
          const bonitaExplanation = approvability.bonita > 85 ? 'Excelentní bonita.' : approvability.bonita > 70 ? 'Velmi dobrá bonita.' : 'Standardní bonita.';
          const totalScoreValue = (typeof approvability.total === 'number' && !isNaN(approvability.total)) ? approvability.total : 0;
 
-         scoreSectionHTML = `
-            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 sm:p-6 rounded-2xl border border-blue-200 shadow-lg">
-                <h4 class="text-lg sm:text-xl font-bold mb-4">🎯 Skóre vaší žádosti</h4>
-                <div class="space-y-3">
-                    ${scoreHTML('LTV', approvability.ltv, 'bg-green-500', '🏠', ltvExplanation)}
-                    ${scoreHTML('DSTI', approvability.dsti, 'bg-yellow-500', '💰', dstiExplanation)}
-                    ${scoreHTML('Bonita', approvability.bonita, 'bg-blue-500', '⭐', bonitaExplanation)}
-                </div>
-                <div class="mt-6 p-4 bg-white rounded-xl text-center">
-                    <h5 class="text-base sm:text-lg font-bold mb-2">Celková šance na schválení:</h5>
-                    <div class="text-4xl sm:text-5xl font-bold text-green-600">${totalScoreValue}%</div>
-                </div>
-            </div>`;
-    } else {
-         scoreSectionHTML = `<div class="bg-yellow-50 p-4 rounded-lg text-yellow-800 border border-yellow-200 shadow-sm">Skóre žádosti se nepodařilo načíst nebo není k dispozici.</div>`;
-    }
+         let scoreSectionHTML = '';
+        if (approvability) {
+             // Definice vysvětlivek
+             const ltvExplanation = approvability.ltv > 85 ? 'Optimální LTV.' : approvability.ltv > 70 ? 'Dobré LTV.' : 'Hraniční LTV.';
+             const dstiExplanation = approvability.dsti > 80 ? 'Výborné DSTI.' : approvability.dsti > 60 ? 'Dostatečná rezerva.' : 'Nižší rezerva.';
+             const bonitaExplanation = approvability.bonita > 85 ? 'Excelentní bonita.' : approvability.bonita > 70 ? 'Velmi dobrá bonita.' : 'Standardní bonita.';
+             const totalScoreValue = (typeof approvability.total === 'number' && !isNaN(approvability.total)) ? approvability.total : 0;
+
+             // Sestavení HTML pomocí globálně definované funkce scoreHTML
+             scoreSectionHTML = `
+                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 sm:p-6 rounded-2xl border border-blue-200 shadow-lg">
+                    <h4 class="text-lg sm:text-xl font-bold mb-4">🎯 Skóre vaší žádosti</h4>
+                    <div class="space-y-3">
+                        ${scoreHTML('LTV', approvability.ltv, 'bg-green-500', '🏠', ltvExplanation)}
+                        ${scoreHTML('DSTI', approvability.dsti, 'bg-yellow-500', '💰', dstiExplanation)}
+                        ${scoreHTML('Bonita', approvability.bonita, 'bg-blue-500', '⭐', bonitaExplanation)}
+                    </div>
+                    <div class="mt-6 p-4 bg-white rounded-xl text-center">
+                        <h5 class="text-base sm:text-lg font-bold mb-2">Celková šance na schválení:</h5>
+                        <div class="text-4xl sm:text-5xl font-bold text-green-600">${totalScoreValue}%</div>
+                    </div>
+                </div>`;
+        } else {
+             // Záložní HTML, pokud data approvability chybí
+             scoreSectionHTML = `<div class="bg-yellow-50 p-4 rounded-lg text-yellow-800 border border-yellow-200 shadow-sm">Skóre žádosti se nepodařilo načíst nebo není k dispozici.</div>`;
+        }
     // ------------------------------------
 
     // --- Dynamický výpočet a zobrazení detailů ---
@@ -831,53 +841,48 @@ const findQuickResponse = (message) => {
              if (effectivePropertyValue > 0 && state.formData.loanAmount > 0 && selectedOffer.rate > 0 && effectiveTerm > 0 && state.formData.fixation > 0) {
                   const currentFixationDetails = calculateFixationAnalysis(state.formData.loanAmount, effectivePropertyValue, selectedOffer.rate, effectiveTerm, state.formData.fixation);
                   
-                  if (currentFixationDetails) {
-                       fixationDetailsHTML = `
-                       <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 sm:p-6 rounded-2xl border border-green-200 shadow-lg" id="fixation-details-section">
-                            <h4 class="text-lg sm:text-xl font-bold mb-3 flex items-center">
-                                <span class="text-2xl mr-2">📊</span> Detaily pro: ${selectedOffer.title || 'vybranou nabídku'}
-                            </h4>
-                            <div class="bg-white p-4 rounded-xl space-y-2 text-sm shadow-sm">
-                                <div class="flex justify-between items-center py-1 border-b"><span>Celkem za ${state.formData.fixation} let:</span><strong class="text-base">${formatNumber(currentFixationDetails.totalPaymentsInFixation)}</strong></div>
-                                <div class="flex justify-between items-center py-1 border-b"><span>Z toho úroky:</span><strong class="text-base text-red-600">${formatNumber(currentFixationDetails.totalInterestForFixation)}</strong></div>
-                                <div class="flex justify-between items-center py-1 border-t pt-2"><span>Zbývající dluh:</span><strong class="text-base">${formatNumber(currentFixationDetails.remainingBalanceAfterFixation)}</strong></div>
-                            </div>
-                            
-                            ${currentFixationDetails.quickAnalysis ? `
-                            <div class="mt-4 bg-yellow-50 p-3 rounded-xl border border-yellow-200 shadow-sm">
-                                <h5 class="font-bold text-xs mb-2">⚡ Rychlá analýza</h5>
-                                <div class="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
-                                    <div>📅 Denně: <strong>${formatNumber(currentFixationDetails.quickAnalysis.dailyCost)}</strong></div>
-                                    <div>💰 Daň. úleva: <strong>~${formatNumber(currentFixationDetails.quickAnalysis.taxSavings)}/měs</strong></div>
-                                    <div>🏠 Vs. nájem: O <strong>${formatNumber(Math.max(0, currentFixationDetails.quickAnalysis.estimatedRent - selectedOffer.monthlyPayment))} nižší</strong></div>
+                if (currentFixationDetails) {
+                           // Sestavení HTML pro detaily fixace
+                           fixationDetailsHTML = `
+                           <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 sm:p-6 rounded-2xl border border-green-200 shadow-lg" id="fixation-details-section">
+                                <h4 class="text-lg sm:text-xl font-bold mb-3 flex items-center">
+                                    <span class="text-2xl mr-2">📊</span> Detaily pro: ${selectedOffer.title || 'vybranou nabídku'}
+                                </h4>
+                                <div class="bg-white p-4 rounded-xl space-y-2 text-sm shadow-sm">
+                                    <div class="flex justify-between items-center py-1 border-b"><span>Celkem za ${state.formData.fixation} let:</span><strong class="text-base">${formatNumber(currentFixationDetails.totalPaymentsInFixation)}</strong></div>
+                                    <div class="flex justify-between items-center py-1 border-b"><span>Z toho úroky:</span><strong class="text-base text-red-600">${formatNumber(currentFixationDetails.totalInterestForFixation)}</strong></div>
+                                    <div class="flex justify-between items-center py-1 pt-2"><span>Zbývající dluh:</span><strong class="text-base">${formatNumber(currentFixationDetails.remainingBalanceAfterFixation)}</strong></div>
                                 </div>
-                            </div>
-                            ` : ''}
-                            
-                            <div class="mt-4 bg-blue-50 p-3 rounded-xl border border-blue-200 text-xs shadow-sm">
-                                 <h5 class="font-bold mb-1">💡 Scénář: Pokles sazeb</h5>
-                                 <p class="text-gray-600 mb-1">Pokud po ${state.formData.fixation} letech klesne sazba na ${currentFixationDetails.futureScenario.optimistic.rate.toFixed(2)}%:</p>
-                                 <div>Nová splátka: <strong class="text-green-600">${formatNumber(currentFixationDetails.futureScenario.optimistic.newMonthlyPayment)}</strong></div>
-                                 <div>Úspora: <strong class="text-green-600">${formatNumber(currentFixationDetails.futureScenario.optimistic.monthlySavings)}/měs</strong></div>
-                            </div>
-                            
-                            <button class="nav-btn bg-blue-600 hover:bg-blue-700 text-white w-full mt-4 text-sm py-2" data-action="discuss-fixation-with-ai">
-                                <span class="mr-1">🤖</span> Probrat detaily s AI
-                            </button>
-                       </div>
-                       `;
-                       // Příprava dat pro graf
-                       chartData = Array.from({ length: effectiveTerm }, (_, i) => calculateAmortization(state.formData.loanAmount, selectedOffer.rate, effectiveTerm, i + 1));
-                  } else {
-                       fixationDetailsHTML = `<div id="fixation-details-section"><p class="text-center text-red-600 p-4 bg-red-50 border border-red-200 rounded-lg">Chyba při výpočtu detailů fixace.</p></div>`;
-                  }
-             } else {
-                  fixationDetailsHTML = `<div id="fixation-details-section"><p class="text-center text-orange-600 p-4 bg-orange-50 border border-orange-200 rounded-lg">Pro zobrazení detailů fixace zadejte platné parametry úvěru.</p></div>`;
-             }
-        } catch (calcError) {
-             console.error("Chyba při počítání detailů fixace:", calcError);
-             fixationDetailsHTML = `<div id="fixation-details-section"><p class="text-center text-red-600 p-4 bg-red-50 border border-red-200 rounded-lg">Chyba při zpracování detailů fixace.</p></div>`;
-        }
+                                
+                                ${currentFixationDetails.quickAnalysis ? `
+                                <div class="mt-4 bg-yellow-50 p-3 rounded-xl border border-yellow-200 shadow-sm">
+                                    <h5 class="font-bold text-xs mb-2">⚡ Rychlá analýza</h5>
+                                    <div class="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+                                        <div>📅 Denně: <strong>${formatNumber(currentFixationDetails.quickAnalysis.dailyCost)}</strong></div>
+                                        <div>💰 Daň. úleva: <strong>~${formatNumber(currentFixationDetails.quickAnalysis.taxSavings)}/měs</strong></div>
+                                        <div>🏠 Vs. nájem: O <strong>${formatNumber(Math.max(0, currentFixationDetails.quickAnalysis.estimatedRent - selectedOffer.monthlyPayment))} nižší</strong></div>
+                                    </div>
+                                </div>
+                                ` : ''}
+                                
+                                <div class="mt-4 bg-blue-50 p-3 rounded-xl border border-blue-200 text-xs shadow-sm">
+                                     <h5 class="font-bold mb-1">💡 Scénář: Pokles sazeb</h5>
+                                     <p class="text-gray-600 mb-1">Pokud po ${state.formData.fixation} letech klesne sazba na ${currentFixationDetails.futureScenario.optimistic.rate.toFixed(2)}%:</p>
+                                     <div>Nová splátka: <strong class="text-green-600">${formatNumber(currentFixationDetails.futureScenario.optimistic.newMonthlyPayment)}</strong></div>
+                                     <div>Úspora: <strong class="text-green-600">${formatNumber(currentFixationDetails.futureScenario.optimistic.monthlySavings)}/měs</strong></div>
+                                </div>
+                                
+                                <button class="nav-btn bg-blue-600 hover:bg-blue-700 text-white w-full mt-4 text-sm py-2" data-action="discuss-fixation-with-ai">
+                                    <span class="mr-1">🤖</span> Probrat detaily s AI
+                                </button>
+                           </div>
+                           `;
+                           // Příprava dat pro graf
+                           chartData = Array.from({ length: effectiveTerm }, (_, i) => calculateAmortization(state.formData.loanAmount, selectedOffer.rate, effectiveTerm, i + 1));
+                      } else {
+                           // Záložní HTML, pokud výpočet selže
+                           fixationDetailsHTML = `<div id="fixation-details-section"><p class="text-center text-red-600 p-4 bg-red-50 border border-red-200 rounded-lg">Chyba při výpočtu detailů fixace.</p></div>`;
+                      }
     } else {
          // Zobrazíme něco, i když není vybraná nabídka (nemělo by nastat, ale pro jistotu)
          fixationDetailsHTML = `<div id="fixation-details-section"><p class="text-center text-gray-500 p-4 bg-gray-50 border border-gray-200 rounded-lg">Vyberte nabídku pro zobrazení detailů.</p></div>`;
@@ -922,59 +927,70 @@ const findQuickResponse = (message) => {
     // Přidání listenerů vždy po renderování
     addOfferCardListeners(); 
 
-    // Skrolujeme až po úplném vykreslení (malá prodleva)
-    setTimeout(() => scrollToTarget('#results-container'), 100); 
+        // Skrolujeme až po úplném vykreslení (malá prodleva)
+        setTimeout(() => scrollToTarget('#results-container'), 100); 
+    } catch (error) {
+        console.error('Chyba při renderování výsledků:', error);
+        const container = document.getElementById('results-container');
+        if (container) {
+            container.innerHTML = `
+                <div class="text-center bg-red-50 p-8 rounded-lg mt-8">
+                    <h3 class="text-2xl font-bold text-red-800 mb-2">Chyba při zobrazení výsledků</h3>
+                    <p class="text-red-700">Zkuste to prosím znovu.</p>
+                </div>`;
+        }
+    }
 };
-        
-    const renderChart = (canvasId, schedule) => { 
-        if (state.chart) { 
-            try { state.chart.destroy(); } catch (e) { console.warn("Nepodařilo se zničit starý graf:", e); }
-        } 
-        const ctx = document.getElementById(canvasId)?.getContext('2d'); 
-        if (!ctx) {
-            console.error(`Canvas element s ID "${canvasId}" nebyl nalezen.`);
-            return;
+       
+    function renderChart(canvasId, schedule) {
+            if (state.chart) {
+                try { state.chart.destroy(); } catch (e) { console.warn("Nepodařilo se zničit starý graf:", e); }
+            }
+            const ctx = document.getElementById(canvasId)?.getContext('2d');
+            if (!ctx) {
+                console.error(`Canvas element s ID "${canvasId}" nebyl nalezen.`);
+                return;
+            }
+            // Kontrola, zda máme platná data pro graf
+            if (!schedule || !Array.isArray(schedule) || schedule.length === 0) {
+                console.warn("Chybí nebo jsou neplatná data pro graf.");
+                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); // Vyčistíme plátno
+                ctx.font = "14px Inter";
+                ctx.fillStyle = "#6b7280";
+                ctx.textAlign = "center";
+                ctx.fillText("Data pro graf nejsou k dispozici.", ctx.canvas.width / 2, ctx.canvas.height / 2);
+                return;
+            }
+
+            try {
+                state.chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: schedule.map(item => item?.year || '?'), // Bezpečný přístup k datům
+                        datasets: [
+                            { label: 'Úroky', data: schedule.map(item => item?.interest || 0), backgroundColor: '#ef4444' },
+                            { label: 'Jistina', data: schedule.map(item => item?.principal || 0), backgroundColor: '#22c55e' }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: { stacked: true },
+                            y: { stacked: true, ticks: { display: false } }
+                        },
+                        plugins: { legend: { position: 'top' } }
+                    }
+                });
+            } catch (chartError) {
+                console.error("Chyba při vytváření grafu:", chartError);
+                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                ctx.font = "14px Inter";
+                ctx.fillStyle = "red";
+                ctx.textAlign = "center";
+                ctx.fillText("Chyba při vykreslování grafu.", ctx.canvas.width / 2, ctx.canvas.height / 2);
+            }
         }
-        // Kontrola, zda máme platná data pro graf
-        if (!schedule || !Array.isArray(schedule) || schedule.length === 0) {
-            console.warn("Chybí nebo jsou neplatná data pro graf.");
-            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); // Vyčistíme plátno
-            ctx.font = "14px Inter";
-            ctx.fillStyle = "#6b7280";
-            ctx.textAlign = "center";
-            ctx.fillText("Data pro graf nejsou k dispozici.", ctx.canvas.width / 2, ctx.canvas.height / 2);
-            return;
-        }
-        
-        try {
-            state.chart = new Chart(ctx, { 
-                type: 'bar', 
-                data: { 
-                    labels: schedule.map(item => item?.year || '?'), // Bezpečný přístup k datům
-                    datasets: [
-                        { label: 'Úroky', data: schedule.map(item => item?.interest || 0), backgroundColor: '#ef4444' }, 
-                        { label: 'Jistina', data: schedule.map(item => item?.principal || 0), backgroundColor: '#22c55e' }
-                    ] 
-                }, 
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    scales: { 
-                        x: { stacked: true }, 
-                        y: { stacked: true, ticks: { display: false } } 
-                    }, 
-                    plugins: { legend: { position: 'top' } } 
-                } 
-            }); 
-        } catch (chartError) {
-             console.error("Chyba při vytváření grafu:", chartError);
-             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-             ctx.font = "14px Inter";
-             ctx.fillStyle = "red";
-             ctx.textAlign = "center";
-             ctx.fillText("Chyba při vykreslování grafu.", ctx.canvas.width / 2, ctx.canvas.height / 2);
-        }
-    };
     
     const renderResultsChart = () => renderChart('resultsChart', state.calculation);
     const addOfferCardListeners = () => {
@@ -1714,4 +1730,4 @@ const handleFormSubmit = async (e) => {
     };
 
     init();
-});
+}); // End of DOMContentLoaded event listener

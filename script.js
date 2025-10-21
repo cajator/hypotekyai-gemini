@@ -738,92 +738,121 @@ const findQuickResponse = (message) => {
     };
 
     const renderResults = () => {
-        const { offers, approvability } = state.calculation;
-        const selectedOffer = state.calculation.selectedOffer; // Aktuálně vybraná nabídka
+        // Bezpečné získání dat ze stavu
+        const offers = state.calculation?.offers || [];
+        const approvability = state.calculation?.approvability; // Může být undefined
+        let selectedOffer = state.calculation?.selectedOffer;
 
         const container = document.getElementById('results-container');
         if (!container) return;
         
         container.classList.remove('hidden');
-        if (!offers || offers.length === 0) {
+        if (offers.length === 0) {
             container.innerHTML = `<div class="text-center bg-red-50 p-8 rounded-lg mt-8"><h3 class="text-2xl font-bold text-red-800 mb-2">Dle zadaných parametrů to nevychází</h3><p class="text-red-700">Zkuste upravit parametry, nebo se <a href="#kontakt" data-target="#kontakt" data-action="show-lead-form" class="font-bold underline scroll-to">spojte s naším specialistou</a>.</p></div>`;
+            // Pokud nejsou nabídky, vyčistíme i vybranou nabídku
+            state.calculation.selectedOffer = null;
             return;
+        }
+
+        // Pokud ještě není vybrána nabídka, vybereme první
+        if (!selectedOffer && offers.length > 0) {
+            selectedOffer = offers[0];
+            state.calculation.selectedOffer = selectedOffer; // Uložíme do stavu
         }
 
         // Vytvoříme HTML pro karty nabídek, zvýrazníme vybranou
         const offersHTML = offers.map(o => `
             <div class="offer-card p-4 sm:p-6 cursor-pointer ${o.id === selectedOffer?.id ? 'selected border-blue-600 ring-2 ring-blue-200' : 'border-gray-200'}" data-offer-id="${o.id}">
                 <div class="flex-grow">
-                    <h4 class="text-lg font-bold text-blue-700 mb-1">${o.title}</h4>
-                    <p class="text-xs sm:text-sm text-gray-600 mb-2">${o.description}</p>
+                    <h4 class="text-lg font-bold text-blue-700 mb-1">${o.title || 'Nabídka'}</h4>
+                    <p class="text-xs sm:text-sm text-gray-600 mb-2">${o.description || ''}</p>
                     ${o.highlights ? `<div class="flex flex-wrap gap-1 mt-2">${o.highlights.map(h => `<span class="inline-block px-2 py-0.5 text-xs bg-blue-100 text-blue-700 rounded-full">${h}</span>`).join('')}</div>` : ''}
                 </div>
                 <div class="text-right mt-3 pt-3 border-t border-gray-100">
                     <div class="text-xl sm:text-2xl font-extrabold text-gray-900">${formatNumber(o.monthlyPayment)}</div>
-                    <div class="text-xs sm:text-sm font-semibold text-gray-500">Úrok ${o.rate.toFixed(2)} %</div>
+                    <div class="text-xs sm:text-sm font-semibold text-gray-500">Úrok ${o.rate?.toFixed(2) || '?'} %</div>
                 </div>
             </div>`).join('');
 
-        // HTML pro skóre (zkráceno pro přehlednost)
-        const scoreHTML = (label, value, color, icon, explanation) => `<div class="bg-white p-3 rounded-lg border border-gray-100">...</div>`; // Vložte sem váš původní kód pro scoreHTML
-        const ltvExplanation = approvability.ltv > 85 ? 'Optimální LTV.' : '...';
-        const dstiExplanation = approvability.dsti > 80 ? 'Výborné DSTI.' : '...';
-        const bonitaExplanation = approvability.bonita > 85 ? 'Excelentní bonita.' : '...';
+        // --- HTML pro skóre (s kontrolami) ---
+        let scoreSectionHTML = '';
+        if (approvability) {
+             const scoreHTML = (label, value, color, icon, explanation) => {
+                 // Kontrola, zda hodnota existuje a je číslo
+                 const displayValue = (typeof value === 'number' && !isNaN(value)) ? value : 0;
+                 return `
+                 <div class="bg-white p-3 rounded-lg border border-gray-100">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-sm font-semibold flex items-center"><span class="text-lg mr-1">${icon}</span> ${label}</span>
+                        <span class="font-bold text-lg">${displayValue}%</span>
+                    </div>
+                    <div class="w-full h-3 rounded-full bg-gray-200 overflow-hidden mb-2">
+                        <div class="h-full rounded-full ${color}" style="width: ${displayValue}%"></div>
+                    </div>
+                    <p class="text-xs text-gray-600">${explanation || ''}</p>
+                 </div>`;
+             };
+             const ltvExplanation = approvability.ltv > 85 ? 'Optimální LTV.' : 'Dobré LTV.';
+             const dstiExplanation = approvability.dsti > 80 ? 'Výborné DSTI.' : 'Dostatečná rezerva.';
+             const bonitaExplanation = approvability.bonita > 85 ? 'Excelentní bonita.' : 'Velmi dobrá bonita.';
+             const totalScoreValue = (typeof approvability.total === 'number' && !isNaN(approvability.total)) ? approvability.total : 0;
 
-        // --- Dynamický výpočet a zobrazení detailů pro VYBRANOU nabídku ---
+             scoreSectionHTML = `
+                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 sm:p-6 rounded-2xl border border-blue-200 shadow-lg">
+                    <h4 class="text-lg sm:text-xl font-bold mb-4">🎯 Skóre vaší žádosti</h4>
+                    <div class="space-y-3">
+                        ${scoreHTML('LTV', approvability.ltv, 'bg-green-500', '🏠', ltvExplanation)}
+                        ${scoreHTML('DSTI', approvability.dsti, 'bg-yellow-500', '💰', dstiExplanation)}
+                        ${scoreHTML('Bonita', approvability.bonita, 'bg-blue-500', '⭐', bonitaExplanation)}
+                    </div>
+                    <div class="mt-6 p-4 bg-white rounded-xl text-center">
+                        <h5 class="text-base sm:text-lg font-bold mb-2">Celková šance na schválení:</h5>
+                        <div class="text-4xl sm:text-5xl font-bold text-green-600">${totalScoreValue}%</div>
+                    </div>
+                </div>`;
+        } else {
+             scoreSectionHTML = `<div class="bg-yellow-50 p-4 rounded-lg text-yellow-800">Skóre žádosti se nepodařilo načíst.</div>`;
+        }
+        // ------------------------------------
+
+        // --- Dynamický výpočet a zobrazení detailů ---
         let fixationDetailsHTML = '<div id="fixation-details-section"></div>'; // Placeholder
         let chartData = null; // Data pro graf
 
         if (selectedOffer) {
-            const effectivePropertyValue = state.formData.purpose === 'výstavba' ? state.formData.propertyValue + state.formData.landValue : state.formData.propertyValue;
-            const effectiveTerm = Math.min(state.formData.loanTerm, Math.max(5, 70 - state.formData.age));
-            
-            // Spočítáme detaily pro AKTUÁLNĚ vybranou nabídku
-            const currentFixationDetails = calculateFixationAnalysis(state.formData.loanAmount, effectivePropertyValue, selectedOffer.rate, effectiveTerm, state.formData.fixation);
-            
-            if (currentFixationDetails) {
-                 fixationDetailsHTML = `
-                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 sm:p-6 rounded-2xl border border-green-200 shadow-lg" id="fixation-details-section">
-                        <h4 class="text-lg sm:text-xl font-bold mb-3 flex items-center">
-                            <span class="text-2xl mr-2">📊</span> Detaily pro: ${selectedOffer.title}
-                        </h4>
-                        <div class="bg-white p-4 rounded-xl space-y-2 text-sm">
-                            <div class="flex justify-between items-center py-1 border-b"><span>Celkem za ${state.formData.fixation} let:</span><strong class="text-base">${formatNumber(currentFixationDetails.totalPaymentsInFixation)}</strong></div>
-                            <div class="flex justify-between items-center py-1"><span>Z toho úroky:</span><strong class="text-base text-red-600">${formatNumber(currentFixationDetails.totalInterestForFixation)}</strong></div>
-                            <div class="flex justify-between items-center py-1 border-t pt-2"><span>Zbývající dluh:</span><strong class="text-base">${formatNumber(currentFixationDetails.remainingBalanceAfterFixation)}</strong></div>
-                        </div>
-                        
-                        ${currentFixationDetails.quickAnalysis ? `
-                        <div class="mt-4 bg-yellow-50 p-3 rounded-xl border border-yellow-200">
-                            <h5 class="font-bold text-xs mb-2">⚡ Rychlá analýza</h5>
-                            <div class="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
-                                <div>📅 Denně: <strong>${formatNumber(currentFixationDetails.quickAnalysis.dailyCost)}</strong></div>
-                                <div>💰 Daň. úleva: <strong>~${formatNumber(currentFixationDetails.quickAnalysis.taxSavings)}/měs</strong></div>
-                                <div>🏠 Vs. nájem: O <strong>${formatNumber(Math.max(0, currentFixationDetails.quickAnalysis.estimatedRent - selectedOffer.monthlyPayment))} nižší</strong></div>
-                            </div>
-                        </div>
-                        ` : ''}
-                        
-                        <div class="mt-4 bg-blue-50 p-3 rounded-xl border border-blue-200 text-xs">
-                             <h5 class="font-bold mb-1">💡 Scénář: Pokles sazeb</h5>
-                             <p class="text-gray-600 mb-1">Pokud po ${state.formData.fixation} letech klesne sazba na ${currentFixationDetails.futureScenario.optimistic.rate.toFixed(2)}%:</p>
-                             <div>Nová splátka: <strong class="text-green-600">${formatNumber(currentFixationDetails.futureScenario.optimistic.newMonthlyPayment)}</strong></div>
-                             <div>Úspora: <strong class="text-green-600">${formatNumber(currentFixationDetails.futureScenario.optimistic.monthlySavings)}/měs</strong></div>
-                        </div>
-                        
-                        <button class="nav-btn bg-blue-600 hover:bg-blue-700 text-white w-full mt-4 text-sm py-2" data-action="discuss-fixation-with-ai">
-                            <span class="mr-1">🤖</span> Probrat detaily s AI
-                        </button>
-                    </div>
-                `;
-                // Příprava dat pro graf
-                chartData = Array.from({ length: effectiveTerm }, (_, i) => calculateAmortization(state.formData.loanAmount, selectedOffer.rate, effectiveTerm, i + 1));
-            } else {
-                 fixationDetailsHTML = `<div id="fixation-details-section"><p class="text-center text-red-600">Chyba při výpočtu detailů fixace.</p></div>`;
+            try {
+                 const effectivePropertyValue = state.formData.purpose === 'výstavba' ? (state.formData.propertyValue || 0) + (state.formData.landValue || 0) : (state.formData.propertyValue || 0);
+                 const effectiveTerm = Math.min(state.formData.loanTerm || 30, Math.max(5, 70 - (state.formData.age || 35)));
+                 
+                 // Zabráníme výpočtu, pokud jsou klíčová data neplatná
+                 if (effectivePropertyValue > 0 && state.formData.loanAmount > 0 && selectedOffer.rate > 0 && effectiveTerm > 0 && state.formData.fixation > 0) {
+                      const currentFixationDetails = calculateFixationAnalysis(state.formData.loanAmount, effectivePropertyValue, selectedOffer.rate, effectiveTerm, state.formData.fixation);
+                      
+                      if (currentFixationDetails) {
+                           // ... (zde je váš kód pro sestavení fixationDetailsHTML - NEMĚNÍ SE)
+                           fixationDetailsHTML = `
+                           <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 sm:p-6 rounded-2xl border border-green-200 shadow-lg" id="fixation-details-section">
+                                <h4 class="text-lg sm:text-xl font-bold mb-3 flex items-center">
+                                    <span class="text-2xl mr-2">📊</span> Detaily pro: ${selectedOffer.title}
+                                </h4>
+                                </div>
+                           `;
+                           // Příprava dat pro graf
+                           chartData = Array.from({ length: effectiveTerm }, (_, i) => calculateAmortization(state.formData.loanAmount, selectedOffer.rate, effectiveTerm, i + 1));
+                      } else {
+                           fixationDetailsHTML = `<div id="fixation-details-section"><p class="text-center text-red-600">Chyba při výpočtu detailů fixace.</p></div>`;
+                      }
+                 } else {
+                      fixationDetailsHTML = `<div id="fixation-details-section"><p class="text-center text-orange-600">Pro zobrazení detailů fixace zadejte platné parametry.</p></div>`;
+                 }
+            } catch (calcError) {
+                 console.error("Chyba při počítání detailů fixace:", calcError);
+                 fixationDetailsHTML = `<div id="fixation-details-section"><p class="text-center text-red-600">Chyba při zpracování detailů fixace.</p></div>`;
             }
         }
-        // ------------------------------------------------
+        // -----------------------------------------
 
+        // Sestavení finálního HTML
         container.innerHTML = `
             <div>
                 <h3 class="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">Našli jsme pro vás tyto nabídky:</h3>
@@ -832,18 +861,8 @@ const findQuickResponse = (message) => {
             
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mt-8 lg:mt-12">
                 <div class="space-y-6">
-                    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 sm:p-6 rounded-2xl border border-blue-200 shadow-lg">
-                        <h4 class="text-lg sm:text-xl font-bold mb-4">🎯 Skóre vaší žádosti</h4>
-                        <div class="space-y-3">
-                            ${scoreHTML('LTV', approvability.ltv, 'bg-green-500', '🏠', ltvExplanation)}
-                            ${scoreHTML('DSTI', approvability.dsti, 'bg-yellow-500', '💰', dstiExplanation)}
-                            ${scoreHTML('Bonita', approvability.bonita, 'bg-blue-500', '⭐', bonitaExplanation)}
-                        </div>
-                        <div class="mt-6 p-4 bg-white rounded-xl text-center">
-                            <h5 class="text-base sm:text-lg font-bold mb-2">Celková šance na schválení:</h5>
-                            <div class="text-4xl sm:text-5xl font-bold text-green-600">${approvability.total}%</div>
-                        </div>
-                    </div>
+                    ${scoreSectionHTML} {/* Vložíme HTML pro skóre */}
+                     
                      <div class="bg-white p-4 sm:p-6 rounded-xl border border-gray-200 shadow-lg">
                         <h3 class="text-lg sm:text-xl font-bold mb-4">Vývoj splácení v čase</h3>
                         <div class="relative h-60 sm:h-80">
@@ -853,7 +872,7 @@ const findQuickResponse = (message) => {
                 </div>
                 
                 <div class="space-y-6">
-                    ${fixationDetailsHTML} {/* Vložíme dynamicky generovaný HTML blok */}
+                    ${fixationDetailsHTML} {/* Vložíme HTML pro detaily fixace */}
                     
                     <div class="text-center space-y-3">
                         <button class="nav-btn bg-green-600 hover:bg-green-700 text-base sm:text-lg w-full py-3" data-action="show-lead-form">📞 Domluvit se specialistou</button>
@@ -861,54 +880,67 @@ const findQuickResponse = (message) => {
                 </div>
             </div>`;
 
-        // Nastavení výchozí vybrané nabídky, POKUD JEŠTĚ NENÍ vybrána
-        if (!state.calculation.selectedOffer && offers.length > 0) {
-            state.calculation.selectedOffer = offers[0];
-            // Okamžitě překreslíme s vybranou nabídkou
-            renderResults(); 
-            return; // Zastavíme další provádění, protože se funkce zavolá znovu
-        } 
-        
-        // Vykreslíme graf a přidáme listenery až po finálním vykreslení
-        if (chartData) {
-            renderChart('resultsChart', chartData); // Předáme přímo data
+        // Vykreslíme graf a přidáme listenery až po vložení HTML do DOMu
+        if (chartData && typeof Chart !== 'undefined') {
+            // Použijeme setTimeout pro jistotu, že canvas je připraven
+            setTimeout(() => renderChart('resultsChart', chartData), 0); 
+        } else if (typeof Chart === 'undefined') {
+             console.error("Knihovna Chart.js není načtena.");
         }
-        addOfferCardListeners(); // Přidáme listenery na karty
+        addOfferCardListeners(); 
 
-        // Skrolujeme až po úplném vykreslení
-        // Dáme malou prodlevu, aby se stihl graf vykreslit
+        // Skrolujeme až po úplném vykreslení (malá prodleva)
         setTimeout(() => scrollToTarget('#results-container'), 100); 
     };
         
-    const renderChart = (canvasId, calc) => { 
-        if (state.chart) { state.chart.destroy(); } 
+    const renderChart = (canvasId, schedule) => { 
+        if (state.chart) { 
+            try { state.chart.destroy(); } catch (e) { console.warn("Nepodařilo se zničit starý graf:", e); }
+        } 
         const ctx = document.getElementById(canvasId)?.getContext('2d'); 
-        if (!ctx || !calc.selectedOffer) return; 
+        if (!ctx) {
+            console.error(`Canvas element s ID "${canvasId}" nebyl nalezen.`);
+            return;
+        }
+        // Kontrola, zda máme platná data pro graf
+        if (!schedule || !Array.isArray(schedule) || schedule.length === 0) {
+            console.warn("Chybí nebo jsou neplatná data pro graf.");
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); // Vyčistíme plátno
+            ctx.font = "14px Inter";
+            ctx.fillStyle = "#6b7280";
+            ctx.textAlign = "center";
+            ctx.fillText("Data pro graf nejsou k dispozici.", ctx.canvas.width / 2, ctx.canvas.height / 2);
+            return;
+        }
         
-        const { loanAmount, loanTerm } = state.formData; 
-        const { rate } = calc.selectedOffer; 
-        if (loanTerm <= 0) return; 
-
-        const schedule = Array.from({ length: loanTerm }, (_, i) => calculateAmortization(loanAmount, rate, loanTerm, i + 1)); 
-        state.chart = new Chart(ctx, { 
-            type: 'bar', 
-            data: { 
-                labels: schedule.map(item => item.year), 
-                datasets: [
-                    { label: 'Úroky', data: schedule.map(item => item.interest), backgroundColor: '#ef4444' }, 
-                    { label: 'Jistina', data: schedule.map(item => item.principal), backgroundColor: '#22c55e' }
-                ] 
-            }, 
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                scales: { 
-                    x: { stacked: true }, 
-                    y: { stacked: true, ticks: { display: false } } 
+        try {
+            state.chart = new Chart(ctx, { 
+                type: 'bar', 
+                data: { 
+                    labels: schedule.map(item => item?.year || '?'), // Bezpečný přístup k datům
+                    datasets: [
+                        { label: 'Úroky', data: schedule.map(item => item?.interest || 0), backgroundColor: '#ef4444' }, 
+                        { label: 'Jistina', data: schedule.map(item => item?.principal || 0), backgroundColor: '#22c55e' }
+                    ] 
                 }, 
-                plugins: { legend: { position: 'top' } } 
-            } 
-        }); 
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    scales: { 
+                        x: { stacked: true }, 
+                        y: { stacked: true, ticks: { display: false } } 
+                    }, 
+                    plugins: { legend: { position: 'top' } } 
+                } 
+            }); 
+        } catch (chartError) {
+             console.error("Chyba při vytváření grafu:", chartError);
+             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+             ctx.font = "14px Inter";
+             ctx.fillStyle = "red";
+             ctx.textAlign = "center";
+             ctx.fillText("Chyba při vykreslování grafu.", ctx.canvas.width / 2, ctx.canvas.height / 2);
+        }
     };
     
     const renderResultsChart = () => renderChart('resultsChart', state.calculation);

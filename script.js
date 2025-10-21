@@ -1338,21 +1338,38 @@ const handleInfoTooltip = (e) => {
 };
 // KONEC OVĚŘENÉ FUNKCE handleInfoTooltip
 
-    // ZAČÁTEK NOVÉHO BLOKU handleClick
+// ZAČÁTEK KOMPLETNÍ A OPRAVENÉ FUNKCE handleClick
 const handleClick = async (e) => {
+    // --- Logika pro tooltipy ---
+    // Pokud bylo kliknuto na info ikonu, zavoláme handleInfoTooltip a skončíme
+    if (e.target.closest('.info-icon')) {
+        handleInfoTooltip(e); // Předáme událost 'e'
+        return; // Zastavíme další zpracování v handleClick
+    }
+    // Pokud existuje tooltip a klikli jsme mimo něj, zavřeme ho
+    const existingTooltip = document.getElementById('active-tooltip');
+    if (existingTooltip && !e.target.closest('#active-tooltip')) {
+         existingTooltip.remove();
+         // Nepřerušíme, kliknutí mohlo být na jiný interaktivní prvek
+    }
+    // ------------------------------------
+
+    // Zbytek funkce handleClick pro ostatní prvky
     let target = e.target.closest('[data-action], .offer-card, .suggestion-btn, [data-mode], .scroll-to, [data-quick-question]');
     if (!target) return; // Pokud kliknutí není na interaktivní prvek, nic nedělej
 
-    // e.preventDefault() je nyní voláno POUZE tam, kde je potřeba (u odkazů s #)
-    if (target.matches('a[href^="#"]')) {
+    // PreventDefault voláme jen pro odkazy pro skrolování
+    if (target.matches('a[href^="#"].scroll-to')) {
         e.preventDefault();
     }
-    
+
     const { action, mode, suggestion, target: targetId } = target.dataset;
     const quickQuestion = target.dataset.quickQuestion;
 
-    if(action === 'ask-ai-from-calc') {
+    // Volání ask-ai-from-calc (nyní s kompletním objektem questions)
+    if (action === 'ask-ai-from-calc') {
         const questionKey = target.dataset.questionKey;
+        // ===== KOMPLETNÍ OBJEKT QUESTIONS ZDE =====
         const questions = {
             'propertyValue': "Jak hodnota nemovitosti ovlivňuje hypotéku?",
             'loanAmount': "Proč je důležité správně nastavit výši úvěru?",
@@ -1362,24 +1379,23 @@ const handleClick = async (e) => {
             'liabilities': "Jak mé ostatní půjčky ovlivňují šanci na získání hypotéky?",
             'age': "Proč je můj věk důležitý pro banku?",
             'children': "Jak počet dětí ovlivňuje výpočet bonity?",
-            'vsRent': "Jak přesně se počítá srovnání splátky s nájmem a jaké jsou výhody vlastnictví?"
+            'vsRent': "Jak přesně se počítá srovnání splátky s nájmem a jaké jsou výhody vlastnictví?",
+            // Můžete sem přidat i klíče pro ikony z detailů fixace, pokud je potřeba
+            'quickAnalysis': "Vysvětli mi podrobněji Rychlou analýzu.",
+            'optimisticScenario': "Jak reálný je scénář poklesu sazeb?",
+            'moderateScenario': "Co dělat, pokud sazby skutečně vzrostou?"
         };
+        // ==========================================
         const question = questions[questionKey] || `Řekni mi více o poli ${questionKey}.`;
-        document.getElementById('active-tooltip')?.remove();
-        // ============================
-
+        document.getElementById('active-tooltip')?.remove(); // Zavřeme tooltip
         switchMode('ai');
         setTimeout(() => handleChatMessageSend(question), 300);
-        return;
+        return; // Důležité ukončit zde
     }
 
-    if (action === 'toggle-mobile-sidebar' || action === 'close-mobile-sidebar') {
-        toggleMobileSidebar(); // Předpokládáme, že tato funkce existuje
-        return;
-    }
-
+    // Ostatní logika pro tlačítka (zůstává stejná)
     if (quickQuestion) {
-        if (isMobile()) toggleMobileSidebar(); // Předpokládáme, že tato funkce existuje
+        if (isMobile()) toggleMobileSidebar(); // Předpokládá existenci funkce
         const chatInput = document.getElementById('permanent-chat-input');
         if (chatInput) {
             chatInput.value = quickQuestion;
@@ -1402,26 +1418,26 @@ const handleClick = async (e) => {
         switchMode(mode);
     }
     else if (action === 'calculate') {
-        calculateRates(target); // Předpokládáme, že tato funkce existuje
+        calculateRates(target); // Předpokládá existenci funkce
     }
-    else if (action === 'go-to-calculator') {
-        if (isMobile()) toggleMobileSidebar(); // Předpokládáme, že tato funkce existuje
+     else if (action === 'go-to-calculator') {
+        if (isMobile()) toggleMobileSidebar(); // Předpokládá existenci funkce
         switchMode('express');
     }
     else if (action === 'show-lead-form') {
-        if (isMobile()) toggleMobileSidebar(); // Předpokládáme, že tato funkce existuje
+        if (isMobile()) toggleMobileSidebar(); // Předpokládá existenci funkce
         DOMElements.leadFormContainer.classList.remove('hidden');
         scrollToTarget('#kontakt');
     }
     else if (action === 'select-offer') {
         const offerId = target.dataset.offer;
         const offer = state.calculation.offers.find(o => o.id === offerId);
-        if (offer) {
-            document.querySelectorAll('.offer-card').forEach(c => c.classList.remove('selected'));
+        if (offer && offer.id !== state.calculation.selectedOffer?.id) { // Jen pokud klikneme na jinou
+            document.querySelectorAll('.offer-card').forEach(c => c.classList.remove('selected', 'border-blue-600', 'ring-2', 'ring-blue-200'));
             const card = document.querySelector(`[data-offer-id="${offerId}"]`);
-            if (card) card.classList.add('selected');
+            if (card) card.classList.add('selected', 'border-blue-600', 'ring-2', 'ring-blue-200');
             state.calculation.selectedOffer = offer;
-            // Zde by mohlo být volání renderResultsChart(), pokud existuje
+            renderResults(); // Překreslíme detaily
         }
     }
     else if (action === 'discuss-with-ai' || action === 'discuss-fixation-with-ai') {
@@ -1432,7 +1448,7 @@ const handleClick = async (e) => {
         const chatMessages = document.getElementById('chat-messages');
         if (chatMessages) chatMessages.innerHTML = '';
         addChatMessage('Jsem váš hypoteční poradce s AI nástroji. Jak vám mohu pomoci?', 'ai');
-        generateAISuggestions(); // Předpokládáme, že tato funkce existuje
+        generateAISuggestions(); // Předpokládá existenci funkce
     }
     else if (suggestion) {
         if (suggestion === '📞 Domluvit se specialistou') {
@@ -1446,16 +1462,19 @@ const handleClick = async (e) => {
         const message = suggestion || input?.value.trim();
         if (!message || state.isAiTyping) return;
         if (input) input.value = '';
-        handleChatMessageSend(message); // Předpokládáme, že tato funkce existuje
+        handleChatMessageSend(message); // Předpokládá existenci funkce
     }
-     else if (target.matches('.offer-card')) {
-        document.querySelectorAll('.offer-card').forEach(c => c.classList.remove('selected'));
-        target.classList.add('selected');
-        state.calculation.selectedOffer = state.calculation.offers.find(o => o.id === target.dataset.offerId);
-         // Zde by mohlo být volání renderResultsChart(), pokud existuje
+     else if (target.matches('.offer-card')) { // Reakce na kliknutí na kartu pro výběr
+        const offerId = target.dataset.offerId;
+        const clickedOffer = state.calculation.offers.find(o => o.id === offerId);
+        if (clickedOffer && clickedOffer.id !== state.calculation.selectedOffer?.id) {
+            state.calculation.selectedOffer = clickedOffer;
+            renderResults(); // Překreslíme s novou vybranou nabídkou
+        }
     }
 };
 // KONEC NOVÉHO BLOKU handleClick
+
     // ZAČÁTEK KOMPLETNÍ FUNKCE handleFormSubmit
 const handleFormSubmit = async (e) => {
     e.preventDefault();
@@ -1766,20 +1785,24 @@ const handleFormSubmit = async (e) => {
         DOMElements.cookieBanner?.classList.add('hidden');
     };
 
-    const init = () => {
-    // Registrace hlavního listeneru pro kliknutí - MUSÍ BÝT JEN JEDEN PRO CELOU STRÁNKU
-    document.body.addEventListener('click', handleClick); // Listener pro obecná kliknutí
+    // ZAČÁTEK OPRAVENÉ FUNKCE init
+const init = () => {
+    // --- HLAVNÍ POSLUCHAČ UDÁLOSTÍ ---
+    // POUZE TENTO JEDEN listener pro kliknutí na celém body
+    document.body.addEventListener('click', handleClick);
 
-    // Registrace listeneru pro tooltipy - POUZE JEDEN
-    document.body.addEventListener('click', (e) => handleInfoTooltip(e), true); // Listener specificky pro tooltipy
-
+    // --- OSTATNÍ LISTENERY ---
     // Listener pro změny v kalkulačce
-    DOMElements.contentContainer.addEventListener('input', (e) => {
-        if (e.target.matches('input[type="range"], input[type="text"], select')) {
-            handleInput(e);
-        }
-    });
-    
+    if (DOMElements.contentContainer) {
+        DOMElements.contentContainer.addEventListener('input', (e) => {
+            if (e.target.matches('input[type="range"], input[type="text"], select')) {
+                handleInput(e);
+            }
+        });
+    } else {
+        console.error("Chyba: Kontejner #content-container nebyl nalezen.");
+    }
+
     // Listener pro odeslání formuláře
     if (DOMElements.leadForm) {
          DOMElements.leadForm.addEventListener('submit', handleFormSubmit);
@@ -1794,24 +1817,23 @@ const handleFormSubmit = async (e) => {
         });
     }
 
-    // Resize handler (zůstává stejný)
+    // --- OSTATNÍ INICIALIZAČNÍ KROKY ---
+    // Resize handler
     let resizeTimer;
     window.addEventListener('resize', () => {
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(() => {
+            document.getElementById('active-tooltip')?.remove();
             if (state.mode === 'ai') {
                 const sidebarContainer = document.getElementById('sidebar-container');
                 if(sidebarContainer) sidebarContainer.innerHTML = getSidebarHTML();
             }
-            // Zavřeme tooltipy při změně velikosti
-            document.getElementById('active-tooltip')?.remove();
         }, 250);
     });
 
-    handleCookieBanner(); // Předpokládáme, že tato funkce existuje a je správně
+    handleCookieBanner(); // Předpokládáme existenci
     DOMElements.modeCards.forEach(card => card.classList.toggle('active', card.dataset.mode === state.mode));
-    updateActiveUsers(); // Předpokládáme, že tato funkce existuje a je správně
+    updateActiveUsers(); // Předpokládáme existenci
 };
-
-    init();
+// KONEC OPRAVENÉ FUNKCE init
 });

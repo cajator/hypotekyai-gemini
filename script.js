@@ -842,6 +842,9 @@ const findQuickResponse = (message) => {
                             <h4 class="text-lg sm:text-xl font-bold mb-3 flex items-center">
                                 <span class="text-2xl mr-2">📊</span> Detaily pro: ${selectedOffer.title || 'vybranou nabídku'}
                             </h4>
+                            <div class="flex justify-between items-center pb-2 mb-2 border-b"><span>Výše úvěru:</span><strong class="text-base">${formatNumber(state.formData.loanAmount)}</strong></div>
+                            <div class="flex justify-between items-center pb-2 mb-2 border-b"><span>Splatnost:</span><strong class="text-base">${effectiveTerm} let</strong></div>
+                            <div class="flex justify-between items-center py-1 border-b"><span>Celkem za ${currentFixation} let:</span><strong class="text-base">${formatNumber(currentFixationDetails.totalPaymentsInFixation)}</strong></div>
                             <div class="bg-white p-4 rounded-xl space-y-2 text-sm shadow-sm">
                                 <div class="flex justify-between items-center py-1 border-b"><span>Celkem za ${currentFixation} let:</span><strong class="text-base">${formatNumber(currentFixationDetails.totalPaymentsInFixation)}</strong></div>
                                 <div class="flex justify-between items-center py-1 border-b"><span>Z toho úroky:</span><strong class="text-base text-red-600">${formatNumber(currentFixationDetails.totalInterestForFixation)}</strong></div>
@@ -854,8 +857,11 @@ const findQuickResponse = (message) => {
                                 <div class="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
                                     <div>📅 Denně: <strong>${formatNumber(currentFixationDetails.quickAnalysis.dailyCost)}</strong></div>
                                     <div>💰 Daň. úleva: <strong>~${formatNumber(currentFixationDetails.quickAnalysis.taxSavings)}/měs</strong></div>
-                                    <div class="col-span-2">🏠 Vs. nájem: O <strong>${formatNumber(Math.max(0, currentFixationDetails.quickAnalysis.estimatedRent - selectedOffer.monthlyPayment))} nižší</strong></div>
-                                </div>
+                                    <div class="col-span-2 flex items-center">
+                                        🏠 Vs. nájem: 
+                                        <strong class="ml-1">O ${formatNumber(Math.max(0, currentFixationDetails.quickAnalysis.estimatedRent - selectedOffer.monthlyPayment))} nižší</strong>
+                                        <span class="info-icon ml-1.5" data-info-key="vsRent" data-info-text="Toto je odhad porovnání vaší měsíční splátky s průměrným tržním nájmem za podobnou nemovitost. Počítá se jako cca 3.5 % ročně z ceny nemovitosti vyděleno 12. Ukazuje, zda je pro vás vlastnictví finančně výhodnější než pronájem.">?</span>
+                                    </div>
                             </div>
                             ` : ''}
                             
@@ -1129,6 +1135,11 @@ const findQuickResponse = (message) => {
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             state.calculation = { ...state.calculation, ...(await response.json()), isFromOurCalculator: true };
             if (!isSilent) renderResults();
+            if (!isSilent) {
+                renderResults();
+                // Přidáno: Počkáme chvilku, než se výsledky vykreslí, a pak sjedeme
+                setTimeout(() => scrollToTarget('#results-container'), 150); 
+            }
             return true;
         } catch (error) {
             console.error('Chyba při načítání sazeb:', error);
@@ -1308,7 +1319,8 @@ const handleClick = async (e) => {
             'fixation': "Jaká je nejlepší strategie pro volbu fixace?",
             'liabilities': "Jak mé ostatní půjčky ovlivňují šanci na získání hypotéky?",
             'age': "Proč je můj věk důležitý pro banku?",
-            'children': "Jak počet dětí ovlivňuje výpočet bonity?"
+            'children': "Jak počet dětí ovlivňuje výpočet bonity?",
+            'vsRent': "Jak přesně se počítá srovnání splátky s nájmem a jaké jsou výhody vlastnictví?"
         };
         const question = questions[questionKey] || `Řekni mi více o poli ${questionKey}.`;
         

@@ -1771,7 +1771,7 @@ const handleFormSubmit = async (e) => {
     document.body.addEventListener('click', handleClick);
 
     // Registrace listeneru pro tooltipy - přidá se k document, aby zachytil vše
-    document.body.addEventListener('click', handleInfoTooltip, true); // Připojíme k body a použijeme capturing fázi
+    document.body.addEventListener('click', (e) => handleInfoTooltip(e), true); // Připojíme k body a použijeme capturing fázi
 
     // Listener pro změny v kalkulačce
     DOMElements.contentContainer.addEventListener('input', (e) => {

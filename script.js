@@ -1768,10 +1768,10 @@ const handleFormSubmit = async (e) => {
 
     const init = () => {
     // Registrace hlavního listeneru pro kliknutí - MUSÍ BÝT JEN JEDEN PRO CELOU STRÁNKU
-    document.body.addEventListener('click', (e) => handleInfoTooltip(e), true);
+    document.body.addEventListener('click', handleClick); // Listener pro obecná kliknutí
 
-    // Registrace listeneru pro tooltipy - přidá se k document, aby zachytil vše
-    document.body.addEventListener('click', (e) => handleInfoTooltip(e), true); // Připojíme k body a použijeme capturing fázi
+    // Registrace listeneru pro tooltipy - POUZE JEDEN
+    document.body.addEventListener('click', (e) => handleInfoTooltip(e), true); // Listener specificky pro tooltipy
 
     // Listener pro změny v kalkulačce
     DOMElements.contentContainer.addEventListener('input', (e) => {

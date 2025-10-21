@@ -1494,15 +1494,29 @@ const findQuickResponse = (message) => {
             
             // 5. Zkontrolujeme, zda funkce odpověděla úspěšně
             if (response.ok) {
-                form.style.display = 'none';
-                const successMessage = document.getElementById('form-success');
-                if (successMessage) successMessage.style.display = 'block';
-                // Můžeme přidat i skrolování k úspěšné hlášce
-                setTimeout(() => scrollToTarget('#kontakt'), 100);
-            } else {
-                // Pokud funkce vrátí chybu (např. 500)
-                throw new Error(`Odeslání selhalo: ${response.status} ${response.statusText}`);
-            }
+            form.style.display = 'none';
+            const successMessage = document.getElementById('form-success');
+            if (successMessage) successMessage.style.display = 'block';
+             setTimeout(() => scrollToTarget('#kontakt'), 100);
+
+             // ===== KONTROLA ZDE =====
+             if (typeof gtag === 'function') {
+                 gtag('event', 'generate_lead', {
+                     'event_category': 'form_submission',
+                     'event_label': 'hypoteka_kontakt',
+                 });
+                 // TENTO LOG SE MĚL OBJEVIT:
+                 console.log('GA4 event generate_lead sent.'); 
+             } else {
+                 // TENTO LOG BY SE OBJEVIL, POKUD gtag NENÍ DEFINOVÁNA:
+                 console.warn('gtag function not found. GA4 event not sent.');
+             }
+             // =======================
+
+        } else {
+             // Pokud funkce vrátí chybu (např. 500)
+             throw new Error(`Odeslání selhalo: ${response.status} ${response.statusText}`);
+        }
 
         } catch (error) { // Správně umístěný catch blok
             console.error('Chyba při odesílání formuláře:', error);

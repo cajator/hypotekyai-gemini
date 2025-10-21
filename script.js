@@ -1314,210 +1314,208 @@ const findQuickResponse = (message) => {
 };
 
     // ZAČÁTEK NOVÉHO BLOKU handleClick
-const handleClick = async (e) => {
-    let target = e.target.closest('[data-action], .offer-card, .suggestion-btn, [data-mode], .scroll-to, [data-quick-question]');
-    if (!target) return; // Pokud kliknutí není na interaktivní prvek, nic nedělej
+    const handleClick = async (e) => {
+        let target = e.target.closest('[data-action], .offer-card, .suggestion-btn, [data-mode], .scroll-to, [data-quick-question]');
+        if (!target) return; // Pokud kliknutí není na interaktivní prvek, nic nedělej
 
-    // e.preventDefault() je nyní voláno POUZE tam, kde je potřeba (u odkazů s #)
-    if (target.matches('a[href^="#"]')) {
-        e.preventDefault();
-    }
-    
-    const { action, mode, suggestion, target: targetId } = target.dataset;
-    const quickQuestion = target.dataset.quickQuestion;
-
-    if(action === 'ask-ai-from-calc') {
-        const questionKey = target.dataset.questionKey;
-        const questions = {
-            'propertyValue': "Jak hodnota nemovitosti ovlivňuje hypotéku?",
-            'loanAmount': "Proč je důležité správně nastavit výši úvěru?",
-            'income': "Jak banky posuzují můj příjem a co všechno se započítává?",
-            'loanTerm': "Jaký je rozdíl ve splátce a úrocích při splatnosti 20 vs 30 let?",
-            'fixation': "Jaká je nejlepší strategie pro volbu fixace?",
-            'liabilities': "Jak mé ostatní půjčky ovlivňují šanci na získání hypotéky?",
-            'age': "Proč je můj věk důležitý pro banku?",
-            'children': "Jak počet dětí ovlivňuje výpočet bonity?",
-            'vsRent': "Jak přesně se počítá srovnání splátky s nájmem a jaké jsou výhody vlastnictví?"
-        };
-        const question = questions[questionKey] || `Řekni mi více o poli ${questionKey}.`;
-        document.getElementById('active-tooltip')?.remove();
-        // ============================
+        // e.preventDefault() je nyní voláno POUZE tam, kde je potřeba (u odkazů s #)
+        if (target.matches('a[href^="#"]')) {
+            e.preventDefault();
+        }
         
-        switchMode('ai');
-        setTimeout(() => handleChatMessageSend(question), 300);
-        return;
-    }
+        const { action, mode, suggestion, target: targetId } = target.dataset;
+        const quickQuestion = target.dataset.quickQuestion;
 
-    if (action === 'toggle-mobile-sidebar' || action === 'close-mobile-sidebar') {
-        toggleMobileSidebar(); // Předpokládáme, že tato funkce existuje
-        return;
-    }
-
-    if (quickQuestion) {
-        if (isMobile()) toggleMobileSidebar(); // Předpokládáme, že tato funkce existuje
-        const chatInput = document.getElementById('permanent-chat-input');
-        if (chatInput) {
-            chatInput.value = quickQuestion;
-            handleChatMessageSend(quickQuestion);
-            chatInput.value = '';
-        }
-        return;
-    }
-
-    if (targetId) {
-        if (action === 'show-lead-form' || action === 'show-lead-form-direct') {
-            DOMElements.leadFormContainer.classList.remove('hidden');
-        }
-        scrollToTarget(targetId);
-        if (DOMElements.mobileMenu && !DOMElements.mobileMenu.classList.contains('hidden')) {
-            DOMElements.mobileMenu.classList.add('hidden');
-        }
-    }
-    else if (mode) {
-        switchMode(mode);
-    }
-    else if (action === 'calculate') {
-        calculateRates(target); // Předpokládáme, že tato funkce existuje
-    }
-    else if (action === 'go-to-calculator') {
-        if (isMobile()) toggleMobileSidebar(); // Předpokládáme, že tato funkce existuje
-        switchMode('express');
-    }
-    else if (action === 'show-lead-form') {
-        if (isMobile()) toggleMobileSidebar(); // Předpokládáme, že tato funkce existuje
-        DOMElements.leadFormContainer.classList.remove('hidden');
-        scrollToTarget('#kontakt');
-    }
-    else if (action === 'select-offer') {
-        const offerId = target.dataset.offer;
-        const offer = state.calculation.offers.find(o => o.id === offerId);
-        if (offer) {
-            document.querySelectorAll('.offer-card').forEach(c => c.classList.remove('selected'));
-            const card = document.querySelector(`[data-offer-id="${offerId}"]`);
-            if (card) card.classList.add('selected');
-            state.calculation.selectedOffer = offer;
-            // Zde by mohlo být volání renderResultsChart(), pokud existuje
-        }
-    }
-    else if (action === 'discuss-with-ai' || action === 'discuss-fixation-with-ai') {
-        switchMode('ai', true);
-    }
-    else if (action === 'reset-chat') {
-        state.chatHistory = [];
-        const chatMessages = document.getElementById('chat-messages');
-        if (chatMessages) chatMessages.innerHTML = '';
-        addChatMessage('Jsem váš hypoteční poradce s AI nástroji. Jak vám mohu pomoci?', 'ai');
-        generateAISuggestions(); // Předpokládáme, že tato funkce existuje
-    }
-    else if (suggestion) {
-        if (suggestion === '📞 Domluvit se specialistou') {
-            addChatMessage("Chci se domluvit se specialistou.", 'user');
-            addChatMessage("Výborně! Přesouvám vás na formulář pro spojení s naším specialistou.", 'ai');
-            DOMElements.leadFormContainer.classList.remove('hidden');
-            setTimeout(() => scrollToTarget('#kontakt'), 100);
+        if(action === 'ask-ai-from-calc') {
+            const questionKey = target.dataset.questionKey;
+            const questions = {
+                'propertyValue': "Jak hodnota nemovitosti ovlivňuje hypotéku?",
+                'loanAmount': "Proč je důležité správně nastavit výši úvěru?",
+                'income': "Jak banky posuzují můj příjem a co všechno se započítává?",
+                'loanTerm': "Jaký je rozdíl ve splátce a úrocích při splatnosti 20 vs 30 let?",
+                'fixation': "Jaká je nejlepší strategie pro volbu fixace?",
+                'liabilities': "Jak mé ostatní půjčky ovlivňují šanci na získání hypotéky?",
+                'age': "Proč je můj věk důležitý pro banku?",
+                'children': "Jak počet dětí ovlivňuje výpočet bonity?",
+                'vsRent': "Jak přesně se počítá srovnání splátky s nájmem a jaké jsou výhody vlastnictví?"
+            };
+            const question = questions[questionKey] || `Řekni mi více o poli ${questionKey}.`;
+            document.getElementById('active-tooltip')?.remove();
+            // ============================
+            
+            switchMode('ai');
+            setTimeout(() => handleChatMessageSend(question), 300);
             return;
         }
-        const input = document.getElementById('permanent-chat-input');
-        const message = suggestion || input?.value.trim();
-        if (!message || state.isAiTyping) return;
-        if (input) input.value = '';
-        handleChatMessageSend(message); // Předpokládáme, že tato funkce existuje
-    }
-     else if (target.matches('.offer-card')) {
-        document.querySelectorAll('.offer-card').forEach(c => c.classList.remove('selected'));
-        target.classList.add('selected');
-        state.calculation.selectedOffer = state.calculation.offers.find(o => o.id === target.dataset.offerId);
-         // Zde by mohlo být volání renderResultsChart(), pokud existuje
-    }
-};
-// KONEC NOVÉHO BLOKU handleClick
-    // ZAČÁTEK KOMPLETNÍ FUNKCE handleFormSubmit
-const handleFormSubmit = async (e) => {
-    e.preventDefault();
-    const form = e.target;
-    // ===== ZMĚNA ZDE: Hledáme tlačítko podle jeho ID =====
-    const btn = document.getElementById('submit-lead-btn'); 
 
-    // Přidáme kontrolu, zda bylo tlačítko nalezeno
-    if (!btn) {
-        console.error("Chyba: Odesílací tlačítko (submit-lead-btn) nebylo nalezeno!");
-        // Můžeme zobrazit chybu uživateli, nebo jen logovat
-        alert('Došlo k chybě při odesílání, zkuste to prosím znovu.');
-        return; // Ukončíme funkci, pokud tlačítko není
-    }
-    // ======================================================
-    
-    btn.disabled = true;
-    btn.textContent = '📤 Odesílám...';
-
-    try {
-        // 1. Ručně posbíráme data z viditelných polí formuláře
-        const bodyParams = new URLSearchParams();
-        bodyParams.append('form-name', form.getAttribute('name'));
-        bodyParams.append('name', form.querySelector('#name').value);
-        bodyParams.append('phone', form.querySelector('#phone').value);
-        bodyParams.append('email', form.querySelector('#email').value);
-        bodyParams.append('contact-time', form.querySelector('#contact-time').value);
-        bodyParams.append('note', form.querySelector('#note').value);
-
-        // 2. Připravíme bezpečná "extra data" bez komplexních objektů
-        const extraData = {
-            chatHistory: state.chatHistory // Historie chatu se posílá vždy
-        };
-
-        if (state.calculatorInteracted) {
-            const safeCalculationData = {
-                offers: state.calculation.offers,
-                selectedOffer: state.calculation.selectedOffer,
-                approvability: state.calculation.approvability,
-                ...(state.calculation.fixationDetails && { fixationDetails: state.calculation.fixationDetails })
-            };
-            extraData.calculation = safeCalculationData;
-            extraData.formData = state.formData; // Přidáme i vstupní data kalkulačky
-            console.log("Přidávám data z kalkulačky."); // Log pro kontrolu
-        } else {
-            console.log("Kalkulačka nebyla použita, data nepřidávám."); // Log pro kontrolu
+        if (action === 'toggle-mobile-sidebar' || action === 'close-mobile-sidebar') {
+            toggleMobileSidebar(); // Předpokládáme, že tato funkce existuje
+            return;
         }
 
-        // 3. Přidáme extra data do těla požadavku (pokud nějaká jsou)
-        if (Object.keys(extraData).length > 0) {
-            bodyParams.append('extraData', JSON.stringify(extraData, null, 2));
+        if (quickQuestion) {
+            if (isMobile()) toggleMobileSidebar(); // Předpokládáme, že tato funkce existuje
+            const chatInput = document.getElementById('permanent-chat-input');
+            if (chatInput) {
+                chatInput.value = quickQuestion;
+                handleChatMessageSend(quickQuestion);
+                chatInput.value = '';
+            }
+            return;
         }
 
-        // 3. Přidáme extra data do těla požadavku
-        bodyParams.append('extraData', JSON.stringify(extraData, null, 2)); // Přidáno formátování pro lepší čitelnost
+        if (targetId) {
+            if (action === 'show-lead-form' || action === 'show-lead-form-direct') {
+                DOMElements.leadFormContainer.classList.remove('hidden');
+            }
+            scrollToTarget(targetId);
+            if (DOMElements.mobileMenu && !DOMElements.mobileMenu.classList.contains('hidden')) {
+                DOMElements.mobileMenu.classList.add('hidden');
+            }
+        }
+        else if (mode) {
+            switchMode(mode);
+        }
+        else if (action === 'calculate') {
+            calculateRates(target); // Předpokládáme, že tato funkce existuje
+        }
+        else if (action === 'go-to-calculator') {
+            if (isMobile()) toggleMobileSidebar(); // Předpokládáme, že tato funkce existuje
+            switchMode('express');
+        }
+        else if (action === 'show-lead-form') {
+            if (isMobile()) toggleMobileSidebar(); // Předpokládáme, že tato funkce existuje
+            DOMElements.leadFormContainer.classList.remove('hidden');
+            scrollToTarget('#kontakt');
+        }
+        else if (action === 'select-offer') {
+            const offerId = target.dataset.offer;
+            const offer = state.calculation.offers.find(o => o.id === offerId);
+            if (offer) {
+                document.querySelectorAll('.offer-card').forEach(c => c.classList.remove('selected'));
+                const card = document.querySelector(`[data-offer-id="${offerId}"]`);
+                if (card) card.classList.add('selected');
+                state.calculation.selectedOffer = offer;
+                // Zde by mohlo být volání renderResultsChart(), pokud existuje
+            }
+        }
+        else if (action === 'discuss-with-ai' || action === 'discuss-fixation-with-ai') {
+            switchMode('ai', true);
+        }
+        else if (action === 'reset-chat') {
+            state.chatHistory = [];
+            const chatMessages = document.getElementById('chat-messages');
+            if (chatMessages) chatMessages.innerHTML = '';
+            addChatMessage('Jsem váš hypoteční poradce s AI nástroji. Jak vám mohu pomoci?', 'ai');
+            generateAISuggestions(); // Předpokládáme, že tato funkce existuje
+        }
+        else if (suggestion) {
+            if (suggestion === '📞 Domluvit se specialistou') {
+                addChatMessage("Chci se domluvit se specialistou.", 'user');
+                addChatMessage("Výborně! Přesouvám vás na formulář pro spojení s naším specialistou.", 'ai');
+                DOMElements.leadFormContainer.classList.remove('hidden');
+                setTimeout(() => scrollToTarget('#kontakt'), 100);
+                return;
+            }
+            const input = document.getElementById('permanent-chat-input');
+            const message = suggestion || input?.value.trim();
+            if (!message || state.isAiTyping) return;
+            if (input) input.value = '';
+            handleChatMessageSend(message); // Předpokládáme, že tato funkce existuje
+        }
+        else if (target.matches('.offer-card')) {
+            document.querySelectorAll('.offer-card').forEach(c => c.classList.remove('selected'));
+            target.classList.add('selected');
+            state.calculation.selectedOffer = state.calculation.offers.find(o => o.id === target.dataset.offerId);
+            // Zde by mohlo být volání renderResultsChart(), pokud existuje
+        }
+    };
+    // KONEC NOVÉHO BLOKU handleClick
+  // ZAČÁTEK KOMPLETNÍ FUNKCE handleFormSubmit
+    const handleFormSubmit = async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        // ===== Hledáme tlačítko podle jeho ID =====
+        const btn = document.getElementById('submit-lead-btn'); 
 
-        // 4. Odešleme data
-        const response = await fetch('/.netlify/functions/form-handler', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: bodyParams.toString()
-        });
+        // Přidáme kontrolu, zda bylo tlačítko nalezeno
+        if (!btn) {
+            console.error("Chyba: Odesílací tlačítko (submit-lead-btn) nebylo nalezeno!");
+            // Můžeme zobrazit chybu uživateli, nebo jen logovat
+            alert('Došlo k chybě při odesílání, zkuste to prosím znovu.');
+            return; // Ukončíme funkci, pokud tlačítko není
+        }
+        // ======================================================
         
-        // 5. Zkontrolujeme, zda Netlify formulář úspěšně přijal
-        if (response.ok) {
-            form.style.display = 'none';
-            const successMessage = document.getElementById('form-success');
-            if (successMessage) successMessage.style.display = 'block';
-             // Můžeme přidat i skrolování k úspěšné hlášce
-             setTimeout(() => scrollToTarget('#kontakt'), 100);
-        } else {
-             // Pokud Netlify vrátí chybu, zobrazíme ji
-             throw new Error(`Netlify form submission failed: ${response.statusText}`);
-        }
+        btn.disabled = true;
+        btn.textContent = '📤 Odesláno 👌'; // Změněn text po odeslání
 
-    } catch (error) { // TATO ČÁST CHYBĚLA
-        console.error('Chyba při odesílání formuláře:', error);
-        alert('Odeslání se nezdařilo. Zkuste to prosím znovu, nebo nás kontaktujte přímo.');
-        // Tlačítko povolíme, jen pokud ještě existuje (nebylo skryto)
-        if (btn) {
-             btn.disabled = false;
-             btn.textContent = '📞 Odeslat nezávazně';
+        try {
+            // 1. Ručně posbíráme data z viditelných polí formuláře
+            const bodyParams = new URLSearchParams();
+            bodyParams.append('form-name', form.getAttribute('name'));
+            bodyParams.append('name', form.querySelector('#name').value);
+            bodyParams.append('phone', form.querySelector('#phone').value);
+            bodyParams.append('email', form.querySelector('#email').value);
+            bodyParams.append('contact-time', form.querySelector('#contact-time').value);
+            bodyParams.append('note', form.querySelector('#note').value);
+
+            // 2. Připravíme bezpečná "extra data" bez komplexních objektů
+            const extraData = {
+                chatHistory: state.chatHistory // Historie chatu se posílá vždy
+            };
+
+            if (state.calculatorInteracted) {
+                const safeCalculationData = {
+                    offers: state.calculation.offers,
+                    selectedOffer: state.calculation.selectedOffer,
+                    approvability: state.calculation.approvability,
+                    ...(state.calculation.fixationDetails && { fixationDetails: state.calculation.fixationDetails })
+                };
+                extraData.calculation = safeCalculationData;
+                extraData.formData = state.formData; // Přidáme i vstupní data kalkulačky
+                console.log("Přidávám data z kalkulačky."); // Log pro kontrolu
+            } else {
+                console.log("Kalkulačka nebyla použita, data nepřidávám."); // Log pro kontrolu
+            }
+
+            // 3. Přidáme extra data do těla požadavku (pokud nějaká jsou)
+            if (Object.keys(extraData).length > 0) {
+                // POZOR: Tento řádek byl duplicitní, ponecháme jen jeden
+                bodyParams.append('extraData', JSON.stringify(extraData, null, 2)); 
+            }
+
+            // 4. Odešleme data na správný endpoint funkce
+            const response = await fetch('/.netlify/functions/form-handler', { // Cíl je funkce
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: bodyParams.toString()
+            });
+            
+            // 5. Zkontrolujeme, zda funkce odpověděla úspěšně
+            if (response.ok) {
+                form.style.display = 'none';
+                const successMessage = document.getElementById('form-success');
+                if (successMessage) successMessage.style.display = 'block';
+                // Můžeme přidat i skrolování k úspěšné hlášce
+                setTimeout(() => scrollToTarget('#kontakt'), 100);
+            } else {
+                // Pokud funkce vrátí chybu (např. 500)
+                throw new Error(`Odeslání selhalo: ${response.status} ${response.statusText}`);
+            }
+
+        } catch (error) { // Správně umístěný catch blok
+            console.error('Chyba při odesílání formuláře:', error);
+            alert('Odeslání se nezdařilo. Zkuste to prosím znovu, nebo nás kontaktujte přímo.');
+            // Tlačítko povolíme, jen pokud ještě existuje (nebylo skryto)
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = '📞 Odeslat nezávazně';
+            }
         }
-    }
-    // Nepotřebujeme `finally`, protože tlačítko už obsluhujeme v `catch`
-};
-// KONEC KOMPLETNÍ FUNKCE handleFormSubmit
+        // Není potřeba `finally`
+    };
+    // KONEC KOMPLETNÍ FUNKCE handleFormSubmit
 
     // ZAČÁTEK NOVÉHO BLOKU
     const handleChatMessageSend = async (message) => {

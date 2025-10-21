@@ -977,3 +977,13 @@ textarea {
 #cookie-banner-wrapper.hidden {
     display: none;
 }
+
+/* ============================================
+   POJISTKA PRO KLIKNUTÍ NA INFO IKONY
+   ============================================ */
+.info-icon {
+    position: relative; /* Zajistí správné vrstvení */
+    z-index: 5;         /* Dáme ikonu mírně "nad" okolní text */
+    pointer-events: auto !important; /* Vynutí, aby byla ikona klikatelná */
+    cursor: pointer;    /* Ukáže uživateli, že je klikatelná */
+}

@@ -1338,10 +1338,10 @@ const handleInfoTooltip = (e) => {
 };
 // KONEC OVĚŘENÉ FUNKCE handleInfoTooltip
 
-/// ZAČÁTEK OPRAVENÉ FUNKCE handleClick
-const handleClick = async (e) => {
+// ZAČÁTEK OPRAVENÉ FUNKCE handleClick
+const handleClick = async (e) => { // Funkce automaticky dostane 'e' z listeneru
     // --- Logika pro tooltipy ---
-    // Pokud bylo kliknuto na info ikonu, zavoláme handleInfoTooltip
+    // Pokud bylo kliknuto na info ikonu, zavoláme handleInfoTooltip a skončíme
     if (e.target.closest('.info-icon')) {
         handleInfoTooltip(e); // Předáme událost 'e'
         return; // Zastavíme další zpracování v handleClick
@@ -1350,32 +1350,21 @@ const handleClick = async (e) => {
     const existingTooltip = document.getElementById('active-tooltip');
     if (existingTooltip && !e.target.closest('#active-tooltip') && !e.target.closest('#cookie-more-info-btn')) {
          existingTooltip.remove();
+         // Nepřerušíme, kliknutí mohlo být na jiný interaktivní prvek
     }
     // ------------------------------------
 
     // Zbytek funkce handleClick pro ostatní prvky
     let target = e.target.closest('[data-action], .offer-card, .suggestion-btn, [data-mode], .scroll-to, [data-quick-question]');
 
-    // === ZDE PŘIDÁME OBSLUHU PRO COOKIE TLAČÍTKA, POKUD BY NEBYLY INTERAKTIVNÍ ===
-    // Pokud bylo kliknuto na "Rozumím a souhlasím" nebo "Více informací", ale `target` je null
-    // (protože nemají data-action), zpracujeme je zde (i když by měly fungovat listenery z init)
+    // Záložní obsluha pro cookie tlačítka (pokud by neměly data-action)
     if (!target) {
-        if (e.target.id === 'cookie-accept') {
-             localStorage.setItem('cookieConsent', 'true');
-             DOMElements.cookieBannerWrapper.style.transition = 'opacity 0.3s ease-out';
-             DOMElements.cookieBannerWrapper.style.opacity = '0';
-             setTimeout(() => DOMElements.cookieBannerWrapper.classList.add('hidden'), 300);
-             return; // Ukončíme
+        if (e.target.id === 'cookie-accept' || e.target.id === 'cookie-more-info-btn') {
+             // Tyto už mají vlastní listenery v init, zde nic neděláme
+             return; 
         }
-         if (e.target.id === 'cookie-more-info-btn') {
-             DOMElements.cookieDetailsPanel.classList.toggle('expanded');
-             DOMElements.cookieMoreInfoBtn.textContent = DOMElements.cookieDetailsPanel.classList.contains('expanded') ? 'Méně informací' : 'Více informací';
-             return; // Ukončíme
-        }
-        // Pokud to nebylo ani cookie tlačítko, tak opravdu konec
-        return;
+        return; // Pokud to nebylo nic interaktivního, končíme
     }
-    // =========================================================================
 
 
     // PreventDefault voláme jen pro odkazy pro skrolování
@@ -1389,7 +1378,7 @@ const handleClick = async (e) => {
     // Volání ask-ai-from-calc (zůstává stejné)
     if (action === 'ask-ai-from-calc') {
         const questionKey = target.dataset.questionKey;
-        const questions = { /* ... otázky ... */ };
+        const questions = { /* ... otázky ... */ }; // Ujistěte se, že zde máte všechny otázky
         const question = questions[questionKey] || `Řekni mi více o poli ${questionKey}.`;
         document.getElementById('active-tooltip')?.remove(); // Zavřeme tooltip
         switchMode('ai');
@@ -1406,6 +1395,7 @@ const handleClick = async (e) => {
     // ... a tak dále pro všechny ostatní 'else if' podmínky ...
     else if (suggestion === '📞 Domluvit se specialistou') { /* ... */ return; }
     else if (suggestion) { /* ... */ }
+     else if (target.matches('.offer-card')) { /* ... */ }
 };
 // KONEC OPRAVENÉ FUNKCE handleClick
 
@@ -1723,7 +1713,7 @@ const handleFormSubmit = async (e) => {
 const init = () => {
     // --- HLAVNÍ POSLUCHAČ UDÁLOSTÍ ---
     // POUZE TENTO JEDEN listener pro kliknutí na celém body
-    document.body.addEventListener('click', handleClick);
+    document.body.addEventListener('click', handleClick); // Všechna kliknutí jdou sem
 
     // --- OSTATNÍ LISTENERY ---
     // Listener pro změny v kalkulačce
@@ -1751,7 +1741,7 @@ const init = () => {
         });
     }
 
-    // Listener pro cookie lištu - PŘESUNUTO SEM
+    // Listener pro cookie lištu
     if (DOMElements.cookieAcceptBtn) {
         DOMElements.cookieAcceptBtn.addEventListener('click', () => {
             localStorage.setItem('cookieConsent', 'true');
@@ -1782,7 +1772,7 @@ const init = () => {
         }, 250);
     });
 
-    // Zobrazení cookie lišty (bez listenerů zde)
+    // Zobrazení cookie lišty
     if (localStorage.getItem('cookieConsent') === 'true') {
         DOMElements.cookieBannerWrapper?.classList.add('hidden');
     } else {
@@ -1792,6 +1782,5 @@ const init = () => {
     DOMElements.modeCards.forEach(card => card.classList.toggle('active', card.dataset.mode === state.mode));
     updateActiveUsers(); // Předpokládáme existenci
 };
-// KONEC OPRAVENÉ FUNKCE init
 // KONEC OPRAVENÉ FUNKCE init
 });

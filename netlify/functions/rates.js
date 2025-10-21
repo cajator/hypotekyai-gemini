@@ -152,7 +152,7 @@ const handler = async (event) => {
         const income = parseInt(p.income) || 0;
         const liabilities = parseInt(p.liabilities) || 0;
         const term = parseInt(p.loanTerm) || 30; // <-- Default 30 let
-        const fixationInput = parseInt(p.fixation) || 5; // Default fixace 5 let
+        const fixationInput = parseInt(p.fixation) || 3; // Default fixace 5 let
         const children = parseInt(p.children) || 0;
         const age = parseInt(p.age) || 35;
         const employment = p.employment || 'zaměstnanec';

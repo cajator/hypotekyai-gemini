@@ -1258,7 +1258,15 @@ const findQuickResponse = (message) => {
 
     // ZAČÁTEK OVĚŘENÉ FUNKCE handleInfoTooltip
 const handleInfoTooltip = (e) => {
+    // Pokud ale existuje tooltip a klikli jsme mimo něj, zavřeme ho
+        const existingTooltip = document.getElementById('active-tooltip');
+        if (existingTooltip && !e.target.closest('#active-tooltip')) {
+            existingTooltip.remove();
+        }
+        return; // Ukončíme funkci, pokud se nekliklo na ikonu
+    }
     console.log("handleInfoTooltip triggered by:", e.target);
+    if (!e.target.classList.contains('info-icon')) {
     const icon = e.target.closest('.info-icon');
     const existingTooltip = document.getElementById('active-tooltip');
 
@@ -1674,8 +1682,14 @@ const handleFormSubmit = async (e) => {
         }
     };
    
-    const switchMode = (mode, fromResults = false, isInitialLoad = false) => {
-        state.mode = mode;
+    const switchMode = (mode, fromResults = false) => {
+    // Pokud klikneme na již aktivní mód, nic neděláme
+    if (state.mode === mode && DOMElements.contentContainer.innerHTML !== '') {
+         // Jen posuneme stránku, pokud už obsah je
+         scrollToTarget('#kalkulacka'); // Cílíme na nadpis sekce
+         return;
+
+    }state.mode = mode;
         DOMElements.modeCards.forEach(card => card.classList.toggle('active', card.dataset.mode === mode));
         
         DOMElements.contentContainer.innerHTML = ""; // Vždy vyčistíme kontejner
@@ -1795,7 +1809,7 @@ const handleFormSubmit = async (e) => {
     });
 
     handleCookieBanner(); // Předpokládáme, že tato funkce existuje a je správně
-    switchMode(state.mode, false, true); // První načtení bez skrolování
+    DOMElements.modeCards.forEach(card => card.classList.toggle('active', card.dataset.mode === state.mode));
     updateActiveUsers(); // Předpokládáme, že tato funkce existuje a je správně
 };
 

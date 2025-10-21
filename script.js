@@ -1256,116 +1256,114 @@ const findQuickResponse = (message) => {
         state.mobileSidebarOpen = !state.mobileSidebarOpen;
     };
 
-    // ZAČÁTEK OVĚŘENÉ FUNKCE handleInfoTooltip
+    // ZAČÁTEK KOMPLETNÍ A OPRAVENÉ FUNKCE handleInfoTooltip
 const handleInfoTooltip = (e) => {
-    // Pokud ale existuje tooltip a klikli jsme mimo něj, zavřeme ho
+    // Tato funkce je volána z handleClick, pouze když bylo kliknuto na ikonu.
+    // Objekt 'e' je tedy zaručeně definován.
+
+    // console.log("handleInfoTooltip aktivována pro:", e.target); // Můžete odkomentovat pro ladění
+
+    const icon = e.target.closest('.info-icon');
+    // Pojistka, pokud by byla funkce zavolána nesprávně nebo kliknuto mimo ikonu
+    if (!icon) {
+        // Pokud existuje tooltip a klikli jsme mimo něj, zavřeme ho
         const existingTooltip = document.getElementById('active-tooltip');
         if (existingTooltip && !e.target.closest('#active-tooltip')) {
             existingTooltip.remove();
         }
-        return; // Ukončíme funkci, pokud se nekliklo na ikonu
+        return;
     }
-    console.log("handleInfoTooltip triggered by:", e.target);
-    if (!e.target.classList.contains('info-icon')) {
-    const icon = e.target.closest('.info-icon');
+
+    // Pokud jsme zde, kliklo se PŘÍMO na ikonu nebo jejího potomka
+    e.stopPropagation(); // Zastavíme další zpracování kliknutí, aby se nespustil listener pro zavření
+
     const existingTooltip = document.getElementById('active-tooltip');
 
-    // Kliknutí na ikonu?
-    if (icon) {
-        e.stopPropagation(); // Zastavíme další zpracování kliknutí
-
-        // Pokud tooltip existuje a je pro tuto ikonu -> zavřít
-        if (existingTooltip && existingTooltip.dataset.key === icon.dataset.infoKey) {
-            existingTooltip.remove();
-            return;
-        }
-        // Pokud existuje jiný tooltip -> zavřít starý
-        if (existingTooltip) {
-            existingTooltip.remove();
-        }
-
-        // Vytvoříme nový tooltip
-        const infoText = icon.dataset.infoText;
-        const infoKey = icon.dataset.infoKey;
-
-        // Kontrola, zda máme text a klíč
-        if (!infoText || !infoKey) {
-            console.warn("Info ikona nemá data-info-text nebo data-info-key:", icon);
-            return;
-        }
-
-        const tooltip = document.createElement('div');
-        tooltip.id = 'active-tooltip';
-        tooltip.className = 'info-tooltip'; // Přidá základní styly
-        tooltip.dataset.key = infoKey; // Uložíme si klíč pro identifikaci
-        tooltip.innerHTML = `
-            <p>${infoText}</p>
-            <button class="ask-ai-btn" data-action="ask-ai-from-calc" data-question-key="${infoKey}">Zeptat se AI podrobněji</button>
-        `;
-
-        document.body.appendChild(tooltip); // Přidáme do body, aby nebyl oříznutý
-        const rect = icon.getBoundingClientRect();
-
-        // Výpočet pozice tooltipu
-        let left = rect.left + window.scrollX;
-        let top = rect.bottom + window.scrollY + 8; // Kousek pod ikonou
-
-        // Nastavíme počáteční pozici
-        tooltip.style.left = `${left}px`;
-        tooltip.style.top = `${top}px`;
-        tooltip.style.opacity = '0'; // Začneme neviditelný pro animaci
-
-        // Timeout, aby se stihl přidat do DOMu před výpočtem rozměrů a animací
-        setTimeout(() => {
-            // Zkontrolujeme, zda se vejde na šířku obrazovky
-            const tooltipRect = tooltip.getBoundingClientRect();
-             if (tooltipRect.right > (window.innerWidth - 10)) { // 10px okraj
-                 tooltip.style.left = `${window.innerWidth - tooltipRect.width - 10 + window.scrollX}px`;
-             }
-             if (tooltipRect.left < 10) { // Kontrola levého okraje
-                 tooltip.style.left = `${10 + window.scrollX}px`;
-             }
-            // Zobrazíme s animací
-            tooltip.classList.add('visible');
-        }, 10); // Malá prodleva
-
+    // Pokud tooltip existuje a je pro TUTO ikonu -> zavřít
+    if (existingTooltip && existingTooltip.dataset.key === icon.dataset.infoKey) {
+        existingTooltip.remove();
+        return;
     }
-    // Kliknutí Mimo ikonu a Mimo tooltip? Zavřeme ho.
-    else if (existingTooltip && !e.target.closest('#active-tooltip')) {
+    // Pokud existuje jiný tooltip -> zavřít starý PŘED otevřením nového
+    if (existingTooltip) {
         existingTooltip.remove();
     }
-    // Kliknutí uvnitř tooltipu nedělá nic (zpracuje ho handleClick)
+
+    // Vytvoříme nový tooltip
+    const infoText = icon.dataset.infoText;
+    const infoKey = icon.dataset.infoKey;
+
+    // Kontrola, zda máme potřebná data
+    if (!infoText || !infoKey) {
+        console.warn("Info ikona nemá atribut data-info-text nebo data-info-key:", icon);
+        return;
+    }
+
+    const tooltip = document.createElement('div');
+    tooltip.id = 'active-tooltip';
+    tooltip.className = 'info-tooltip'; // Přidá základní styly z CSS
+    tooltip.dataset.key = infoKey; // Uložíme si klíč pro identifikaci
+    tooltip.innerHTML = `
+        <p>${infoText}</p>
+        <button class="ask-ai-btn" data-action="ask-ai-from-calc" data-question-key="${infoKey}">Zeptat se AI podrobněji</button>
+    `;
+
+    document.body.appendChild(tooltip); // Přidáme do body pro správné zobrazení
+    const rect = icon.getBoundingClientRect();
+
+    // Výpočet pozice tooltipu
+    let left = rect.left + window.scrollX;
+    let top = rect.bottom + window.scrollY + 8; // Kousek pod ikonou
+    tooltip.style.left = `${left}px`;
+    tooltip.style.top = `${top}px`;
+    tooltip.style.opacity = '0'; // Pro animaci
+
+    // Timeout pro výpočet rozměrů a animaci zobrazení
+    setTimeout(() => {
+        // Zkontrolujeme, zda se vejde na šířku obrazovky a případně posuneme
+        const tooltipRect = tooltip.getBoundingClientRect();
+         if (tooltipRect.right > (window.innerWidth - 10)) { // 10px okraj zprava
+             tooltip.style.left = `${window.innerWidth - tooltipRect.width - 10 + window.scrollX}px`;
+         }
+         if (tooltipRect.left < 10 + window.scrollX) { // 10px okraj zleva
+             tooltip.style.left = `${10 + window.scrollX}px`;
+         }
+        // Přidáme třídu 'visible' pro spuštění CSS animace
+        tooltip.classList.add('visible');
+    }, 10); // Malá prodleva pro jistotu vykreslení
 };
-// KONEC OVĚŘENÉ FUNKCE handleInfoTooltip
+// KONEC KOMPLETNÍ A OPRAVENÉ FUNKCE handleInfoTooltip
 
 // ZAČÁTEK OPRAVENÉ FUNKCE handleClick
-const handleClick = async (e) => { // Funkce automaticky dostane 'e' z listeneru
+const handleClick = async (e) => { // 'e' je zde automaticky předáno z listeneru v init
     // --- Logika pro tooltipy ---
     // Pokud bylo kliknuto na info ikonu, zavoláme handleInfoTooltip a skončíme
     if (e.target.closest('.info-icon')) {
-        handleInfoTooltip(e); // Předáme událost 'e'
+        // Zkontrolujeme, zda funkce handleInfoTooltip existuje, než ji zavoláme
+        if (typeof handleInfoTooltip === 'function') {
+            handleInfoTooltip(e); // Předáme událost 'e'
+        } else {
+            console.error("Funkce handleInfoTooltip není definována!");
+        }
         return; // Zastavíme další zpracování v handleClick
     }
     // Pokud existuje tooltip a klikli jsme mimo něj A ZÁROVEŇ NE na tlačítko Více informací, zavřeme ho
     const existingTooltip = document.getElementById('active-tooltip');
     if (existingTooltip && !e.target.closest('#active-tooltip') && !e.target.closest('#cookie-more-info-btn')) {
          existingTooltip.remove();
-         // Nepřerušíme, kliknutí mohlo být na jiný interaktivní prvek
     }
     // ------------------------------------
 
     // Zbytek funkce handleClick pro ostatní prvky
     let target = e.target.closest('[data-action], .offer-card, .suggestion-btn, [data-mode], .scroll-to, [data-quick-question]');
 
-    // Záložní obsluha pro cookie tlačítka (pokud by neměly data-action)
+    // Záložní obsluha pro cookie tlačítka (již mají vlastní listenery v init, ale pro jistotu)
     if (!target) {
         if (e.target.id === 'cookie-accept' || e.target.id === 'cookie-more-info-btn') {
-             // Tyto už mají vlastní listenery v init, zde nic neděláme
-             return; 
+             return; // Tyto už mají vlastní listenery
         }
         return; // Pokud to nebylo nic interaktivního, končíme
     }
-
 
     // PreventDefault voláme jen pro odkazy pro skrolování
     if (target.matches('a[href^="#"].scroll-to')) {
@@ -1375,27 +1373,99 @@ const handleClick = async (e) => { // Funkce automaticky dostane 'e' z listeneru
     const { action, mode, suggestion, target: targetId } = target.dataset;
     const quickQuestion = target.dataset.quickQuestion;
 
-    // Volání ask-ai-from-calc (zůstává stejné)
+    // Volání ask-ai-from-calc
     if (action === 'ask-ai-from-calc') {
         const questionKey = target.dataset.questionKey;
-        const questions = { /* ... otázky ... */ }; // Ujistěte se, že zde máte všechny otázky
+        const questions = { /* ... vaše otázky ... */ }; // Ujistěte se, že zde máte všechny otázky
         const question = questions[questionKey] || `Řekni mi více o poli ${questionKey}.`;
-        document.getElementById('active-tooltip')?.remove(); // Zavřeme tooltip
-        switchMode('ai');
-        setTimeout(() => handleChatMessageSend(question), 300);
-        return; // Důležité ukončit zde
+        document.getElementById('active-tooltip')?.remove();
+        if (typeof switchMode === 'function') switchMode('ai'); // Ověření existence
+        else console.error("Funkce switchMode není definována!");
+        // Předpokládáme existenci handleChatMessageSend
+        setTimeout(() => typeof handleChatMessageSend === 'function' ? handleChatMessageSend(question) : console.error("Funkce handleChatMessageSend není definována!"), 300);
+        return;
     }
 
-    // Ostatní logika pro tlačítka (zůstává stejná)
-    if (quickQuestion) { /* ... */ return; }
-    if (targetId) { /* ... */ }
-    else if (mode) { switchMode(mode); }
-    else if (action === 'calculate') { calculateRates(target); }
-    else if (action === 'show-lead-form') { /* ... */ }
-    // ... a tak dále pro všechny ostatní 'else if' podmínky ...
-    else if (suggestion === '📞 Domluvit se specialistou') { /* ... */ return; }
-    else if (suggestion) { /* ... */ }
-     else if (target.matches('.offer-card')) { /* ... */ }
+    // Ostatní logika pro tlačítka
+    if (quickQuestion) {
+        const chatInput = document.getElementById('permanent-chat-input');
+        if (chatInput) {
+            chatInput.value = quickQuestion;
+             if (typeof handleChatMessageSend === 'function') handleChatMessageSend(quickQuestion);
+             else console.error("Funkce handleChatMessageSend není definována!");
+            chatInput.value = '';
+        }
+        return;
+    }
+    if (targetId) {
+        if (action === 'show-lead-form' || action === 'show-lead-form-direct') {
+            DOMElements.leadFormContainer?.classList.remove('hidden');
+        }
+        scrollToTarget(targetId);
+        DOMElements.mobileMenu?.classList.add('hidden');
+    }
+    else if (mode) {
+        if (typeof switchMode === 'function') switchMode(mode);
+        else console.error("Funkce switchMode není definována!");
+    }
+    else if (action === 'calculate') {
+         if (typeof calculateRates === 'function') calculateRates(target);
+         else console.error("Funkce calculateRates není definována!");
+    }
+    else if (action === 'show-lead-form') {
+        DOMElements.leadFormContainer?.classList.remove('hidden');
+        scrollToTarget('#kontakt');
+    }
+    else if (action === 'select-offer') {
+        const offerId = target.dataset.offer;
+        const offer = state.calculation.offers.find(o => o.id === offerId);
+        if (offer && offer.id !== state.calculation.selectedOffer?.id) {
+            document.querySelectorAll('.offer-card').forEach(c => c.classList.remove('selected', 'border-blue-600', 'ring-2', 'ring-blue-200'));
+            target.classList.add('selected', 'border-blue-600', 'ring-2', 'ring-blue-200');
+            state.calculation.selectedOffer = offer;
+            if (typeof renderResults === 'function') renderResults(); // Překreslíme detaily
+            else console.error("Funkce renderResults není definována!");
+        }
+    }
+    else if (action === 'discuss-with-ai' || action === 'discuss-fixation-with-ai') {
+        if (typeof switchMode === 'function') switchMode('ai', true);
+        else console.error("Funkce switchMode není definována!");
+    }
+    else if (action === 'reset-chat') {
+        state.chatHistory = [];
+        const chatMessages = document.getElementById('chat-messages');
+        if (chatMessages) chatMessages.innerHTML = '';
+        if (typeof addChatMessage === 'function') addChatMessage('Jsem váš hypoteční poradce s AI nástroji. Jak vám mohu pomoci?', 'ai');
+        else console.error("Funkce addChatMessage není definována!");
+        if (typeof generateAISuggestions === 'function') generateAISuggestions();
+        else console.error("Funkce generateAISuggestions není definována!");
+    }
+    else if (suggestion) {
+        if (suggestion === '📞 Domluvit se specialistou') {
+             if (typeof addChatMessage === 'function') {
+                  addChatMessage("Chci se domluvit se specialistou.", 'user');
+                  addChatMessage("Výborně! Přesouvám vás na formulář pro spojení s naším specialistou.", 'ai');
+             } else console.error("Funkce addChatMessage není definována!");
+            DOMElements.leadFormContainer?.classList.remove('hidden');
+            setTimeout(() => scrollToTarget('#kontakt'), 100);
+            return;
+        }
+        const input = document.getElementById('permanent-chat-input');
+        const message = suggestion || input?.value.trim();
+        if (!message || state.isAiTyping) return;
+        if (input) input.value = '';
+        if (typeof handleChatMessageSend === 'function') handleChatMessageSend(message);
+        else console.error("Funkce handleChatMessageSend není definována!");
+    }
+     else if (target.matches('.offer-card')) {
+        const offerId = target.dataset.offerId;
+        const clickedOffer = state.calculation.offers.find(o => o.id === offerId);
+        if (clickedOffer && clickedOffer.id !== state.calculation.selectedOffer?.id) {
+            state.calculation.selectedOffer = clickedOffer;
+            if (typeof renderResults === 'function') renderResults();
+            else console.error("Funkce renderResults není definována!");
+        }
+    }
 };
 // KONEC OPRAVENÉ FUNKCE handleClick
 
@@ -1710,17 +1780,17 @@ const handleFormSubmit = async (e) => {
     };
 
     // ZAČÁTEK OPRAVENÉ FUNKCE init
-const init = () => {
+    const init = () => {
     // --- HLAVNÍ POSLUCHAČ UDÁLOSTÍ ---
     // POUZE TENTO JEDEN listener pro kliknutí na celém body
-    document.body.addEventListener('click', handleClick); // Všechna kliknutí jdou sem
+    document.body.addEventListener('click', handleClick);
 
     // --- OSTATNÍ LISTENERY ---
     // Listener pro změny v kalkulačce
     if (DOMElements.contentContainer) {
         DOMElements.contentContainer.addEventListener('input', (e) => {
             if (e.target.matches('input[type="range"], input[type="text"], select')) {
-                handleInput(e);
+                handleInput(e); // Předpokládáme existenci této funkce
             }
         });
     } else {
@@ -1729,7 +1799,7 @@ const init = () => {
 
     // Listener pro odeslání formuláře
     if (DOMElements.leadForm) {
-         DOMElements.leadForm.addEventListener('submit', handleFormSubmit);
+         DOMElements.leadForm.addEventListener('submit', handleFormSubmit); // Předpokládáme existenci této funkce
     } else {
          console.warn("Element formuláře #lead-form nebyl nalezen.");
     }
@@ -1745,18 +1815,21 @@ const init = () => {
     if (DOMElements.cookieAcceptBtn) {
         DOMElements.cookieAcceptBtn.addEventListener('click', () => {
             localStorage.setItem('cookieConsent', 'true');
-            DOMElements.cookieBannerWrapper.style.transition = 'opacity 0.3s ease-out';
-            DOMElements.cookieBannerWrapper.style.opacity = '0';
-            setTimeout(() => DOMElements.cookieBannerWrapper.classList.add('hidden'), 300);
+            if(DOMElements.cookieBannerWrapper) {
+                DOMElements.cookieBannerWrapper.style.transition = 'opacity 0.3s ease-out';
+                DOMElements.cookieBannerWrapper.style.opacity = '0';
+                setTimeout(() => DOMElements.cookieBannerWrapper.classList.add('hidden'), 300);
+            }
         });
     }
     if (DOMElements.cookieMoreInfoBtn) {
         DOMElements.cookieMoreInfoBtn.addEventListener('click', () => {
-            DOMElements.cookieDetailsPanel.classList.toggle('expanded');
-            DOMElements.cookieMoreInfoBtn.textContent = DOMElements.cookieDetailsPanel.classList.contains('expanded') ? 'Méně informací' : 'Více informací';
+            if(DOMElements.cookieDetailsPanel){
+                DOMElements.cookieDetailsPanel.classList.toggle('expanded');
+                DOMElements.cookieMoreInfoBtn.textContent = DOMElements.cookieDetailsPanel.classList.contains('expanded') ? 'Méně informací' : 'Více informací';
+            }
         });
     }
-
 
     // --- OSTATNÍ INICIALIZAČNÍ KROKY ---
     // Resize handler
@@ -1767,20 +1840,27 @@ const init = () => {
             document.getElementById('active-tooltip')?.remove();
             if (state.mode === 'ai') {
                 const sidebarContainer = document.getElementById('sidebar-container');
-                if(sidebarContainer) sidebarContainer.innerHTML = getSidebarHTML();
+                if(sidebarContainer && typeof getSidebarHTML !== 'undefined') sidebarContainer.innerHTML = getSidebarHTML(); // Ověření existence funkce
             }
         }, 250);
     });
 
     // Zobrazení cookie lišty
-    if (localStorage.getItem('cookieConsent') === 'true') {
-        DOMElements.cookieBannerWrapper?.classList.add('hidden');
-    } else {
-        DOMElements.cookieBannerWrapper?.classList.remove('hidden');
+    if (typeof handleCookieBanner !== 'undefined') handleCookieBanner(); // Ověření existence funkce
+    else { // Záložní zobrazení, pokud funkce chybí
+        if (localStorage.getItem('cookieConsent') === 'true') {
+            DOMElements.cookieBannerWrapper?.classList.add('hidden');
+        } else {
+            DOMElements.cookieBannerWrapper?.classList.remove('hidden');
+        }
     }
 
+
+    // Nastavení výchozího aktivního módu
     DOMElements.modeCards.forEach(card => card.classList.toggle('active', card.dataset.mode === state.mode));
-    updateActiveUsers(); // Předpokládáme existenci
+    // První načtení nevykresluje obsah kalkulačky
+
+    if (typeof updateActiveUsers !== 'undefined') updateActiveUsers(); // Ověření existence funkce
 };
 // KONEC OPRAVENÉ FUNKCE init
 });

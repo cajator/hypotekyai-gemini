@@ -1257,31 +1257,31 @@ const findQuickResponse = (message) => {
     };
 
     const handleInfoTooltip = (e) => {
-        const icon = e.target.closest('.info-icon');
-        
-        // Remove any existing tooltips if clicking anywhere
-        document.querySelectorAll('.info-tooltip').forEach(tip => {
-            if (!icon || tip.dataset.key !== icon.dataset.infoKey) {
-                tip.remove();
-            }
-        });
+    const icon = e.target.closest('.info-icon');
+    const existingTooltip = document.getElementById('active-tooltip');
 
-        if (!icon) return;
+    // Kliknutí na ikonu?
+    if (icon) {
+        e.stopPropagation(); // Zastavíme další zpracování kliknutí
 
-        e.stopPropagation();
-
-        const existingTooltip = document.querySelector(`.info-tooltip[data-key="${icon.dataset.infoKey}"]`);
-        if (existingTooltip) {
+        // Pokud už tooltip existuje a je pro tuto ikonu, zavřeme ho
+        if (existingTooltip && existingTooltip.dataset.key === icon.dataset.infoKey) {
             existingTooltip.remove();
             return;
         }
-        
+        // Pokud existuje jiný, zavřeme ho
+        if (existingTooltip) {
+            existingTooltip.remove();
+        }
+
+        // Vytvoříme nový tooltip
         const infoText = icon.dataset.infoText;
         const infoKey = icon.dataset.infoKey;
 
         const tooltip = document.createElement('div');
+        tooltip.id = 'active-tooltip';
         tooltip.className = 'info-tooltip';
-        tooltip.dataset.key = infoKey;
+        tooltip.dataset.key = infoKey; // Uložíme si klíč pro identifikaci
         tooltip.innerHTML = `
             <p>${infoText}</p>
             <button class="ask-ai-btn" data-action="ask-ai-from-calc" data-question-key="${infoKey}">Zeptat se AI podrobněji</button>
@@ -1290,11 +1290,28 @@ const findQuickResponse = (message) => {
         document.body.appendChild(tooltip);
         const rect = icon.getBoundingClientRect();
         
-        tooltip.style.left = `${rect.left + window.scrollX}px`;
-        tooltip.style.top = `${rect.bottom + window.scrollY + 8}px`;
+        // Výpočet pozice tooltipu (s ohledem na okraj obrazovky)
+        let left = rect.left + window.scrollX;
+        let top = rect.bottom + window.scrollY + 8;
+        tooltip.style.left = `${left}px`;
+        tooltip.style.top = `${top}px`;
         
-        setTimeout(() => tooltip.classList.add('visible'), 10);
-    };
+        // Zobrazíme s animací
+        requestAnimationFrame(() => {
+             // Zkontrolujeme, zda se vejde na šířku
+             const tooltipRect = tooltip.getBoundingClientRect();
+             if (tooltipRect.right > window.innerWidth - 10) {
+                  tooltip.style.left = `${window.innerWidth - tooltipRect.width - 10 + window.scrollX}px`;
+             }
+             tooltip.classList.add('visible');
+        });
+    } 
+    // Kliknutí Mimo ikonu a Mimo tooltip? Zavřeme ho.
+    else if (existingTooltip && !e.target.closest('#active-tooltip')) {
+        existingTooltip.remove();
+    }
+    // Kliknutí uvnitř tooltipu nedělá nic (zpracuje ho handleClick)
+};
 
     // ZAČÁTEK NOVÉHO BLOKU handleClick
 const handleClick = async (e) => {
@@ -1323,6 +1340,8 @@ const handleClick = async (e) => {
             'vsRent': "Jak přesně se počítá srovnání splátky s nájmem a jaké jsou výhody vlastnictví?"
         };
         const question = questions[questionKey] || `Řekni mi více o poli ${questionKey}.`;
+        document.getElementById('active-tooltip')?.remove();
+        // ============================
         
         switchMode('ai');
         setTimeout(() => handleChatMessageSend(question), 300);

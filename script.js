@@ -94,21 +94,28 @@ Použijte naši kalkulačku výše - za 30 sekund víte přesně kolik a od kter
         instant: true
     }
 };
+// ZAČÁTEK SPRÁVNÉ DEFINICE scoreHTML
 const scoreHTML = (label, value, color, icon, explanation) => {
     // Kontrola, zda hodnota existuje a je číslo
-    const displayValue = (typeof value === 'number' && !isNaN(value)) ? value : 0;
+    const displayValue = (typeof value === 'number' && !isNaN(value)) ? Math.round(value) : 0; // Zaokrouhlíme pro jistotu
+    const safeExplanation = explanation || ''; // Zajistíme, že explanation není undefined
+
+    // Správné sestavení HTML bez komentářů
     return `
-    <div class="bg-white p-3 rounded-lg border border-gray-100 shadow-sm"> {/* Přidán stín */}
+    <div class="bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
        <div class="flex items-center justify-between mb-1">
-           <span class="text-sm font-semibold flex items-center"><span class="text-lg mr-1">${icon}</span> ${label}</span>
-           <span class="font-bold text-lg text-gray-800">${displayValue}%</span> {/* Tmavší text */}
+           <span class="text-sm font-semibold flex items-center">
+               <span class="text-lg mr-1">${icon}</span> ${label}
+           </span>
+           <span class="font-bold text-lg text-gray-800">${displayValue}%</span>
        </div>
-       <div class="w-full h-2.5 rounded-full bg-gray-200 overflow-hidden mb-2"> {/* Mírně vyšší proužek */}
+       <div class="w-full h-2.5 rounded-full bg-gray-200 overflow-hidden mb-2">
            <div class="h-full rounded-full ${color} transition-all duration-500 ease-out" style="width: ${displayValue}%"></div>
        </div>
-       <p class="text-xs text-gray-600">${explanation || ''}</p>
+       <p class="text-xs text-gray-600">${safeExplanation}</p>
     </div>`;
 };
+// KONEC SPRÁVNÉ DEFINICE scoreHTML
 const responseCache = new Map();
 
 const findQuickResponse = (message) => {

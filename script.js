@@ -1256,7 +1256,8 @@ const findQuickResponse = (message) => {
         state.mobileSidebarOpen = !state.mobileSidebarOpen;
     };
 
-    const handleInfoTooltip = (e) => {
+    // ZAČÁTEK OVĚŘENÉ FUNKCE handleInfoTooltip
+const handleInfoTooltip = (e) => {
     const icon = e.target.closest('.info-icon');
     const existingTooltip = document.getElementById('active-tooltip');
 
@@ -1264,12 +1265,12 @@ const findQuickResponse = (message) => {
     if (icon) {
         e.stopPropagation(); // Zastavíme další zpracování kliknutí
 
-        // Pokud už tooltip existuje a je pro tuto ikonu, zavřeme ho
+        // Pokud tooltip existuje a je pro tuto ikonu -> zavřít
         if (existingTooltip && existingTooltip.dataset.key === icon.dataset.infoKey) {
             existingTooltip.remove();
             return;
         }
-        // Pokud existuje jiný, zavřeme ho
+        // Pokud existuje jiný tooltip -> zavřít starý
         if (existingTooltip) {
             existingTooltip.remove();
         }
@@ -1278,40 +1279,55 @@ const findQuickResponse = (message) => {
         const infoText = icon.dataset.infoText;
         const infoKey = icon.dataset.infoKey;
 
+        // Kontrola, zda máme text a klíč
+        if (!infoText || !infoKey) {
+            console.warn("Info ikona nemá data-info-text nebo data-info-key:", icon);
+            return;
+        }
+
         const tooltip = document.createElement('div');
         tooltip.id = 'active-tooltip';
-        tooltip.className = 'info-tooltip';
+        tooltip.className = 'info-tooltip'; // Přidá základní styly
         tooltip.dataset.key = infoKey; // Uložíme si klíč pro identifikaci
         tooltip.innerHTML = `
             <p>${infoText}</p>
             <button class="ask-ai-btn" data-action="ask-ai-from-calc" data-question-key="${infoKey}">Zeptat se AI podrobněji</button>
         `;
 
-        document.body.appendChild(tooltip);
+        document.body.appendChild(tooltip); // Přidáme do body, aby nebyl oříznutý
         const rect = icon.getBoundingClientRect();
-        
-        // Výpočet pozice tooltipu (s ohledem na okraj obrazovky)
+
+        // Výpočet pozice tooltipu
         let left = rect.left + window.scrollX;
-        let top = rect.bottom + window.scrollY + 8;
+        let top = rect.bottom + window.scrollY + 8; // Kousek pod ikonou
+
+        // Nastavíme počáteční pozici
         tooltip.style.left = `${left}px`;
         tooltip.style.top = `${top}px`;
-        
-        // Zobrazíme s animací
-        requestAnimationFrame(() => {
-             // Zkontrolujeme, zda se vejde na šířku
-             const tooltipRect = tooltip.getBoundingClientRect();
-             if (tooltipRect.right > window.innerWidth - 10) {
-                  tooltip.style.left = `${window.innerWidth - tooltipRect.width - 10 + window.scrollX}px`;
+        tooltip.style.opacity = '0'; // Začneme neviditelný pro animaci
+
+        // Timeout, aby se stihl přidat do DOMu před výpočtem rozměrů a animací
+        setTimeout(() => {
+            // Zkontrolujeme, zda se vejde na šířku obrazovky
+            const tooltipRect = tooltip.getBoundingClientRect();
+             if (tooltipRect.right > (window.innerWidth - 10)) { // 10px okraj
+                 tooltip.style.left = `${window.innerWidth - tooltipRect.width - 10 + window.scrollX}px`;
              }
-             tooltip.classList.add('visible');
-        });
-    } 
+             if (tooltipRect.left < 10) { // Kontrola levého okraje
+                 tooltip.style.left = `${10 + window.scrollX}px`;
+             }
+            // Zobrazíme s animací
+            tooltip.classList.add('visible');
+        }, 10); // Malá prodleva
+
+    }
     // Kliknutí Mimo ikonu a Mimo tooltip? Zavřeme ho.
     else if (existingTooltip && !e.target.closest('#active-tooltip')) {
         existingTooltip.remove();
     }
     // Kliknutí uvnitř tooltipu nedělá nic (zpracuje ho handleClick)
 };
+// KONEC OVĚŘENÉ FUNKCE handleInfoTooltip
 
     // ZAČÁTEK NOVÉHO BLOKU handleClick
 const handleClick = async (e) => {
@@ -1342,7 +1358,7 @@ const handleClick = async (e) => {
         const question = questions[questionKey] || `Řekni mi více o poli ${questionKey}.`;
         document.getElementById('active-tooltip')?.remove();
         // ============================
-        
+
         switchMode('ai');
         setTimeout(() => handleChatMessageSend(question), 300);
         return;
@@ -1736,37 +1752,51 @@ const handleFormSubmit = async (e) => {
     };
 
     const init = () => {
-        document.body.addEventListener('click', handleClick);
-        document.addEventListener('click', handleInfoTooltip);
-        
-        DOMElements.contentContainer.addEventListener('input', (e) => {
-            if (e.target.matches('input[type="range"], input[type="text"], select')) {
-                handleInput(e);
-            }
-        });
-        
-        if (DOMElements.leadForm) DOMElements.leadForm.addEventListener('submit', handleFormSubmit);
+    // Registrace hlavního listeneru pro kliknutí - MUSÍ BÝT JEN JEDEN PRO CELOU STRÁNKU
+    document.body.addEventListener('click', handleClick);
 
-        DOMElements.mobileMenuButton?.addEventListener('click', () => {
+    // Registrace listeneru pro tooltipy - přidá se k document, aby zachytil vše
+    document.addEventListener('click', handleInfoTooltip);
+
+    // Listener pro změny v kalkulačce
+    DOMElements.contentContainer.addEventListener('input', (e) => {
+        if (e.target.matches('input[type="range"], input[type="text"], select')) {
+            handleInput(e);
+        }
+    });
+    
+    // Listener pro odeslání formuláře
+    if (DOMElements.leadForm) {
+         DOMElements.leadForm.addEventListener('submit', handleFormSubmit);
+    } else {
+         console.warn("Element formuláře #lead-form nebyl nalezen.");
+    }
+
+    // Listener pro mobilní menu
+    if (DOMElements.mobileMenuButton) {
+        DOMElements.mobileMenuButton.addEventListener('click', () => {
             DOMElements.mobileMenu?.classList.toggle('hidden');
         });
+    }
 
-        // Resize handler
-        let resizeTimer;
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(() => {
-                if (state.mode === 'ai') {
-                    const sidebarContainer = document.getElementById('sidebar-container');
-                    if(sidebarContainer) sidebarContainer.innerHTML = getSidebarHTML();
-                }
-            }, 250);
-        });
+    // Resize handler (zůstává stejný)
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            if (state.mode === 'ai') {
+                const sidebarContainer = document.getElementById('sidebar-container');
+                if(sidebarContainer) sidebarContainer.innerHTML = getSidebarHTML();
+            }
+            // Zavřeme tooltipy při změně velikosti
+            document.getElementById('active-tooltip')?.remove();
+        }, 250);
+    });
 
-        handleCookieBanner();
-        switchMode(state.mode, false, true); // Třetí parametr 'true' zabrání skrolování při startu
-        updateActiveUsers();
-    };
+    handleCookieBanner(); // Předpokládáme, že tato funkce existuje a je správně
+    switchMode(state.mode, false, true); // První načtení bez skrolování
+    updateActiveUsers(); // Předpokládáme, že tato funkce existuje a je správně
+};
 
     init();
 });

@@ -927,70 +927,59 @@ const findQuickResponse = (message) => {
     // Přidání listenerů vždy po renderování
     addOfferCardListeners(); 
 
-        // Skrolujeme až po úplném vykreslení (malá prodleva)
-        setTimeout(() => scrollToTarget('#results-container'), 100); 
-    } catch (error) {
-        console.error('Chyba při renderování výsledků:', error);
-        const container = document.getElementById('results-container');
-        if (container) {
-            container.innerHTML = `
-                <div class="text-center bg-red-50 p-8 rounded-lg mt-8">
-                    <h3 class="text-2xl font-bold text-red-800 mb-2">Chyba při zobrazení výsledků</h3>
-                    <p class="text-red-700">Zkuste to prosím znovu.</p>
-                </div>`;
-        }
-    }
+    // Skrolujeme až po úplném vykreslení (malá prodleva)
+    setTimeout(() => scrollToTarget('#results-container'), 100); 
 };
-       
-    function renderChart(canvasId, schedule) {
-            if (state.chart) {
-                try { state.chart.destroy(); } catch (e) { console.warn("Nepodařilo se zničit starý graf:", e); }
-            }
-            const ctx = document.getElementById(canvasId)?.getContext('2d');
-            if (!ctx) {
-                console.error(`Canvas element s ID "${canvasId}" nebyl nalezen.`);
-                return;
-            }
-            // Kontrola, zda máme platná data pro graf
-            if (!schedule || !Array.isArray(schedule) || schedule.length === 0) {
-                console.warn("Chybí nebo jsou neplatná data pro graf.");
-                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); // Vyčistíme plátno
-                ctx.font = "14px Inter";
-                ctx.fillStyle = "#6b7280";
-                ctx.textAlign = "center";
-                ctx.fillText("Data pro graf nejsou k dispozici.", ctx.canvas.width / 2, ctx.canvas.height / 2);
-                return;
-            }
-
-            try {
-                state.chart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: schedule.map(item => item?.year || '?'), // Bezpečný přístup k datům
-                        datasets: [
-                            { label: 'Úroky', data: schedule.map(item => item?.interest || 0), backgroundColor: '#ef4444' },
-                            { label: 'Jistina', data: schedule.map(item => item?.principal || 0), backgroundColor: '#22c55e' }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            x: { stacked: true },
-                            y: { stacked: true, ticks: { display: false } }
-                        },
-                        plugins: { legend: { position: 'top' } }
-                    }
-                });
-            } catch (chartError) {
-                console.error("Chyba při vytváření grafu:", chartError);
-                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                ctx.font = "14px Inter";
-                ctx.fillStyle = "red";
-                ctx.textAlign = "center";
-                ctx.fillText("Chyba při vykreslování grafu.", ctx.canvas.width / 2, ctx.canvas.height / 2);
-            }
+        
+    const renderChart = (canvasId, schedule) => { 
+        if (state.chart) { 
+            try { state.chart.destroy(); } catch (e) { console.warn("Nepodařilo se zničit starý graf:", e); }
+        } 
+        const ctx = document.getElementById(canvasId)?.getContext('2d'); 
+        if (!ctx) {
+            console.error(`Canvas element s ID "${canvasId}" nebyl nalezen.`);
+            return;
         }
+        // Kontrola, zda máme platná data pro graf
+        if (!schedule || !Array.isArray(schedule) || schedule.length === 0) {
+            console.warn("Chybí nebo jsou neplatná data pro graf.");
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); // Vyčistíme plátno
+            ctx.font = "14px Inter";
+            ctx.fillStyle = "#6b7280";
+            ctx.textAlign = "center";
+            ctx.fillText("Data pro graf nejsou k dispozici.", ctx.canvas.width / 2, ctx.canvas.height / 2);
+            return;
+        }
+        
+        try {
+            state.chart = new Chart(ctx, { 
+                type: 'bar', 
+                data: { 
+                    labels: schedule.map(item => item?.year || '?'), // Bezpečný přístup k datům
+                    datasets: [
+                        { label: 'Úroky', data: schedule.map(item => item?.interest || 0), backgroundColor: '#ef4444' }, 
+                        { label: 'Jistina', data: schedule.map(item => item?.principal || 0), backgroundColor: '#22c55e' }
+                    ] 
+                }, 
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    scales: { 
+                        x: { stacked: true }, 
+                        y: { stacked: true, ticks: { display: false } } 
+                    }, 
+                    plugins: { legend: { position: 'top' } } 
+                } 
+            }); 
+        } catch (chartError) {
+             console.error("Chyba při vytváření grafu:", chartError);
+             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+             ctx.font = "14px Inter";
+             ctx.fillStyle = "red";
+             ctx.textAlign = "center";
+             ctx.fillText("Chyba při vykreslování grafu.", ctx.canvas.width / 2, ctx.canvas.height / 2);
+        }
+    };
     
     const renderResultsChart = () => renderChart('resultsChart', state.calculation);
     const addOfferCardListeners = () => {
@@ -1730,4 +1719,4 @@ const handleFormSubmit = async (e) => {
     };
 
     init();
-}); // End of DOMContentLoaded event listener
+});

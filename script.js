@@ -1748,37 +1748,82 @@ const findQuickResponse = (message) => {
     };
 
     const init = () => {
-        document.body.addEventListener('click', handleClick);
-        document.addEventListener('click', handleInfoTooltip);
-        
+    // --- HLAVNÍ POSLUCHAČ UDÁLOSTÍ ---
+    document.body.addEventListener('click', handleClick); // Hlavní listener pro kliknutí
+
+    // --- OSTATNÍ LISTENERY S KONTROLOU ---
+    // Listener pro změny v kalkulačce (POUZE POKUD EXISTUJE KONTEJNER)
+    if (DOMElements.contentContainer) {
         DOMElements.contentContainer.addEventListener('input', (e) => {
             if (e.target.matches('input[type="range"], input[type="text"], select')) {
                 handleInput(e);
             }
         });
-        
-        if (DOMElements.leadForm) DOMElements.leadForm.addEventListener('submit', handleFormSubmit);
+    } // Jinak nic neděláme, protože kalkulačka na stránce není
 
-        DOMElements.mobileMenuButton?.addEventListener('click', () => {
-            DOMElements.mobileMenu?.classList.toggle('hidden');
+    // Listener pro odeslání formuláře (POUZE POKUD EXISTUJE FORMULÁŘ)
+    if (DOMElements.leadForm) {
+         DOMElements.leadForm.addEventListener('submit', handleFormSubmit);
+    } // Jinak nic neděláme
+
+    // Listener pro mobilní menu (POUZE POKUD EXISTUJE TLAČÍTKO)
+    if (DOMElements.mobileMenuButton && DOMElements.mobileMenu) {
+        DOMElements.mobileMenuButton.addEventListener('click', () => {
+            DOMElements.mobileMenu.classList.toggle('hidden');
         });
+    }
 
-        // Resize handler
-        let resizeTimer;
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(() => {
-                if (state.mode === 'ai') {
-                    const sidebarContainer = document.getElementById('sidebar-container');
-                    if(sidebarContainer) sidebarContainer.innerHTML = getSidebarHTML();
-                }
-            }, 250);
+    // Listener pro cookie lištu (POUZE POKUD EXISTUJÍ PRVKY)
+    if (DOMElements.cookieAcceptBtn && DOMElements.cookieBannerWrapper) {
+        DOMElements.cookieAcceptBtn.addEventListener('click', () => {
+            localStorage.setItem('cookieConsent', 'true');
+            DOMElements.cookieBannerWrapper.style.transition = 'opacity 0.3s ease-out';
+            DOMElements.cookieBannerWrapper.style.opacity = '0';
+            setTimeout(() => DOMElements.cookieBannerWrapper.classList.add('hidden'), 300);
         });
+    }
+    if (DOMElements.cookieMoreInfoBtn && DOMElements.cookieDetailsPanel && DOMElements.cookieBannerWrapper) {
+        DOMElements.cookieMoreInfoBtn.addEventListener('click', () => {
+            DOMElements.cookieDetailsPanel.classList.toggle('expanded');
+            DOMElements.cookieMoreInfoBtn.textContent = DOMElements.cookieDetailsPanel.classList.contains('expanded') ? 'Méně informací' : 'Více informací';
+        });
+    }
 
-        handleCookieBanner();
-        switchMode(state.mode, false, true); // Třetí parametr 'true' zabrání skrolování při startu
-        updateActiveUsers();
-    };
+    // --- OSTATNÍ INICIALIZAČNÍ KROKY ---
+    // Resize handler
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            document.getElementById('active-tooltip')?.remove();
+            if (state.mode === 'ai' && typeof getSidebarHTML === 'function') { // Ověření existence funkce
+                const sidebarContainer = document.getElementById('sidebar-container');
+                if(sidebarContainer) sidebarContainer.innerHTML = getSidebarHTML();
+            }
+        }, 250);
+    });
+
+    // Zobrazení cookie lišty (s kontrolou existence prvků)
+     if (typeof handleCookieBanner === 'function') {
+         handleCookieBanner();
+     } else { // Záložní zobrazení
+         if (DOMElements.cookieBannerWrapper) {
+             if (localStorage.getItem('cookieConsent') === 'true') {
+                 DOMElements.cookieBannerWrapper.classList.add('hidden');
+             } else {
+                 DOMElements.cookieBannerWrapper.classList.remove('hidden');
+             }
+         }
+     }
+
+
+    // Nastavení výchozího aktivního módu (POUZE POKUD KARTY EXISTUJÍ)
+    if (DOMElements.modeCards && DOMElements.modeCards.length > 0) {
+        DOMElements.modeCards.forEach(card => card.classList.toggle('active', card.dataset.mode === state.mode));
+    }
+
+    if (typeof updateActiveUsers === 'function') updateActiveUsers(); // Ověření existence
+};
 
     init();
 });

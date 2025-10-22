@@ -214,63 +214,27 @@
                     const answer = this.nextElementSibling;
                     const isActive = this.classList.contains('active');
 
-                    // Zavřít všechny ostatní odpovědi
-                    faqQuestions.forEach(q => {
-                        if (q !== question) {
-                            q.classList.remove('active');
-                            q.nextElementSibling.classList.remove('active');
-                        }
-                    });
+                    // Zavřít všechny ostatní odpovědi (pokud chcete, aby byla otevřena jen jedna)
+                    // faqQuestions.forEach(q => {
+                    //     if (q !== question) {
+                    //         q.classList.remove('active');
+                    //         q.nextElementSibling.classList.remove('active');
+                    //     }
+                    // });
                     
                     // Toggle aktuální otázky
                     this.classList.toggle('active', !isActive);
-                    answer.classList.toggle('active', !isActive);
-                });
-            });
-
-             // Zajištění funkčnosti mobilního menu a scroll-to i na této stránce
-             const mobileMenuButton = document.getElementById('mobile-menu-button');
-             const mobileMenu = document.getElementById('mobile-menu');
-             if (mobileMenuButton && mobileMenu) {
-                 mobileMenuButton.addEventListener('click', () => {
-                     mobileMenu.classList.toggle('hidden');
-                 });
-             }
-             // Přidání listenerů pro scroll-to odkazy specificky pro tuto stránku
-             // (Pokud by handleClick nebyl globální nebo by nefungoval správně)
-             document.querySelectorAll('.scroll-to').forEach(anchor => {
-                anchor.addEventListener('click', function (e) {
-                    const targetId = this.getAttribute('data-target');
-                    const targetElement = document.querySelector(targetId);
-                    if (targetElement) {
-                        e.preventDefault(); // Zabráníme standardnímu skoku kotvy
-                         const header = document.querySelector('header');
-                         const headerHeight = header ? header.offsetHeight : 0;
-                         const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight - 20;
-                         window.scrollTo({ top: targetPosition, behavior: 'smooth' });
-
-                         // Zavřeme mobilní menu po kliknutí
-                         if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
-                             mobileMenu.classList.add('hidden');
-                         }
+                    if (answer) { // Přidána kontrola existence
+                        answer.classList.toggle('active', !isActive);
                     }
                 });
             });
 
-            // Re-inicializace cookie banneru, pokud by handleCookieBanner nebyla globální
-             const bannerWrapper = document.getElementById('cookie-banner-wrapper');
-             const acceptBtn = document.getElementById('cookie-accept');
-             const moreInfoBtn = document.getElementById('cookie-more-info-btn');
-             const detailsPanel = document.getElementById('cookie-details');
-             if (bannerWrapper && acceptBtn && moreInfoBtn && detailsPanel) {
-                if (localStorage.getItem('cookieConsent') !== 'true') {
-                     bannerWrapper.classList.remove('hidden');
-                 }
-                 acceptBtn.addEventListener('click', () => { /* ... kód pro přijetí ... */ });
-                 moreInfoBtn.addEventListener('click', () => { /* ... kód pro rozbalení ... */ });
-             }
-
+            // Ostatní kód pro mobilní menu, scroll-to a cookie banner byl odstraněn,
+            // protože se o něj stará hlavní script.js
         });
     </script>
+</body>
+</html>
 </body>
 </html>

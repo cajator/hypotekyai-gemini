@@ -189,6 +189,18 @@ const handler = async (event) => {
         // Výpočet efektivní splatnosti s ohledem na věk
         const effectiveTerm = Math.min(term, Math.max(5, 70 - age));
 
+        // ===== NOVÁ PREMIUM LOGIKA =====
+        const isPremiumLoan = loanAmount >= 8000000; // 8 Mil. Kč
+        const isPremiumIncome = income >= 80000;    // 80 tis. Kč čistého
+        let premiumDiscount = 0.0; // Výchozí sleva 0.0%
+
+        if (isPremiumLoan || isPremiumIncome) {
+            // Pro prémiové klienty dáváme slevu 0.1%
+            premiumDiscount = 0.1; 
+            console.log(`PREMIUM KLIENT: Uplatněna sleva ${premiumDiscount}%`);
+        }
+        // =================================
+
         const allQualifiedOffers = ALL_OFFERS
             .filter(o => ltv <= o.max_ltv) // Filtrujeme dle max_ltv nabídky
             .map(o => {
@@ -208,12 +220,14 @@ const handler = async (event) => {
                     console.log(`Nenalezena sazba pro LTV ${ltv.toFixed(1)}% a fixaci ${fixationInput} u nabídky ${o.id}`);
                     return null; // Přeskočíme nabídku, pokud pro danou kombinaci LTV/fixace nemá sazbu
                 }
-
+                
                 const monthlyPayment = calculateMonthlyPayment(loanAmount, rate, effectiveTerm);
                 const dsti = income > 0 ? ((monthlyPayment + liabilities) / income) * 100 : Infinity; // DSTI
+                // ===== VYLEPŠENÍ BONITY PRO PREMIUM =====
+                // Pro bonitní klienty můžeme mírně posunout limit DSTI
+                const dstiLimit = isPremiumIncome ? 55 : 50; // 55% pro bonitní, 50% pro ostatní
+                // =========================================
                 
-                // Základní kontroly bonity
-                const dstiLimit = 50; // Zjednodušený limit DSTI
                 if (dsti > dstiLimit) {
                      console.log(`Nabídka ${o.id} zamítnuta: DSTI ${dsti.toFixed(1)}% > ${dstiLimit}%`);
                      return null;
@@ -228,7 +242,7 @@ const handler = async (event) => {
                     description: o.description, 
                     highlights: o.highlights || [] 
                 };
-            }).filter(Boolean); // Odstraní null hodnoty (nabídky bez sazby nebo nesplňující bonitu)
+            }).filter(Boolean); // Odstraní null hodnoty
 
         // Seřadíme finální nabídky podle sazby
         const finalOffers = allQualifiedOffers.sort((a, b) => a.rate - b.rate);

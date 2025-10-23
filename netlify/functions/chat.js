@@ -30,15 +30,23 @@ function createSystemPrompt(userMessage, context) {
     } : null;
 
     // Hlavní systémový prompt
-    let prompt = `Jsi PREMIUM AI hypoteční stratég. Tvým úkolem je poskytovat skutečné, stručné a kontextuální poradenství, které vede ke generování leadu.
+   let prompt = `Jsi PREMIUM AI hypoteční stratég. Tvým úkolem je poskytovat skutečné, stručné a kontextuální poradenství, které vede ke generování leadu.
     
     PRAVIDLA:
     1.  **Stručnost a hodnota:** Odpovídej krátce, v bodech. Max 120 slov. Každá odpověď musí obsahovat konkrétní radu nebo "insider" tip.
     2.  **Nikdy si nevymýšlej data:** Pokud neznáš přesné číslo, uveď bezpečné rozpětí nebo vysvětli princip.
     3.  **Cíl je lead:** Vždy na konci nabídni další krok a směřuj ke kontaktu se specialistou.
 
+    ===== DŮLEŽITÝ KONTEXT TRHU =====
+    -   Pro bonitní klienty (příjem nad 80 000 Kč čistého) nebo u vysokých hypoték (nad 8 milionů Kč) umíme zařídit individuální, neveřejné sazby, které jsou o cca 0,1% - 0,2% nižší.
+    -   U těchto klientů banky také často benevolentněji posuzují bonitu (např. akceptují DSTI až 55 % místo 50 %).
+    -   Vždy tuto výhodu zmiň, pokud vidíš, že se klienta týká (viz data klienta).
+    ==================================
+
     ${hasContext ? `
     AKTUÁLNÍ DATA KLIENTA (PRO NOVOU HYPOTÉKU):
+    - Částka: ${contextData.loanAmount?.toLocaleString('cs-CZ')} Kč
+    - Příjem: ${contextData.income?.toLocaleString('cs-CZ')} Kč
     - Orientační splátka: ${contextData.monthlyPayment?.toLocaleString('cs-CZ')} Kč
     - Orientační sazba: ${contextData.rate}%
     - LTV: ${contextData.ltv}%
@@ -65,18 +73,32 @@ function createSystemPrompt(userMessage, context) {
     if (userMessage.toLowerCase().match(/analyzuj|klíčové body mé kalkulace/)) {
         if (!hasContext) return prompt + `\n\nOdpověz: "Nejprve si prosím spočítejte nabídku v kalkulaci."`;
         
+        // ===== NOVÁ PREMIUM DETEKCE =====
+        const isPremiumLoan = (contextData.loanAmount || 0) >= 8000000;
+        const isPremiumIncome = (contextData.income || 0) >= 80000;
+        // ==================================
+        
         let response = `<strong>Klíčové body vaší kalkulace:</strong>\n\n`;
         response += `• Vaše orientační splátka vychází na <strong>${contextData.monthlyPayment.toLocaleString('cs-CZ')} Kč</strong> při sazbě <strong>${contextData.rate}%</strong>.\n`;
         response += `• Tuto sazbu ovlivňuje především vaše LTV (poměr úvěru k ceně nemovitosti), které je <strong>${contextData.ltv}%</strong>.\n\n`;
         
         response += `<strong>💡 Expertní tip pro vás:</strong>\n`;
-        if (contextData.employment === 'osvc') {
+
+        // ===== UPRAVENÁ LOGIKA TIPŮ =====
+        if (isPremiumLoan || isPremiumIncome) {
+            response += `Gratuluji, spadáte do kategorie **VIP klienta**. `;
+            if (isPremiumLoan) response += `Díky objemu hypotéky nad 8 mil. Kč `;
+            if (isPremiumIncome) response += `Díky příjmu nad 80 000 Kč `;
+            response += `pro vás naši specialisté dokáží vyjednat neveřejnou sazbu, často o dalších 0,1-0,2 % níže než vidíte v kalkulačce. Banky jsou u vás také vstřícnější při posuzování bonity.\n\n`;
+        }
+        else if (contextData.employment === 'osvc') {
             response += `Jako OSVČ je pro vás klíčové, jak banka posuzuje příjem. Některé banky umí počítat příjem z obratu, což může výrazně navýšit vaši bonitu. Náš specialista přesně ví, kde a jaké podklady předložit.\n\n`;
         } else if (contextData.age < 36) {
             response += `Protože je vám pod 36 let, některé banky jsou k vám vstřícnější a často získáte standardní sazbu i s vyšším LTV. Náš specialista zná neveřejné akce a podmínky pro mladé a umí je využít ve váš prospěch.\n\n`;
         } else {
             response += `U standardního zaměstnání je největší prostor pro vyjednání individuální slevy, která není v online kalkulačkách. Náš specialista díky objemu hypoték ví, která banka je ochotná slevit nejvíce a ušetří vám tak desítky tisíc.\n\n`;
         }
+        // =================================
         
         response += `Toto je jen jedna z mnoha "kliček", které naši specialisté denně využívají. Chcete, abychom pro vás našli tu nejvýhodnější cestu, nebo se chcete podívat na analýzu rizik?`;
         

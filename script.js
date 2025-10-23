@@ -1770,7 +1770,7 @@ const renderResults = () => {
     }
 
     if (typeof updateActiveUsers === 'function') updateActiveUsers(); // Ověření existence
-};
+    };
 
-    init();
+    
 });

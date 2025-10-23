@@ -189,17 +189,18 @@ const handler = async (event) => {
         // Výpočet efektivní splatnosti s ohledem na věk
         const effectiveTerm = Math.min(term, Math.max(5, 70 - age));
 
-        // ===== NOVÁ PREMIUM LOGIKA =====
-        const isPremiumLoan = loanAmount >= 8000000; // 8 Mil. Kč
+        // ===== UPRAVENÁ PREMIUM LOGIKA =====
+        const isPremiumLoan = loanAmount >= 7000000; // 7 Mil. Kč (dříve 8)
         const isPremiumIncome = income >= 80000;    // 80 tis. Kč čistého
-        let premiumDiscount = 0.0; // Výchozí sleva 0.0%
+        const isPremiumEducation = education === 'vysokoškolské'; // Nový VŠ faktor
+        let premiumDiscount = 0.0; 
 
-        if (isPremiumLoan || isPremiumIncome) {
-            // Pro prémiové klienty dáváme slevu 0.1%
+        // Prémiový status stačí splnit jednou
+        if (isPremiumLoan || isPremiumIncome || isPremiumEducation) {
             premiumDiscount = 0.1; 
-            console.log(`PREMIUM KLIENT: Uplatněna sleva ${premiumDiscount}%`);
+            console.log(`PREMIUM KLIENT (Úvěr: ${isPremiumLoan}, Příjem: ${isPremiumIncome}, Vzdělání: ${isPremiumEducation}): Uplatněna sleva ${premiumDiscount}%`);
         }
-        // =================================
+        // ===================================
 
         const allQualifiedOffers = ALL_OFFERS
             .filter(o => ltv <= o.max_ltv) // Filtrujeme dle max_ltv nabídky

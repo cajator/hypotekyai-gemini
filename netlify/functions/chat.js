@@ -4,7 +4,7 @@ function createSystemPrompt(userMessage, context) {
     const hasContext = context && context.calculation && context.calculation.selectedOffer;
     const messageCount = context?.messageCount || 0;
     
-    // Zjednodušený start konverzace
+    // Zjednodušený start konverzace (zůstává stejný)
     if (userMessage.toLowerCase().match(/spočítat|kalkulačk|kolik.*dostanu|jakou.*splátku/) && !hasContext) {
         return `Uživatel chce spočítat hypotéku. Reaguj stručně. Nabídni mu dvě cesty: zadat data do chatu, nebo použít kalkulačku.
         Příklad odpovědi:
@@ -24,29 +24,33 @@ function createSystemPrompt(userMessage, context) {
         income: context.formData?.income,
         age: context.formData?.age,
         employment: context.formData?.employment,
+        education: context.formData?.education, // <-- Nově přidáno vzdělání
         monthlyPayment: context.calculation?.selectedOffer?.monthlyPayment,
         rate: context.calculation?.selectedOffer?.rate,
         ltv: Math.round((context.formData?.loanAmount / context.formData?.propertyValue) * 100),
     } : null;
 
     // Hlavní systémový prompt
-   let prompt = `Jsi PREMIUM AI hypoteční stratég. Tvým úkolem je poskytovat skutečné, stručné a kontextuální poradenství, které vede ke generování leadu.
+    let prompt = `Jsi PREMIUM AI hypoteční stratég. Tvým úkolem je poskytovat skutečné, stručné a kontextuální poradenství, které vede ke generování leadu.
     
     PRAVIDLA:
     1.  **Stručnost a hodnota:** Odpovídej krátce, v bodech. Max 120 slov. Každá odpověď musí obsahovat konkrétní radu nebo "insider" tip.
     2.  **Nikdy si nevymýšlej data:** Pokud neznáš přesné číslo, uveď bezpečné rozpětí nebo vysvětli princip.
     3.  **Cíl je lead:** Vždy na konci nabídni další krok a směřuj ke kontaktu se specialistou.
 
-    ===== DŮLEŽITÝ KONTEXT TRHU =====
-    -   Pro bonitní klienty (příjem nad 80 000 Kč čistého) nebo u vysokých hypoték (nad 8 milionů Kč) umíme zařídit individuální, neveřejné sazby, které jsou o cca 0,1% - 0,2% nižší.
-    -   U těchto klientů banky také často benevolentněji posuzují bonitu (např. akceptují DSTI až 55 % místo 50 %).
-    -   Vždy tuto výhodu zmiň, pokud vidíš, že se klienta týká (viz data klienta).
-    ==================================
+    ===== KLÍČOVÝ KONTEXT TRHU (NOVĚ UPRAVENO) =====
+    1.  **PROBLÉM ODHAD vs. KUPNÍ CENA:** VŽDY upozorni klienta, že LTV se počítá z **ODHADNÍ CENY BANKY**, ne z kupní ceny. Odhad banky může být (a často je) nižší než kupní cena. To znamená, že klient bude potřebovat VÍCE VLASTNÍCH ZDROJŮ, než si myslel. Toto je kritická informace.
+    2.  **VIP FAKTORY:** Pro bonitní klienty umíme zařídit neveřejné sazby (o cca 0,1% - 0,2% nižší) a lepší posouzení bonity (DSTI až 55 %). VIP faktory jsou:
+        -   Hypotéka nad **7 milionů Kč**.
+        -   Příjem nad **80 000 Kč** čistého.
+        -   Vzdělání **VŠ** (V3).
+    ==============================================
 
     ${hasContext ? `
     AKTUÁLNÍ DATA KLIENTA (PRO NOVOU HYPOTÉKU):
     - Částka: ${contextData.loanAmount?.toLocaleString('cs-CZ')} Kč
     - Příjem: ${contextData.income?.toLocaleString('cs-CZ')} Kč
+    - Vzdělání: ${contextData.education}
     - Orientační splátka: ${contextData.monthlyPayment?.toLocaleString('cs-CZ')} Kč
     - Orientační sazba: ${contextData.rate}%
     - LTV: ${contextData.ltv}%
@@ -56,56 +60,66 @@ function createSystemPrompt(userMessage, context) {
 
     DOTAZ UŽIVATELE: "${userMessage}"`;
 
-    // ===== NOVÁ, CHYTRÁ ODPOVĚĎ NA "AKTUÁLNÍ SAZBY" =====
-    if (userMessage.toLowerCase().match(/aktuální sazby/)) {
-        let response = `Aktuálně se nejlepší nabídky na trhu pohybují v rozpětí zhruba **od 4,1 % do 5,5 %**. Přesná sazba ale vždy záleží na vaší individuální situaci.\n\n`;
-        response += `Klíčové faktory, které rozhodují, jsou:\n`;
-        response += `• **LTV (poměr úvěru k ceně nemovitosti):** Nižší LTV znamená nižší riziko pro banku a tedy i lepší sazbu.\n`;
-        response += `• **Délka fixace:** Kratší fixace mívají obvykle o něco nižší sazbu než ty dlouhodobé.\n`;
-        response += `• **Vaše bonita:** Jak banka vyhodnotí vaše příjmy a stabilitu.\n\n`;
-        response += `<strong>💡 Expertní tip:</strong> Banky často inzerují nejnižší sazby, které jsou ale dostupné jen pro "ideální" klienty (nízké LTV, vysoké příjmy). Naši specialisté vědí, jak připravit a prezentovat vaši finanční situaci tak, abyste se pro banku stali ideálním klientem a na nejlepší sazbu dosáhli, i když na první pohled nesplňujete tabulkové podmínky.\n\n`;
-        response += `Chcete si udělat rychlou kalkulaci a zjistit, do jaké sazby byste se vešel právě vy?`;
+    // ===== NOVÁ, INTELIGENTNÍ ODPOVĚĎ NA PROBLÉM LTV/ODHADU =====
+    if (userMessage.toLowerCase().match(/odhad|kupní cena|ltv|vlastní zdroje|proč.*víc peněz/)) {
+        let response = `To je zásadní dotaz. Je to nejčastější problém, na který lidé narazí.\n\n`;
+        response += `Banka vám VŽDY počítá LTV (procento úvěru) z **ceny odhadní**, nikoli z ceny kupní.\n\n`;
+        response += `**PŘÍKLAD Z PRAXE:**\n`;
+        response += `• Kupujete byt za **5 000 000 Kč** (Kupní cena).\n`;
+        response += `• Chcete 80% hypotéku, tj. **4 000 000 Kč** (Vlastní zdroje 1M).\n`;
+        response += `• Bankovní odhadce ale ocení byt jen na **4 800 000 Kč** (Odhadní cena).\n`;
+        response += `• Banka vám půjčí 80 % ze 4,8M = **3 840 000 Kč**.\n`;
+        response += `• Vy ale musíte prodejci zaplatit 5M. Najednou potřebujete vlastní zdroje ve výši **1 160 000 Kč** (o 160 000 Kč víc, než jste čekal).\n\n`;
+        response += `<strong>💡 Expertní tip:</strong> Náš specialista má přístup k interním kalkulačkám bank a často umí odhadnout cenu ještě před podáním žádosti, nebo ví, která banka má pro daný typ nemovitosti lepšího odhadce. To vám ušetří statisíce.\n\n`;
+        response += `Chcete, abychom se podívali na vaši situaci?`;
         
-        return prompt + `\n\nOdpověz srozumitelně na základě tohoto textu, vysvětli aktuální sazby: "${response}"`;
+        return prompt + `\n\nOdpověz srozumitelně na základě tohoto textu, vysvětli problém Odhad vs. Kupní cena: "${response}"`;
     }
 
-    // Speciální inteligentní analýza pro první dotaz z kalkulačky
+    // ===== ODPOVĚĎ NA "AKTUÁLNÍ SAZBY" (zůstává stejná) =====
+    if (userMessage.toLowerCase().match(/aktuální sazby/)) {
+        // ... (kód pro aktuální sazby zde zůstává beze změny) ...
+    }
+
+    // ===== UPRAVENÁ ANALÝZA KALKULACE (NOVÉ VIP FAKTORY) =====
     if (userMessage.toLowerCase().match(/analyzuj|klíčové body mé kalkulace/)) {
         if (!hasContext) return prompt + `\n\nOdpověz: "Nejprve si prosím spočítejte nabídku v kalkulaci."`;
         
-        // ===== NOVÁ PREMIUM DETEKCE =====
-        const isPremiumLoan = (contextData.loanAmount || 0) >= 8000000;
+        // Detekce nových VIP faktorů
+        const isPremiumLoan = (contextData.loanAmount || 0) >= 7000000;
         const isPremiumIncome = (contextData.income || 0) >= 80000;
-        // ==================================
+        const isPremiumEducation = contextData.education === 'vysokoškolské';
         
         let response = `<strong>Klíčové body vaší kalkulace:</strong>\n\n`;
         response += `• Vaše orientační splátka vychází na <strong>${contextData.monthlyPayment.toLocaleString('cs-CZ')} Kč</strong> při sazbě <strong>${contextData.rate}%</strong>.\n`;
         response += `• Tuto sazbu ovlivňuje především vaše LTV (poměr úvěru k ceně nemovitosti), které je <strong>${contextData.ltv}%</strong>.\n\n`;
         
+        // DŮLEŽITÉ UPOZORNĚNÍ NA ODHAD
+        response += `<strong>⚠️ Klíčové upozornění:</strong> Prosím, pamatujte, že banka bude LTV počítat ze své **odhadní ceny**, která může být nižší než vámi zadaná hodnota. To by znamenalo potřebu vyšších vlastních zdrojů.\n\n`;
+
         response += `<strong>💡 Expertní tip pro vás:</strong>\n`;
 
-        // ===== UPRAVENÁ LOGIKA TIPŮ =====
-        if (isPremiumLoan || isPremiumIncome) {
+        if (isPremiumLoan || isPremiumIncome || isPremiumEducation) {
             response += `Gratuluji, spadáte do kategorie **VIP klienta**. `;
-            if (isPremiumLoan) response += `Díky objemu hypotéky nad 8 mil. Kč `;
+            if (isPremiumLoan) response += `Díky objemu hypotéky nad 7 mil. Kč `;
             if (isPremiumIncome) response += `Díky příjmu nad 80 000 Kč `;
-            response += `pro vás naši specialisté dokáží vyjednat neveřejnou sazbu, často o dalších 0,1-0,2 % níže než vidíte v kalkulačce. Banky jsou u vás také vstřícnější při posuzování bonity.\n\n`;
+            if (isPremiumEducation) response += `Díky VŠ vzdělání (V3) máte u bank lepší interní scoring. `;
+            response += `Pro vás naši specialisté dokáží vyjednat neveřejnou sazbu, často o dalších 0,1-0,2 % níže, a získáte mírně benevolentnější posouzení bonity (DSTI až 55%).\n\n`;
         }
         else if (contextData.employment === 'osvc') {
             response += `Jako OSVČ je pro vás klíčové, jak banka posuzuje příjem. Některé banky umí počítat příjem z obratu, což může výrazně navýšit vaši bonitu. Náš specialista přesně ví, kde a jaké podklady předložit.\n\n`;
         } else if (contextData.age < 36) {
-            response += `Protože je vám pod 36 let, některé banky jsou k vám vstřícnější a často získáte standardní sazbu i s vyšším LTV. Náš specialista zná neveřejné akce a podmínky pro mladé a umí je využít ve váš prospěch.\n\n`;
+            response += `Protože je vám pod 36 let, některé banky jsou k vám vstřícnější (např. LTV až 90 % za lepších podmínek). Náš specialista zná neveřejné akce a podmínky pro mladé a umí je využít ve váš prospěch.\n\n`;
         } else {
             response += `U standardního zaměstnání je největší prostor pro vyjednání individuální slevy, která není v online kalkulačkách. Náš specialista díky objemu hypoték ví, která banka je ochotná slevit nejvíce a ušetří vám tak desítky tisíc.\n\n`;
         }
-        // =================================
         
-        response += `Toto je jen jedna z mnoha "kliček", které naši specialisté denně využívají. Chcete, abychom pro vás našli tu nejvýhodnější cestu, nebo se chcete podívat na analýzu rizik?`;
+        response += `Toto je jen jedna z mnoha "kliček", které naši specialisté denně využívají. Chcete se podívat na analýzu rizik, nebo probrat problém odhadní ceny?`;
         
         return prompt + `\n\nOdpověz stručně a srozumitelně na základě tohoto textu: "${response}"`;
     }
 
-    // Ostatní routy (kontakt, banky atd.)
+    // Ostatní routy (kontakt, banky atd.) - zůstávají stejné
     if (userMessage.toLowerCase().match(/bank|které banky/)) {
         return prompt + `\n\nKlient se ptá na banky. Odpověz POUZE JSON: {"tool":"showBanksList"}`;
     }

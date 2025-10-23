@@ -505,7 +505,12 @@ const findQuickResponse = (message) => {
     
     const getSidebarHTML = () => { 
         if (state.calculation.offers && state.calculation.offers.length > 0 && state.calculation.selectedOffer) {
-            const { loanAmount, propertyValue, loanTerm, fixation } = state.formData;
+            
+            // Načítáme více dat, abychom mohli spočítat celkovou hodnotu
+            const { loanAmount, propertyValue, loanTerm, fixation, landValue, purpose } = state.formData;
+            // Spočítáme efektivní hodnotu (pro výstavbu přičteme pozemek)
+            const effectivePropertyValue = (purpose === 'výstavba' && landValue > 0) ? propertyValue + landValue : propertyValue;
+            
             const monthlyPayment = state.calculation.selectedOffer.monthlyPayment;
             const rate = state.calculation.selectedOffer.rate;
             const quickAnalysis = state.calculation.fixationDetails?.quickAnalysis;
@@ -517,14 +522,15 @@ const findQuickResponse = (message) => {
                     </h3>
                     
                     <div class="bg-white p-4 rounded-xl mb-4 shadow-sm">
-                        <div class="grid grid-cols-2 gap-3 text-sm">
+                        
+                        <div class="space-y-2 text-sm">
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Úvěr:</span>
                                 <strong>${formatNumber(loanAmount)}</strong>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Nemovitost:</span>
-                                <strong>${formatNumber(propertyValue)}</strong>
+                                <strong>${formatNumber(effectivePropertyValue)}</strong> 
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Fixace:</span>
@@ -591,7 +597,7 @@ const findQuickResponse = (message) => {
                     </button>
                 </div>`;
         } else {
-            // Když nejsou data
+            // ... (Kód pro "Rychlý start" zůstává stejný) ...
             return `
                 <div class="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-2xl border border-purple-200">
                     <h3 class="text-xl font-bold mb-4 flex items-center">

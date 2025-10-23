@@ -774,26 +774,23 @@ const renderResults = () => {
     container.classList.remove('hidden');
     if (offers.length === 0) {
         container.innerHTML = `<div class="text-center bg-red-50 p-8 rounded-lg mt-8"><h3 class="text-2xl font-bold text-red-800 mb-2">Dle zadaných parametrů to nevychází</h3><p class="text-red-700">Zkuste upravit parametry, nebo se <a href="#kontakt" data-target="#kontakt" data-action="show-lead-form" class="font-bold underline scroll-to">spojte s naším specialistou</a>.</p></div>`;
-        state.calculation.selectedOffer = null; // Vyčistíme i vybranou nabídku
+        state.calculation.selectedOffer = null;
         return;
     }
 
     // Pokud ještě není vybrána nabídka, vybereme první
     if (!selectedOffer && offers.length > 0) {
         selectedOffer = offers[0];
-        state.calculation.selectedOffer = selectedOffer; // Uložíme do stavu
+        state.calculation.selectedOffer = selectedOffer;
     }
 
-    // --- HTML pro skóre (s kontrolami) ---
+    // --- HTML pro skóre ---
     let scoreSectionHTML = '';
     if (approvability) {
-         // Definice vysvětlivek
          const ltvExplanation = approvability.ltv > 85 ? 'Optimální LTV.' : approvability.ltv > 70 ? 'Dobré LTV.' : 'Hraniční LTV.';
          const dstiExplanation = approvability.dsti > 80 ? 'Výborné DSTI.' : approvability.dsti > 60 ? 'Dostatečná rezerva.' : 'Nižší rezerva.';
          const bonitaExplanation = approvability.bonita > 85 ? 'Excelentní bonita.' : approvability.bonita > 70 ? 'Velmi dobrá bonita.' : 'Standardní bonita.';
          const totalScoreValue = (typeof approvability.total === 'number' && !isNaN(approvability.total)) ? approvability.total : 0;
-
-         // Sestavení HTML pomocí globálně definované funkce scoreHTML
          scoreSectionHTML = `
             <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 sm:p-6 rounded-2xl border border-blue-200 shadow-lg">
                 <h4 class="text-lg sm:text-xl font-bold mb-4">🎯 Skóre vaší žádosti</h4>
@@ -808,18 +805,15 @@ const renderResults = () => {
                 </div>
             </div>`;
     } else {
-         // Záložní HTML, pokud data approvability chybí
-         scoreSectionHTML = `<div class="bg-yellow-50 p-4 rounded-lg text-yellow-800 border border-yellow-200 shadow-sm">Skóre žádosti se nepodařilo načíst nebo není k dispozici.</div>`;
+         scoreSectionHTML = `<div class="bg-yellow-50 p-4 rounded-lg text-yellow-800 border border-yellow-200 shadow-sm">Skóre žádosti se nepodařilo načíst.</div>`;
     }
     // ------------------------------------
 
     // --- Dynamický výpočet a zobrazení detailů ---
-    let fixationDetailsHTML = '<div id="fixation-details-section"></div>'; // Placeholder
-    let chartData = null; // Data pro graf
-
+    let fixationDetailsHTML = '<div id="fixation-details-section"></div>';
+    let chartData = null;
     if (selectedOffer) {
         try {
-             // Získání hodnot nebo výchozích hodnot pro výpočet
              const currentPropertyValue = state.formData.propertyValue || 0;
              const currentLandValue = state.formData.landValue || 0;
              const currentLoanAmount = state.formData.loanAmount || 0;
@@ -827,23 +821,14 @@ const renderResults = () => {
              const currentAge = state.formData.age || 35;
              const currentFixation = state.formData.fixation || 3;
              const currentPurpose = state.formData.purpose || 'koupě';
-
              const effectivePropertyValue = currentPurpose === 'výstavba' ? currentPropertyValue + currentLandValue : currentPropertyValue;
              const effectiveTerm = Math.min(currentLoanTerm, Math.max(5, 70 - currentAge));
-
-             // Zabráníme výpočtu, pokud jsou klíčová data neplatná
              if (effectivePropertyValue > 0 && currentLoanAmount > 0 && selectedOffer.rate > 0 && effectiveTerm > 0 && currentFixation > 0) {
-                  // Použijeme globálně definovanou funkci calculateFixationAnalysis
                   const currentFixationDetails = calculateFixationAnalysis(currentLoanAmount, effectivePropertyValue, selectedOffer.rate, effectiveTerm, currentFixation);
-
                   if (currentFixationDetails) {
-                       // Sestavení HTML pro detaily fixace - OPRAVENÁ VERZE
                        fixationDetailsHTML = `
                        <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 sm:p-6 rounded-2xl border border-green-200 shadow-lg" id="fixation-details-section">
-                            <h4 class="text-lg sm:text-xl font-bold mb-3 flex items-center">
-                                <span class="text-2xl mr-2">📊</span> Detaily pro: ${selectedOffer.title || 'vybranou nabídku'}
-                            </h4>
-                            {/* Základní info o úvěru */}
+                            <h4 class="text-lg sm:text-xl font-bold mb-3 flex items-center"><span class="text-2xl mr-2">📊</span> Detaily pro: ${selectedOffer.title || 'vybranou nabídku'}</h4>
                             <div class="bg-white p-4 rounded-xl space-y-2 text-sm shadow-sm mb-4">
                                 <div class="flex justify-between items-center pb-2 mb-2 border-b"><span>Výše úvěru:</span><strong class="text-base">${formatNumber(currentLoanAmount)}</strong></div>
                                 <div class="flex justify-between items-center pb-2 mb-2 border-b"><span>Splatnost:</span><strong class="text-base">${effectiveTerm} let</strong></div>
@@ -851,74 +836,22 @@ const renderResults = () => {
                                 <div class="flex justify-between items-center py-1 border-b"><span>Z toho úroky:</span><strong class="text-base text-red-600">${formatNumber(currentFixationDetails.totalInterestForFixation)}</strong></div>
                                 <div class="flex justify-between items-center py-1 pt-2"><span>Zbývající dluh po fixaci:</span><strong class="text-base">${formatNumber(currentFixationDetails.remainingBalanceAfterFixation)}</strong></div>
                             </div>
-
-                            {/* Rychlá analýza */}
-                            ${currentFixationDetails.quickAnalysis ? `
-                            <div class="mb-4 bg-yellow-50 p-3 rounded-xl border border-yellow-200 shadow-sm">
-                                <h5 class="font-bold text-xs mb-2 flex items-center"><span class="mr-1">⚡</span> Rychlá analýza <span class="info-icon ml-1" data-info-key="quickAnalysis" data-info-text="Denní náklady: Průměrná denní cena splátky. Daňová úleva: Odhad měsíční úspory na dani (max ~1875 Kč/měs z úroků do 150k ročně). Vs. nájem: Porovnání s odhadem tržního nájmu (3.5% z ceny nemovitosti ročně).">?</span></h5>
-                                <div class="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
-                                    <div>📅 Denně: <strong>${formatNumber(currentFixationDetails.quickAnalysis.dailyCost)}</strong></div>
-                                    {/* Omezení daňové úlevy */}
-                                    <div>💰 Daň. úleva: <strong>~${formatNumber(Math.min(currentFixationDetails.quickAnalysis.taxSavings, Math.round(150000 * 0.15 / 12)))}/měs</strong></div>
-                                    {/* Oprava výpočtu Vs. nájem */}
-                                    <div class="col-span-2 flex items-center">
-                                        🏠 Vs. nájem:
-                                        <strong class="ml-1">${selectedOffer.monthlyPayment <= currentFixationDetails.quickAnalysis.estimatedRent ? `O ${formatNumber(currentFixationDetails.quickAnalysis.estimatedRent - selectedOffer.monthlyPayment)} Kč nižší` : `O ${formatNumber(selectedOffer.monthlyPayment - currentFixationDetails.quickAnalysis.estimatedRent)} Kč vyšší`}</strong>
-                                        <span class="info-icon ml-1.5" data-info-key="vsRent" data-info-text="Porovnání vaší splátky (${formatNumber(selectedOffer.monthlyPayment)}) s odhadem tržního nájmu (${formatNumber(currentFixationDetails.quickAnalysis.estimatedRent)}). Nájem = ~3.5% ročně z ceny nemovitosti.">?</span>
-                                    </div>
-                                </div>
-                            </div>
-                            ` : ''}
-
-                            {/* Scénář: Pokles sazeb */}
-                            <div class="mb-3 bg-blue-50 p-3 rounded-xl border border-blue-200 text-xs shadow-sm">
-                                 <h5 class="font-bold mb-1 flex items-center"><span class="mr-1">💡</span> Scénář: Pokles sazeb <span class="info-icon ml-1" data-info-key="optimisticScenario" data-info-text="Odhad změny splátky po ${currentFixation} letech, pokud sazby klesnou o cca 0.6%.">?</span></h5>
-                                 <p class="text-gray-600 mb-1">Pokud po ${currentFixation} letech klesne sazba na ${currentFixationDetails.futureScenario.optimistic.rate.toFixed(2)}%:</p>
-                                 <div>Nová splátka: <strong class="text-green-600">${formatNumber(currentFixationDetails.futureScenario.optimistic.newMonthlyPayment)}</strong></div>
-                                 <div>Úspora: <strong class="text-green-600">${formatNumber(currentFixationDetails.futureScenario.optimistic.monthlySavings)}/měs</strong></div>
-                            </div>
-
-                            {/* Scénář: Mírný růst sazeb */}
-                            ${currentFixationDetails.futureScenario.moderateIncrease ? `
-                            <div class="bg-orange-50 p-3 rounded-xl border border-orange-200 text-xs shadow-sm">
-                                 <h5 class="font-bold mb-1 flex items-center"><span class="mr-1">📈</span> Scénář: Mírný růst sazeb <span class="info-icon ml-1" data-info-key="moderateScenario" data-info-text="Odhad změny splátky po ${currentFixation} letech, pokud sazby vzrostou o cca 0.5%.">?</span></h5>
-                                 <p class="text-gray-600 mb-1">Pokud po ${currentFixation} letech vzroste sazba na ${currentFixationDetails.futureScenario.moderateIncrease.rate.toFixed(2)}%:</p>
-                                 <div>Nová splátka: <strong class="text-orange-600">${formatNumber(currentFixationDetails.futureScenario.moderateIncrease.newMonthlyPayment)}</strong></div>
-                                 <div>Navýšení: <strong class="text-orange-600">+${formatNumber(currentFixationDetails.futureScenario.moderateIncrease.monthlyIncrease)}/měs</strong></div>
-                            </div>
-                            ` : ''}
-                            
-                            {/* ===== OPRAVENÁ TLAČÍTKA ===== */}
+                            ${currentFixationDetails.quickAnalysis ? `<div class="mb-4 bg-yellow-50 p-3 rounded-xl border border-yellow-200 shadow-sm"><h5 class="font-bold text-xs mb-2 flex items-center"><span class="mr-1">⚡</span> Rychlá analýza <span class="info-icon ml-1" data-info-key="quickAnalysis" data-info-text="...">?</span></h5><div class="grid grid-cols-2 gap-x-3 gap-y-1 text-xs"><div>📅 Denně: <strong>${formatNumber(currentFixationDetails.quickAnalysis.dailyCost)}</strong></div><div>💰 Daň. úleva: <strong>~${formatNumber(Math.min(currentFixationDetails.quickAnalysis.taxSavings, 1875))}/měs</strong></div><div class="col-span-2 flex items-center">🏠 Vs. nájem:<strong class="ml-1">${selectedOffer.monthlyPayment <= currentFixationDetails.quickAnalysis.estimatedRent ? `O ${formatNumber(currentFixationDetails.quickAnalysis.estimatedRent - selectedOffer.monthlyPayment)} Kč nižší` : `O ${formatNumber(selectedOffer.monthlyPayment - currentFixationDetails.quickAnalysis.estimatedRent)} Kč vyšší`}</strong><span class="info-icon ml-1.5" data-info-key="vsRent" data-info-text="...">?</span></div></div></div>` : ''}
+                            <div class="mb-3 bg-blue-50 p-3 rounded-xl border border-blue-200 text-xs shadow-sm"><h5 class="font-bold mb-1 flex items-center"><span class="mr-1">💡</span> Scénář: Pokles sazeb <span class="info-icon ml-1" data-info-key="optimisticScenario" data-info-text="...">?</span></h5><p class="text-gray-600 mb-1">Pokud po ${currentFixation} letech klesne sazba na ${currentFixationDetails.futureScenario.optimistic.rate.toFixed(2)}%:</p><div>Nová splátka: <strong class="text-green-600">${formatNumber(currentFixationDetails.futureScenario.optimistic.newMonthlyPayment)}</strong></div><div>Úspora: <strong class="text-green-600">${formatNumber(currentFixationDetails.futureScenario.optimistic.monthlySavings)}/měs</strong></div></div>
+                            ${currentFixationDetails.futureScenario.moderateIncrease ? `<div class="bg-orange-50 p-3 rounded-xl border border-orange-200 text-xs shadow-sm"><h5 class="font-bold mb-1 flex items-center"><span class="mr-1">📈</span> Scénář: Mírný růst sazeb <span class="info-icon ml-1" data-info-key="moderateScenario" data-info-text="...">?</span></h5><p class="text-gray-600 mb-1">Pokud po ${currentFixation} letech vzroste sazba na ${currentFixationDetails.futureScenario.moderateIncrease.rate.toFixed(2)}%:</p><div>Nová splátka: <strong class="text-orange-600">${formatNumber(currentFixationDetails.futureScenario.moderateIncrease.newMonthlyPayment)}</strong></div><div>Navýšení: <strong class="text-orange-600">+${formatNumber(currentFixationDetails.futureScenario.moderateIncrease.monthlyIncrease)}/měs</strong></div></div>` : ''}
                             <div class="flex flex-col sm:flex-row gap-3 mt-5">
-                                <button class="flex-1 nav-btn bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 px-4 rounded-lg flex items-center justify-center" data-action="discuss-fixation-with-ai">
-                                    <span class="mr-1.5 text-lg">🤖</span> Probrat s AI
-                                </button>
-                                <button class="flex-1 nav-btn bg-green-600 hover:bg-green-700 text-white text-sm py-2 px-4 rounded-lg flex items-center justify-center" data-action="show-lead-form">
-                                   <span class="mr-1.5 text-lg">📞</span> Specialista
-                                </button>
+                                <button class="flex-1 nav-btn bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 px-4 rounded-lg flex items-center justify-center" data-action="discuss-fixation-with-ai"><span class="mr-1.5 text-lg">🤖</span> Probrat s AI</button>
+                                <button class="flex-1 nav-btn bg-green-600 hover:bg-green-700 text-white text-sm py-2 px-4 rounded-lg flex items-center justify-center" data-action="show-lead-form"><span class="mr-1.5 text-lg">📞</span> Specialista</button>
                             </div>
-                            {/* ============================= */}
-                       </div>
-                       `;
-                        // KONEC NOVÉHO BLOKU fixationDetailsHTML
-                       // Příprava dat pro graf
+                       </div>`;
                        chartData = Array.from({ length: effectiveTerm }, (_, i) => calculateAmortization(currentLoanAmount, selectedOffer.rate, effectiveTerm, i + 1));
-                  } else {
-                       fixationDetailsHTML = `<div id="fixation-details-section"><p class="text-center text-red-600 p-4 bg-red-50 border border-red-200 rounded-lg">Chyba při výpočtu detailů fixace.</p></div>`;
-                  }
-             } else {
-                  fixationDetailsHTML = `<div id="fixation-details-section"><p class="text-center text-orange-600 p-4 bg-orange-50 border border-orange-200 rounded-lg">Pro zobrazení detailů fixace zadejte platné parametry úvěru.</p></div>`;
-             }
-        } catch (calcError) {
-             console.error("Chyba při počítání detailů fixace:", calcError);
-             fixationDetailsHTML = `<div id="fixation-details-section"><p class="text-center text-red-600 p-4 bg-red-50 border border-red-200 rounded-lg">Chyba při zpracování detailů fixace.</p></div>`;
-        }
-    } else {
-         fixationDetailsHTML = `<div id="fixation-details-section"><p class="text-center text-gray-500 p-4 bg-gray-50 border border-gray-200 rounded-lg">Vyberte nabídku pro zobrazení detailů.</p></div>`;
-    }
+                  } else fixationDetailsHTML = `<div id="fixation-details-section"><p class="text-red-600">Chyba výpočtu detailů.</p></div>`;
+             } else fixationDetailsHTML = `<div id="fixation-details-section"><p class="text-orange-600">Zadejte platné parametry.</p></div>`;
+        } catch (e) { console.error(e); fixationDetailsHTML = `<div id="fixation-details-section"><p class="text-red-600">Chyba zpracování detailů.</p></div>`; }
+    } else fixationDetailsHTML = `<div id="fixation-details-section"><p class="text-gray-500">Vyberte nabídku.</p></div>`;
     // -----------------------------------------
 
-    // Vytvoříme HTML pro karty nabídek, zvýrazníme vybranou
+    // Vytvoříme HTML pro karty nabídek
     const offersHTML = offers.map(o => `
         <div class="offer-card p-4 sm:p-6 cursor-pointer border ${o.id === selectedOffer?.id ? 'selected border-blue-600 ring-2 ring-blue-200' : 'border-gray-200'} rounded-xl shadow-md hover:shadow-lg transition-shadow duration-200" data-offer-id="${o.id}">
             <h4 class="text-lg font-bold text-blue-700 mb-1">${o.title || 'Nabídka'}</h4>
@@ -930,59 +863,45 @@ const renderResults = () => {
             </div>
         </div>`).join('');
 
-    // Sestavení finálního HTML
+    // Sestavení finálního HTML bez komentářů
     container.innerHTML = `
         <div>
-                <h3 class="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">Našli jsme pro vás tyto nabídky:</h3>
-                <div class="results-grid grid grid-cols-1 md:grid-cols-3 gap-4">${offersHTML}</div>
+            <h3 class="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">Našli jsme pro vás tyto nabídky:</h3>
+            <div class="results-grid grid grid-cols-1 md:grid-cols-3 gap-4">${offersHTML}</div>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mt-8 lg:mt-12">
+            <div class="space-y-6">
+                ${scoreSectionHTML} 
+                 
+                 <div class="bg-white p-4 sm:p-6 rounded-xl border border-gray-200 shadow-lg">
+                    <h3 class="text-lg sm:text-xl font-bold mb-4">Vývoj splácení v čase</h3>
+                    <div class="relative h-60 sm:h-80"><canvas id="resultsChart"></canvas></div>
+                </div>
             </div>
+            
+            <div class="space-y-6">
+                ${fixationDetailsHTML} 
+            </div>
+        </div>`;
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mt-8 lg:mt-12">
-                <div class="space-y-6">
-                    ${scoreSectionHTML} {/* Vložení HTML pro skóre */}
-
-                     <div class="bg-white p-4 sm:p-6 rounded-xl border border-gray-200 shadow-lg">
-                        <h3 class="text-lg sm:text-xl font-bold mb-4">Vývoj splácení v čase</h3>
-                        <div class="relative h-60 sm:h-80"><canvas id="resultsChart"></canvas></div>
-                    </div>
-                </div>
-
-                <div class="space-y-6">
-                    ${fixationDetailsHTML} {/* Vložení HTML pro detaily fixace */}
-
-                    {/* Tlačítko 'Domluvit se specialistou' je nyní součástí fixationDetailsHTML */}
-                </div>
-            </div>`;
-
-        // Vykreslení grafu a přidání listenerů
-        if (chartData && typeof Chart !== 'undefined') {
-            // Použijeme setTimeout pro jistotu, že canvas je připraven v DOMu
-            setTimeout(() => {
-                 // Zkontrolujeme, zda graf už neexistuje, než ho vytvoříme
-                 if (state.chart) {
-                      try { state.chart.destroy(); } catch(e) {} // Zničíme starý graf
-                 }
-                 renderChart('resultsChart', chartData); // Vykreslíme nový
-            }, 50);
-        } else if (typeof Chart === 'undefined' && document.getElementById('resultsChart')) {
-             console.error("Knihovna Chart.js není načtena, ale canvas existuje.");
-             // Můžeme zde zobrazit zástupný text místo grafu
-             const chartCtx = document.getElementById('resultsChart').getContext('2d');
-             if (chartCtx) {
-                  chartCtx.clearRect(0, 0, chartCtx.canvas.width, chartCtx.canvas.height);
-                  chartCtx.font = "14px Inter";
-                  chartCtx.fillStyle = "#6b7280";
-                  chartCtx.textAlign = "center";
-                  chartCtx.fillText("Graf nelze načíst.", chartCtx.canvas.width / 2, chartCtx.canvas.height / 2);
-             }
-        }
-        addOfferCardListeners(); // Přidáme listenery na karty nabídek
-
-        // Skrolujeme k výsledkům až po vykreslení
-        // Dáváme malou prodlevu pro jistotu
-        setTimeout(() => scrollToTarget('#results-container'), 150);
-    };
-    // KONEC KOMPLETNÍ A OPRAVENÉ FUNKCE renderResults
+    // Vykreslení grafu a přidání listenerů
+    if (chartData && typeof Chart !== 'undefined') {
+        setTimeout(() => {
+             if (state.chart) { try { state.chart.destroy(); } catch(e) {} }
+             renderChart('resultsChart', chartData);
+        }, 50);
+    } else if (typeof Chart === 'undefined' && document.getElementById('resultsChart')) {
+         console.error("Knihovna Chart.js není načtena.");
+    }
+    addOfferCardListeners();
+    // Skrolujeme pouze po prvním úspěšném výpočtu, ne při překreslení po kliknutí na kartu
+    if (!container.dataset.renderedOnce) {
+         setTimeout(() => scrollToTarget('#results-container'), 150);
+         container.dataset.renderedOnce = "true"; // Označíme, že už jsme skrolovali
+    }
+};
+// KONEC KOMPLETNÍ A OPRAVENÉ FUNKCE renderResults
         
     const renderChart = (canvasId, schedule) => { 
         if (state.chart) { 

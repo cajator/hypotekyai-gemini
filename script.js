@@ -506,11 +506,9 @@ const findQuickResponse = (message) => {
     const getSidebarHTML = () => { 
         if (state.calculation.offers && state.calculation.offers.length > 0 && state.calculation.selectedOffer) {
             
-            // Načítáme více dat, abychom mohli spočítat celkovou hodnotu
             const { loanAmount, propertyValue, loanTerm, fixation, landValue, purpose } = state.formData;
-            // Spočítáme efektivní hodnotu (pro výstavbu přičteme pozemek)
             const effectivePropertyValue = (purpose === 'výstavba' && landValue > 0) ? propertyValue + landValue : propertyValue;
-            
+
             const monthlyPayment = state.calculation.selectedOffer.monthlyPayment;
             const rate = state.calculation.selectedOffer.rate;
             const quickAnalysis = state.calculation.fixationDetails?.quickAnalysis;
@@ -522,7 +520,6 @@ const findQuickResponse = (message) => {
                     </h3>
                     
                     <div class="bg-white p-4 rounded-xl mb-4 shadow-sm">
-                        
                         <div class="space-y-2 text-sm">
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Úvěr:</span>
@@ -541,6 +538,7 @@ const findQuickResponse = (message) => {
                                 <strong>${loanTerm} let</strong>
                             </div>
                         </div>
+                        
                         <div class="mt-3 pt-3 border-t">
                             <div class="flex justify-between items-center">
                                 <span class="text-gray-600">Měsíční splátka:</span>
@@ -558,7 +556,13 @@ const findQuickResponse = (message) => {
                         <p class="text-xs font-semibold text-yellow-800 mb-2">⚡ Rychlá analýza</p>
                         <div class="text-xs text-gray-700 space-y-1">
                             <div>📅 Denně platíte: <strong>${formatNumber(quickAnalysis.dailyCost)}</strong></div>
-                            <div>🏠 Splátka vs. odhad nájmu: Vaše splátka je o <strong>${formatNumber(Math.max(0, quickAnalysis.estimatedRent - monthlyPayment))} nižší</strong></div>
+                            
+                            <div>🏠 Splátka vs. odhad nájmu: 
+                                ${monthlyPayment <= quickAnalysis.estimatedRent 
+                                    ? `Vaše splátka je o <strong>${formatNumber(quickAnalysis.estimatedRent - monthlyPayment)} Kč nižší</strong>` 
+                                    : `Vaše splátka je o <strong>${formatNumber(monthlyPayment - quickAnalysis.estimatedRent)} Kč vyšší</strong>`
+                                }
+                            </div>
                             <div>💰 Daňová úleva: až <strong>${formatNumber(quickAnalysis.taxSavings)}/měs</strong></div>
                         </div>
                     </div>

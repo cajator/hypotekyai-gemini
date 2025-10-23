@@ -837,7 +837,7 @@ const renderResults = () => {
                                 <div class="flex justify-between items-center py-1 pt-2"><span>Zbývající dluh po fixaci:</span><strong class="text-base">${formatNumber(currentFixationDetails.remainingBalanceAfterFixation)}</strong></div>
                             </div>
                             ${currentFixationDetails.quickAnalysis ? `<div class="mb-4 bg-yellow-50 p-3 rounded-xl border border-yellow-200 shadow-sm"><h5 class="font-bold text-xs mb-2 flex items-center"><span class="mr-1">⚡</span> Rychlá analýza <span class="info-icon ml-1" data-info-key="quickAnalysis" data-info-text="<strong>Denně:</strong> Kolik vás hypotéka stojí v průměru za 1 den.<br><strong>Daň. úleva:</strong> Odhadovaná měsíční úspora na dani z příjmu díky odpočtu úroků (max 1875 Kč/měs).<br><strong>Vs. nájem:</strong> Srovnání splátky s odhadovaným tržním nájmem dané nemovitosti.">?</span></h5><div class="grid grid-cols-2 gap-x-3 gap-y-1 text-xs"><div>📅 Denně: <strong>${formatNumber(currentFixationDetails.quickAnalysis.dailyCost)}</strong></div><div>💰 Daň. úleva: <strong>~${formatNumber(Math.min(currentFixationDetails.quickAnalysis.taxSavings, 1875))}/měs</strong></div><div class="col-span-2 flex items-center">🏠 Vs. nájem:<strong class="ml-1">${selectedOffer.monthlyPayment <= currentFixationDetails.quickAnalysis.estimatedRent ? `O ${formatNumber(currentFixationDetails.quickAnalysis.estimatedRent - selectedOffer.monthlyPayment)} Kč nižší` : `O ${formatNumber(selectedOffer.monthlyPayment - currentFixationDetails.quickAnalysis.estimatedRent)} Kč vyšší`}</strong><span class="info-icon ml-1.5" data-info-key="vsRent" data-info-text="Porovnáváme vaši měsíční splátku s odhadovaným tržním nájmem pro nemovitost v dané hodnotě (počítáno jako 3.5% ročně z ceny nemovitosti).">?</span></div></div></div>` : ''}
-                            <div class="mb-3 bg-blue-50 p-3 rounded-xl border border-blue-200 text-xs shadow-sm"><h5 class="font-bold mb-1 flex items-center"><span class="mr-1">💡</span> Scénář: Pokles sazeb <span class="info-icon ml-1" data-info-key="optimisticScenario" data-info-text="Tento scénář ukazuje, jaká by byla vaše nová splátka po skončení fixace, pokud by tržní úrokové sazby klesly na odhadovanou 'optimistickou' úroveň.">?</span></h5><p class="text-gray-600 mb-1">Pokud po ${currentFixation} letech klesne sazba na ${currentFixationDetails.futureScenario.optimistic.rate.toFixed(2)}%:</p><div>Nová splátka: <strong class="text-green-600">${formatNumber(currentFixationDetails.futureScenario.optimistic.newMonthlyPayment)}</strong></div><div>Úspora: <strong class="text-green-600">${formatNumber(currentFixationDetails.futureScenario.optimistic.monthlySavings)}/měs</strong></div></div>
+                            <div class="mb-3 bg-blue-50 p-3 rounded-xl border border-blue-200 text-xs shadow-sm"><h5 class="font-bold mb-1 flex items-center"><span class="mr-1">💡</span> Scénář: Pokles sazeb <span class="info-icon ml-1" data-info-key="Optimistický scénář" data-info-text="Tento scénář ukazuje, jaká by byla vaše nová splátka po skončení fixace, pokud by tržní úrokové sazby klesly na odhadovanou 'optimistickou' úroveň.">?</span></h5><p class="text-gray-600 mb-1">Pokud po ${currentFixation} letech klesne sazba na ${currentFixationDetails.futureScenario.optimistic.rate.toFixed(2)}%:</p><div>Nová splátka: <strong class="text-green-600">${formatNumber(currentFixationDetails.futureScenario.optimistic.newMonthlyPayment)}</strong></div><div>Úspora: <strong class="text-green-600">${formatNumber(currentFixationDetails.futureScenario.optimistic.monthlySavings)}/měs</strong></div></div>
                             ${currentFixationDetails.futureScenario.moderateIncrease ? `<div class="bg-orange-50 p-3 rounded-xl border border-orange-200 text-xs shadow-sm"><h5 class="font-bold mb-1 flex items-center"><span class="mr-1">📈</span> Scénář: Mírný růst sazeb <span class="info-icon ml-1" data-info-key="moderateScenario" data-info-text="Tento scénář ukazuje, jaká by byla vaše nová splátka po skončení fixace, pokud by tržní úrokové sazby mírně vzrostly na 'mírnou' úroveň.">?</span></h5><p class="text-gray-600 mb-1">Pokud po ${currentFixation} letech vzroste sazba na ${currentFixationDetails.futureScenario.moderateIncrease.rate.toFixed(2)}%:</p><div>Nová splátka: <strong class="text-orange-600">${formatNumber(currentFixationDetails.futureScenario.moderateIncrease.newMonthlyPayment)}</strong></div><div>Navýšení: <strong class="text-orange-600">+${formatNumber(currentFixationDetails.futureScenario.moderateIncrease.monthlyIncrease)}/měs</strong></div></div>` : ''}
                             <div class="flex flex-col sm:flex-row gap-3 mt-5">
                                 <button class="flex-1 nav-btn bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 px-4 rounded-lg flex items-center justify-center" data-action="discuss-fixation-with-ai"><span class="mr-1.5 text-lg">🤖</span> Probrat s AI</button>
@@ -1278,7 +1278,10 @@ const renderResults = () => {
 
         if(action === 'ask-ai-from-calc') {
             const questionKey = target.dataset.questionKey;
+
+            // --- TENTO OBJEKT KOMPLETNĚ NAHRAĎTE ---
             const questions = {
+                // Klíče z kalkulačky
                 'propertyValue': "Jak hodnota nemovitosti ovlivňuje hypotéku?",
                 'loanAmount': "Proč je důležité správně nastavit výši úvěru?",
                 'income': "Jak banky posuzují můj příjem a co všechno se započítává?",
@@ -1287,11 +1290,18 @@ const renderResults = () => {
                 'liabilities': "Jak mé ostatní půjčky ovlivňují šanci na získání hypotéky?",
                 'age': "Proč je můj věk důležitý pro banku?",
                 'children': "Jak počet dětí ovlivňuje výpočet bonity?",
-                'vsRent': "Jak přesně se počítá srovnání splátky s nájmem a jaké jsou výhody vlastnictví?"
+                'landValue': "Proč je důležitá hodnota pozemku u výstavby?",
+                
+                // Klíče z výsledků (nově přidané)
+                'quickAnalysis': "Co přesně znamenají položky v Rychlé analýze (denní náklady, úleva, nájem)?",
+                'vsRent': "Jak přesně se počítá srovnání splátky s nájsem a jaké jsou výhody vlastnictví?",
+                'optimisticScenario': "Vysvětli mi podrobněji ten optimistický scénář s poklesem sazeb.",
+                'moderateScenario': "Co znamená ten scénář s mírným růstem sazeb?"
             };
+            // --- KONEC NÁHRADY ---
+            
             const question = questions[questionKey] || `Řekni mi více o poli ${questionKey}.`;
             document.getElementById('active-tooltip')?.remove();
-            // ============================
             
             switchMode('ai');
             setTimeout(() => handleChatMessageSend(question), 300);

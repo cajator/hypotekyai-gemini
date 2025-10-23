@@ -926,23 +926,27 @@ const renderResults = () => {
         <div>
             <h3 class="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">Našli jsme pro vás tyto nabídky:</h3>
             <div class="results-grid grid grid-cols-1 md:grid-cols-3 gap-4">${offersHTML}</div>
-        </div>
-        
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mt-8 lg:mt-12">
-            <div class="space-y-6">
-                ${scoreSectionHTML} {/* Správné vložení HTML pro skóre */}
-                 
-                 <div class="bg-white p-4 sm:p-6 rounded-xl border border-gray-200 shadow-lg">
-                    <h3 class="text-lg sm:text-xl font-bold mb-4">Vývoj splácení v čase</h3>
-                    <div class="relative h-60 sm:h-80"><canvas id="resultsChart"></canvas></div>
-                </div>
             </div>
             
-            <div class="space-y-6">
-                ${fixationDetailsHTML} {/* Správné vložení HTML pro detaily fixace */}
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mt-8 lg:mt-12">
+                <div class="space-y-6">
+                    
+                    ${scoreSectionHTML} 
+                     
+                     <div class="bg-white p-4 sm:p-6 rounded-xl border border-gray-200 shadow-lg">
+                        <h3 class="text-lg sm:text-xl font-bold mb-4">Vývoj splácení v čase</h3>
+                        <div class="relative h-60 sm:h-80">
+                            <canvas id="resultsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
                 
-                 {/* Zelené tlačítko přesunuto do bloku fixationDetailsHTML */}
-            </div>
+                <div class="space-y-6">
+
+                    ${fixationDetailsHTML} 
+                    
+                    {/* Zelené tlačítko je nyní součástí fixationDetailsHTML */}
+                </div>
         </div>`;
 
     // Vykreslení grafu a přidání listenerů

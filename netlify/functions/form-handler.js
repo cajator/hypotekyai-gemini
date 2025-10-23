@@ -35,6 +35,26 @@ const formatValue = (value) => {
 // Helper funkce pro formátování jednoduchých objektů (jako formData)
 const formatObjectSimple = (obj, title) => {
     if (!obj || typeof obj !== 'object' || Object.keys(obj).length === 0) return `<p>${title}: Žádná data.</p>`;
+
+    // --- PŘEKLADOVÁ MAPA ---
+    const keyTranslations = {
+        'propertyValue': 'Hodnota nemovitosti',
+        'loanAmount': 'Výše úvěru',
+        'income': 'Příjem',
+        'liabilities': 'Závazky (splátky)',
+        'age': 'Věk',
+        'children': 'Počet dětí',
+        'loanTerm': 'Splatnost',
+        'fixation': 'Fixace',
+        'purpose': 'Účel',
+        'propertyType': 'Typ nemovitosti',
+        'landValue': 'Hodnota pozemku',
+        'reconstructionValue': 'Cena rekonstrukce',
+        'employment': 'Zaměstnání',
+        'education': 'Vzdělání'
+    };
+    // -------------------------
+
     let html = `<h3>${title}:</h3><ul style="list-style-type: none; padding-left: 0;">`;
     try {
         for (const key in obj) {
@@ -53,7 +73,11 @@ const formatObjectSimple = (obj, title) => {
                         value = formatNumber(value, false);
                     }
                  }
-                 const formattedKey = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                 
+                 // --- APLIKACE PŘEKLADU ---
+                 const formattedKey = keyTranslations[key] || key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                 // -------------------------
+
                  html += `<li style="margin-bottom: 5px;"><strong style="color: #555; min-width: 150px; display: inline-block;">${formattedKey}:</strong> ${formatValue(value)}</li>`;
             }
         }

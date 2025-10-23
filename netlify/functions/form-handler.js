@@ -43,15 +43,11 @@ const formatObjectSimple = (obj, title) => {
         'income': 'Příjem',
         'liabilities': 'Závazky (splátky)',
         'age': 'Věk',
-        'children': 'Počet dětí',
         'loanTerm': 'Splatnost',
         'fixation': 'Fixace',
         'purpose': 'Účel',
         'propertyType': 'Typ nemovitosti',
-        'landValue': 'Hodnota pozemku',
-        'reconstructionValue': 'Cena rekonstrukce',
-        'employment': 'Zaměstnání',
-        'education': 'Vzdělání'
+
     };
     // -------------------------
 
@@ -67,8 +63,6 @@ const formatObjectSimple = (obj, title) => {
                         value += ' let';
                     } else if (key.toLowerCase().includes('rate') || key.toLowerCase().includes('ltv') || key.toLowerCase().includes('dsti') || key.toLowerCase().includes('score')) {
                         value += ' %';
-                    } else if (key.toLowerCase().includes('children')) {
-                         value = value;
                     } else {
                         value = formatNumber(value, false);
                     }

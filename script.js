@@ -556,7 +556,6 @@ const findQuickResponse = (message) => {
                         <p class="text-xs font-semibold text-yellow-800 mb-2">⚡ Rychlá analýza</p>
                         <div class="text-xs text-gray-700 space-y-1">
                             <div>📅 Denně platíte: <strong>${formatNumber(quickAnalysis.dailyCost)}</strong></div>
-                            
                             <div>🏠 Splátka vs. odhad nájmu: 
                                 ${monthlyPayment <= quickAnalysis.estimatedRent 
                                     ? `Vaše splátka je o <strong>${formatNumber(quickAnalysis.estimatedRent - monthlyPayment)} Kč nižší</strong>` 
@@ -595,19 +594,15 @@ const findQuickResponse = (message) => {
                         📞 Domluvit se specialistou
                     </button>
                     
-                    <button class="text-xs text-center w-full text-gray-600 hover:text-blue-600 underline" 
-                            data-action="download-summary">
-                        Stáhnout souhrn (PDF)
-                    </button>
-                </div>`;
+                    </div>`;
         } else {
             // ... (Kód pro "Rychlý start" zůstává stejný) ...
+            // Tento kód se nemění
             return `
                 <div class="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-2xl border border-purple-200">
                     <h3 class="text-xl font-bold mb-4 flex items-center">
                         <span class="text-2xl mr-2">🎯</span> Rychlý start
                     </h3>
-                    
                     <div class="space-y-3 mb-4">
                         <button class="w-full text-left p-3 bg-white rounded-lg hover:shadow-md transition-shadow" 
                                 data-quick-question="Kolik si můžu půjčit s příjmem 50 tisíc?">
@@ -630,12 +625,10 @@ const findQuickResponse = (message) => {
                             <span class="text-sm ml-2">Checklist dokumentů</span>
                         </button>
                     </div>
-
                     <button class="nav-btn bg-purple-600 hover:bg-purple-700 w-full mb-2" 
                             data-action="go-to-calculator">
                         📢 Spočítat hypotéku
                     </button>
-                    
                     <button class="nav-btn bg-green-600 hover:bg-green-700 w-full" 
                             data-action="show-lead-form">
                         📞 Domluvit se specialistou

@@ -1,6 +1,4 @@
 // netlify/functions/form-handler.js
-// Finální verze s čitelným formátováním e-mailů a podmíněným CRM
-
 const sgMail = require('@sendgrid/mail');
 
 // Nastavení API klíčů a e-mailů z proměnných prostředí Netlify
@@ -37,12 +35,11 @@ const formatValue = (value) => {
 // Helper funkce pro formátování jednoduchých objektů (jako formData)
 const formatObjectSimple = (obj, title) => {
     if (!obj || typeof obj !== 'object' || Object.keys(obj).length === 0) return `<p>${title}: Žádná data.</p>`;
-    let html = `<h3>${title}:</h3><ul>`;
+    let html = `<h3>${title}:</h3><ul style="list-style-type: none; padding-left: 0;">`;
     try {
         for (const key in obj) {
             if (typeof obj[key] !== 'object' || obj[key] === null || Array.isArray(obj[key])) {
                 let value = obj[key];
-                // Formátování čísel
                 if (typeof value === 'number') {
                     if (key.toLowerCase().includes('amount') || key.toLowerCase().includes('value') || key.toLowerCase().includes('income') || key.toLowerCase().includes('liabilities') || key.toLowerCase().includes('payment') || key.toLowerCase().includes('savings') || key.toLowerCase().includes('balance') || key.toLowerCase().includes('cost')) {
                         value = formatNumber(value);
@@ -51,13 +48,13 @@ const formatObjectSimple = (obj, title) => {
                     } else if (key.toLowerCase().includes('rate') || key.toLowerCase().includes('ltv') || key.toLowerCase().includes('dsti') || key.toLowerCase().includes('score')) {
                         value += ' %';
                     } else if (key.toLowerCase().includes('children')) {
-                         value = value; // Bez jednotky
+                         value = value;
                     } else {
                         value = formatNumber(value, false);
                     }
                  }
                  const formattedKey = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-                 html += `<li><strong>${formattedKey}:</strong> ${formatValue(value)}</li>`;
+                 html += `<li style="margin-bottom: 5px;"><strong style="color: #555; min-width: 150px; display: inline-block;">${formattedKey}:</strong> ${formatValue(value)}</li>`;
             }
         }
     } catch (e) {
@@ -68,27 +65,26 @@ const formatObjectSimple = (obj, title) => {
     return html;
 };
 
-// ===== ZDE JE DEFINICE CHYBĚJÍCÍ FUNKCE =====
 // Helper funkce pro formátování výsledků kalkulace
 const formatCalculationToHtml = (calc) => {
     if (!calc) return '<h3>Výsledky z kalkulačky:</h3><p>Žádná data.</p>';
     let html = `<h3>Výsledky z kalkulačky:</h3>`;
     try {
         if (calc.selectedOffer) {
-            html += `<h4>Vybraná nabídka:</h4><ul>`;
-            html += `<li><strong>Název:</strong> ${formatValue(calc.selectedOffer.title)}</li>`;
-            html += `<li><strong>Splátka:</strong> ${formatNumber(calc.selectedOffer.monthlyPayment)}</li>`;
-            html += `<li><strong>Sazba:</strong> ${formatValue(calc.selectedOffer.rate)} %</li>`;
+            html += `<h4>Vybraná nabídka:</h4><ul style="list-style-type: none; padding-left: 0;">`;
+            html += `<li style="margin-bottom: 5px;"><strong style="color: #555; min-width: 150px; display: inline-block;">Název:</strong> ${formatValue(calc.selectedOffer.title)}</li>`;
+            html += `<li style="margin-bottom: 5px;"><strong style="color: #555; min-width: 150px; display: inline-block;">Splátka:</strong> ${formatNumber(calc.selectedOffer.monthlyPayment)}</li>`;
+            html += `<li style="margin-bottom: 5px;"><strong style="color: #555; min-width: 150px; display: inline-block;">Sazba:</strong> ${formatValue(calc.selectedOffer.rate)} %</li>`;
             html += `</ul>`;
         } else {
              html += '<p>Nebyla vybrána žádná konkrétní nabídka.</p>';
         }
         if (calc.approvability) {
-             html += `<h4>Odhad schvalitelnosti:</h4><ul>`;
-             html += `<li><strong>Skóre LTV:</strong> ${formatValue(calc.approvability.ltv)}%</li>`;
-             html += `<li><strong>Skóre DSTI:</strong> ${formatValue(calc.approvability.dsti)}%</li>`;
-             html += `<li><strong>Skóre Bonita:</strong> ${formatValue(calc.approvability.bonita)}%</li>`;
-             html += `<li><strong>Celkové skóre:</strong> ${formatValue(calc.approvability.total)}%</li>`;
+             html += `<h4>Odhad schvalitelnosti:</h4><ul style="list-style-type: none; padding-left: 0;">`;
+             html += `<li style="margin-bottom: 5px;"><strong style="color: #555; min-width: 150px; display: inline-block;">Skóre LTV:</strong> ${formatValue(calc.approvability.ltv)}%</li>`;
+             html += `<li style="margin-bottom: 5px;"><strong style="color: #555; min-width: 150px; display: inline-block;">Skóre DSTI:</strong> ${formatValue(calc.approvability.dsti)}%</li>`;
+             html += `<li style="margin-bottom: 5px;"><strong style="color: #555; min-width: 150px; display: inline-block;">Skóre Bonita:</strong> ${formatValue(calc.approvability.bonita)}%</li>`;
+             html += `<li style="margin-bottom: 5px;"><strong style="color: #555; min-width: 150px; display: inline-block;">Celkové skóre:</strong> ${formatValue(calc.approvability.total)}%</li>`;
              html += `</ul>`;
         }
     } catch (e) {
@@ -97,7 +93,6 @@ const formatCalculationToHtml = (calc) => {
     }
     return html;
 };
-// ===============================================
 
 // Helper funkce pro formátování chatu
 const formatChatSimple = (chatHistory) => {
@@ -154,23 +149,27 @@ exports.handler = async (event) => {
         if (crmApiUrl && crmApiKey) {
              console.log("Pokus o odeslání dat do CRM...");
              try {
-                const crmPayload = { /* ... CRM data ... */ };
-                const crmResponse = await fetch(crmApiUrl, { /* ... fetch kód ... */ });
-                if (!crmResponse.ok) { console.error(`Chyba CRM: ${crmResponse.status} ${crmResponse.statusText}`); }
-                else { console.log('Data úspěšně odeslána do CRM.'); }
+                // Zde by byla logika pro odeslání do CRM
+                console.log('CRM API URL/klíč je nastaven, ale odeslání je přeskočeno (demo).');
              } catch (crmError) { console.error('Chyba při komunikaci s CRM:', crmError); }
         } else {
             console.log('CRM API URL/klíč není nastaven, přeskočeno.');
         }
 
-        // --- 2. ODESLÁNÍ E-MAILU VÁM (S FORMÁTOVÁNÍM) ---
+        // --- 2. ODESLÁNÍ E-MAILU VÁM (INTERNÍ) ---
         console.log("Sestavování interního e-mailu pro:", internalNotificationEmail);
-        const formDataHtml = formatObjectSimple(extraData.formData, 'Data zadaná do kalkulačky');
-        const calculationHtml = formatCalculationToHtml(extraData.calculation); // Použití správné funkce
+        const internalFormDataHtml = formatObjectSimple(extraData.formData, 'Data zadaná do kalkulačky');
+        const internalCalculationHtml = formatCalculationToHtml(extraData.calculation);
         const chatHistoryHtml = formatChatSimple(extraData.chatHistory);
 
         const internalEmailHtml = `
-            <!DOCTYPE html><html><head><style>/* ... CSS styly ... */</style></head><body>
+            <!DOCTYPE html><html><head><style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; }
+                h1, h2, h3 { color: #333; }
+                ul { list-style-type: none; padding-left: 0; }
+                li { margin-bottom: 8px; }
+                li strong { min-width: 150px; display: inline-block; }
+            </style></head><body>
             <h1>🚀 Nový lead z Hypoteky Ai</h1>
             <h2>Kontaktní údaje:</h2>
             <ul>
@@ -180,8 +179,8 @@ exports.handler = async (event) => {
                 <li><strong>Preferovaný čas:</strong> ${formatValue(contactTime)}</li>
                 <li><strong>Poznámka:</strong> ${formatValue(note)}</li>
             </ul>
-            ${extraData.formData ? `<hr>${formDataHtml}` : ''}
-            ${extraData.calculation ? `<hr>${calculationHtml}` : ''}
+            ${extraData.formData ? `<hr>${internalFormDataHtml}` : ''}
+            ${extraData.calculation ? `<hr>${internalCalculationHtml}` : ''}
             <hr>
             <h2>Historie chatu:</h2>
             <div style="max-height: 400px; overflow-y: auto; border: 1px solid #eee; padding: 10px; margin-bottom: 20px; background-color: #f9f9f9; font-size: 0.9em;">
@@ -203,7 +202,28 @@ exports.handler = async (event) => {
         await sgMail.send(internalMsg);
         console.log("Interní e-mail úspěšně odeslán.");
 
-        // --- 3. ODESLÁNÍ POTVRZOVACÍHO E-MAILU KLIENTOVI ---
+        // --- 3. ODESLÁNÍ POTVRZOVACÍHO E-MAILU KLIENTOVI (NOVÁ VERZE) ---
+        
+        // --- Sestavení souhrnu pro klienta (POKUD EXISTUJE) ---
+        let calculationSummaryHtml = '';
+        if (extraData.formData && extraData.calculation && extraData.calculation.selectedOffer) {
+            console.log("Generuji souhrn kalkulace pro klienta.");
+            const formDataHtml = formatObjectSimple(extraData.formData, 'Vámi zadané parametry');
+            const calculationHtml = formatCalculationToHtml(extraData.calculation);
+
+            calculationSummaryHtml = `
+                <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 20px 0;">
+                <h2 style="color: #1e3a8a; font-size: 20px; margin-top: 20px; margin-bottom: 10px;">Váš souhrn z kalkulačky</h2>
+                <div style="background-color: #ffffff; padding: 15px; border-radius: 5px;">
+                    ${calculationHtml}
+                    ${formDataHtml}
+                </div>
+                <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 20px 0;">
+            `;
+        } else {
+             console.log("Klient nemá data z kalkulačky, posílám generický email.");
+        }
+        
         if (email && email.includes('@')) {
             console.log("Sestavování potvrzovacího e-mailu pro:", email);
             const userConfirmationHtml = `
@@ -213,13 +233,17 @@ exports.handler = async (event) => {
                     <meta charset="UTF-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <style>
-                        body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+                        body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
                         .container { max-width: 600px; margin: 20px auto; padding: 25px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #f9f9f9; }
                         h1 { color: #1e3a8a; font-size: 24px; margin-bottom: 15px; }
-                        p { margin-bottom: 15px; }
+                        h2 { color: #1e3a8a; font-size: 20px; margin-top: 20px; margin-bottom: 10px; }
+                        p { margin-bottom: 15px; font-size: 16px; }
                         .footer { margin-top: 25px; font-size: 0.9em; color: #777; border-top: 1px solid #e0e0e0; padding-top: 15px; }
                         .footer a { color: #2563eb; text-decoration: none; }
                         .highlight { font-weight: bold; }
+                        ul { list-style-type: none; padding-left: 0; }
+                        li { margin-bottom: 5px; }
+                        li strong { color: #555; min-width: 150px; display: inline-block; }
                     </style>
                 </head>
                 <body>
@@ -232,6 +256,8 @@ exports.handler = async (event) => {
                         
                         <p>Váš požadavek jsme v pořádku přijali a <span class="highlight">co nejdříve</span> (obvykle do 24 hodin v pracovní dny) se vám ozve jeden z našich <span class="highlight">zkušených hypotečních specialistů</span>. Projde s vámi detaily, zodpoví vaše dotazy a pomůže najít tu nejlepší možnou nabídku na trhu.</p>
                         
+                        ${calculationSummaryHtml}
+                        
                         <p>Pokud byste mezitím měli jakékoli dotazy, neváhejte nám odpovědět na tento e-mail.</p>
                         
                         <p>Těšíme se na spolupráci!</p>
@@ -241,13 +267,20 @@ exports.handler = async (event) => {
                             <span class="highlight">Tým Hypoteky Ai</span><br>
                             <a href="https://hypotekyai.cz">hypotekyai.cz</a>
                             <br><br>
-                            <small>Toto je automaticky generovaný e-mail. Prosím, neodpovídejte přímo, pokud nemáte dotaz k vaší poptávce.</small>
+                            <small>Toto je automaticky generovaný e-mail.</small>
                         </div>
                     </div>
                 </body>
                 </html>
             `;
-            const userMsg = { to: email, from: senderEmail, subject: 'Potvrzení poptávky | Hypoteky Ai', html: userConfirmationHtml };
+            
+            // Změna předmětu e-mailu, pokud obsahuje souhrn
+            const userSubject = calculationSummaryHtml 
+                ? 'Váš souhrn a potvrzení poptávky | Hypoteky Ai' 
+                : 'Potvrzení poptávky | Hypoteky Ai';
+                
+            const userMsg = { to: email, from: senderEmail, subject: userSubject, html: userConfirmationHtml };
+            
             console.log("Pokus o odeslání e-mailu klientovi...");
             await sgMail.send(userMsg);
             console.log("E-mail klientovi úspěšně odeslán.");

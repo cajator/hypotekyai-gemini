@@ -1697,7 +1697,6 @@ const renderResults = () => {
     const init = () => {
     // --- HLAVNÍ POSLUCHAČ UDÁLOSTÍ ---
     document.body.addEventListener('click', handleClick); // Hlavní listener pro kliknutí
-    document.body.addEventListener('click', handleInfoTooltip); // <-- PŘIDANÝ LISTENER ZDE
 
     // --- OSTATNÍ LISTENERY S KONTROLOU ---
     // Listener pro změny v kalkulačce (POUZE POKUD EXISTUJE KONTEJNER)
@@ -1772,9 +1771,6 @@ const renderResults = () => {
 
     if (typeof updateActiveUsers === 'function') updateActiveUsers(); // Ověření existence
     };
-
-    init();
-});
 
     init();
 });

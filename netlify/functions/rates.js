@@ -114,7 +114,14 @@ const calculateFixationAnalysis = (loanAmount, propertyValue, rate, loanTerm, fi
         dailyCost: Math.round(monthlyPayment / 30.4375), // Average days in month
         percentOfTotal: totalPaymentsInFixation > 0 ? Math.round((totalInterest / totalPaymentsInFixation) * 100) : 0,
         estimatedRent: Math.round((propertyValue * 0.035) / 12), // Rent estimation based on property value
-        taxSavings: Math.round(totalInterest * 0.15 / numberOfFixationPayments), // Monthly tax saving estimate
+        
+        // --- UPRAVENÁ LOGIKA PRO DAŇOVOU ÚLEVU ---
+        taxSavings: (numberOfFixationPayments > 0) 
+            ? Math.min(
+                Math.round(totalInterest * 0.15 / numberOfFixationPayments), // Průměrná měsíční úspora
+                1875 // Maximální měsíční úspora (limit 150k úroků * 15% / 12)
+              )
+            : 0,
     };
 
     return {

@@ -1789,17 +1789,17 @@ const renderResults = () => {
     if (typeof updateActiveUsers === 'function') updateActiveUsers(); // Ověření existence
 
     // ===== NOVÝ KÓD PRO MÝTY A FAKTA =====
-        const mythCards = document.querySelectorAll('.myth-card');
-        mythCards.forEach(card => {
-            // Kliknutí na kartu (nebo její přední stranu)
-            card.addEventListener('click', (e) => {
-                // Pokud klikneme na odkaz "Zpět", otočíme zpět
-                if (e.target.closest('.myth-back span')) {
-                    card.classList.remove('flipped');
+        const mythCardsStatic = document.querySelectorAll('.myth-card-static');
+        mythCardsStatic.forEach(card => {
+            card.addEventListener('click', () => {
+                const factPart = card.querySelector('.fact-part');
+                if (factPart) {
+                    factPart.classList.toggle('hidden'); // Jednoduše přepne viditelnost faktu
                 }
-                // Jinak (pokud klikneme na přední stranu nebo kamkoliv jinam na kartě, když je vidět přední)
-                else if (!card.classList.contains('flipped')) {
-                     card.classList.add('flipped');
+                // Volitelně změnit text odkazu
+                const linkText = card.querySelector('.myth-part span');
+                if (linkText) {
+                    linkText.textContent = factPart.classList.contains('hidden') ? 'Klikněte pro odhalení faktu →' : 'Skrýt fakt ↑';
                 }
             });
         });

@@ -1,13 +1,12 @@
 // netlify/functions/chat.js
-// VERZE 6.0 - DIAGNOSTICKÝ MODEL + ROZŠÍŘENÁ DATABÁZE + OPRAVA OPAKOVÁNÍ
+// VERZE 7.0 - OPRAVA LTV LOGIKY (80% = DOBRÉ) + SUPERVIZE ODHADŮ
 
-// === EXPERTNÍ DATABÁZE ODPOVĚDÍ ===
-// AI sem sáhne, pokud se uživatel zeptá na konkrétní klíčové slovo.
+// === EXPERTNÍ DATABÁZE ODPOVĚDÍ (AKTUALIZOVANÁ) ===
 const EXPERT_RESPONSES = {
     'odhad|kupní cena|proč.*víc peněz': {
         title: "Klíčová informace: Odhad vs. Kupní cena",
         response: `To je zásadní dotaz a nejčastější problém v praxi.<br><br>
-        Banka vám VŽDY počítá LTV (procento úvěru) z **ceny odhadní**, nikoli z ceny kupní.<br><br>
+        Banka vám VŽDY počítá LTV (procento úvěru) z **ceny odhadní**, nikoli z ceny kupní. Odhad je často o 5-10 % nižší než tržní cena.<br><br>
         <strong>PŘÍKLAD Z PRAXE:</strong><br>
         <ul>
             <li>Kupujete byt za <strong>5 000 000 Kč</strong> (Kupní cena).</li>
@@ -16,7 +15,8 @@ const EXPERT_RESPONSES = {
             <li>Banka vám půjčí 80 % ze 4,8M = <strong>3 840 000 Kč</strong>.</li>
             <li>Najednou potřebujete vlastní zdroje ve výši <strong>1 160 000 Kč</strong> (o 160 000 Kč víc, než jste čekal).</li>
         </ul>
-        <strong>💡 Expertní tip:</strong> Náš specialista má přístup k interním kalkulačkám bank a často umí odhadnout cenu ještě před podáním žádosti, nebo ví, která banka má pro daný typ nemovitosti lepšího odhadce.`
+        <strong>💡 Expertní tip (Hodnota specialisty):</strong><br>
+        Náš specialista ví, která banka má pro danou lokalitu a typ nemovitosti lepší odhadce (interní vs. externí). A co je nejdůležitější: pokud odhad vyjde špatně, umíme podat žádost o <strong>supervizi (přezkoumání)</strong> a odhad často vylepšit.`
     },
     'obrat|obratu|paušál': {
         title: "Hypotéka pro OSVČ (obrat vs. zisk)",
@@ -25,7 +25,7 @@ const EXPERT_RESPONSES = {
             <li><strong>Standardní banky:</strong> Berou jen daňový základ (zisk). Pokud optimalizujete daně, vaše bonita je nízká.</li>
             <li><strong>Naši partneři:</strong> Některé banky (např. Česká spořitelna, Raiffeisenbank) umí počítat bonitu z **OBRATU** (např. 15-25 % z celkového obratu, bez ohledu na zisk).</li>
         </ul>
-        <strong>💡 Expertní tip:</strong> Naši specialisté přesně vědí, kterou banku zvolit podle vašeho oboru a výše obratů, abyste dosáhli na co nejvyšší hypotéku, i když máte "oficiálně" nízký zisk.`
+        <strong>💡 Expertní tip:</strong> Naši specialisté přesně vědí, kterou banku zvolit podle vašeho oboru a výše obratů, abyste dosáhli na co nejvyšší hypotéku.`
     },
     'jednatel|sro|s.r.o.': {
         title: "Hypotéka pro Jednatele s.r.o.",
@@ -39,14 +39,12 @@ const EXPERT_RESPONSES = {
     },
     'dozajištění|jiná nemovitost|ručitel|zástava': {
         title: "Využití dozajištění (druhá nemovitost)",
-        response: `Dozajištění druhou nemovitostí je vynikající strategie, jak výrazně ušetřit.<br><br>
-        <strong>Jak to funguje:</strong><br>
-        Když ručíte dvěma nemovitostmi (např. kupovanou a bytem rodičů), banka sečte jejich odhadní ceny. Tím se dramaticky sníží vaše LTV (poměr úvěru k hodnotě zástavy).<br><br>
-        <ul>
-            <li><strong>Standardní LTV 90 %</strong> = sazba např. 5,09 %</li>
-            <li><strong>LTV po dozajištění (např. 60 %)</strong> = sazba např. 4,19 %</li>
-        </ul>
-        <strong>💡 Expertní tip:</strong> Úspora na úrocích může být i 0,8 % ročně, což jsou statisíce. Druhou nemovitost lze navíc po částečném splacení z hypotéky kdykoliv vyvázat.`
+        response: `Dozajištění je vynikající strategie, ale používá se hlavně ve dvou případech:<br><br>
+        <ol>
+            <li><strong>ŘEŠENÍ PRO LTV > 90 %:</strong> Pokud máte málo vlastních zdrojů, ručením druhou nemovitostí (jakoukoliv vhodnou, např. chatou, bytem, pozemkem) snížíte LTV a na úvěr vůbec dosáhnete.</li>
+            <li><strong>OPTIMALIZACE SAZBY:</strong> Pokud chcete nejnižší možnou sazbu (pro LTV < 70 %), můžete tímto způsobem snížit LTV např. z 80 % na 60 % a získat VIP sazbu.</li>
+        </ol>
+        <strong>💡 Expertní tip:</strong> Úspora na úrocích může být i 0,8 % ročně (oproti 90% LTV). Druhou nemovitost lze navíc po částečném splacení z hypotéky kdykoliv vyvázat.`
     },
     'budoucí pronájem|pronájmu': {
         title: "Příjem z budoucího pronájmu",
@@ -61,7 +59,7 @@ const EXPERT_RESPONSES = {
         <strong>Máme 2 hlavní řešení:</strong><br>
         <ol>
             <li><strong>Dozajištění jinou nemovitostí:</strong> Pokud můžete ručit jinou nemovitostí (svou, rodičů), získáte standardní hypotéku s nejlepší sazbou.</li>
-            <li><strong>Předhypoteční/Nezajištěný úvěr:</strong> Speciální úvěr od stavební spořitelny nebo banky, který je dražší, ale nevyžaduje zástavu. Používá se na překlenutí doby, než byt přejde do osobního vlastnictví.</li>
+            <li><strong>Předhypoteční/Nezajištěný úvěr:</strong> Speciální úvěr od stavební spořitelny nebo banky, který je dražší, ale nevyžaduje zástavu.</li>
         </ol>
         <strong>💡 Expertní tip:</strong> Vždy preferujeme variantu 1. Náš specialista vám pomůže najít nejlepší cestu.`
     },
@@ -134,16 +132,16 @@ function createSystemPrompt(userMessage, context) {
         ltv: Math.round((context.formData?.loanAmount / (context.formData?.propertyValue + (context.formData?.landValue || 0))) * 100),
     } : null;
 
-    // 4. Hlavní systémový prompt (S ROZŠÍŘENÝM MOZKEM A NOVÝMI PRAVIDLY)
+    // 4. Hlavní systémový prompt (S ROZŠÍŘENÝM MOZKEM A OPRAVENÝMI PRAVIDLY)
     let prompt = `Jsi PREMIUM AI hypoteční stratég. Tvým úkolem je poskytovat skutečné, stručné a kontextuální poradenství, které vede ke generování leadu.
     
     PRAVIDLA:
     1.  **Stručnost a hodnota:** Odpovídej krátce, v bodech. Max 150 slov. Každá odpověď musí obsahovat konkrétní "insider" tip.
     2.  **Nikdy si nevymýšlej data:** Vždy vycházej z expertních metodik.
     3.  **Cíl je lead:** Vždy na konci nabídni další krok.
-    4.  **Kontext konverzace:** Uživatel vidí historii. Pokud řekne "to vím", "co dál", nebo "ok, další?", znamená to, že chce **novou, jinou informaci**, která ještě nebyla zmíněna. **Neopakuj se!** Najdi v "EXPERTNÍM MOZKU" další relevantní téma.
+    4.  **Kontext konverzace:** Uživatel vidí historii. Pokud řekne "to vím", "co dál", "zbytečné" nebo "ok, další?", znamená to, že chce **novou, jinou informaci**, která ještě nebyla zmíněna. **Neopakuj se!** Najdi v "EXPERTNÍM MOZKU" další relevantní téma.
 
-    ===== KLÍČOVÝ KONTEXT TRHU (EXPERTNÍ MOZEK v.2) =====
+    ===== KLÍČOVÝ KONTEXT TRHU (EXPERTNÍ MOZEK v.3) =====
     
     **SEKCE 1: PŘÍJMY (Metodika bank)**
     * **OSVČ:** Zisk (daňový základ) je standard. KLÍČOVÉ: Některé banky umí počítat z OBRATU (15-25 %). To je řešení pro ty, co "optimalizují".
@@ -154,15 +152,17 @@ function createSystemPrompt(userMessage, context) {
     * **Pronájem:** Lze započítat současný (z daň. přiznání) i BUDOUCÍ (z odhadu nájmu, cca 50-70 %). Řešení pro těsnou bonitu u investičních bytů.
 
     **SEKCE 2: NEMOVITOST (Problémy a řešení)**
-    * **KRITICKÝ PROBLÉM:** LTV se počítá z **ODHADNÍ CENY** banky, ne z kupní. Odhad je často nižší než cena. Klient pak potřebuje VÍCE vlastních zdrojů.
+    * **KRITICKÝ PROBLÉM (ODHAD):** LTV se počítá z **ODHADNÍ CENY** banky, ne z kupní. Odhad je často nižší než cena. Klient pak potřebuje VÍCE vlastních zdrojů.
+    * **HODNOTA SPECIALISTY (ODHAD):** Specialista ví, která banka má pro daný typ nemovitosti/lokalitu lepšího odhadce (interní vs. externí). A co je nejdůležitější: umí podat žádost o **supervizi (přezkoumání)** a odhad vylepšit. (Toto zmiňuj, jen pokud je LTV > 90 % nebo na přímý dotaz!)
     * **Družstevní byt:** Nelze jím ručit. ŘEŠENÍ: 1) Dozajištění jinou nemovitostí (nejlepší sazba), nebo 2) Nezajištěný "předhypoteční" úvěr (dražší).
     * **Dřevostavby:** Některé banky dávají nižší odhad a kratší max. splatnost (např. 25 let). Je třeba pečlivě vybírat.
     * **Věcná břemena:** Břemeno chůze/dožití (problém, snižuje cenu). Břemeno sítí (ČEZ, RWE) (běžné, nevadí).
-    * **Dozajištění:** Ručení druhou nemovitostí (i rodičů) dramaticky SNÍŽÍ LTV (např. z 90 % na 60 %) a tím zlepší sazbu (úspora až 0.8 % p.a.).
+    * **Dozajištění:** Ručení jakoukoliv vhodnou druhou nemovitostí. Je to **ŘEŠENÍ pro LTV > 90 %** nebo pro **OPTIMALIZACI sazby (dostat LTV < 70 %)**. Není to standardní tip pro LTV 80 %!
 
     **SEKCE 3: KLIENT (Status a výhody)**
     * **VIP Klient:** (Úvěr > 7M NEBO Příjem > 80k NEBO Vzdělání VŠ). Získá slevu 0.1-0.2 % a lepší DSTI (až 55 %).
-    * **Věk < 36 let:** Výhoda pro LTV 90 %. Banky jsou mírnější.
+    * **LTV 80 % a méně:** Toto je **STANDARD** pro nejlepší sazby. Zde není potřeba dozajištění.
+    * **LTV 90 %:** Vyšší sazba. Řešitelné dozajištěním nebo pro **Věk < 36 let**, kde jsou banky mírnější.
     * **Registry (SOLUS, BRKI):** Drobný opožděný zápis (po telefonu) = řešitelný. Aktivní exekuce/insolvence = neřešitelné.
     * **Rozvod (SJM):** Nutné mít majetkové vypořádání (SJM) vyřešené PŘED žádostí o hypotéku.
     ==============================================
@@ -186,23 +186,22 @@ function createSystemPrompt(userMessage, context) {
     if (userMessage.toLowerCase().match(/analyzuj|klíčové body mé kalkulace/)) {
         if (!hasContext) return prompt + `\n\nOdpověz: "Nejprve si prosím spočítejte nabídku v kalkulaci."`;
         
-        // --- NOVÝ DIAGNOSTICKÝ POKYN ---
+        // --- NOVÝ DIAGNOSTICKÝ POKYN (OPRAVENÁ LTV LOGIKA) ---
         let analysisPrompt = `
         Proveď expertní analýzu situace klienta na základě dat z kalkulačky a znalostí z "EXPERTNÍHO MOZKU".
         
         POSTUP:
         1.  Stručně shrň základní parametry (splátka, sazba, LTV).
-        2.  **Diagnostikuj 1-2 NEJDŮLEŽITĚJŠÍ body** z klientských dat (např. je OSVČ, má vysoké LTV, je VIP, má těsnou bonitu).
+        2.  **Diagnostikuj 1-2 NEJDŮLEŽITĚJŠÍ body** z klientských dat.
         3.  **Navrhni konkrétní ŘEŠENÍ** nebo "insider tip" pro tyto body s využitím znalostí z "EXPERTNÍHO MOZKU".
         
         PŘÍKLADY DIAGNÓZ A ŘEŠENÍ:
-        * Pokud je OSVČ a bonita těsná (splátka > 40% příjmu), zaměř se na řešení "metodika z OBRATU".
-        * Pokud je LTV > 80 %, zaměř se na řešení "Dozajištění" nebo výhodu "Věk < 36 let".
-        * Pokud je VIP, vždy to zmiň jako první tip (VIP sleva).
-        * Pokud je bonita těsná a je to investiční byt, navrhni řešení "budoucí pronájem".
-        * Pokud je Typ nemovitosti 'byt' a Účel 'koupě', mohlo by jít o 'Družstevní byt'? Zeptej se, zda to není družstevní, protože tam platí jiná pravidla (nelze ručit).
-        * Pokud nejsou žádné zjevné problémy, zaměř se na obecné výhody (VIP sleva, pokud sedí) nebo na standardní vyjednání slevy.
-        * Na konci VŽDY přidej stručné upozornění na problém "Odhadní vs. Kupní cena", protože to se týká všech.
+        * **LTV 80 % a méně:** To je **skvělá pozice** pro nejlepší sazby. **Nenavrhuj dozajištění!** Místo toho se zaměř na jiné tipy: Je VIP? Je OSVČ? Pokud nic, zmiň, že i zde umíme vyjednat slevu 0.1-0.2%.
+        * **LTV 90 % (nebo > 85 %):** To je **problém s vyšší sazbou**. Teprve TADY navrhni ŘEŠENÍ: 1. Dozajištění (pro snížení LTV), NEBO 2. Využití výhody "Věk < 36 let".
+        * **Bonita těsná (splátka > 40% příjmu):** Zaměř se na řešení pro příjmy (metodika z OBRATU pro OSVČ, budoucí pronájem u investice, diety, spolužadatel).
+        * **VIP Klient:** Vždy to zmiň jako TOP výhodu (sleva 0.1-0.2%, lepší DSTI).
+        * **Typ nemovitosti 'byt':** Zeptej se, zda nejde o **družstevní byt**, protože tam platí jiná pravidla (nelze ručit).
+        * **Odhad vs. Kupní cena:** Toto téma zmiňuj, jen pokud je LTV > 90 % (je to pro ně riziko), nebo pokud se na to ptali. **Neotravuj s tím klienta, který má LTV 80 %!**
         
         Cíl je ukázat maximální expertizu a relevanci.`;
         // --- KONEC POKYNU ---
@@ -220,10 +219,10 @@ function createSystemPrompt(userMessage, context) {
     }
     
     // ZACHYCENÍ "CO DÁL" (OPRAVA PROTI OPAKOVÁNÍ)
-    if (userMessage.toLowerCase().match(/to vím|co dál|ok, další|jiného|pokračuj/)) {
-         let followUpPrompt = `Uživatel chce další, NOVOU informaci. Už ví, co jsi mu řekl. Podívej se na jeho data a "EXPERTNÍ MOZEK" a najdi **další relevantní téma**, které ještě nebylo zmíněno. 
+    if (userMessage.toLowerCase().match(/to vím|co dál|ok, další|jiného|pokračuj|zbytečné/)) {
+         let followUpPrompt = `Uživatel reaguje, že tvůj tip není relevantní nebo ho už zná (viz "to vím", "zbytečné"). Chce **novou, jinou informaci**. Podívej se na jeho data a "EXPERTNÍ MOZEK" a najdi **další relevantní téma**, které ještě nebylo zmíněno. 
          
-         Příklad: Mluvil jsi o LTV? Teď mluv o jeho příjmu (OSVČ?). Mluvil jsi o příjmu? Teď mluv o VIP statusu. Vždy najdi něco nového.`;
+         Příklad: Mluvil jsi o LTV? Teď mluv o jeho příjmu (OSVČ?). Mluvil jsi o příjmu? Teď mluv o VIP statusu. Nikdy se neopakuj. Nabídni jiný úhel pohledu.`;
          return prompt + `\n\n${followUpPrompt}`;
     }
     

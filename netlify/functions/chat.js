@@ -1,8 +1,9 @@
 // netlify/functions/chat.js
-// VERZE S INTELIGENTNÍ MATICÍ SCÉNÁŘŮ A EXPERTNÍMI ODPOVĚĎMI
+// VERZE 5.0 - ROZŠÍŘENÁ ZNALOSTNÍ DATABÁZE
+// Používá model "gemini-2.5-flash" a API "v1" dle vašeho požadavku.
 
-// === NOVÁ SEKCE: EXPERTNÍ ODPOVĚDI ===
-// Tyto odpovědi AI použije, pokud detekuje klíčové slovo.
+// === EXPERTNÍ DATABÁZE ODPOVĚDÍ ===
+// AI sem sáhne, pokud se uživatel zeptá na konkrétní klíčové slovo.
 const EXPERT_RESPONSES = {
     'odhad|kupní cena|proč.*víc peněz': {
         title: "Klíčová informace: Odhad vs. Kupní cena",
@@ -53,8 +54,27 @@ const EXPERT_RESPONSES = {
         response: `Ano, některé banky (např. Česká spořitelna, Air Bank) umí započítat i budoucí příjem z pronájmu nemovitosti, kterou teprve kupujete.<br><br>
         <strong>Jak to funguje:</strong><br>
         Banka si nechá zpracovat odhad tržního nájemného. Z této částky pak započítá cca 50-70 % do vaší bonity (příjmů).<br><br>
-        <strong>Příklad:</strong> Odhad nájmu je 20 000 Kč/měs. Banka vám připočte k příjmu 12 000 Kč, což vám může zvýšit maximální výši hypotéky o více než 1 milion Kč.<br><br>
-        <strong>💡 Expertní tip:</strong> Je to ideální pro investiční byty. Naši specialisté vědí, které banky to umí a jaké k tomu vyžadují podklady.`
+        <strong>💡 Expertní tip:</strong> Je to ideální pro investiční byty nebo pokud vám těsně nevychází bonita. Naši specialisté vědí, které banky to umí.`
+    },
+    'družstevní|družstvo': {
+        title: "Financování družstevního bytu",
+        response: `Družstevní byt je specifický, protože ho **nelze použít jako zástavu** pro klasickou hypotéku (nevlastníte nemovitost, ale podíl v družstvu).<br><br>
+        <strong>Máme 2 hlavní řešení:</strong><br>
+        <ol>
+            <li><strong>Dozajištění jinou nemovitostí:</strong> Pokud můžete ručit jinou nemovitostí (svou, rodičů), získáte standardní hypotéku s nejlepší sazbou.</li>
+            <li><strong>Předhypoteční/Nezajištěný úvěr:</strong> Speciální úvěr od stavební spořitelny nebo banky, který je dražší, ale nevyžaduje zástavu. Používá se na překlenutí doby, než byt přejde do osobního vlastnictví.</li>
+        </ol>
+        <strong>💡 Expertní tip:</strong> Vždy preferujeme variantu 1. Náš specialista vám pomůže najít nejlepší cestu.`
+    },
+    'registr|solus|brki|nrki': {
+        title: "Záznam v registrech (SOLUS, BRKI)",
+        response: `Záznam v registru je častá komplikace, ale ne vždy znamená konec.<br><br>
+        <strong>Musíme rozlišit:</strong><br>
+        <ul>
+            <li><strong>Drobný prohřešek:</strong> Např. 1-2x opožděná splátka úvěru nebo faktury za telefon o pár dní. Pokud je to doplacené, většina bank to po vysvětlení akceptuje.</li>
+            <li><strong>Velký prohřešek:</strong> Aktivní exekuce, insolvence, nebo nesplacený dluh "po splatnosti" 30+ dní. Toto je pro banky téměř vždy "stopka".</li>
+        </ul>
+        <strong>💡 Expertní tip:</strong> Klíčové je mít čerstvé výpisy z registrů (BRKI, NRKI, SOLUS). Náš specialista je s vámi projde a upřímně řekne, zda je situace řešitelná a u které banky.`
     }
 };
 
@@ -95,11 +115,11 @@ function createSystemPrompt(userMessage, context) {
         1. Cenu nemovitosti
         2. Váš čistý měsíční příjem
         3. Kolik si chcete půjčit
-        Můžete mi je napsat sem, nebo je zadat do naší [Expresní kalkulačky](#kalkulacka)."
+        Můžete mi je napsat sem, nebo je zadat do naší [Expresní kalkulačky](#kalkulačka)."
         DOTAZ UŽIVATELE: "${userMessage}"`;
     }
     
-    // 3. Příprava dat pro AI (Nyní s více kontextem)
+    // 3. Příprava dat pro AI
     const contextData = hasContext ? {
         loanAmount: context.formData?.loanAmount,
         propertyValue: context.formData?.propertyValue,
@@ -115,7 +135,7 @@ function createSystemPrompt(userMessage, context) {
         ltv: Math.round((context.formData?.loanAmount / (context.formData?.propertyValue + (context.formData?.landValue || 0))) * 100),
     } : null;
 
-    // 4. Hlavní systémový prompt (Nyní s novým expertním mozkem)
+    // 4. Hlavní systémový prompt (S ROZŠÍŘENÝM MOZKEM)
     let prompt = `Jsi PREMIUM AI hypoteční stratég. Tvým úkolem je poskytovat skutečné, stručné a kontextuální poradenství, které vede ke generování leadu.
     
     PRAVIDLA:
@@ -123,13 +143,28 @@ function createSystemPrompt(userMessage, context) {
     2.  **Nikdy si nevymýšlej data:** Vždy vycházej z expertních metodik.
     3.  **Cíl je lead:** Vždy na konci nabídni další krok.
 
-    ===== KLÍČOVÝ KONTEXT TRHU (EXPERTNÍ MOZEK) =====
-    -   **VIP FAKTORY:** VIP klienti dostanou slevu 0.1-0.2% a lepší DSTI (až 55%). VIP faktory jsou: Úvěr > 7M Kč NEBO Příjem > 80k Kč NEBO Vzdělání VŠ (vysokoškolské).
-    -   **OSVČ:** Banky se liší. Některé berou jen zisk (daňový základ), jiné umí počítat z OBRATU (15-25%). To je klíčové pro optimalizující OSVČ.
-    -   **Jednatel s.r.o.:** I bez mzdy lze získat hypotéku. Některé banky počítají bonitu z obratu nebo zisku firmy.
-    -   **LTV & DOZAJIŠTĚNÍ:** LTV nad 80 % znamená vyšší sazbu. ŘEŠENÍ: Dozajištění druhou nemovitostí (např. rodičů) dramaticky sníží LTV a sazbu.
-    -   **BUDOUCÍ PRONÁJEM:** U investičních bytů umí některé banky započítat budoucí nájem (50-70 % z odhadu) do příjmů žadatele.
-    -   **PROBLÉM ODHADU:** LTV se počítá z ODHADNÍ ceny banky, která je často NIŽŠÍ než kupní cena. To zvyšuje nároky na vlastní zdroje. (Toto zmiňuj, jen pokud se ptá na LTV/zdroje, nebo je LTV > 85%).
+    ===== KLÍČOVÝ KONTEXT TRHU (EXPERTNÍ MOZEK v.2) =====
+    
+    **SEKCE 1: PŘÍJMY (Metodika bank)**
+    * **OSVČ:** Zisk (daňový základ) je standard. KLÍČOVÉ: Některé banky umí počítat z OBRATU (15-25 %). To je řešení pro ty, co "optimalizují".
+    * **Jednatel s.r.o.:** I bez mzdy lze. Některé banky počítají bonitu z OBRATU (cca 10-20 %) nebo ZISKU firmy (i nerozděleného).
+    * **Zahraniční příjem:** DE, AT, SK = Akceptováno (s překladem). Ostatní (UK, USA) = Velmi problematické.
+    * **Rodičovský příspěvek:** Akceptován VŽDY jen jako doplňkový příjem (např. k platu partnera).
+    * **Diety:** Řidiči z povolání. Některé banky umí započítat až 100 % diet k základní mzdě.
+    * **Pronájem:** Lze započítat současný (z daň. přiznání) i BUDOUCÍ (z odhadu nájmu, cca 50-70 %). Řešení pro těsnou bonitu u investičních bytů.
+
+    **SEKCE 2: NEMOVITOST (Problémy a řešení)**
+    * **KRITICKÝ PROBLÉM:** LTV se počítá z **ODHADNÍ CENY** banky, ne z kupní. Odhad je často nižší než cena. Klient pak potřebuje VÍCE vlastních zdrojů.
+    * **Družstevní byt:** Nelze jím ručit. ŘEŠENÍ: 1) Dozajištění jinou nemovitostí (nejlepší sazba), nebo 2) Nezajištěný "předhypoteční" úvěr (dražší).
+    * **Dřevostavby:** Některé banky dávají nižší odhad a kratší max. splatnost (např. 25 let). Je třeba pečlivě vybírat.
+    * **Věcná břemena:** Břemeno chůze/dožití (problém, snižuje cenu). Břemeno sítí (ČEZ, RWE) (běžné, nevadí).
+    * **Dozajištění:** Ručení druhou nemovitostí (i rodičů) dramaticky SNÍŽÍ LTV (např. z 90 % na 60 %) a tím zlepší sazbu (úspora až 0.8 % p.a.).
+
+    **SEKCE 3: KLIENT (Status a výhody)**
+    * **VIP Klient:** (Úvěr > 7M NEBO Příjem > 80k NEBO Vzdělání VŠ). Získá slevu 0.1-0.2 % a lepší DSTI (až 55 %).
+    * **Věk < 36 let:** Výhoda pro LTV 90 %. Banky jsou mírnější.
+    * **Registry (SOLUS, BRKI):** Drobný opožděný zápis (po telefonu) = řešitelný. Aktivní exekuce/insolvence = neřešitelné.
+    * **Rozvod (SJM):** Nutné mít majetkové vypořádání (SJM) vyřešené PŘED žádostí o hypotéku.
     ==============================================
 
     ${hasContext ? `
@@ -147,57 +182,36 @@ function createSystemPrompt(userMessage, context) {
 
     DOTAZ UŽIVATELE: "${userMessage}"`;
 
-    // 5. INTELIGENTNÍ ANALÝZA (NOVÁ MATICE TIPŮ)
+    // 5. INTELIGENTNÍ ANALÝZA (PROVÁDÍ AI)
     if (userMessage.toLowerCase().match(/analyzuj|klíčové body mé kalkulace/)) {
         if (!hasContext) return prompt + `\n\nOdpověz: "Nejprve si prosím spočítejte nabídku v kalkulaci."`;
         
-        // Detekce faktorů
-        const isPremium = (contextData.loanAmount >= 7000000) || (contextData.income >= 80000) || (contextData.education === 'vysokoškolské');
-        const isOsvc = contextData.employment === 'osvc';
-        const isJednatel = contextData.employment === 'jednatel';
-        const isHighLtv = contextData.ltv > 80;
-        const isInvestment = contextData.purpose === 'koupě' && (contextData.propertyType === 'byt' || contextData.propertyType === 'rodinný dům');
+        // --- NOVÝ DIAGNOSTICKÝ POKYN ---
+        let analysisPrompt = `
+        Proveď expertní analýzu situace klienta na základě dat z kalkulačky a znalostí z "EXPERTNÍHO MOZKU".
         
-        let tips = [];
-
-        // Sestavení matice tipů
-        if (isPremium) {
-            tips.push(`Gratuluji, spadáte do **VIP kategorie** (díky vysokému úvěru, příjmu nebo VŠ vzdělání). Pro vás umíme vyjednat neveřejnou sazbu o cca 0.1-0.2 % níže a banky benevolentněji posuzují bonitu.`);
-        }
-        if (isOsvc) {
-            tips.push(`Jste <strong>OSVČ</strong>. Klíčové je, že některé banky umí počítat bonitu z <strong>obratu</strong>, nejen ze zisku. Pokud optimalizujete daně, je to pro vás ideální cesta, jak dosáhnout na vyšší úvěr.`);
-        }
-        if (isJednatel) {
-            tips.push(`Jste <strong>jednatel s.r.o.</strong> I pokud si nevyplácíte mzdu, umíme využít metodiku bank, které počítají příjem z obratu nebo zisku vaší firmy.`);
-        }
-        if (isHighLtv) {
-            tips.push(`Vaše LTV je <strong>nad 80 %</strong>, což mírně zvyšuje sazbu. <strong>Insider tip:</strong> Pokud máte možnost <strong>dozajištění</strong> druhou nemovitostí (např. rodičů), snížíme LTV a dosáhneme na sazby i o 0,8 % nižší.`);
-        }
-        if (isInvestment && contextData.income < 70000) { // Navrhneme budoucí nájem jen pokud to "dává smysl"
-            tips.push(`Kupujete nemovitost, kterou lze pronajímat. Pokud by vaše bonita nevycházela, některé banky umí započítat i <strong>budoucí příjem z pronájmu</strong>, což výrazně zvýší vaši šanci na schválení.`);
-        }
-        if (contextData.age < 36 && tips.length < 2) { // Přidáme jen jako doplňkový tip
-            tips.push(`Protože je vám <strong>pod 36 let</strong>, některé banky jsou k vám vstřícnější (např. LTV až 90 % za lepších podmínek).`);
-        }
-        if (tips.length === 0) {
-            tips.push(`U standardního zaměstnání je největší prostor pro vyjednání individuální slevy, která není v online kalkulačkách. Náš specialista díky objemu hypoték ví, která banka je ochotná slevit nejvíce.`);
-        }
-
-        // Sestavení finální odpovědi
-        let response = `<strong>Klíčové body vaší kalkulace:</strong>\n`;
-        response += `• Vaše orientační splátka je <strong>${contextData.monthlyPayment.toLocaleString('cs-CZ')} Kč</strong> při sazbě <strong>${contextData.rate}%</strong>.\n`;
-        response += `• Vaše LTV (poměr úvěru k hodnotě) je <strong>${contextData.ltv}%</strong>.\n\n`;
+        POSTUP:
+        1.  Stručně shrň základní parametry (splátka, sazba, LTV).
+        2.  **Diagnostikuj 1-2 NEJDŮLEŽITĚJŠÍ body** z klientských dat (např. je OSVČ, má vysoké LTV, je VIP, má těsnou bonitu).
+        3.  **Navrhni konkrétní ŘEŠENÍ** nebo "insider tip" pro tyto body s využitím znalostí z "EXPERTNÍHO MOZKU".
         
-        response += `<strong>💡 Expertní tipy pro vaši situaci:</strong>\n`;
-        response += `<ul>`;
-        tips.forEach(tip => { response += `<li>${tip}</li>`; });
-        response += `</ul>\n`;
-        response += `Toto jsou přesně ty detaily, které rozhodují o úspoře statisíců. Chcete, abychom pro vás našli tu nejlepší kombinaci metodik?`;
+        PŘÍKLADY DIAGNÓZ A ŘEŠENÍ:
+        * Pokud je OSVČ a bonita těsná (splátka > 40% příjmu), zaměř se na řešení "metodika z OBRATU".
+        * Pokud je LTV > 80 %, zaměř se na řešení "Dozajištění" nebo výhodu "Věk < 36 let".
+        * Pokud je VIP, vždy to zmiň jako první tip (VIP sleva).
+        * Pokud je bonita těsná a je to investiční byt, navrhni řešení "budoucí pronájem".
+        * Pokud je Typ nemovitosti 'byt' a Účel 'koupě', mohlo by jít o 'Družstevní byt'? Zeptej se, zda to není družstevní, protože tam platí jiná pravidla (nelze ručit).
+        * Pokud nejsou žádné zjevné problémy, zaměř se na obecné výhody (VIP sleva, pokud sedí) nebo na standardní vyjednání slevy.
+        * Na konci VŽDY přidej stručné upozornění na problém "Odhadní vs. Kupní cena", protože to se týká všech.
         
-        return prompt + `\n\nOdpověz stručně a srozumitelně na základě tohoto textu: "${response}"`;
+        Cíl je ukázat maximální expertizu a relevanci.`;
+        // --- KONEC POKYNU ---
+        
+        return prompt + `\n\n${analysisPrompt}`;
     }
+    // =========================================================
 
-    // 6. Ostatní routy (zůstávají stejné)
+    // 6. Ostatní routy (kontakt, banky atd.) - zůstávají stejné
     if (userMessage.toLowerCase().match(/bank|které banky/)) {
         return prompt + `\n\nKlient se ptá na banky. Odpověz POUZE JSON: {"tool":"showBanksList"}`;
     }
@@ -205,16 +219,12 @@ function createSystemPrompt(userMessage, context) {
         return prompt + `\n\nKlient chce kontakt. Odpověz POUZE JSON: {"tool":"showLeadForm","response":"📞 Výborně! Otevírám formulář pro spojení se specialistou."}`;
     }
     
-    // 7. Fallback
     prompt += `\n\nOdpověz na dotaz uživatele stručně a věcně podle pravidel.`;
     return prompt;
 }
 
 
-// ===== FUNKCE HANDLER (Zůstává beze změny) =====
-// ... (Není třeba kopírovat, váš stávající kód handleru je v pořádku) ...
-// ... (Zůstává stejný kód pro fetch, API klíč, zpracování odpovědi atd.) ...
-
+// ===== FUNKCE HANDLER (VRÁCENO NA "gemini-2.5-flash" a "v1") =====
 const handler = async (event) => {
     const headers = { 
         'Access-Control-Allow-Origin': '*', 
@@ -247,8 +257,10 @@ const handler = async (event) => {
             }]
         };
         
-        const modelName = "gemini-2.5-flash";
-        const url = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${apiKey}`;
+        // --- VRÁCENO ZPĚT DLE VAŠEHO POŽADAVKU ---
+        const modelName = "gemini-2.5-flash"; // Vracím vámi specifikovaný model
+        const url = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${apiKey}`; // Vracím verzi API v1
+        // --- KONEC ZMĚNY ---
 
         const apiResponse = await fetch(url, {
             method: 'POST',
@@ -266,7 +278,7 @@ const handler = async (event) => {
 
         const data = await apiResponse.json();
         
-        // Zpracování odpovědi pro Gemini 1.5
+        // Zpracování odpovědi (zůstává stejné)
         let responseText = '';
         if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts) {
             responseText = data.candidates[0].content.parts.map(part => part.text).join('');

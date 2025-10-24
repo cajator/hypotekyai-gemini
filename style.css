@@ -987,3 +987,69 @@ textarea {
     pointer-events: auto !important; /* Vynutí, aby byla ikona klikatelná */
     cursor: pointer;    /* Ukáže uživateli, že je klikatelná */
 }
+
+/* Styly pro sekci Mýty a Fakta */
+.myth-card {
+    perspective: 1000px; /* Nutné pro 3D efekt */
+    min-height: 180px; /* Zajistí minimální výšku, i když je text krátký */
+    position: relative;
+}
+
+.myth-front,
+.myth-back {
+    /* Backface-visibility skryje zadní stranu, když je otočená */
+    backface-visibility: hidden;
+    transition: transform 0.6s, opacity 0.3s;
+    width: 100%;
+    height: 100%;
+    position: absolute; /* Důležité pro překrytí */
+    top: 0;
+    left: 0;
+}
+
+/* Výchozí stav - přední strana viditelná */
+.myth-front {
+    z-index: 2;
+    transform: rotateY(0deg);
+}
+
+/* Výchozí stav - zadní strana skrytá a otočená */
+.myth-back {
+    transform: rotateY(180deg);
+    z-index: 1; /* Pod přední stranou */
+    /* Zajištění, že se zobrazí, když má třídu flipped */
+    display: block !important; /* Přepíše Tailwind hidden */
+    opacity: 0;
+}
+
+/* Stav po kliknutí (když má karta třídu .flipped) */
+.myth-card.flipped .myth-front {
+    transform: rotateY(-180deg);
+    opacity: 0;
+    z-index: 1;
+}
+
+.myth-card.flipped .myth-back {
+    transform: rotateY(0deg);
+    opacity: 1;
+    z-index: 2;
+}
+
+/* Úprava Tailwind tříd, aby fungovaly s absolutní pozicí */
+.group\[\.flipped\]\:opacity-0,
+.group\[\.flipped\]\:hidden {
+    /* Tyto už nepotřebujeme řídit přes Tailwind, řídí je CSS transform a opacity */
+}
+.group\[\.flipped\]\:opacity-100,
+.group\[\.flipped\]\:block {
+   /* Tyto už nepotřebujeme řídit přes Tailwind, řídí je CSS transform a opacity */
+}
+
+
+/* Zajistíme, že skrytá strana nezabírá místo, dokud se neotočí */
+.myth-card:not(.flipped) .myth-back {
+    position: absolute;
+}
+.myth-card.flipped .myth-front {
+    position: absolute;
+}

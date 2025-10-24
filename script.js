@@ -1787,6 +1787,23 @@ const renderResults = () => {
     }
 
     if (typeof updateActiveUsers === 'function') updateActiveUsers(); // Ověření existence
+
+    // ===== NOVÝ KÓD PRO MÝTY A FAKTA =====
+        const mythCards = document.querySelectorAll('.myth-card');
+        mythCards.forEach(card => {
+            card.addEventListener('click', () => {
+                // Přepne třídu 'flipped' na kliknuté kartě
+                card.classList.toggle('flipped');
+
+                // Volitelně: Pokud chcete, aby se ostatní karty zavřely, když otevřete novou:
+                // mythCards.forEach(otherCard => {
+                if (otherCard !== card && otherCard.classList.contains('flipped')) {
+                otherCard.classList.remove('flipped');
+                }
+                });
+             });
+        // ===== KONEC NOVÉHO KÓDU =====
+
     };
 
     init();

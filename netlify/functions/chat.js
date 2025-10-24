@@ -1,6 +1,5 @@
 // netlify/functions/chat.js
-// VERZE 5.0 - ROZŠÍŘENÁ ZNALOSTNÍ DATABÁZE
-// Používá model "gemini-2.5-flash" a API "v1" dle vašeho požadavku.
+// VERZE 6.0 - DIAGNOSTICKÝ MODEL + ROZŠÍŘENÁ DATABÁZE + OPRAVA OPAKOVÁNÍ
 
 // === EXPERTNÍ DATABÁZE ODPOVĚDÍ ===
 // AI sem sáhne, pokud se uživatel zeptá na konkrétní klíčové slovo.
@@ -115,7 +114,7 @@ function createSystemPrompt(userMessage, context) {
         1. Cenu nemovitosti
         2. Váš čistý měsíční příjem
         3. Kolik si chcete půjčit
-        Můžete mi je napsat sem, nebo je zadat do naší [Expresní kalkulačky](#kalkulačka)."
+        Můžete mi je napsat sem, nebo je zadat do naší [Expresní kalkulačky](#kalkulacka)."
         DOTAZ UŽIVATELE: "${userMessage}"`;
     }
     
@@ -135,13 +134,14 @@ function createSystemPrompt(userMessage, context) {
         ltv: Math.round((context.formData?.loanAmount / (context.formData?.propertyValue + (context.formData?.landValue || 0))) * 100),
     } : null;
 
-    // 4. Hlavní systémový prompt (S ROZŠÍŘENÝM MOZKEM)
+    // 4. Hlavní systémový prompt (S ROZŠÍŘENÝM MOZKEM A NOVÝMI PRAVIDLY)
     let prompt = `Jsi PREMIUM AI hypoteční stratég. Tvým úkolem je poskytovat skutečné, stručné a kontextuální poradenství, které vede ke generování leadu.
     
     PRAVIDLA:
     1.  **Stručnost a hodnota:** Odpovídej krátce, v bodech. Max 150 slov. Každá odpověď musí obsahovat konkrétní "insider" tip.
     2.  **Nikdy si nevymýšlej data:** Vždy vycházej z expertních metodik.
     3.  **Cíl je lead:** Vždy na konci nabídni další krok.
+    4.  **Kontext konverzace:** Uživatel vidí historii. Pokud řekne "to vím", "co dál", nebo "ok, další?", znamená to, že chce **novou, jinou informaci**, která ještě nebyla zmíněna. **Neopakuj se!** Najdi v "EXPERTNÍM MOZKU" další relevantní téma.
 
     ===== KLÍČOVÝ KONTEXT TRHU (EXPERTNÍ MOZEK v.2) =====
     
@@ -217,6 +217,14 @@ function createSystemPrompt(userMessage, context) {
     }
     if (userMessage.toLowerCase().match(/kontakt|specialista/)) {
         return prompt + `\n\nKlient chce kontakt. Odpověz POUZE JSON: {"tool":"showLeadForm","response":"📞 Výborně! Otevírám formulář pro spojení se specialistou."}`;
+    }
+    
+    // ZACHYCENÍ "CO DÁL" (OPRAVA PROTI OPAKOVÁNÍ)
+    if (userMessage.toLowerCase().match(/to vím|co dál|ok, další|jiného|pokračuj/)) {
+         let followUpPrompt = `Uživatel chce další, NOVOU informaci. Už ví, co jsi mu řekl. Podívej se na jeho data a "EXPERTNÍ MOZEK" a najdi **další relevantní téma**, které ještě nebylo zmíněno. 
+         
+         Příklad: Mluvil jsi o LTV? Teď mluv o jeho příjmu (OSVČ?). Mluvil jsi o příjmu? Teď mluv o VIP statusu. Vždy najdi něco nového.`;
+         return prompt + `\n\n${followUpPrompt}`;
     }
     
     prompt += `\n\nOdpověz na dotaz uživatele stručně a věcně podle pravidel.`;

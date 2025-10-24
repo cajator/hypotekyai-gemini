@@ -387,7 +387,7 @@ const findQuickResponse = (message) => {
                                 <span class="text-2xl mr-2">🤖</span>
                                 <div>
                                     <h3 class="font-bold text-gray-800">AI Hypoteční stratég</h3>
-                                    <p class="text-xs text-gray-600">Analýza dat z 19+ bank • Odpovědi do 3 sekund</p>
+                                    <p class="text-xs text-gray-600">Analýza dat z 19+ bank • Odpovědi do 30 sekund</p>
                                 </div>
                             </div>
                             <div class="flex gap-2">

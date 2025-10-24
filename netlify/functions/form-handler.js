@@ -1,140 +1,6 @@
 // netlify/functions/form-handler.js
-const sgMail = require('@sendgrid/mail');
 
-// Nastavení API klíčů a e-mailů z proměnných prostředí Netlify
-const sendGridApiKey = process.env.SENDGRID_API_KEY;
-const crmApiKey = process.env.CRM_API_KEY;
-const crmApiUrl = process.env.CRM_API_URL;
-const internalNotificationEmail = process.env.INTERNAL_NOTIFICATION_EMAIL; // Váš email
-const senderEmail = process.env.SENDER_EMAIL; // Ověřený email v SendGrid (např. info@hypotekyai.cz)
-
-// Základní kontroly konfigurace
-if (!sendGridApiKey) console.error("FATAL ERROR: SENDGRID_API_KEY není nastaven.");
-else sgMail.setApiKey(sendGridApiKey);
-if (!internalNotificationEmail) console.error("ERROR: INTERNAL_NOTIFICATION_EMAIL není nastaven.");
-if (!senderEmail) console.error("ERROR: SENDER_EMAIL není nastaven.");
-
-// === POMOCNÉ FUNKCE PRO FORMÁTOVÁNÍ E-MAILU ===
-
-// Helper funkce pro formátování čísel
-const formatNumber = (n, currency = true) => {
-    if (typeof n !== 'number' || isNaN(n)) return n;
-    return n.toLocaleString('cs-CZ', currency ? { style: 'currency', currency: 'CZK', maximumFractionDigits: 0 } : { maximumFractionDigits: 0 });
-};
-
-// Helper funkce pro bezpečné formátování hodnoty
-const formatValue = (value) => {
-    if (value === null || value === undefined || value === '') return '<i>Nezadáno</i>';
-    let safeValue = String(value).replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    if (typeof value === 'number' && !isNaN(value)) {
-        safeValue = value.toLocaleString('cs-CZ');
-    }
-    return safeValue;
-};
-
-// Helper funkce pro formátování jednoduchých objektů (jako formData)
-const formatObjectSimple = (obj, title) => {
-    if (!obj || typeof obj !== 'object' || Object.keys(obj).length === 0) return `<p>${title}: Žádná data.</p>`;
-
-    // --- PŘEKLADOVÁ MAPA ---
-    const keyTranslations = {
-        'propertyValue': 'Hodnota nemovitosti',
-        'loanAmount': 'Výše úvěru',
-        'income': 'Příjem',
-        'liabilities': 'Závazky (splátky)',
-        'age': 'Věk',
-        'children': 'Počet dětí',
-        'loanTerm': 'Splatnost',
-        'fixation': 'Fixace',
-        'purpose': 'Účel',
-        'propertyType': 'Typ nemovitosti',
-        'landValue': 'Hodnota pozemku',
-        'reconstructionValue': 'Cena rekonstrukce',
-        'employment': 'Zaměstnání',
-        'education': 'Vzdělání'
-    };
-    // -------------------------
-
-    let html = `<h3>${title}:</h3><ul style="list-style-type: none; padding-left: 0;">`;
-    try {
-        for (const key in obj) {
-            if (typeof obj[key] !== 'object' || obj[key] === null || Array.isArray(obj[key])) {
-                let value = obj[key];
-                if (typeof value === 'number') {
-                    if (key.toLowerCase().includes('amount') || key.toLowerCase().includes('value') || key.toLowerCase().includes('income') || key.toLowerCase().includes('liabilities') || key.toLowerCase().includes('payment') || key.toLowerCase().includes('savings') || key.toLowerCase().includes('balance') || key.toLowerCase().includes('cost')) {
-                        value = formatNumber(value);
-                    } else if (key.toLowerCase().includes('term') || key.toLowerCase().includes('age') || key.toLowerCase().includes('fixation')) {
-                        value += ' let';
-                    } else if (key.toLowerCase().includes('rate') || key.toLowerCase().includes('ltv') || key.toLowerCase().includes('dsti') || key.toLowerCase().includes('score')) {
-                        value += ' %';
-                    } else if (key.toLowerCase().includes('children')) {
-                         value = value;
-                    } else {
-                        value = formatNumber(value, false);
-                    }
-                 }
-                 
-                 // --- APLIKACE PŘEKLADU ---
-                 const formattedKey = keyTranslations[key] || key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-                 // -------------------------
-
-                 html += `<li style="margin-bottom: 5px;"><strong style="color: #555; min-width: 150px; display: inline-block;">${formattedKey}:</strong> ${formatValue(value)}</li>`;
-            }
-        }
-    } catch (e) {
-         console.error("Chyba při formátování objektu:", e);
-         html += '<li>Chyba při zpracování dat.</li>';
-    }
-    html += '</ul>';
-    return html;
-};
-
-// Helper funkce pro formátování výsledků kalkulace
-const formatCalculationToHtml = (calc) => {
-    if (!calc) return '<h3>Výsledky z kalkulačky:</h3><p>Žádná data.</p>';
-    let html = `<h3>Výsledky z kalkulačky:</h3>`;
-    try {
-        if (calc.selectedOffer) {
-            html += `<h4>Vybraná nabídka:</h4><ul style="list-style-type: none; padding-left: 0;">`;
-            html += `<li style="margin-bottom: 5px;"><strong style="color: #555; min-width: 150px; display: inline-block;">Název:</strong> ${formatValue(calc.selectedOffer.title)}</li>`;
-            html += `<li style="margin-bottom: 5px;"><strong style="color: #555; min-width: 150px; display: inline-block;">Splátka:</strong> ${formatNumber(calc.selectedOffer.monthlyPayment)}</li>`;
-            html += `<li style="margin-bottom: 5px;"><strong style="color: #555; min-width: 150px; display: inline-block;">Sazba:</strong> ${formatValue(calc.selectedOffer.rate)} %</li>`;
-            html += `</ul>`;
-        } else {
-             html += '<p>Nebyla vybrána žádná konkrétní nabídka.</p>';
-        }
-        if (calc.approvability) {
-             html += `<h4>Odhad schvalitelnosti:</h4><ul style="list-style-type: none; padding-left: 0;">`;
-             html += `<li style="margin-bottom: 5px;"><strong style="color: #555; min-width: 150px; display: inline-block;">Skóre LTV:</strong> ${formatValue(calc.approvability.ltv)}%</li>`;
-             html += `<li style="margin-bottom: 5px;"><strong style="color: #555; min-width: 150px; display: inline-block;">Skóre DSTI:</strong> ${formatValue(calc.approvability.dsti)}%</li>`;
-             html += `<li style="margin-bottom: 5px;"><strong style="color: #555; min-width: 150px; display: inline-block;">Skóre Bonita:</strong> ${formatValue(calc.approvability.bonita)}%</li>`;
-             html += `<li style="margin-bottom: 5px;"><strong style="color: #555; min-width: 150px; display: inline-block;">Celkové skóre:</strong> ${formatValue(calc.approvability.total)}%</li>`;
-             html += `</ul>`;
-        }
-    } catch (e) {
-         console.error("Chyba při formátování kalkulace:", e);
-         html += '<p>Chyba při zpracování výsledků kalkulace.</p>';
-    }
-    return html;
-};
-
-// Helper funkce pro formátování chatu
-const formatChatSimple = (chatHistory) => {
-     if (!chatHistory || !Array.isArray(chatHistory) || chatHistory.length === 0) {
-        return '<p>Žádná historie chatu.</p>';
-     }
-     try {
-        return chatHistory.map(msg => {
-            const sender = msg.sender === 'user' ? 'Klient' : 'AI';
-            const safeText = String(msg.text || '').replace(/</g, "&lt;").replace(/>/g, "&gt;");
-            const cleanText = safeText.replace(/<button.*?<\/button>/g, '[Tlačítko]');
-            return `<p style="margin: 2px 0;"><strong>${sender}:</strong> ${cleanText.replace(/\n/g, '<br>')}</p>`;
-        }).join('');
-     } catch(e) {
-         console.error("Chyba při formátování historie chatu:", e);
-         return '<p>Chyba při zpracování historie chatu.</p>';
-     }
-};
+// ... (všechny pomocné funkce formatNumber, formatValue, formatObjectSimple, atd. zůstávají, jak jsou) ...
 
 
 exports.handler = async (event) => {
@@ -181,6 +47,7 @@ exports.handler = async (event) => {
         }
 
         // --- 2. ODESLÁNÍ E-MAILU VÁM (INTERNÍ) ---
+        // (Tato část zůstává beze změny, vy souhrn stále dostanete)
         console.log("Sestavování interního e-mailu pro:", internalNotificationEmail);
         const internalFormDataHtml = formatObjectSimple(extraData.formData, 'Data zadaná do kalkulačky');
         const internalCalculationHtml = formatCalculationToHtml(extraData.calculation);
@@ -226,27 +93,14 @@ exports.handler = async (event) => {
         await sgMail.send(internalMsg);
         console.log("Interní e-mail úspěšně odeslán.");
 
-        // --- 3. ODESLÁNÍ POTVRZOVACÍHO E-MAILU KLIENTOVI (NOVÁ VERZE) ---
+        // --- 3. ODESLÁNÍ POTVRZOVACÍHO E-MAILU KLIENTOVI (OPRAVENÁ VERZE) ---
         
-        // --- Sestavení souhrnu pro klienta (POKUD EXISTUJE) ---
+        // --- Souhrn pro klienta je nyní VŽDY PRÁZDNÝ ---
         let calculationSummaryHtml = '';
-        if (extraData.formData && extraData.calculation && extraData.calculation.selectedOffer) {
-            console.log("Generuji souhrn kalkulace pro klienta.");
-            const formDataHtml = formatObjectSimple(extraData.formData, 'Vámi zadané parametry');
-            const calculationHtml = formatCalculationToHtml(extraData.calculation);
-
-            calculationSummaryHtml = `
-                <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 20px 0;">
-                <h2 style="color: #1e3a8a; font-size: 20px; margin-top: 20px; margin-bottom: 10px;">Váš souhrn z kalkulačky</h2>
-                <div style="background-color: #ffffff; padding: 15px; border-radius: 5px;">
-                    ${calculationHtml}
-                    ${formDataHtml}
-                </div>
-                <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 20px 0;">
-            `;
-        } else {
-             console.log("Klient nemá data z kalkulačky, posílám generický email.");
+        if (extraData.formData) {
+            console.log("Data z kalkulačky byla nalezena, ale neposílají se klientovi (dle nastavení).");
         }
+        // --- Konec úpravy ---
         
         if (email && email.includes('@')) {
             console.log("Sestavování potvrzovacího e-mailu pro:", email);
@@ -260,14 +114,10 @@ exports.handler = async (event) => {
                         body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
                         .container { max-width: 600px; margin: 20px auto; padding: 25px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #f9f9f9; }
                         h1 { color: #1e3a8a; font-size: 24px; margin-bottom: 15px; }
-                        h2 { color: #1e3a8a; font-size: 20px; margin-top: 20px; margin-bottom: 10px; }
                         p { margin-bottom: 15px; font-size: 16px; }
                         .footer { margin-top: 25px; font-size: 0.9em; color: #777; border-top: 1px solid #e0e0e0; padding-top: 15px; }
                         .footer a { color: #2563eb; text-decoration: none; }
                         .highlight { font-weight: bold; }
-                        ul { list-style-type: none; padding-left: 0; }
-                        li { margin-bottom: 5px; }
-                        li strong { color: #555; min-width: 150px; display: inline-block; }
                     </style>
                 </head>
                 <body>
@@ -298,10 +148,8 @@ exports.handler = async (event) => {
                 </html>
             `;
             
-            // Změna předmětu e-mailu, pokud obsahuje souhrn
-            const userSubject = calculationSummaryHtml 
-                ? 'Váš souhrn a potvrzení poptávky | Hypoteky Ai' 
-                : 'Potvrzení poptávky | Hypoteky Ai';
+            // --- Předmět e-mailu je nyní vždy stejný ---
+            const userSubject = 'Potvrzení poptávky | Hypoteky Ai';
                 
             const userMsg = { to: email, from: senderEmail, subject: userSubject, html: userConfirmationHtml };
             

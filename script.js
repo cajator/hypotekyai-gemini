@@ -1809,6 +1809,8 @@ const renderResults = () => {
                     card.classList.remove('flipped');
                 });
             }
+        });
+    };
 
     init();
 });

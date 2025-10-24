@@ -988,6 +988,8 @@ textarea {
     cursor: pointer;    /* Ukáže uživateli, že je klikatelná */
 }
 
+/* style.css */
+
 /* Styly pro sekci Mýty a Fakta */
 .myth-card {
     perspective: 1000px; /* Nutné pro 3D efekt */

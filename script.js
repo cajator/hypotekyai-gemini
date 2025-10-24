@@ -1791,24 +1791,17 @@ const renderResults = () => {
     // ===== NOVÝ KÓD PRO MÝTY A FAKTA =====
         const mythCards = document.querySelectorAll('.myth-card');
         mythCards.forEach(card => {
-            const front = card.querySelector('.myth-front');
-            const back = card.querySelector('.myth-back');
-
-            // Kliknutí na přední stranu -> zobrazí zadní
-            if (front) {
-                front.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Zabráníme prokliku na kartu, pokud by tam byl listener
-                    card.classList.add('flipped');
-                });
-            }
-
-            // Kliknutí na zadní stranu (nebo text "Zpět") -> zobrazí přední
-            if (back) {
-                back.addEventListener('click', (e) => {
-                     e.stopPropagation();
+            // Kliknutí na kartu (nebo její přední stranu)
+            card.addEventListener('click', (e) => {
+                // Pokud klikneme na odkaz "Zpět", otočíme zpět
+                if (e.target.closest('.myth-back span')) {
                     card.classList.remove('flipped');
-                });
-            }
+                }
+                // Jinak (pokud klikneme na přední stranu nebo kamkoliv jinam na kartě, když je vidět přední)
+                else if (!card.classList.contains('flipped')) {
+                     card.classList.add('flipped');
+                }
+            });
         });
     };
 

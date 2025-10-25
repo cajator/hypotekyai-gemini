@@ -421,46 +421,66 @@
          </section>
         
         <!-- Kontakt -->
+        <section id="kontakt" class="my-12 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 sm:p-8 md:p-10 rounded-xl sm:rounded-2xl border-blue-200 border scroll-mt-20">
+        <div class="text-center max-w-2xl mx-auto">
+        <h2 class="text-2xl sm:text-3xl font-bold mb-2">Získejte osobní nabídku od specialisty</h2>
+        <p class="text-sm sm:text-base text-gray-600 mb-6">Naše služby jsou pro vás zcela zdarma. Ozveme se do 24 hodin.</p>
         <form id="lead-form" class="space-y-4 text-left" name="lead-form" data-netlify="true" netlify-honeypot="bot-field">
             <input type="hidden" name="form-name" value="lead-form" />
             <p class="hidden"><label>Nevyplňujte: <input name="bot-field" /></label></p>
             <input type="hidden" name="extraData" />
-
+            
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div> <label for="name" class="form-label">Jméno a příjmení *</label>
-                    <input type="text" id="name" name="name" required
-                        pattern="^[A-Za-zÀ-ž\s]{2,}(\s[A-Za-zÀ-ž\s]{2,})?$"
-                        title="Zadejte prosím platné jméno a příjmení (alespoň 2 znaky)."
-                        class="modern-input">
-                </div> <div> <label for="phone" class="form-label">Telefon *</label>
-                    <input type="tel" id="phone" name="phone" required
-                           pattern="^(\+420)? ?[1-9][0-9]{2} ?[0-9]{3} ?[0-9]{3}$"
-                           title="Zadejte platné 9místné telefonní číslo (může začínat +420)."
-                           class="modern-input">
-                </div> </div>
-            <div>
-                <label for="email" class="form-label">E-mail *</label>
-                <input type="email" id="email" name="email" required class="modern-input">
+                        <div>
+                            <label for="name" class="form-label">Jméno a příjmení *</label>
+                            <input type="text" id="name" name="name" required 
+                                pattern="^[A-Za-zÀ-ž\s]{2,}(\s[A-Za-zÀ-ž\s]{2,})?$" 
+                                title="Zadejte prosím platné jméno a příjmení (alespoň 2 znaky)." 
+                                class="modern-input">
+                        </div>
+                        
+                        <div>
+                            <label for="phone" class="form-label">Telefon *</label>
+                            <input type="tel" id="phone" name="phone" required 
+                                   pattern="^(\+420)? ?[1-9][0-9]{2} ?[0-9]{3} ?[0-9]{3}$" 
+                                   title="Zadejte platné 9místné telefonní číslo (může začínat +420)." 
+                                   class="modern-input">
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label for="email" class="form-label">E-mail *</label>
+                            <input type="email" id="email" name="email" required class="modern-input">
+                        </div>
+                    </div>
+                                
+                <div class="md:col-span-2">
+                    <label for="contact-time" class="form-label">Kdy vás můžeme kontaktovat?</label>
+                    <select id="contact-time" name="contact-time" class="modern-select">
+                        <option value="kdykoliv">Kdykoliv během dne</option>
+                        <option value="rano">Ráno (8:00 - 12:00)</option>
+                        <option value="odpoledne">Odpoledne (12:00 - 17:00)</option>
+                        <option value="vecer">Večer (17:00 - 20:00)</option>
+                        <option value="vikend">Pouze o víkendu</option>
+                    </select>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label for="note" class="form-label">Poznámka (nepovinné)</label>
+                    <textarea id="note" name="note" rows="3" class="modern-input" placeholder="Např. už mám předschválenou hypotéku, refinancuji, atd."></textarea>
+                </div>
             </div>
-            <div>
-                <label for="contact-time" class="form-label">Kdy vás můžeme kontaktovat?</label>
-                <select id="contact-time" name="contact-time" class="modern-select">
-                    <option value="kdykoliv">Kdykoliv během dne</option>
-                    <option value="rano">Ráno (8:00 - 12:00)</option>
-                    <option value="odpoledne">Odpoledne (12:00 - 17:00)</option>
-                    <option value="vecer">Večer (17:00 - 20:00)</option>
-                    <option value="vikend">Pouze o víkendu</option>
-                </select>
-            </div>
-            <div>
-                <label for="note" class="form-label">Poznámka (nepovinné)</label>
-                <textarea id="note" name="note" rows="3" class="modern-input" placeholder="Např. už mám předschválenou hypotéku, refinancuji, atd."></textarea>
-            </div>
-            <div class="pt-2 text-center">
+            
+             <div class="pt-2 text-center">
                 <p class="text-xs text-gray-500 mb-3 sm:mb-4">Odesláním formuláře souhlasíte se zpracováním osobních údajů.</p>
                 <button type="submit" id="submit-lead-btn" class="w-full md:w-auto nav-btn bg-green-600 hover:bg-green-700 text-base sm:text-lg">📞 Odeslat nezávazně</button>
             </div>
-            </form>
+        </form>
+        <div id="form-success" class="hidden mt-6 text-center p-4 bg-green-100 text-green-800 rounded-lg">
+            <h3 class="font-bold text-base sm:text-lg">✅ Děkujeme!</h3>
+            <p class="text-sm sm:text-base">Váš požadavek byl úspěšně odeslán. Ozveme se vám ve vámi preferovaný čas.</p>
+        </div>
+     </div>
+    </section>
     </main>
     
     <footer class="bg-gray-800 text-white">

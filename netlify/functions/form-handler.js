@@ -1,4 +1,6 @@
 // netlify/functions/form-handler.js
+// VERZE s oddělenými sloupci pro Sheets a detailním logováním
+
 const { GoogleSpreadsheet } = require('google-spreadsheet'); // Přidáno pro Google Sheets
 const { JWT } = require('google-auth-library'); // Přidáno pro Google Sheets autentizaci
 const sgMail = require('@sendgrid/mail'); // Původní pro SendGrid
@@ -23,9 +25,11 @@ if (!process.env.GOOGLE_PRIVATE_KEY) console.error("ERROR: GOOGLE_PRIVATE_KEY ne
 
 // Helper funkce pro formátování čísel
 const formatNumber = (n, currency = true) => {
-    if (typeof n !== 'number' || isNaN(n)) return n;
+    // Přidána kontrola pro null/undefined a převod na číslo pro jistotu
+    const num = Number(n);
+    if (typeof num !== 'number' || isNaN(num)) return n;
     // Převedeno na český formát s Kč
-    return n.toLocaleString('cs-CZ', currency ? { style: 'currency', currency: 'CZK', maximumFractionDigits: 0 } : { maximumFractionDigits: 0 });
+    return num.toLocaleString('cs-CZ', currency ? { style: 'currency', currency: 'CZK', maximumFractionDigits: 0 } : { maximumFractionDigits: 0 });
 };
 
 // Helper funkce pro bezpečné formátování hodnoty (prevence XSS)
@@ -195,6 +199,12 @@ async function appendToSheet(data) {
             'E-mail': data.email || '',
             'Preferovaný čas': data.contactTime || '',
             'Poznámka': data.note || '',
+            // --- Nové sloupce ---
+            'Úvěr': data.loanAmount || '', // Hodnota nebo prázdný řetězec
+            'Hodnota nemovitosti': data.effectivePropertyValue || '', // Hodnota nebo prázdný řetězec
+            'Měsíční splátka': data.monthlyPayment || '', // Hodnota nebo prázdný řetězec
+            'Úroková sazba': data.rate ? `${data.rate} %` : '', // Hodnota s % nebo prázdný řetězec
+            // --- Konec nových sloupců ---
             'Souhrn kalkulace': data.summary || '',
             'Historie chatu': data.chatHistoryText || '',
             'Parametry kalkulace (JSON)': data.formDataJson || '',
@@ -231,8 +241,8 @@ exports.handler = async (event) => {
     if (event.httpMethod && event.httpMethod !== 'POST') {
         return { statusCode: 405, body: 'Method Not Allowed' };
     }
+    // Kontrolujeme všechny potřebné proměnné hned na začátku
     if (!sendGridApiKey || !internalNotificationEmail || !senderEmail || !process.env.GOOGLE_SHEET_ID || !process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY) {
-        // Kontrolujeme i Google proměnné zde pro jistotu
         console.error("Chyba konfigurace serveru - chybí některé API klíče nebo emaily v proměnných prostředí.");
         return { statusCode: 500, body: "Chyba konfigurace serveru." };
     }
@@ -272,8 +282,8 @@ exports.handler = async (event) => {
             console.log('CRM API URL/klíč není nastaven, přeskočeno.');
         }
 
-        // --- ZÁPIS DO GOOGLE SHEETS ---
-        // Příprava dat pro Google Sheet
+        // --- PŘÍPRAVA DAT PRO GOOGLE SHEETS ---
+        // Formátování historie chatu na text
         let chatHistoryText = 'Žádná historie chatu.';
         if (extraData.chatHistory && extraData.chatHistory.length > 0) {
             try {
@@ -289,17 +299,27 @@ exports.handler = async (event) => {
             }
         }
 
+        // Příprava souhrnu a jednotlivých hodnot z kalkulace
         let summaryText = 'Kalkulace nebyla provedena.';
-        if (extraData.calculation && extraData.calculation.selectedOffer) {
+        let loanAmountValue = null; // Použijeme null jako výchozí pro čísla
+        let effectivePropValue = null;
+        let monthlyPaymentValue = null;
+        let rateValue = null;
+
+        if (extraData.calculation && extraData.calculation.selectedOffer && extraData.formData) {
             const calc = extraData.calculation.selectedOffer;
             const form = extraData.formData;
-            // Zajistíme, že form existuje před přístupem k jeho vlastnostem
-            if (form) {
-                 const effectivePropValue = form.purpose === 'výstavba' ? (form.propertyValue || 0) + (form.landValue || 0) : (form.propertyValue || 0);
-                 summaryText = `Úvěr: ${formatNumber(form.loanAmount || 0)}, Nemovitost: ${formatNumber(effectivePropValue)}, Splátka: ${formatNumber(calc.monthlyPayment || 0)}, Sazba: ${(calc.rate || 0)}%`;
+            if (form) { // Kontrola existence form objektu
+                 loanAmountValue = form.loanAmount || 0;
+                 effectivePropValue = form.purpose === 'výstavba' ? (form.propertyValue || 0) + (form.landValue || 0) : (form.propertyValue || 0);
+                 monthlyPaymentValue = calc.monthlyPayment || 0;
+                 rateValue = calc.rate || 0;
+                 // Aktualizace souhrnu
+                 summaryText = `Úvěr: ${formatNumber(loanAmountValue)}, Nemovitost: ${formatNumber(effectivePropValue)}, Splátka: ${formatNumber(monthlyPaymentValue)}, Sazba: ${rateValue}%`;
             }
         }
 
+        // Sestavení finálních dat pro zápis
         const sheetData = {
             name: name,
             phone: phone,
@@ -308,11 +328,17 @@ exports.handler = async (event) => {
             note: note,
             summary: summaryText,
             chatHistoryText: chatHistoryText,
-            formDataJson: JSON.stringify(extraData.formData || {}),
-            calculationJson: JSON.stringify(extraData.calculation || {})
+            // Přidání nových hodnot (budou null pokud kalkulace nebyla)
+            loanAmount: loanAmountValue,
+            effectivePropertyValue: effectivePropValue,
+            monthlyPayment: monthlyPaymentValue,
+            rate: rateValue,
+            // JSON data (budou prázdný řetězec pokud data nejsou)
+            formDataJson: (extraData.formData && Object.keys(extraData.formData).length > 0) ? JSON.stringify(extraData.formData) : '',
+            calculationJson: (extraData.calculation && extraData.calculation.selectedOffer) ? JSON.stringify(extraData.calculation) : ''
         };
 
-        // Logování před voláním a čekání na výsledek zápisu
+        // --- ZÁPIS DO GOOGLE SHEETS (S ČEKÁNÍM A LOGOVÁNÍM) ---
         console.log(">>> Handler: Pripravena data pro Google Sheet, volam appendToSheet...");
         try {
             const sheetWriteSuccess = await appendToSheet(sheetData); // Čekáme na dokončení
@@ -320,12 +346,12 @@ exports.handler = async (event) => {
                 console.log(">>> Handler: Zápis do Sheetu dokončen úspěšně.");
             } else {
                  console.warn(">>> Handler: Zápis do Sheetu selhal (viz logy z appendToSheet).");
-                 // Zde bychom mohli poslat notifikaci adminovi, že zápis selhal
+                 // Případně zde poslat notifikaci adminovi
             }
         } catch (err) {
             console.error(">>> Handler: Chyba behem cekani na appendToSheet:", err.message);
             console.error(">>> Handler: Chyba Stack:", err.stack);
-             // Zde bychom mohli poslat notifikaci adminovi, že zápis selhal
+             // Případně zde poslat notifikaci adminovi
         }
         console.log(">>> Handler: Blok pro zápis do Sheetu dokončen.");
         // --- Konec bloku pro Google Sheets ---
@@ -337,33 +363,12 @@ exports.handler = async (event) => {
         const internalCalculationHtml = formatCalculationToHtml(extraData.calculation);
         const chatHistoryHtml = formatChatSimple(extraData.chatHistory); // Používáme funkci pro HTML email
         const internalEmailHtml = `
-            <!DOCTYPE html><html><head><style>
-                body { font-family: Arial, sans-serif; line-height: 1.6; }
-                h1, h2, h3 { color: #333; }
-                ul { list-style-type: none; padding-left: 0; }
-                li { margin-bottom: 8px; }
-                li strong { min-width: 150px; display: inline-block; }
-            </style></head><body>
-            <h1>🚀 Nový lead z Hypoteky Ai</h1>
-            <h2>Kontaktní údaje:</h2>
-            <ul>
-                <li><strong>Jméno:</strong> ${formatValue(name)}</li>
-                <li><strong>E-mail:</strong> ${formatValue(email)}</li>
-                <li><strong>Telefon:</strong> ${formatValue(phone)}</li>
-                <li><strong>Preferovaný čas:</strong> ${formatValue(contactTime)}</li>
-                <li><strong>Poznámka:</strong> ${formatValue(note)}</li>
-            </ul>
-            ${extraData.formData ? `<hr>${internalFormDataHtml}` : ''}
-            ${extraData.calculation ? `<hr>${internalCalculationHtml}` : ''}
-            <hr>
-            <h2>Historie chatu:</h2>
-            <div style="max-height: 400px; overflow-y: auto; border: 1px solid #eee; padding: 10px; margin-bottom: 20px; background-color: #f9f9f9; font-size: 0.9em;">
-                ${chatHistoryHtml}
-            </div>
-            <hr>
-            <p><small>Odesláno: ${new Date().toLocaleString('cs-CZ')}</small></p>
-            </body></html>
-        `;
+            <!DOCTYPE html><html><head><style> body { font-family: Arial, sans-serif; line-height: 1.6; } h1, h2, h3 { color: #333; } ul { list-style-type: none; padding-left: 0; } li { margin-bottom: 8px; } li strong { min-width: 150px; display: inline-block; } </style></head><body>
+            <h1>🚀 Nový lead z Hypoteky Ai</h1> <h2>Kontaktní údaje:</h2> <ul> <li><strong>Jméno:</strong> ${formatValue(name)}</li> <li><strong>E-mail:</strong> ${formatValue(email)}</li> <li><strong>Telefon:</strong> ${formatValue(phone)}</li> <li><strong>Preferovaný čas:</strong> ${formatValue(contactTime)}</li> <li><strong>Poznámka:</strong> ${formatValue(note)}</li> </ul>
+            ${extraData.formData ? `<hr>${internalFormDataHtml}` : ''} ${extraData.calculation ? `<hr>${internalCalculationHtml}` : ''} <hr>
+            <h2>Historie chatu:</h2> <div style="max-height: 400px; overflow-y: auto; border: 1px solid #eee; padding: 10px; margin-bottom: 20px; background-color: #f9f9f9; font-size: 0.9em;"> ${chatHistoryHtml} </div> <hr>
+            <p><small>Odesláno: ${new Date().toLocaleString('cs-CZ')}</small></p> </body></html>
+        `; // Zkráceno HTML pro přehlednost
 
         const internalMsg = {
             to: internalNotificationEmail,
@@ -382,10 +387,8 @@ exports.handler = async (event) => {
         if (email && email.includes('@')) {
             console.log("Sestavování potvrzovacího e-mailu pro:", email);
             const userConfirmationHtml = `
-                <!DOCTYPE html>
-                <html lang="cs"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <style> body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; } .container { max-width: 600px; margin: 20px auto; padding: 25px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #f9f9f9; } h1 { color: #1e3a8a; font-size: 24px; margin-bottom: 15px; } p { margin-bottom: 15px; font-size: 16px; } .footer { margin-top: 25px; font-size: 0.9em; color: #777; border-top: 1px solid #e0e0e0; padding-top: 15px; } .footer a { color: #2563eb; text-decoration: none; } .highlight { font-weight: bold; } </style>
-                </head><body><div class="container"><h1>Potvrzení vaší poptávky | Hypoteky Ai</h1><p>Dobrý den${name ? ` <span class="highlight">${name}</span>` : ''},</p><p>děkujeme, že jste využili naši platformu Hypoteky Ai pro vaši hypoteční kalkulaci a analýzu.</p><p>Váš požadavek jsme v pořádku přijali a <span class="highlight">co nejdříve</span> (obvykle do 24 hodin v pracovní dny) se vám ozve jeden z našich <span class="highlight">zkušených hypotečních specialistů</span>. Projde s vámi detaily, zodpoví vaše dotazy a pomůže najít tu nejlepší možnou nabídku na trhu.</p>${calculationSummaryHtml}<p>Pokud byste mezitím měli jakékoli dotazy, neváhejte nám odpovědět na tento e-mail.</p><p>Těšíme se na spolupráci!</p><div class="footer">S pozdravem,<br><span class="highlight">Tým Hypoteky Ai</span><br><a href="https://hypotekyai.cz">hypotekyai.cz</a><br><br><small>Toto je automaticky generovaný e-mail.</small></div></div></body></html>`;
+                <!DOCTYPE html> <html lang="cs"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"> <style> body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; } .container { max-width: 600px; margin: 20px auto; padding: 25px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #f9f9f9; } h1 { color: #1e3a8a; font-size: 24px; margin-bottom: 15px; } p { margin-bottom: 15px; font-size: 16px; } .footer { margin-top: 25px; font-size: 0.9em; color: #777; border-top: 1px solid #e0e0e0; padding-top: 15px; } .footer a { color: #2563eb; text-decoration: none; } .highlight { font-weight: bold; } </style> </head><body><div class="container"><h1>Potvrzení vaší poptávky | Hypoteky Ai</h1><p>Dobrý den${name ? ` <span class="highlight">${name}</span>` : ''},</p><p>děkujeme, že jste využili naši platformu Hypoteky Ai pro vaši hypoteční kalkulaci a analýzu.</p><p>Váš požadavek jsme v pořádku přijali a <span class="highlight">co nejdříve</span> (obvykle do 24 hodin v pracovní dny) se vám ozve jeden z našich <span class="highlight">zkušených hypotečních specialistů</span>. Projde s vámi detaily, zodpoví vaše dotazy a pomůže najít tu nejlepší možnou nabídku na trhu.</p>${calculationSummaryHtml}<p>Pokud byste mezitím měli jakékoli dotazy, neváhejte nám odpovědět na tento e-mail.</p><p>Těšíme se na spolupráci!</p><div class="footer">S pozdravem,<br><span class="highlight">Tým Hypoteky Ai</span><br><a href="https://hypotekyai.cz">hypotekyai.cz</a><br><br><small>Toto je automaticky generovaný e-mail.</small></div></div></body></html>
+            `; // Zkráceno HTML
             const userSubject = 'Potvrzení poptávky | Hypoteky Ai';
             const userMsg = { to: email, from: senderEmail, subject: userSubject, html: userConfirmationHtml };
             console.log("Pokus o odeslání e-mailu klientovi...");
@@ -395,7 +398,7 @@ exports.handler = async (event) => {
              console.log("Přeskočeno odeslání e-mailu klientovi - chybí e-mail.");
         }
 
-        // Úspěšná odpověď klientovi
+        // Úspěšná odpověď klientovi (prohlížeči)
         console.log(">>> Handler: Funkce form-handler úspěšně dokončena (emaily odeslany).");
         return { statusCode: 200, body: 'Form processed successfully' };
 

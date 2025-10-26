@@ -1,7 +1,7 @@
 // netlify/functions/form-handler.js
-const { GoogleSpreadsheet } = require('google-spreadsheet'); // TENTO ŘÁDEK PŘIDAT
-const { JWT } = require('google-auth-library'); // TENTO ŘÁDEK PŘIDAT
 const sgMail = require('@sendgrid/mail');
+const { GoogleSpreadsheet } = require('google-spreadsheet');
+const { JWT } = require('google-auth-library'); // Potřebné pro autentizaci
 
 // Nastavení API klíčů a e-mailů z proměnných prostředí Netlify
 const sendGridApiKey = process.env.SENDGRID_API_KEY;
@@ -139,52 +139,18 @@ const formatChatSimple = (chatHistory) => {
 };
 
 // Funkce pro zápis dat do Google Sheetu
-// VLOŽTE TUTO CELOU FUNKCI PŘED exports.handler
-
-// Funkce pro zápis dat do Google Sheetu (S VÍCE LOGY)
 async function appendToSheet(data) {
-    // ===== LOG 1: Začátek funkce =====
-    console.log(">>> appendToSheet: Funkce spustena.");
     try {
-        // ===== LOG 2: Kontrola proměnných prostředí =====
-        const sheetId = process.env.GOOGLE_SHEET_ID;
-        const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-        const privateKeyRaw = process.env.GOOGLE_PRIVATE_KEY;
-
-        if (!sheetId || !clientEmail || !privateKeyRaw) {
-            console.error(">>> appendToSheet: CHYBA - Chybí proměnné prostředí (ID, email, nebo klíč)!");
-            return false;
-        }
-        // Základní log (ne logovat celý klíč!)
-        console.log(`>>> appendToSheet: Sheet ID: ${sheetId.substring(0, 5)}... Email: ${clientEmail}`);
-
-        const privateKey = privateKeyRaw.replace(/\\n/g, '\n');
-        // ===== LOG 3: Po úpravě klíče =====
-        console.log(">>> appendToSheet: Private key pripraven (nahrazeny \\n).");
-
+        console.log("Pokus o zápis do Google Sheet...");
         const serviceAccountAuth = new JWT({
-            email: clientEmail,
-            key: privateKey,
+            email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+            key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'), // Nahradí literály \n za skutečné nové řádky
             scopes: ['https://www.googleapis.com/auth/spreadsheets'],
         });
-        // ===== LOG 4: Po vytvoření JWT =====
-        console.log(">>> appendToSheet: JWT Auth objekt vytvoren.");
 
-        const doc = new GoogleSpreadsheet(sheetId, serviceAccountAuth);
-
-        // ===== LOG 5: Před loadInfo =====
-        console.log(">>> appendToSheet: Nacitam info o dokumentu...");
-        await doc.loadInfo();
-        // ===== LOG 6: Po loadInfo =====
-        console.log(`>>> appendToSheet: Info o dokumentu nacteno. Nalezeno listu: ${doc.sheetCount}`);
-
-        const sheet = doc.sheetsByIndex[0]; // Předpokládáme první list
-        if (!sheet) {
-            console.error(">>> appendToSheet: CHYBA - Nepodařilo se najít první list (index 0)!");
-            return false;
-        }
-        // ===== LOG 7: Po výběru listu =====
-        console.log(`>>> appendToSheet: Zapisuji do listu: "${sheet.title}"`);
+        const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID, serviceAccountAuth);
+        await doc.loadInfo(); // Načte info o dokumentu a listech
+        const sheet = doc.sheetsByIndex[0]; // Předpokládáme, že zapisujeme do prvního listu
 
         // Připravíme řádek podle struktury Sheetu
         const rowData = {
@@ -199,25 +165,19 @@ async function appendToSheet(data) {
             'Parametry kalkulace (JSON)': data.formDataJson || '',
             'Výsledky kalkulace (JSON)': data.calculationJson || ''
         };
-        // ===== LOG 8: Před addRow (NE logovat citlivá data, jen potvrzení) =====
-        console.log(">>> appendToSheet: Pripravena data pro radek (bez vypisu obsahu).");
 
         await sheet.addRow(rowData);
-        // ===== LOG 9: Po úspěšném addRow =====
-        console.log(">>> appendToSheet: Radek uspesne pridan do Google Sheet.");
+        console.log("Data úspěšně zapsána do Google Sheet.");
         return true;
 
     } catch (error) {
-        // ===== LOG 10: Zachycena CHYBA =====
-        console.error(">>> appendToSheet: CHYBA pri zapisu do Google Sheet:", error.message);
-        // Volitelně logovat i celý error objekt pro více detailů
-        // console.error(error);
+        console.error("CHYBA při zápisu do Google Sheet:", error.message);
+        // Zde bychom mohli poslat notifikaci adminovi, že zápis selhal
         return false;
     }
 }
 
 exports.handler = async (event) => {
-    // Tento úvodní blok zůstává stejný
     if (event.httpMethod && event.httpMethod !== 'POST') {
         return { statusCode: 405, body: 'Method Not Allowed' };
     }
@@ -225,12 +185,11 @@ exports.handler = async (event) => {
         return { statusCode: 500, body: "Chyba konfigurace serveru (e-mail)." };
     }
 
-    // Blok try začíná zde
     try {
         console.log("Funkce form-handler spuštěna.");
         let name, email, phone, note, contactTime, extraDataString, extraData;
 
-        // Zpracování dat (zůstává stejné)
+        // Zpracování dat
         if (event.httpMethod === 'POST') {
             const formData = new URLSearchParams(event.body);
             name = formData.get('name');
@@ -243,7 +202,6 @@ exports.handler = async (event) => {
              throw new Error("Funkce byla spuštěna neočekávaným způsobem.");
         }
 
-        // Parsování extraData (zůstává stejné)
         try {
             extraData = JSON.parse(extraDataString || '{}');
         } catch (e) {
@@ -251,116 +209,140 @@ exports.handler = async (event) => {
             extraData = { error: "Chyba při parsování dat." };
         }
 
-        // ODESLÁNÍ DAT DO CRM (zůstává stejné)
+        // --- 1. ODESLÁNÍ DAT DO CRM (POUZE POKUD JE NASTAVENO) ---
         if (crmApiUrl && crmApiKey) {
              console.log("Pokus o odeslání dat do CRM...");
-             // ... (kód pro CRM) ...
+             try {
+                // Zde by byla logika pro odeslání do CRM
+                console.log('CRM API URL/klíč je nastaven, ale odeslání je přeskočeno (demo).');
+             } catch (crmError) { console.error('Chyba při komunikaci s CRM:', crmError); }
         } else {
             console.log('CRM API URL/klíč není nastaven, přeskočeno.');
         }
 
-
-        // --- ZÁPIS DO GOOGLE SHEETS ---
-        // Nejprve připravíme data pro Sheet
-
-        // Formátování historie chatu na text
-        let chatHistoryText = 'Žádná historie chatu.';
-        if (extraData.chatHistory && extraData.chatHistory.length > 0) {
-            try {
-                chatHistoryText = extraData.chatHistory.map(msg => {
-                    const sender = msg.sender === 'user' ? 'Klient' : 'AI';
-                    const cleanText = String(msg.text || '').replace(/<button.*?<\/button>/g, '[Tlačítko]').replace(/<br>/g, '\n');
-                    return `${sender}: ${cleanText}`;
-                }).join('\n------\n'); // Oddělovač mezi zprávami
-            } catch (e) {
-                console.error("Chyba formátování chatu pro Sheets:", e);
-                chatHistoryText = 'Chyba při zpracování chatu.';
-            }
-        }
-
-        // Stručný souhrn kalkulace
-        let summaryText = 'Kalkulace nebyla provedena.';
-        if (extraData.calculation && extraData.calculation.selectedOffer) {
-            const calc = extraData.calculation.selectedOffer;
-            const form = extraData.formData;
-            summaryText = `Úvěr: ${formatNumber(form.loanAmount)}, Nemovitost: ${formatNumber(form.purpose === 'výstavba' ? form.propertyValue + form.landValue : form.propertyValue)}, Splátka: ${formatNumber(calc.monthlyPayment)}, Sazba: ${calc.rate}%`;
-        }
-
-        const sheetData = {
-            name: name,
-            phone: phone,
-            email: email,
-            contactTime: contactTime,
-            note: note,
-            summary: summaryText,
-            chatHistoryText: chatHistoryText,
-            formDataJson: JSON.stringify(extraData.formData || {}),
-            calculationJson: JSON.stringify(extraData.calculation || {})
-        };
-
-        // ===== LOG 11: Před voláním appendToSheet =====
-        console.log(">>> Handler: Pripravena data pro Google Sheet, volam appendToSheet...");
-        appendToSheet(sheetData).catch(err => {
-            // ===== LOG 12: Zachycena chyba z asynchronního volání =====
-            console.error(">>> Handler: Asynchronni chyba pri zapisu do Sheetu:", err);
-        });
-        // ===== LOG 13: Hned po asynchronním volání =====
-        console.log(">>> Handler: Volani appendToSheet odeslano (bezi na pozadi).");
-        // --- Konec bloku pro Google Sheets ---
-
-
-        // --- ODESLÁNÍ E-MAILU VÁM (INTERNÍ) ---
-        // (Tento kód zůstává stejný)
+        // --- 2. ODESLÁNÍ E-MAILU VÁM (INTERNÍ) ---
+        // (Tato část zůstává beze změny, vy souhrn stále dostanete)
         console.log("Sestavování interního e-mailu pro:", internalNotificationEmail);
         const internalFormDataHtml = formatObjectSimple(extraData.formData, 'Data zadaná do kalkulačky');
         const internalCalculationHtml = formatCalculationToHtml(extraData.calculation);
         const chatHistoryHtml = formatChatSimple(extraData.chatHistory);
-        const internalEmailHtml = `... (HTML šablona interního emailu zůstává stejná) ...`; // Zkráceno pro přehlednost
+
+        const internalEmailHtml = `
+            <!DOCTYPE html><html><head><style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; }
+                h1, h2, h3 { color: #333; }
+                ul { list-style-type: none; padding-left: 0; }
+                li { margin-bottom: 8px; }
+                li strong { min-width: 150px; display: inline-block; }
+            </style></head><body>
+            <h1>🚀 Nový lead z Hypoteky Ai</h1>
+            <h2>Kontaktní údaje:</h2>
+            <ul>
+                <li><strong>Jméno:</strong> ${formatValue(name)}</li>
+                <li><strong>E-mail:</strong> ${formatValue(email)}</li>
+                <li><strong>Telefon:</strong> ${formatValue(phone)}</li>
+                <li><strong>Preferovaný čas:</strong> ${formatValue(contactTime)}</li>
+                <li><strong>Poznámka:</strong> ${formatValue(note)}</li>
+            </ul>
+            ${extraData.formData ? `<hr>${internalFormDataHtml}` : ''}
+            ${extraData.calculation ? `<hr>${internalCalculationHtml}` : ''}
+            <hr>
+            <h2>Historie chatu:</h2>
+            <div style="max-height: 400px; overflow-y: auto; border: 1px solid #eee; padding: 10px; margin-bottom: 20px; background-color: #f9f9f9; font-size: 0.9em;">
+                ${chatHistoryHtml}
+            </div>
+            <hr>
+            <p><small>Odesláno: ${new Date().toLocaleString('cs-CZ')}</small></p>
+            </body></html>
+        `;
+
         const internalMsg = {
             to: internalNotificationEmail,
             from: senderEmail,
             subject: `🚀 Nový lead z Hypoteky Ai: ${name || 'Neznámý'}`,
             html: internalEmailHtml,
         };
-
+        
         console.log("Pokus o odeslání interního e-mailu...");
-
-        // ===== PŘIDAT TENTO KONTROLNÍ VÝPIS =====
-        console.log(">>> DEBUG: Objekt internalMsg před odesláním:", JSON.stringify(internalMsg, null, 2));
-        // ==========================================
-
-        await sgMail.send(internalMsg); // Zde dochází k chybě
+        await sgMail.send(internalMsg);
         console.log("Interní e-mail úspěšně odeslán.");
-        // --- Konec interního emailu ---
 
-
-        // --- ODESLÁNÍ POTVRZOVACÍHO E-MAILU KLIENTOVI ---
-        // (Tento kód zůstává stejný)
-        let calculationSummaryHtml = ''; // Souhrn se neposílá
+        // --- 3. ODESLÁNÍ POTVRZOVACÍHO E-MAILU KLIENTOVI (OPRAVENÁ VERZE) ---
+        
+        // --- Souhrn pro klienta je nyní VŽDY PRÁZDNÝ ---
+        let calculationSummaryHtml = '';
+        if (extraData.formData) {
+            console.log("Data z kalkulačky byla nalezena, ale neposílají se klientovi (dle nastavení).");
+        }
+        // --- Konec úpravy ---
+        
         if (email && email.includes('@')) {
             console.log("Sestavování potvrzovacího e-mailu pro:", email);
-            const userConfirmationHtml = `... (HTML šablona emailu klientovi zůstává stejná) ...`; // Zkráceno
+            const userConfirmationHtml = `
+                <!DOCTYPE html>
+                <html lang="cs">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <style>
+                        body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+                        .container { max-width: 600px; margin: 20px auto; padding: 25px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #f9f9f9; }
+                        h1 { color: #1e3a8a; font-size: 24px; margin-bottom: 15px; }
+                        p { margin-bottom: 15px; font-size: 16px; }
+                        .footer { margin-top: 25px; font-size: 0.9em; color: #777; border-top: 1px solid #e0e0e0; padding-top: 15px; }
+                        .footer a { color: #2563eb; text-decoration: none; }
+                        .highlight { font-weight: bold; }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <h1>Potvrzení vaší poptávky | Hypoteky Ai</h1>
+                        
+                        <p>Dobrý den${name ? ` <span class="highlight">${name}</span>` : ''},</p>
+                        
+                        <p>děkujeme, že jste využili naši platformu Hypoteky Ai pro vaši hypoteční kalkulaci a analýzu.</p>
+                        
+                        <p>Váš požadavek jsme v pořádku přijali a <span class="highlight">co nejdříve</span> (obvykle do 24 hodin v pracovní dny) se vám ozve jeden z našich <span class="highlight">zkušených hypotečních specialistů</span>. Projde s vámi detaily, zodpoví vaše dotazy a pomůže najít tu nejlepší možnou nabídku na trhu.</p>
+                        
+                        ${calculationSummaryHtml}
+                        
+                        <p>Pokud byste mezitím měli jakékoli dotazy, neváhejte nám odpovědět na tento e-mail.</p>
+                        
+                        <p>Těšíme se na spolupráci!</p>
+                        
+                        <div class="footer">
+                            S pozdravem,<br>
+                            <span class="highlight">Tým Hypoteky Ai</span><br>
+                            <a href="https://hypotekyai.cz">hypotekyai.cz</a>
+                            <br><br>
+                            <small>Toto je automaticky generovaný e-mail.</small>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            // --- Předmět e-mailu je nyní vždy stejný ---
             const userSubject = 'Potvrzení poptávky | Hypoteky Ai';
+                
             const userMsg = { to: email, from: senderEmail, subject: userSubject, html: userConfirmationHtml };
+            
+            console.log("Pokus o odeslání e-mailu klientovi...");
             await sgMail.send(userMsg);
             console.log("E-mail klientovi úspěšně odeslán.");
         } else {
              console.log("Přeskočeno odeslání e-mailu klientovi - chybí e-mail.");
         }
-        // --- Konec emailu klientovi ---
 
-        // Úspěšný konec funkce
-        console.log(">>> Handler: Funkce form-handler úspěšně dokončena (emaily odeslany).");
+        console.log("Funkce form-handler úspěšně dokončena.");
         return { statusCode: 200, body: 'Form processed successfully' };
 
-    // Catch blok pro zachycení chyb v handleru
     } catch (error) {
-        // ===== LOG 14: Zachycena chyba v hlavním handleru =====
-        console.error('>>> Handler: NEČEKANÁ ZÁVAŽNÁ CHYBA ve funkci form-handler:', error);
-        // Zbytek error handlingu
+        console.error('NEČEKANÁ ZÁVAŽNÁ CHYBA ve funkci form-handler:', error);
+        console.error("Detaily chyby:", error.message, error.stack);
         if (error.response) {
              console.error("SendGrid Error Body:", JSON.stringify(error.response.body, null, 2));
         }
         return { statusCode: 500, body: `Server Error: ${error.message}` };
     }
-}; // Konec funkce exports.handler
+};

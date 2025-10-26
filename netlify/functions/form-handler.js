@@ -2,8 +2,6 @@
 const { GoogleSpreadsheet } = require('google-spreadsheet'); // TENTO ŘÁDEK PŘIDAT
 const { JWT } = require('google-auth-library'); // TENTO ŘÁDEK PŘIDAT
 const sgMail = require('@sendgrid/mail');
-const { GoogleSpreadsheet } = require('google-spreadsheet');
-const { JWT } = require('google-auth-library'); // Potřebné pro autentizaci
 
 // Nastavení API klíčů a e-mailů z proměnných prostředí Netlify
 const sendGridApiKey = process.env.SENDGRID_API_KEY;

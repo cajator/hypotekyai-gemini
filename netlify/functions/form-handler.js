@@ -1,5 +1,5 @@
 // netlify/functions/form-handler.js
-// VERZE s oddělenými sloupci pro Sheets, formátovaným textem místo JSON a detailním logováním
+// VERZE s více oddělenými sloupci pro Sheets a detailním logováním
 
 const { GoogleSpreadsheet } = require('google-spreadsheet'); // Přidáno pro Google Sheets
 const { JWT } = require('google-auth-library'); // Přidáno pro Google Sheets autentizaci
@@ -148,7 +148,7 @@ const formatChatSimple = (chatHistory) => {
 
 // === FUNKCE PRO ZÁPIS DO GOOGLE SHEETS ===
 
-// Funkce pro zápis dat do Google Sheetu (S DETAILNÍM LOGOVÁNÍM CHYB)
+// Funkce pro zápis dat do Google Sheetu (S DETAILNÍM LOGOVÁNÍM CHYB a VÍCE SLOUPCI)
 async function appendToSheet(data) {
     console.log(">>> appendToSheet: Funkce spustena.");
     try {
@@ -199,13 +199,20 @@ async function appendToSheet(data) {
             'E-mail': data.email || '',
             'Preferovaný čas': data.contactTime || '',
             'Poznámka': data.note || '',
-            // --- Nové sloupce ---
-            'Úvěr': data.loanAmount === null ? '' : data.loanAmount, // Prázdné, pokud null
-            'Hodnota nemovitosti': data.effectivePropertyValue === null ? '' : data.effectivePropertyValue, // Prázdné, pokud null
-            'Měsíční splátka': data.monthlyPayment === null ? '' : data.monthlyPayment, // Prázdné, pokud null
-            'Úroková sazba': data.rate === null ? '' : `${data.rate} %`, // Prázdné, pokud null
-            // --- Konec nových sloupců ---
-            // 'Souhrn kalkulace': data.summary || '', // Tento sloupec je odstraněn
+            // --- Hlavní čísla kalkulace ---
+            'Úvěr': data.loanAmount === null ? '' : data.loanAmount,
+            'Hodnota nemovitosti': data.effectivePropertyValue === null ? '' : data.effectivePropertyValue,
+            'Měsíční splátka': data.monthlyPayment === null ? '' : data.monthlyPayment,
+            'Úroková sazba': data.rate === null ? '' : `${data.rate} %`,
+            // --- Další parametry ---
+            'Fixace (roky)': data.fixation === null ? '' : data.fixation,
+            'Splatnost (roky)': data.loanTerm === null ? '' : data.loanTerm,
+            'Typ příjmu': data.employment || '',
+            'Čistý příjem (Kč)': data.income === null ? '' : data.income,
+            'Jiné splátky (Kč)': data.liabilities === null ? '' : data.liabilities,
+            'Věk': data.age === null ? '' : data.age,
+            'Počet dětí': data.children === null ? '' : data.children,
+            // --- Ostatní data ---
             'Historie chatu': data.chatHistoryText || '',
             'Parametry (souhrn)': data.formDataSummary || '', // Přejmenováno a formátovaný text
             'Výsledky (souhrn)': data.calculationSummaryText || '' // Přejmenováno a formátovaný text
@@ -282,7 +289,7 @@ exports.handler = async (event) => {
             console.log('CRM API URL/klíč není nastaven, přeskočeno.');
         }
 
-        // --- PŘÍPRAVA DAT PRO GOOGLE SHEETS (UPRAVENO PRO FORMÁTOVANÝ TEXT) ---
+        // --- PŘÍPRAVA DAT PRO GOOGLE SHEETS ---
         // Formátování historie chatu na text
         let chatHistoryText = 'Žádná historie chatu.';
         if (extraData.chatHistory && extraData.chatHistory.length > 0) {
@@ -299,11 +306,19 @@ exports.handler = async (event) => {
             }
         }
 
-        // Inicializace hodnot - Použijeme null jako výchozí pro čísla, pokud nejsou data
+        // Inicializace hodnot - Použijeme null/prázdný řetězec, pokud nejsou data
         let loanAmountValue = null;
         let effectivePropValue = null;
         let monthlyPaymentValue = null;
         let rateValue = null;
+        let fixationValue = null;
+        let loanTermValue = null;
+        let employmentValue = '';
+        let incomeValue = null;
+        let liabilitiesValue = null;
+        let ageValue = null;
+        let childrenValue = null;
+
         let formDataSummaryText = 'Nezadáno'; // Výchozí text pro parametry
         let calculationSummaryText = 'Nekalkulováno'; // Výchozí text pro výsledky
         let formDataForJson = extraData.formData || {}; // Vezmeme formData, i když není z kalkulace
@@ -311,10 +326,19 @@ exports.handler = async (event) => {
         // Získání hodnot a vytvoření SOUHRNNÝCH TEXTŮ
         if (extraData.formData) {
             const form = extraData.formData;
+            formDataForJson = form; // Uložíme si form data pro JSON i pro extrakci
+
+            // Extrahujeme hodnoty pro samostatné sloupce
+            fixationValue = form.fixation || null;
+            loanTermValue = form.loanTerm || null;
+            employmentValue = form.employment || '';
+            incomeValue = form.income || null;
+            liabilitiesValue = form.liabilities || null;
+            ageValue = form.age || null;
+            childrenValue = form.children === undefined ? null : form.children; // Nula je platná hodnota
+
             // Vytvoříme souhrn parametrů VŽDY
-            // Použijeme || '?' pro případ, že by hodnota chyběla i ve form datech
-            formDataSummaryText = `Účel: ${form.purpose || '?'}, Typ: ${form.propertyType || '?'}, Příjem: ${formatNumber(form.income || 0)} (${form.employment || '?'}), Věk: ${form.age || '?'} let, Děti: ${form.children || 0}, Závazky: ${formatNumber(form.liabilities || 0)}`;
-            formDataForJson = form; // Uložíme si form data pro JSON
+            formDataSummaryText = `Účel: ${form.purpose || '?'}, Typ: ${form.propertyType || '?'}, Příjem: ${formatNumber(form.income || 0)} (${form.employment || '?'}), Věk: ${form.age || '?'} let, Děti: ${form.children === undefined ? '?' : form.children}, Závazky: ${formatNumber(form.liabilities || 0)}`;
 
             // Pokud byla i kalkulace, získáme ostatní hodnoty a vytvoříme souhrn výsledků
             if (extraData.calculation && extraData.calculation.selectedOffer) {
@@ -328,7 +352,6 @@ exports.handler = async (event) => {
 
                 // Souhrn výsledků
                 calculationSummaryText = `Nabídka: ${offer.title || '?'}. Skóre: ${calc.approvability ? calc.approvability.total + '%' : '?'} (LTV:${calc.approvability ? calc.approvability.ltv : '?'}, DSTI:${calc.approvability ? calc.approvability.dsti : '?'}, Bon:${calc.approvability ? calc.approvability.bonita : '?'}).`;
-                // Můžeme přidat i info o fixaci, pokud existuje
                 if (calc.fixationDetails) {
                     calculationSummaryText += ` Fixace ${form.fixation} let: Úroky ${formatNumber(calc.fixationDetails.totalInterestForFixation)}`;
                 }
@@ -342,19 +365,23 @@ exports.handler = async (event) => {
             email: email,
             contactTime: contactTime,
             note: note,
-            // Jednotlivé hodnoty (budou null, pokud kalkulace nebyla)
+            // Jednotlivé hodnoty z kalkulace
             loanAmount: loanAmountValue,
             effectivePropertyValue: effectivePropValue,
             monthlyPayment: monthlyPaymentValue,
             rate: rateValue,
+            // Jednotlivé hodnoty z parametrů
+            fixation: fixationValue,
+            loanTerm: loanTermValue,
+            employment: employmentValue,
+            income: incomeValue,
+            liabilities: liabilitiesValue,
+            age: ageValue,
+            children: childrenValue,
             // Textové a formátované hodnoty
             chatHistoryText: chatHistoryText,
             formDataSummary: formDataSummaryText, // Nový formátovaný text
             calculationSummaryText: calculationSummaryText // Nový formátovaný text
-            // JSON sloupce jsou nyní odstraněny, pokud je nechcete
-            // Pokud je chcete zachovat pro detailní logování:
-            // formDataJson: (formDataForJson && Object.keys(formDataForJson).length > 0) ? JSON.stringify(formDataForJson) : '',
-            // calculationJson: (extraData.calculation && extraData.calculation.selectedOffer) ? JSON.stringify(extraData.calculation) : ''
         };
 
         // --- ZÁPIS DO GOOGLE SHEETS (S ČEKÁNÍM A LOGOVÁNÍM) ---

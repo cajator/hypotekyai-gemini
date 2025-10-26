@@ -316,8 +316,20 @@ exports.handler = async (event) => {
         const internalCalculationHtml = formatCalculationToHtml(extraData.calculation);
         const chatHistoryHtml = formatChatSimple(extraData.chatHistory);
         const internalEmailHtml = `... (HTML šablona interního emailu zůstává stejná) ...`; // Zkráceno pro přehlednost
-        const internalMsg = { /* ... (objekt zprávy zůstává stejný) ... */ };
-        await sgMail.send(internalMsg);
+        const internalMsg = {
+            to: internalNotificationEmail,
+            from: senderEmail,
+            subject: `🚀 Nový lead z Hypoteky Ai: ${name || 'Neznámý'}`,
+            html: internalEmailHtml,
+        };
+
+        console.log("Pokus o odeslání interního e-mailu...");
+
+        // ===== PŘIDAT TENTO KONTROLNÍ VÝPIS =====
+        console.log(">>> DEBUG: Objekt internalMsg před odesláním:", JSON.stringify(internalMsg, null, 2));
+        // ==========================================
+
+        await sgMail.send(internalMsg); // Zde dochází k chybě
         console.log("Interní e-mail úspěšně odeslán.");
         // --- Konec interního emailu ---
 

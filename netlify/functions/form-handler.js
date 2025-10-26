@@ -140,19 +140,41 @@ const formatChatSimple = (chatHistory) => {
 
 // Funkce pro zápis dat do Google Sheetu
 async function appendToSheet(data) {
+    console.log(">>> appendToSheet: Funkce spustena.");
     try {
-        console.log("Pokus o zápis do Google Sheet...");
+        const sheetId = process.env.GOOGLE_SHEET_ID;
+        const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+        const privateKeyRaw = process.env.GOOGLE_PRIVATE_KEY;
+
+        if (!sheetId || !clientEmail || !privateKeyRaw) {
+            console.error(">>> appendToSheet: CHYBA - Chybí proměnné prostředí!");
+            return false;
+        }
+        console.log(`>>> appendToSheet: Sheet ID: ${sheetId.substring(0, 5)}... Email: ${clientEmail}`);
+
+        const privateKey = privateKeyRaw.replace(/\\n/g, '\n');
+        console.log(">>> appendToSheet: Private key pripraven.");
+
         const serviceAccountAuth = new JWT({
-            email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-            key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'), // Nahradí literály \n za skutečné nové řádky
+            email: clientEmail,
+            key: privateKey,
             scopes: ['https://www.googleapis.com/auth/spreadsheets'],
         });
+        console.log(">>> appendToSheet: JWT Auth objekt vytvoren.");
 
-        const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID, serviceAccountAuth);
-        await doc.loadInfo(); // Načte info o dokumentu a listech
-        const sheet = doc.sheetsByIndex[0]; // Předpokládáme, že zapisujeme do prvního listu
+        const doc = new GoogleSpreadsheet(sheetId, serviceAccountAuth);
 
-        // Připravíme řádek podle struktury Sheetu
+        console.log(">>> appendToSheet: Nacitam info o dokumentu...");
+        await doc.loadInfo();
+        console.log(`>>> appendToSheet: Info o dokumentu nacteno. Nalezeno listu: ${doc.sheetCount}`);
+
+        const sheet = doc.sheetsByIndex[0]; // Stále předpokládáme první list
+        if (!sheet) {
+            console.error(">>> appendToSheet: CHYBA - Nepodařilo se najít první list (index 0)!");
+            return false;
+        }
+        console.log(`>>> appendToSheet: Zapisuji do listu: "${sheet.title}" (Index 0)`);
+
         const rowData = {
             'Datum a čas': new Date().toLocaleString('cs-CZ'),
             'Jméno': data.name || '',
@@ -165,14 +187,27 @@ async function appendToSheet(data) {
             'Parametry kalkulace (JSON)': data.formDataJson || '',
             'Výsledky kalkulace (JSON)': data.calculationJson || ''
         };
+        console.log(">>> appendToSheet: Pripravena data pro radek.");
 
+        console.log(">>> appendToSheet: Pridavam radek..."); // Log těsně před zápisem
         await sheet.addRow(rowData);
-        console.log("Data úspěšně zapsána do Google Sheet.");
+        console.log(">>> appendToSheet: Radek uspesne pridan do Google Sheet.");
         return true;
 
     } catch (error) {
-        console.error("CHYBA při zápisu do Google Sheet:", error.message);
-        // Zde bychom mohli poslat notifikaci adminovi, že zápis selhal
+        // ===== ROZŠÍŘENÉ LOGOVÁNÍ CHYBY ZDE =====
+        console.error(">>> appendToSheet: ZACHYCENA CHYBA pri zapisu do Google Sheet!");
+        console.error(">>> Chyba - Message:", error.message); // Původní zpráva
+        console.error(">>> Chyba - Stack:", error.stack);     // Zásobník volání
+        // Pokud chyba přichází z Google API, může mít další detaily:
+        if (error.response && error.response.data) {
+             console.error(">>> Chyba - Google API Response Data:", JSON.stringify(error.response.data, null, 2));
+        } else if (error.errors) {
+             console.error(">>> Chyba - Google API Errors:", JSON.stringify(error.errors, null, 2));
+        } else {
+             console.error(">>> Chyba - Kompletní objekt:", error); // Vypíše celý objekt chyby
+        }
+        // ==========================================
         return false;
     }
 }

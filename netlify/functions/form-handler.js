@@ -1,5 +1,5 @@
 // netlify/functions/form-handler.js
-// VERZE s oddělenými sloupci pro Sheets a detailním logováním
+// VERZE s oddělenými sloupci pro Sheets, opraveným JSON a detailním logováním
 
 const { GoogleSpreadsheet } = require('google-spreadsheet'); // Přidáno pro Google Sheets
 const { JWT } = require('google-auth-library'); // Přidáno pro Google Sheets autentizaci
@@ -200,15 +200,15 @@ async function appendToSheet(data) {
             'Preferovaný čas': data.contactTime || '',
             'Poznámka': data.note || '',
             // --- Nové sloupce ---
-            'Úvěr': data.loanAmount || '', // Hodnota nebo prázdný řetězec
-            'Hodnota nemovitosti': data.effectivePropertyValue || '', // Hodnota nebo prázdný řetězec
-            'Měsíční splátka': data.monthlyPayment || '', // Hodnota nebo prázdný řetězec
-            'Úroková sazba': data.rate ? `${data.rate} %` : '', // Hodnota s % nebo prázdný řetězec
+            'Úvěr': data.loanAmount === null ? '' : data.loanAmount, // Prázdné, pokud null
+            'Hodnota nemovitosti': data.effectivePropertyValue === null ? '' : data.effectivePropertyValue, // Prázdné, pokud null
+            'Měsíční splátka': data.monthlyPayment === null ? '' : data.monthlyPayment, // Prázdné, pokud null
+            'Úroková sazba': data.rate === null ? '' : `${data.rate} %`, // Prázdné, pokud null
             // --- Konec nových sloupců ---
-            'Souhrn kalkulace': data.summary || '',
+            // 'Souhrn kalkulace': data.summary || '', // Tento sloupec je odstraněn
             'Historie chatu': data.chatHistoryText || '',
-            'Parametry kalkulace (JSON)': data.formDataJson || '',
-            'Výsledky kalkulace (JSON)': data.calculationJson || ''
+            'Parametry kalkulace (JSON)': data.formDataJson || '', // Bude obsahovat defaultní hodnoty nebo zadané
+            'Výsledky kalkulace (JSON)': data.calculationJson || '' // Bude prázdné nebo JSON
         };
         console.log(">>> appendToSheet: Pripravena data pro radek.");
 
@@ -299,13 +299,14 @@ exports.handler = async (event) => {
             }
         }
 
-        // Příprava souhrnu a jednotlivých hodnot z kalkulace
-        let summaryText = 'Kalkulace nebyla provedena.';
-        let loanAmountValue = null; // Použijeme null jako výchozí pro čísla
+        // Inicializace hodnot - Použijeme null jako výchozí pro čísla, pokud nejsou data
+        let loanAmountValue = null;
         let effectivePropValue = null;
         let monthlyPaymentValue = null;
         let rateValue = null;
+        let formDataForJson = extraData.formData || {}; // Vezmeme formData, i když není z kalkulace
 
+        // Získání hodnot, POUZE pokud byla kalkulace provedena
         if (extraData.calculation && extraData.calculation.selectedOffer && extraData.formData) {
             const calc = extraData.calculation.selectedOffer;
             const form = extraData.formData;
@@ -314,27 +315,27 @@ exports.handler = async (event) => {
                  effectivePropValue = form.purpose === 'výstavba' ? (form.propertyValue || 0) + (form.landValue || 0) : (form.propertyValue || 0);
                  monthlyPaymentValue = calc.monthlyPayment || 0;
                  rateValue = calc.rate || 0;
-                 // Aktualizace souhrnu
-                 summaryText = `Úvěr: ${formatNumber(loanAmountValue)}, Nemovitost: ${formatNumber(effectivePropValue)}, Splátka: ${formatNumber(monthlyPaymentValue)}, Sazba: ${rateValue}%`;
+                 formDataForJson = form; // Použijeme data z formuláře, která vedla k výpočtu
             }
         }
 
-        // Sestavení finálních dat pro zápis
+        // Sestavení finálních dat pro zápis - BEZ summary
         const sheetData = {
             name: name,
             phone: phone,
             email: email,
             contactTime: contactTime,
             note: note,
-            summary: summaryText,
-            chatHistoryText: chatHistoryText,
-            // Přidání nových hodnot (budou null pokud kalkulace nebyla)
+            // Jednotlivé hodnoty (budou null, pokud kalkulace nebyla)
             loanAmount: loanAmountValue,
             effectivePropertyValue: effectivePropValue,
             monthlyPayment: monthlyPaymentValue,
             rate: rateValue,
-            // JSON data (budou prázdný řetězec pokud data nejsou)
-            formDataJson: (extraData.formData && Object.keys(extraData.formData).length > 0) ? JSON.stringify(extraData.formData) : '',
+            // Textové a JSON hodnoty
+            chatHistoryText: chatHistoryText,
+            // formDataJson nyní obsahuje data VŽDY (buď defaultní, nebo zadaná)
+            formDataJson: (formDataForJson && Object.keys(formDataForJson).length > 0) ? JSON.stringify(formDataForJson) : '',
+            // calculationJson je prázdné, pokud nebyla kalkulace
             calculationJson: (extraData.calculation && extraData.calculation.selectedOffer) ? JSON.stringify(extraData.calculation) : ''
         };
 

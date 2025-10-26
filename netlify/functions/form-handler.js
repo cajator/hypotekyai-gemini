@@ -1,5 +1,7 @@
 // netlify/functions/form-handler.js
 const sgMail = require('@sendgrid/mail');
+const { GoogleSpreadsheet } = require('google-spreadsheet');
+const { JWT } = require('google-auth-library'); // Potřebné pro autentizaci
 
 // Nastavení API klíčů a e-mailů z proměnných prostředí Netlify
 const sendGridApiKey = process.env.SENDGRID_API_KEY;
@@ -136,6 +138,44 @@ const formatChatSimple = (chatHistory) => {
      }
 };
 
+// Funkce pro zápis dat do Google Sheetu
+async function appendToSheet(data) {
+    try {
+        console.log("Pokus o zápis do Google Sheet...");
+        const serviceAccountAuth = new JWT({
+            email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+            key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'), // Nahradí literály \n za skutečné nové řádky
+            scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+        });
+
+        const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID, serviceAccountAuth);
+        await doc.loadInfo(); // Načte info o dokumentu a listech
+        const sheet = doc.sheetsByIndex[0]; // Předpokládáme, že zapisujeme do prvního listu
+
+        // Připravíme řádek podle struktury Sheetu
+        const rowData = {
+            'Datum a čas': new Date().toLocaleString('cs-CZ'),
+            'Jméno': data.name || '',
+            'Telefon': data.phone || '',
+            'E-mail': data.email || '',
+            'Preferovaný čas': data.contactTime || '',
+            'Poznámka': data.note || '',
+            'Souhrn kalkulace': data.summary || '',
+            'Historie chatu': data.chatHistoryText || '',
+            'Parametry kalkulace (JSON)': data.formDataJson || '',
+            'Výsledky kalkulace (JSON)': data.calculationJson || ''
+        };
+
+        await sheet.addRow(rowData);
+        console.log("Data úspěšně zapsána do Google Sheet.");
+        return true;
+
+    } catch (error) {
+        console.error("CHYBA při zápisu do Google Sheet:", error.message);
+        // Zde bychom mohli poslat notifikaci adminovi, že zápis selhal
+        return false;
+    }
+}
 
 exports.handler = async (event) => {
     if (event.httpMethod && event.httpMethod !== 'POST') {
@@ -168,6 +208,51 @@ exports.handler = async (event) => {
             console.error("Chyba při parsování extraData:", e);
             extraData = { error: "Chyba při parsování dat." };
         }
+
+        // --- ZÁPIS DO GOOGLE SHEETS ---
+        // 1. Příprava dat pro Sheet
+        let chatHistoryText = 'Žádná historie chatu.';
+        if (extraData.chatHistory && Array.isArray(extraData.chatHistory) && extraData.chatHistory.length > 0) {
+            try {
+                // Formátování chatu do textu pro jednu buňku
+                chatHistoryText = extraData.chatHistory.map(msg => {
+                    const sender = msg.sender === 'user' ? 'Klient' : 'AI';
+                    const cleanText = String(msg.text || '').replace(/<button.*?<\/button>/g, '[Tlačítko]').replace(/<br\s*\/?>/gi, '\n'); // Nahradí <br> za nový řádek
+                    return `${sender}: ${cleanText}`;
+                }).join('\n------\n'); // Oddělovač mezi zprávami
+            } catch (e) {
+                console.error("Chyba formátování chatu pro Sheets:", e);
+                chatHistoryText = 'Chyba při zpracování chatu.';
+            }
+        }
+
+        let summaryText = 'Kalkulace nebyla provedena.';
+        // Vytvoření stručného souhrnu kalkulace
+        if (extraData.calculation && extraData.calculation.selectedOffer && extraData.formData) {
+            try {
+                const calc = extraData.calculation.selectedOffer;
+                const form = extraData.formData;
+                const effectivePropertyValue = (form.purpose === 'výstavba' && form.landValue > 0) ? (form.propertyValue || 0) + (form.landValue || 0) : (form.propertyValue || 0);
+                summaryText = `Úvěr: ${formatNumber(form.loanAmount || 0)}, Nemovitost: ${formatNumber(effectivePropertyValue)}, Splátka: ${formatNumber(calc.monthlyPayment || 0)}, Sazba: ${calc.rate || '?'}%`;
+            } catch (e) {
+                console.error("Chyba při vytváření souhrnu kalkulace:", e);
+                summaryText = "Chyba při generování souhrnu.";
+            }
+        }
+
+        // Sestavení objektu pro zápis do sheetu
+        const sheetData = {
+            name: name,
+            phone: phone,
+            email: email,
+            contactTime: contactTime,
+            note: note,
+            summary: summaryText,
+            chatHistoryText: chatHistoryText,
+            // Ukládáme kompletní data jako JSON pro případnou detailní analýzu
+            formDataJson: JSON.stringify(extraData.formData || {}),
+            calculationJson: JSON.stringify(extraData.calculation || {})
+        };
 
         // --- 1. ODESLÁNÍ DAT DO CRM (POUZE POKUD JE NASTAVENO) ---
         if (crmApiUrl && crmApiKey) {

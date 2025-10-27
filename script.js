@@ -260,7 +260,6 @@ const findQuickResponse = (message) => {
                 <input type="text" id="${id}-input" value="${formatNumber(value, false)}"
                        class="${inputClasses}"
                        style="position: relative; z-index: 2;"> 
-                       // Správný JS komentář nebo styl přímo použít
                 <span class="${suffixClasses}">${suffix}</span>
             </div>
         </div>

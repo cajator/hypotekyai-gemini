@@ -259,12 +259,13 @@ const findQuickResponse = (message) => {
             <div class="${inputWrapperClasses}">
                 <input type="text" id="${id}-input" value="${formatNumber(value, false)}"
                        class="${inputClasses}"
-                       style="position: relative; z-index: 2;"> {/* Přidán z-index pro jistotu */}
+                       style="position: relative; z-index: 2;"> 
+                       /* style="position: relative; z-index: 2;" */ // Správný JS komentář nebo styl přímo použít
                 <span class="${suffixClasses}">${suffix}</span>
             </div>
         </div>
-        <div class="slider-container pt-1 pb-2"> {/* Mírně upraven padding */}
-            <input type="range" id="${id}" name="${id}" min="${min}" max="${max}" value="${value}" step="${step}" class="slider-input">
+        <div class="slider-container pt-1 pb-2"> 
+            <input type="range" id="${id}" name="${id}" min="${max}" max="${max}" value="${value}" step="${step}" class="slider-input">
         </div>
     </div>`;
 };
@@ -375,37 +376,30 @@ const findQuickResponse = (message) => {
         const isMobileDevice = isMobile() || window.innerWidth < 1024;
         
         if (isMobileDevice) {
-        // MOBILNÍ VERZE - input je fixní dole, zprávy mají padding-bottom
-        const inputFooterHeight = '68px'; // Odhadovaná výška inputu + padding
-        const suggestionsHeight = '45px'; // Odhadovaná výška suggestions
-        return `
-            <div id="ai-chat-wrapper" style="position: relative; width: 100%; height: calc(100vh - 8rem); display: flex; flex-direction: column; overflow: hidden;"> {/* Snížena celková výška */}
+            // MOBILNÍ VERZE - input je fixní dole, zprávy mají padding-bottom
+            const inputFooterHeight = '68px'; // Odhadovaná výška inputu + padding
+            const suggestionsHeight = '45px'; // Odhadovaná výška suggestions
+            return `
+                <div id="ai-chat-wrapper" style="position: relative; width: 100%; height: calc(100vh - 8rem); display: flex; flex-direction: column; overflow: hidden;">
 
-                {/* Kontejner pro zprávy s paddingem dole, aby nebyly překryty inputem */}
-                <div id="chat-messages" style="flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 12px; padding-bottom: calc(${inputFooterHeight} + ${suggestionsHeight} + 12px); background: #f9fafb; border: 1px solid #e5e7eb; border-bottom: none; border-radius: 8px 8px 0 0;">
-                    {/* Zprávy se vloží sem */}
-                </div>
+                    <div id="chat-messages" style="flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 12px; padding-bottom: calc(${inputFooterHeight} + ${suggestionsHeight} + 12px); background: #f9fafb; border: 1px solid #e5e7eb; border-bottom: none; border-radius: 8px 8px 0 0;">
+                    </div>
 
-                {/* Suggestions nad inputem */}
-                 <div id="ai-suggestions" style="padding: 8px 12px; border-left: 1px solid #e5e7eb; border-right: 1px solid #e5e7eb; background: white; overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; height: ${suggestionsHeight}; box-sizing: border-box;">
-                    {/* Suggestions se vloží sem */}
-                 </div>
+                     <div id="ai-suggestions" style="padding: 8px 12px; border-left: 1px solid #e5e7eb; border-right: 1px solid #e5e7eb; background: white; overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; height: ${suggestionsHeight}; box-sizing: border-box;">
+                     </div>
 
-                {/* Fixní input footer dole */}
-                <div id="chat-input-footer" style="position: fixed; bottom: 0; left: 0; right: 0; padding: 12px; background: white; border-top: 2px solid #2563eb; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 1000; height: ${inputFooterHeight}; box-sizing: border-box;">
-                    {/* Zde se dynamicky vloží input */}
-                </div>
+                    <div id="chat-input-footer" style="position: fixed; bottom: 0; left: 0; right: 0; padding: 12px; background: white; border-top: 2px solid #2563eb; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 1000; height: ${inputFooterHeight}; box-sizing: border-box;">
+                    </div>
 
-                {/* Plovoucí tlačítko sidebar - Mírně posunuto výše */}
-                ${state.calculation.selectedOffer ? `
-                <button id="mobile-sidebar-toggle"
-                        style="position: fixed; bottom: calc(${inputFooterHeight} + 20px); right: 20px; width: 56px; height: 56px; background: #2563eb; color: white; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 900; border: none; cursor: pointer;"
-                        data-action="toggle-mobile-sidebar">
-                    <span style="font-size: 24px;">📊</span>
-                </button>
-                ` : ''}
-            </div>`;
-    }
+                    ${state.calculation.selectedOffer ? `
+                    <button id="mobile-sidebar-toggle"
+                            style="position: fixed; bottom: calc(${inputFooterHeight} + 20px); right: 20px; width: 56px; height: 56px; background: #2563eb; color: white; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 900; border: none; cursor: pointer;"
+                            data-action="toggle-mobile-sidebar">
+                        <span style="font-size: 24px;">📊</span>
+                    </button>
+                    ` : ''}
+                </div>`;
+        }
         
         // DESKTOP VERZE - Přepnuto na grid layout
         return `

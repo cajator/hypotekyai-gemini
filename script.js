@@ -264,7 +264,7 @@ const findQuickResponse = (message) => {
             </div>
         </div>
         <div class="slider-container pt-1 pb-2"> 
-            <input type="range" id="${id}" name="${id}" min="${max}" max="${max}" value="${value}" step="${step}" class="slider-input">
+            <input type="range" id="${id}" name="${id}" min="${min}" max="${max}" value="${value}" step="${step}" class="slider-input">
         </div>
     </div>`;
 };

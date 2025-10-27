@@ -218,33 +218,53 @@ const findQuickResponse = (message) => {
     
     // --- COMPONENT FACTORIES ---
     const createSlider = (id, label, value, min, max, step, containerClass = '', infoText = '') => {
-    // ===== OPRAVA LOGIKY ZDE =====
-    // Tato vylepšená logika správně určuje jednotku pro každý posuvník.
-    let suffix = ' Kč'; // Výchozí jednotka je Kč.
+    let suffix = ' Kč';
     if (id.includes('Term') || id.includes('age') || id.includes('fixation')) {
-        suffix = ' let'; // Pro dobu splatnosti, věk a fixaci je jednotka 'let'.
+        suffix = ' let';
     } else if (id.includes('children')) {
-        suffix = ''; // Pro počet dětí se nezobrazí žádná jednotka.
+        suffix = '';
     }
-    // =============================
 
-    const isMobileDevice = isMobile();
+    const isMobileDevice = isMobile(); // Získáme informaci, zda je to mobil
     const infoIcon = infoText ? `<span class="info-icon" data-info-key="${id}" data-info-text="${infoText}">?</span>` : '';
-    
-    return `<div class="${containerClass}" id="${id}-group" style="width: 100%; position: relative; z-index: 1;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; gap: 0.5rem;">
-            <label for="${id}" class="form-label" style="margin: 0; flex-shrink: 0; display: flex; align-items: center; gap: 6px; font-size: ${isMobileDevice ? '0.875rem' : '0.9375rem'};">
+
+    // --- Změna layoutu pro mobil ---
+    // Na mobilu: Label a Input pod sebou (flex-col). Na desktopu: Vedle sebe (sm:flex-row).
+    const topRowClasses = isMobileDevice
+        ? "flex flex-col items-start mb-2 gap-1" // Mobil: Pod sebou, zarovnání doleva, mezera 1
+        : "flex flex-row justify-between items-center mb-2 gap-2"; // Desktop: Vedle sebe, mezery mezi, zarovnání na střed
+
+    const labelClasses = isMobileDevice
+        ? "form-label text-sm m-0 flex items-center gap-1.5" // Mobil: Menší text
+        : "form-label m-0 flex-shrink-0 flex items-center gap-1.5"; // Desktop
+
+    const inputWrapperClasses = isMobileDevice
+        ? "flex items-center gap-1 w-full justify-end" // Mobil: Input zabere celou šířku, zarovnání doprava
+        : "flex items-center gap-1 relative z-10"; // Desktop: Původní styl
+
+    const inputClasses = isMobileDevice
+        ? "slider-value-input text-base max-w-[140px]" // Mobil: Větší písmo, mírně větší šířka
+        : "slider-value-input max-w-[140px]"; // Desktop: Původní styl
+
+    const suffixClasses = isMobileDevice
+        ? "font-semibold text-gray-500 text-sm flex-shrink-0" // Mobil: Menší text
+        : "font-semibold text-gray-500 text-sm flex-shrink-0"; // Desktop: Původní styl (upravena velikost)
+
+    // Sestavení HTML s novými třídami
+    return `<div class="${containerClass}" id="${id}-group" style="width: 100%;">
+        <div class="${topRowClasses}">
+            <label for="${id}" class="${labelClasses}">
                 ${label} ${infoIcon}
             </label>
-            <div style="display: flex; align-items: center; gap: 0.25rem; position: relative; z-index: 2;">
-                <input type="text" id="${id}-input" value="${formatNumber(value, false)}" 
-                       class="slider-value-input" 
-                       style="max-width: ${isMobileDevice ? '100px' : '140px'}; font-size: ${isMobileDevice ? '0.9375rem' : '1rem'}; position: relative; z-index: 2;">
-                <span style="font-weight: 600; color: #6b7280; font-size: ${isMobileDevice ? '0.875rem' : '0.9375rem'}; flex-shrink: 0;">${suffix}</span>
+            <div class="${inputWrapperClasses}">
+                <input type="text" id="${id}-input" value="${formatNumber(value, false)}"
+                       class="${inputClasses}"
+                       style="position: relative; z-index: 2;"> {/* Přidán z-index pro jistotu */}
+                <span class="${suffixClasses}">${suffix}</span>
             </div>
         </div>
-        <div class="slider-container" style="padding: 0.5rem 0; position: relative; z-index: 1;">
-            <input type="range" id="${id}" name="${id}" min="${min}" max="${max}" value="${value}" step="${step}" class="slider-input" style="position: relative; z-index: 1;">
+        <div class="slider-container pt-1 pb-2"> {/* Mírně upraven padding */}
+            <input type="range" id="${id}" name="${id}" min="${min}" max="${max}" value="${value}" step="${step}" class="slider-input">
         </div>
     </div>`;
 };
@@ -355,27 +375,37 @@ const findQuickResponse = (message) => {
         const isMobileDevice = isMobile() || window.innerWidth < 1024;
         
         if (isMobileDevice) {
-            // MOBILNÍ VERZE - input je součástí fixního footeru
-            return `
-                <div id="ai-chat-wrapper" style="position: relative; width: 100%; height: calc(100vh - 12rem); display: flex; flex-direction: column;">
-                    <div id="chat-messages-wrapper" style="flex: 1; overflow: hidden; position: relative;">
-                        <div id="chat-messages" style="height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 12px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px 8px 0 0;"></div>
-                    </div>
-                    
-                    <div id="ai-suggestions" style="padding: 8px 12px; border: 1px solid #e5e7eb; border-top: none; background: white; overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap;"></div>
-                    
-                    <div id="chat-input-footer" style="position: sticky; bottom: 0; left: 0; right: 0; padding: 12px; background: white; border: 1px solid #e5e7eb; border-top: 2px solid #2563eb; border-radius: 0 0 8px 8px; z-index: 1000;">
-                        </div>
-                    
-                    ${state.calculation.selectedOffer ? `
-                    <button id="mobile-sidebar-toggle" 
-                            style="position: fixed; bottom: 80px; right: 20px; width: 56px; height: 56px; background: #2563eb; color: white; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 900; border: none; cursor: pointer;"
-                            data-action="toggle-mobile-sidebar">
-                        <span style="font-size: 24px;">📊</span>
-                    </button>
-                    ` : ''}
-                </div>`;
-        }
+        // MOBILNÍ VERZE - input je fixní dole, zprávy mají padding-bottom
+        const inputFooterHeight = '68px'; // Odhadovaná výška inputu + padding
+        const suggestionsHeight = '45px'; // Odhadovaná výška suggestions
+        return `
+            <div id="ai-chat-wrapper" style="position: relative; width: 100%; height: calc(100vh - 8rem); display: flex; flex-direction: column; overflow: hidden;"> {/* Snížena celková výška */}
+
+                {/* Kontejner pro zprávy s paddingem dole, aby nebyly překryty inputem */}
+                <div id="chat-messages" style="flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 12px; padding-bottom: calc(${inputFooterHeight} + ${suggestionsHeight} + 12px); background: #f9fafb; border: 1px solid #e5e7eb; border-bottom: none; border-radius: 8px 8px 0 0;">
+                    {/* Zprávy se vloží sem */}
+                </div>
+
+                {/* Suggestions nad inputem */}
+                 <div id="ai-suggestions" style="padding: 8px 12px; border-left: 1px solid #e5e7eb; border-right: 1px solid #e5e7eb; background: white; overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; height: ${suggestionsHeight}; box-sizing: border-box;">
+                    {/* Suggestions se vloží sem */}
+                 </div>
+
+                {/* Fixní input footer dole */}
+                <div id="chat-input-footer" style="position: fixed; bottom: 0; left: 0; right: 0; padding: 12px; background: white; border-top: 2px solid #2563eb; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 1000; height: ${inputFooterHeight}; box-sizing: border-box;">
+                    {/* Zde se dynamicky vloží input */}
+                </div>
+
+                {/* Plovoucí tlačítko sidebar - Mírně posunuto výše */}
+                ${state.calculation.selectedOffer ? `
+                <button id="mobile-sidebar-toggle"
+                        style="position: fixed; bottom: calc(${inputFooterHeight} + 20px); right: 20px; width: 56px; height: 56px; background: #2563eb; color: white; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 900; border: none; cursor: pointer;"
+                        data-action="toggle-mobile-sidebar">
+                    <span style="font-size: 24px;">📊</span>
+                </button>
+                ` : ''}
+            </div>`;
+    }
         
         // DESKTOP VERZE - Přepnuto na grid layout
         return `
@@ -638,7 +668,7 @@ const findQuickResponse = (message) => {
     };
     
     const getExpressHTML = () => getCalculatorLayout(`
-        <div id="express-form" class="space-y-6" style="max-width: 100%; overflow: hidden;">
+        <div id="express-form" class="space-y-8" style="max-width: 100%; overflow: hidden;">
             ${createSlider('propertyValue','Hodnota nemovitosti',state.formData.propertyValue,500000,30000000,100000, '', 'Cena nemovitosti, kterou kupujete.')}
             ${createSlider('loanAmount','Chci si půjčit',state.formData.loanAmount,200000,20000000,100000, '', 'Částka, kterou si potřebujete půjčit.')}
             ${createSlider('income','Měsíční čistý příjem',state.formData.income,15000,300000,1000, '', 'Váš průměrný čistý příjem.')}
@@ -662,7 +692,7 @@ const findQuickResponse = (message) => {
         return getCalculatorLayout(`<div id="guided-form" style="max-width: 100%; overflow: hidden;">
             <div style="margin-bottom: 2rem;">
                 <h3 class="form-section-heading">Parametry úvěru a nemovitosti</h3>
-                <div class="form-grid" style="${isMobile() ? 'display: flex; flex-direction: column; gap: 1rem;' : ''}">
+                <div class="form-grid" style="${isMobile() ? 'display: flex; flex-direction: column; gap: 1.5rem;' : ''}">
                     ${createSelect('purpose', 'Účel hypotéky', purposes, state.formData.purpose)}
                     ${createSelect('propertyType', 'Typ nemovitosti', propertyTypes, state.formData.propertyType)}
                    ${createSlider('propertyValue','Hodnota samotné stavby',state.formData.propertyValue,500000,30000000,100000, '', 'Náklady na výstavbu domu (bez pozemku).')}
@@ -683,7 +713,7 @@ const findQuickResponse = (message) => {
             </div>
             <div style="margin-bottom: 2rem;">
                 <h3 class="form-section-heading">Vaše bonita a osobní údaje</h3>
-                <div class="form-grid" style="${isMobile() ? 'display: flex; flex-direction: column; gap: 1rem;' : ''}">
+                <div class="form-grid" style="${isMobile() ? 'display: flex; flex-direction: column; gap: 1.5rem;' : ''}">
                     ${createSelect('employment', 'Typ příjmu', employments, state.formData.employment)}
                     ${createSelect('education', 'Nejvyšší dosažené vzdělání', educations, state.formData.education)}
                     ${createSlider('income','Čistý měsíční příjem',state.formData.income,15000,300000,1000, '', 'Váš průměrný čistý příjem za poslední 3-6 měsíců.')}

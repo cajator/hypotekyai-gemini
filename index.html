@@ -464,9 +464,19 @@
                                    title="Zadejte platné 9místné telefonní číslo (může začínat +420)."
                                    class="modern-input">
                         </div> </div>
-                    <div>
-                        <label for="email" class="form-label">E-mail *</label>
-                        <input type="email" id="email" name="email" required class="modern-input">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="email" class="form-label">E-mail *</label>
+                            <input type="email" id="email" name="email" required class="modern-input">
+                        </div>
+                        <div>
+                            <label for="psc" class="form-label">PSČ *</label>
+                            <input type="text" id="psc" name="psc" required 
+                                   pattern="^\d{3} ?\d{2}$" 
+                                   title="Zadejte 5 číslic PSČ, např. 11000 nebo 110 00"
+                                   placeholder="např. 110 00"
+                                   class="modern-input">
+                        </div>
                     </div>
                     <div>
                         <label for="contact-time" class="form-label">Kdy vás můžeme kontaktovat?</label>

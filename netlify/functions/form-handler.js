@@ -1,5 +1,5 @@
 // netlify/functions/form-handler.js
-// VERZE POUZE PRO ZÁPIS DO GOOGLE SHEETS
+// VERZE s polem PSČ, POUZE PRO ZÁPIS DO GOOGLE SHEETS
 
 const { GoogleSpreadsheet } = require('google-spreadsheet');
 const { JWT } = require('google-auth-library');
@@ -56,12 +56,13 @@ async function appendToSheet(data) {
         }
         console.log(`>>> appendToSheet: Zapisuji do listu: "${sheet.title}" (Index 0)`);
 
-        // Příprava dat řádku
+        // Příprava dat řádku - PŘIDÁN SLOUPC 'PSČ'
         const rowData = {
             'Datum a čas': new Date().toLocaleString('cs-CZ'),
             'Jméno': data.name || '',
             'Telefon': data.phone || '',
             'E-mail': data.email || '',
+            'PSČ': data.psc || '', // <-- NOVÝ ŘÁDEK ZDE
             'Preferovaný čas': data.contactTime || '',
             'Poznámka': data.note || '',
             'Úvěr': data.loanAmount === null ? '' : data.loanAmount,
@@ -107,7 +108,6 @@ exports.handler = async (event) => {
     if (event.httpMethod && event.httpMethod !== 'POST') {
         return { statusCode: 405, body: 'Method Not Allowed' };
     }
-    // Kontrolujeme POUZE Google proměnné
     if (!process.env.GOOGLE_SHEET_ID || !process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY) {
         console.error("Chyba konfigurace serveru - chybí Google proměnné.");
         return { statusCode: 500, body: "Chyba konfigurace serveru." };
@@ -115,7 +115,7 @@ exports.handler = async (event) => {
 
     try {
         console.log("Funkce form-handler spuštěna.");
-        let name, email, phone, note, contactTime, extraDataString, extraData;
+        let name, email, phone, note, contactTime, psc, extraDataString, extraData; // <-- PŘIDÁNO 'psc'
 
         // Zpracování dat z formuláře
         if (event.httpMethod === 'POST') {
@@ -123,6 +123,7 @@ exports.handler = async (event) => {
             name = formData.get('name');
             email = formData.get('email');
             phone = formData.get('phone');
+            psc = formData.get('psc'); // <-- NOVÝ ŘÁDEK ZDE
             contactTime = formData.get('contact-time');
             note = formData.get('note');
             extraDataString = formData.get('extraData');
@@ -201,6 +202,7 @@ exports.handler = async (event) => {
             name: name,
             phone: phone,
             email: email,
+            psc: psc, // <-- NOVÝ ŘÁDEK ZDE
             contactTime: contactTime,
             note: note,
             loanAmount: loanAmountValue,
@@ -235,7 +237,7 @@ exports.handler = async (event) => {
         console.log(">>> Handler: Blok pro zápis do Sheetu dokončen.");
         // --- Konec bloku pro Google Sheets ---
 
-        // --- VŠECHNY BLOKY PRO ODESLÁNÍ E-MAILŮ JSOU ODSTRANĚNY ---
+        // --- E-MAILY JSOU Z TOHOTO SOUBORU ODSTRANĚNY ---
 
         // Úspěšná odpověď klientovi (prohlížeči)
         console.log(">>> Handler: Funkce form-handler úspěšně dokončena (pouze zápis do Sheetu).");

@@ -1836,4 +1836,4 @@ const renderResults = () => {
     };
 
     init();
-});
+    });

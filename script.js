@@ -1443,6 +1443,7 @@ const renderResults = () => {
             bodyParams.append('name', form.querySelector('#name').value);
             bodyParams.append('phone', form.querySelector('#phone').value);
             bodyParams.append('email', form.querySelector('#email').value);
+            bodyParams.append('psc', form.querySelector('#psc').value);
             bodyParams.append('contact-time', form.querySelector('#contact-time').value);
             bodyParams.append('note', form.querySelector('#note').value);
 

@@ -62,6 +62,7 @@ async function appendToSheet(data) {
             'Jméno': data.name || '',
             'Telefon': data.phone || '',
             'E-mail': data.email || '',
+            'PSČ': data.psc || '',
             'Preferovaný čas': data.contactTime || '',
             'Poznámka': data.note || '',
             'Úvěr': data.loanAmount === null ? '' : data.loanAmount,
@@ -115,7 +116,7 @@ exports.handler = async (event) => {
 
     try {
         console.log("Funkce form-handler spuštěna.");
-        let name, email, phone, note, contactTime, extraDataString, extraData;
+        let name, email, phone, note, contactTime, psc, extraDataString, extraData;
 
         // Zpracování dat z formuláře
         if (event.httpMethod === 'POST') {
@@ -123,6 +124,7 @@ exports.handler = async (event) => {
             name = formData.get('name');
             email = formData.get('email');
             phone = formData.get('phone');
+            psc = formData.get('psc');
             contactTime = formData.get('contact-time');
             note = formData.get('note');
             extraDataString = formData.get('extraData');
@@ -201,6 +203,7 @@ exports.handler = async (event) => {
             name: name,
             phone: phone,
             email: email,
+            psc: psc,
             contactTime: contactTime,
             note: note,
             loanAmount: loanAmountValue,

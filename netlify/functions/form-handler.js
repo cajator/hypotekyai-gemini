@@ -128,6 +128,9 @@ exports.handler = async (event) => {
             contactTime = formData.get('contact-time');
             note = formData.get('note');
             extraDataString = formData.get('extraData');
+            // ===== PŘIDEJ TENTO KONTROLNÍ LOG =====
+            console.log(">>> KONTROLA FORMULÁŘE: Načtená hodnota 'psc' je:", psc);
+            // =======================================
         } else {
              throw new Error("Funkce byla spuštěna neočekávaným způsobem.");
         }
@@ -197,7 +200,7 @@ exports.handler = async (event) => {
                 }
             }
         }
-
+        console.log(">>> KONTROLA PŘEDÁNÍ: Proměnná 'psc' má hodnotu:", psc);
         // Sestavení finálních dat pro zápis
         const sheetData = {
             name: name,

@@ -56,13 +56,13 @@ async function appendToSheet(data) {
         }
         console.log(`>>> appendToSheet: Zapisuji do listu: "${sheet.title}" (Index 0)`);
 
-        // Příprava dat řádku - PŘIDÁN SLOUPC 'PSČ'
+        // Příprava dat řádku - VČETNĚ 'PSČ'
         const rowData = {
             'Datum a čas': new Date().toLocaleString('cs-CZ'),
             'Jméno': data.name || '',
             'Telefon': data.phone || '',
             'E-mail': data.email || '',
-            'PSČ': data.psc || '', // <-- NOVÝ ŘÁDEK ZDE
+            'PSČ': data.psc || '', // <-- ZDE JE PSČ
             'Preferovaný čas': data.contactTime || '',
             'Poznámka': data.note || '',
             'Úvěr': data.loanAmount === null ? '' : data.loanAmount,
@@ -123,7 +123,7 @@ exports.handler = async (event) => {
             name = formData.get('name');
             email = formData.get('email');
             phone = formData.get('phone');
-            psc = formData.get('psc'); // <-- NOVÝ ŘÁDEK ZDE
+            psc = formData.get('psc'); // <-- NAČTENÍ PSČ Z FORMULÁŘE
             contactTime = formData.get('contact-time');
             note = formData.get('note');
             extraDataString = formData.get('extraData');
@@ -202,7 +202,7 @@ exports.handler = async (event) => {
             name: name,
             phone: phone,
             email: email,
-            psc: psc, // <-- NOVÝ ŘÁDEK ZDE
+            psc: psc, // <-- PŘEDÁNÍ PSČ DO FUNKCE
             contactTime: contactTime,
             note: note,
             loanAmount: loanAmountValue,

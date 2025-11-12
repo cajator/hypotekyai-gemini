@@ -67,6 +67,8 @@ async function appendToSheet(data) {
             'Poznámka': data.note || '',
             'Úvěr': data.loanAmount === null ? '' : data.loanAmount,
             'Hodnota nemovitosti': data.effectivePropertyValue === null ? '' : data.effectivePropertyValue,
+            'Účel': data.purpose || '',
+            'Typ nemovitosti': data.propertyType || '',
             'Měsíční splátka': data.monthlyPayment === null ? '' : data.monthlyPayment,
             'Úroková sazba': data.rate === null ? '' : `${data.rate} %`,
             'Fixace (roky)': data.fixation === null ? '' : data.fixation,
@@ -166,6 +168,8 @@ exports.handler = async (event) => {
         let rateValue = null;
         let fixationValue = null;
         let loanTermValue = null;
+        let purposeValue = '';
+        let propertyTypeValue = '';
         let employmentValue = '';
         let incomeValue = null;
         let liabilitiesValue = null;
@@ -180,6 +184,8 @@ exports.handler = async (event) => {
             formDataForJson = form;
             fixationValue = form.fixation || null;
             loanTermValue = form.loanTerm || null;
+            purposeValue = form.purpose || '';
+            propertyTypeValue = form.propertyType || '';
             employmentValue = form.employment || '';
             incomeValue = form.income || null;
             liabilitiesValue = form.liabilities || null;
@@ -215,6 +221,8 @@ exports.handler = async (event) => {
             rate: rateValue,
             fixation: fixationValue,
             loanTerm: loanTermValue,
+            purpose: purposeValue,
+            propertyType: propertyTypeValue,
             employment: employmentValue,
             income: incomeValue,
             liabilities: liabilitiesValue,

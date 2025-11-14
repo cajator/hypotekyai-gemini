@@ -1,134 +1,159 @@
 <!DOCTYPE html>
-<html lang="cs">
+<html lang="cs" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Provozní podmínky a zpracování údajů | HypotekyAI.cz</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f9f9f9;
-        }
-        .container {
-            background-color: #fff;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #2c3e50;
-            border-bottom: 3px solid #3498db;
-            padding-bottom: 10px;
-            margin-bottom: 30px;
-        }
-        h2 {
-            color: #34495e;
-            margin-top: 40px;
-            margin-bottom: 20px;
-            font-size: 1.5em;
-        }
-        h3 {
-            color: #7f8c8d;
-            margin-top: 25px;
-            margin-bottom: 15px;
-            font-size: 1.2em;
-        }
-        p, li {
-            margin-bottom: 15px;
-            text-align: justify;
-        }
-        ul {
-            margin-left: 20px;
-        }
-        ul li {
-            margin-bottom: 10px;
-        }
-        strong {
-            color: #2c3e50;
-        }
-        a {
-            color: #3498db;
-            text-decoration: none;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-        .highlight {
-            background-color: #ecf0f1;
-            padding: 2px 6px;
-            border-radius: 3px;
-        }
-    </style>
+    <title>Podmínky použití a Ochrana údajů - Hypoteky Ai</title>
+    <meta name="description" content="Přečtěte si obchodní podmínky a zásady ochrany osobních údajů (GDPR) platformy Hypoteky Ai.">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=6.0">
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💡</text></svg>">
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-W89NM98KYS"></script> 
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-W89NM98KYS');
+    </script>
+    
 </head>
-<body>
-    <div class="container">
-        <h1>Provozní podmínky a zpracování údajů</h1>
+<body class="bg-gray-50 text-gray-800 antialiased">
 
-        <h2>Definice pojmů</h2>
-        <p>Pro účely těchto Provozních podmínek a zpracování údajů se rozumí:</p>
-        <ul>
-            <li><strong>"Provozovatelem"</strong> - společnost Extra Easy s.r.o.</li>
-            <li><strong>"Poskytovatelem"</strong> - společnost Premium Financial Services s.r.o.</li>
-            <li><strong>"Webem"</strong> - internetové stránky provozované Provozovatelem</li>
-            <li><strong>"Uživatelem"</strong> - jakákoliv fyzická osoba, která používá Web</li>
-        </ul>
-
-        <h2>Provozní podmínky</h2>
+    <header class="bg-white/95 backdrop-blur-lg sticky top-0 z-30 shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 py-2.5 flex justify-between items-center">
+            
+            <a href="index.html" class="flex items-center">
+                <img src="logo.png" alt="Hypoteky Ai Logo" class="h-10 sm:h-12 w-auto">
+            </a>
+            
+            <div class="hidden md:flex items-center space-x-4 lg:space-x-6">
+                <a href="index.html#kalkulacka" class="nav-link text-sm">Kalkulačka</a>
+                <a href="index.html#premium-features" class="nav-link text-sm">Premium funkce</a>
+                <a href="faq.html" class="nav-link text-sm">FAQ</a>
+                <a href="index.html#o-nas" class="nav-link text-sm">O nás</a>
+                <a href="index.html#pripadove-studie" class="nav-link text-sm">Příběhy</a>
+                <a href="index.html#myty-fakta" class="nav-link text-sm">Mýty</a>
+                <a href="index.html#partneri" class="nav-link text-sm">Partneři</a>
+            </div>
+            
+            <div class="flex items-center space-x-2 sm:space-x-4">
+                 <a href="index.html#kontakt" class="nav-btn text-sm px-3 sm:px-4 py-2">📞 Specialista</a>
+                 <button id="mobile-menu-button" class="md:hidden p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                 </button>
+            </div>
+        </nav>
         
-        <p>Provozovatelem webu je společnost <strong>Extra Easy s.r.o.</strong>, se sídlem Opletalova 1417/25, 110 00 Praha 1 - Nové Město, IČO: 24780260, zapsaná v obchodním rejstříku vedeném u Městského soudu v Praze, oddíl C, vložka 165891, a poskytovatelem služby je společnost <strong>Premium Financial Services s.r.o.</strong>, se sídlem Opletalova 1417/25, 110 00 Praha 1 - Nové Město, IČO: 24198714, zapsaná v obchodním rejstříku vedeném u Městského soudu v Praze, oddíl C, vložka 187886.</p>
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200">
+            <a href="index.html#kalkulacka" class="block py-2.5 px-6 text-sm text-gray-700 hover:bg-gray-50">Kalkulačka</a>
+            <a href="index.html#premium-features" class="block py-2.5 px-6 text-sm text-gray-700 hover:bg-gray-50">Premium funkce</a>
+            <a href="faq.html" class="block py-2.5 px-6 text-sm text-gray-700 hover:bg-gray-50">FAQ</a>
+            <a href="index.html#o-nas" class="block py-2.5 px-6 text-sm text-gray-700 hover:bg-gray-50">O nás</a>
+            <a href="index.html#pripadove-studie" class="block py-2.5 px-6 text-sm text-gray-700 hover:bg-gray-50">Příběhy klientů</a>
+            <a href="index.html#myty-fakta" class="block py-2.5 px-6 text-sm text-gray-700 hover:bg-gray-50">Mýty a fakta</a>
+            <a href="index.html#partneri" class="block py-2.5 px-6 text-sm text-gray-700 hover:bg-gray-50">Partneři</a>
+        </div>
+        
+        <div class="bg-blue-600 text-white py-1 border-t border-blue-700 shadow-inner hidden sm:flex sm:items-center sm:justify-center">
+            <div class="container mx-auto px-4 sm:px-6">
+                <div class="flex flex-row flex-wrap justify-center items-center gap-x-4 gap-y-1 sm:gap-x-5 text-xs sm:text-[13px] font-medium">
+                    <span class="flex items-center whitespace-nowrap"><span class="text-sm mr-1">🔒</span> Zabezpečeno SSL</span>
+                    <span class="flex items-center whitespace-nowrap"><span class="text-sm mr-1">✓</span> GDPR Compliant</span>
+                    <span class="flex items-center whitespace-nowrap"><span class="text-sm mr-1">📊</span> Real-time data</span>
+                </div>
+            </div>
+        </div>
+    </header>
 
-        <p>Na této stránce využíváme informace převzaté od našich obchodních partnerů a neodpovídáme tedy za jejich správnost, přesnost a aktuálnost. Účelem zobrazení informací není poskytnout detailní a úplné informace o jednotlivých produktech, ale spíše porovnat hlavní parametry tam, kde je to možné. Provozovatel ani Poskytovatel nenesou odpovědnost za případné škody vzniklé použitím těchto informací. Pro detailní seznámení s produktem je nutné pročíst konkrétní obchodní podmínky konkrétního finančního produktu.</p>
+    <main class="container mx-auto px-4 sm:px-6 py-6 md:py-8">
+        <div class="bg-white p-6 sm:p-8 md:p-10 rounded-xl sm:rounded-2xl shadow-lg border border-gray-200">
+            
+            <div class="prose prose-sm sm:prose-base max-w-none text-gray-700">
+                <h1>Provozní podmínky a zpracování údajů</h1>
 
-        <p>Obsah webu je chráněn právem autorským (dle z.č. 121/2000 Sb., Autorský zákon). Chcete-li kterýkoliv uveřejněný materiál převzít dle § 34 písm. c) autorského zákona, případně jej dále šířit jiným způsobem, vyžádejte si předem náš souhlas. Bez předchozího souhlasu není přebírání dovoleno.</p>
+                <h2 id="obchodni-podminky" class="scroll-mt-28">Definice pojmů</h2>
+                <p>Pro účely těchto Provozních podmínek a zpracování údajů se rozumí:</p>
+                <ul>
+                    <li><strong>"Provozovatelem"</strong> - společnost Extra Easy s.r.o.</li>
+                    <li><strong>"Poskytovatelem"</strong> - společnost Premium Financial Services s.r.o.</li>
+                    <li><strong>"Webem"</strong> - internetové stránky provozované Provozovatelem</li>
+                    <li><strong>"Uživatelem"</strong> - jakákoliv fyzická osoba, která používá Web</li>
+                </ul>
 
-        <p>Naší hlavní činností je poskytování finančně-poradenských služeb. Profesionální poradenství je možné jen se znalostí relevantních informací o klientech. Pro poskytnutí našich služeb zpracováváme zejména následující osobní údaje: jméno, příjmení, kontaktní adresu, telefonní číslo, e-mailovou adresu a další údaje nezbytné pro posouzení finanční situace. Pokud jste vyjádřil/a zájem o naše služby odesláním kontaktních osobních údajů, bude Vás kontaktovat naše klientské centrum, popř. přímo náš hypoteční specialista za účelem domluvení schůzky či jiné formy poskytnutí našich služeb.</p>
+                <h2>Provozní podmínky</h2>
+                
+                <p>Provozovatelem webu je společnost <strong>Extra Easy s.r.o.</strong>, se sídlem Opletalova 1417/25, 110 00 Praha 1 - Nové Město, IČO: 24780260, zapsaná v obchodním rejstříku vedeném u Městského soudu v Praze, oddíl C, vložka 165891, a poskytovatelem služby je společnost <strong>Premium Financial Services s.r.o.</strong>, se sídlem Opletalova 1417/25, 110 00 Praha 1 - Nové Město, IČO: 24198714, zapsaná v obchodním rejstříku vedeném u Městského soudu v Praze, oddíl C, vložka 187886.</p>
+                <p>Na této stránce využíváme informace převzaté od našich obchodních partnerů a neodpovídáme tedy za jejich správnost, přesnost a aktuálnost. Účelem zobrazení informací není poskytnout detailní a úplné informace o jednotlivých produktech, ale spíše porovnat hlavní parametry tam, kde je to možné. Provozovatel ani Poskytovatel nenesou odpovědnost za případné škody vzniklé použitím těchto informací. Pro detailní seznámení s produktem je nutné pročíst konkrétní obchodní podmínky konkrétního finančního produktu.</p>
+                <p>Obsah webu je chráněn právem autorským (dle z.č. 121/2000 Sb., Autorský zákon). Chcete-li kterýkoliv uveřejněný materiál převzít dle § 34 písm. c) autorského zákona, případně jej dále šířit jiným způsobem, vyžádejte si předem náš souhlas. Bez předchozího souhlasu není přebírání dovoleno.</p>
+                <p>Naší hlavní činností je poskytování finančně-poradenských služeb. Profesionální poradenství je možné jen se znalostí relevantních informací o klientech. Pro poskytnutí našich služeb zpracováváme zejména následující osobní údaje: jméno, příjmení, kontaktní adresu, telefonní číslo, e-mailovou adresu a další údaje nezbytné pro posouzení finanční situace. Pokud jste vyjádřil/a zájem o naše služby odesláním kontaktních osobních údajů, bude Vás kontaktovat naše klientské centrum, popř. přímo náš hypoteční specialista za účelem domluvení schůzky či jiné formy poskytnutí našich služeb.</p>
+                <p>V případě, že se nám nepovede se s Vámi spojit ve lhůtě jednoho roku od projevení zájmu o naše služby, Vaše kontaktní údaje vymažeme. Stejně tak vymažeme kontaktní údaje v okamžiku, kdy nám potvrdíte, že o naše služby nemáte zájem, a to prostřednictvím emailové adresy <strong><a href="mailto:info@hypotekyai.cz">info@hypotekyai.cz</a></strong> nebo prostřednictvím webového formuláře <strong><a href="https://www.hypotekyai.cz/">https://www.hypotekyai.cz</a></strong>.</p>
+                <p>Pokud zájem o naše služby potvrdíte, budeme Vaše kontaktní údaje nadále zpracovávat a vše se bude řídit vzájemně dohodnutými podmínkami zprostředkování.</p>
+                <p>Po výše uvedenou dobu můžeme využít Vaši e-mailovou adresu k zasílání obchodních sdělení v souladu s našimi Zásadami zpracování osobních údajů pro marketingové účely, které jsou dostupné na <strong><a href="#ochrana-udaju">https://www.hypotekyai.cz/ochrana-osobnich-udaju</a></strong>. Každé takové obchodní sdělení bude zřetelně označeno a budete mít kdykoliv možnost další zasílání obchodních sdělení odmítnout postupem uvedeným v daném obchodním sdělení.</p>
 
-        <p>V případě, že se nám nepovede se s Vámi spojit ve lhůtě jednoho roku od projevení zájmu o naše služby, Vaše kontaktní údaje vymažeme. Stejně tak vymažeme kontaktní údaje v okamžiku, kdy nám potvrdíte, že o naše služby nemáte zájem, a to prostřednictvím emailové adresy <strong><a href="mailto:info@hypotekyai.cz">info@hypotekyai.cz</a></strong> nebo prostřednictvím webového formuláře <strong><a href="https://www.hypotekyai.cz/">https://www.hypotekyai.cz</a></strong>.</p>
+                <h2 id="ochrana-udaju" class="scroll-mt-28">Informace ke zpracování osobních údajů</h2>
+                <p>Osobní údaje, které jste poskytl/a prostřednictvím tohoto webu, jsou nezbytné pro další jednání o využití našich finančně-poradenských služeb, o které jste projevil/a zájem. Osobní údaje zpracováváme v souladu s čl. 6 odst. 1 písm. b) Obecného nařízení o ochraně osobních údajů, tedy za účelem jednání o poskytnutí finančně-poradenských služeb.</p>
+                <p>Osobní údaje zpracováváme manuálně i automatizovaně, a to sami nebo prostřednictvím našich hypotečních specialistů (zpracovatelů). Všichni zpracovatelé jsou vázáni stejnými povinnostmi ochrany osobních údajů jako my a jsou smluvně zavázáni k dodržování přísných bezpečnostních standardů.</p>
+                <p>Vaše osobní údaje nezpracováváme ani nepředáváme mimo území Evropské unie nebo Evropského hospodářského prostoru.</p>
+                <p>V případě, že se nedohodneme na poskytnutí finančně-poradenských služeb, budou Vaše osobní údaje zpracovávány do doby, než nám potvrdíte, že o poskytnutí těchto služeb nemáte zájem, maximálně však po dobu jednoho roku od jejich poskytnutí.</p>
+                <p>V souvislosti se zpracováním osobních údajů máte následující práva:</p>
+                <ul>
+                    <li>Právo na přístup k osobním údajům</li>
+                    <li>Právo na opravu osobních údajů</li>
+                    <li>Právo na výmaz osobních údajů</li>
+                    <li>Právo na omezení zpracování</li>
+                    <li>Právo vznést námitku proti zpracování</li>
+                    <li>Právo na přenositelnost údajů</li>
+                </ul>
+                <p>Svá práva můžete uplatnit u pověřence pro ochranu osobních údajů na e-mailové adrese <strong><a href="mailto:info@hypotekyai.cz">info@hypotekyai.cz</a></strong>.</p>
+                <p>Případné stížnosti ve vztahu ke zpracování Vašich osobních údajů můžete podávat také přímo dozorovému orgánu, kterým je <strong>Úřad pro ochranu osobních údajů</strong>, adresa: Pplk. Sochora 27, 170 00 Praha 7, tel.: 234 665 111, web: <a href="https://www.uoou.cz" target="_blank">www.uoou.cz</a></p>
+                <p>V případě opakovaných či zjevně nedůvodných žádostí o uplatnění výše uvedených práv budeme oprávněni za realizaci daného práva účtovat přiměřený poplatek, popřípadě jeho realizaci odmítneme. O takovém postupu Vás budeme informovat.</p>
 
-        <p>Pokud zájem o naše služby potvrdíte, budeme Vaše kontaktní údaje nadále zpracovávat a vše se bude řídit vzájemně dohodnutými podmínkami zprostředkování.</p>
+                <h2>Závěrečná ustanovení</h2>
+                <p>Tyto podmínky nabývají účinnosti dnem <strong>1.10.2025</strong>.</p>
+                <p>Provozovatel si vyhrazuje právo tyto podmínky změnit. O změně podmínek budou uživatelé informováni na webových stránkách nejméně 30 dní před nabytím účinnosti změny.</p>
+                <p>Právní vztahy těmito podmínkami výslovně neupravené se řídí příslušnými právními předpisy České republiky, zejména zákonem č. 89/2012 Sb., občanský zákoník, ve znění pozdějších předpisů.</p>
+                <p>Případné spory vzniklé v souvislosti s těmito podmínkami budou řešeny příslušnými soudy České republiky.</p>
+            </div>
 
-        <p>Po výše uvedenou dobu můžeme využít Vaši e-mailovou adresu k zasílání obchodních sdělení v souladu s našimi Zásadami zpracování osobních údajů pro marketingové účely, které jsou dostupné na <strong><a href="https://www.hypotekyai.cz/podminky-pouziti#ochrana-udaju">https://www.hypotekyai.cz/ochrana-osobnich-udaju</a></strong>. Každé takové obchodní sdělení bude zřetelně označeno a budete mít kdykoliv možnost další zasílání obchodních sdělení odmítnout postupem uvedeným v daném obchodním sdělení.</p>
+        </div>
+    </main>
+    
+    <footer class="bg-gray-800 text-white">
+        <div class="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
+            <div class="text-center text-xs sm:text-sm text-gray-400">
+                <p>&copy; 2025 Hypoteky Ai. Všechna práva vyhrazena.</p>
+                <div class="mt-3 sm:mt-4">
+                    <a href="podminky-pouziti.html#ochrana-udaju" class="hover:underline">Ochrana osobních údajů</a>
+                    <span class="mx-2">|</span>
+                    <a href="podminky-pouziti.html#obchodni-podminky" class="hover:underline">Obchodní podmínky</a>
+                </div>
+            </div>
+        </div>
+    </footer>
 
-        <h2>Informace ke zpracování osobních údajů</h2>
-
-        <p>Osobní údaje, které jste poskytl/a prostřednictvím tohoto webu, jsou nezbytné pro další jednání o využití našich finančně-poradenských služeb, o které jste projevil/a zájem. Osobní údaje zpracováváme v souladu s čl. 6 odst. 1 písm. b) Obecného nařízení o ochraně osobních údajů, tedy za účelem jednání o poskytnutí finančně-poradenských služeb.</p>
-
-        <p>Osobní údaje zpracováváme manuálně i automatizovaně, a to sami nebo prostřednictvím našich hypotečních specialistů (zpracovatelů). Všichni zpracovatelé jsou vázáni stejnými povinnostmi ochrany osobních údajů jako my a jsou smluvně zavázáni k dodržování přísných bezpečnostních standardů.</p>
-
-        <p>Vaše osobní údaje nezpracováváme ani nepředáváme mimo území Evropské unie nebo Evropského hospodářského prostoru.</p>
-
-        <p>V případě, že se nedohodneme na poskytnutí finančně-poradenských služeb, budou Vaše osobní údaje zpracovávány do doby, než nám potvrdíte, že o poskytnutí těchto služeb nemáte zájem, maximálně však po dobu jednoho roku od jejich poskytnutí.</p>
-
-        <p>V souvislosti se zpracováním osobních údajů máte následující práva:</p>
-        <ul>
-            <li>Právo na přístup k osobním údajům</li>
-            <li>Právo na opravu osobních údajů</li>
-            <li>Právo na výmaz osobních údajů</li>
-            <li>Právo na omezení zpracování</li>
-            <li>Právo vznést námitku proti zpracování</li>
-            <li>Právo na přenositelnost údajů</li>
-        </ul>
-
-        <p>Svá práva můžete uplatnit u pověřence pro ochranu osobních údajů na e-mailové adrese <strong><a href="mailto:info@hypotekyai.cz">info@hypotekyai.cz</a></strong>.</p>
-
-        <p>Případné stížnosti ve vztahu ke zpracování Vašich osobních údajů můžete podávat také přímo dozorovému orgánu, kterým je <strong>Úřad pro ochranu osobních údajů</strong>, adresa: Pplk. Sochora 27, 170 00 Praha 7, tel.: 234 665 111, web: <a href="https://www.uoou.cz" target="_blank">www.uoou.cz</a></p>
-
-        <p>V případě opakovaných či zjevně nedůvodných žádostí o uplatnění výše uvedených práv budeme oprávněni za realizaci daného práva účtovat přiměřený poplatek, popřípadě jeho realizaci odmítneme. O takovém postupu Vás budeme informovat.</p>
-
-        <h2>Závěrečná ustanovení</h2>
-
-        <p>Tyto podmínky nabývají účinnosti dnem <strong>1.10.2025</strong>.</p>
-
-        <p>Provozovatel si vyhrazuje právo tyto podmínky změnit. O změně podmínek budou uživatelé informováni na webových stránkách nejméně 30 dní před nabytím účinnosti změny.</p>
-
-        <p>Právní vztahy těmito podmínkami výslovně neupravené se řídí příslušnými právními předpisy České republiky, zejména zákonem č. 89/2012 Sb., občanský zákoník, ve znění pozdějších předpisů.</p>
-
-        <p>Případné spory vzniklé v souvislosti s těmito podmínkami budou řešeny příslušnými soudy České republiky.</p>
+    <div id="cookie-banner-wrapper" class="fixed bottom-0 left-0 right-0 bg-gray-900 text-white z-50 transition-all duration-300">
+        <div class="p-3 sm:p-4 flex flex-wrap md:flex-nowrap justify-between items-center gap-3 sm:gap-4">
+            <p class="text-xs sm:text-sm">Tato webová stránka používá soubory cookies k zajištění co nejlepšího zážitku. 
+                <button id="cookie-more-info-btn" class="underline hover:text-blue-400 focus:outline-none">Více informací</button>
+            </p>
+            <button id="cookie-accept" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-xs sm:text-sm whitespace-nowrap flex-shrink-0">Rozumím a souhlasím</button>
+        </div>
+        <div id="cookie-details" class="p-4 border-t border-gray-700 text-xs text-gray-300">
+            <h4 class="font-semibold text-sm text-white mb-2">Jaké cookies používáme?</h4>
+            <p class="mb-2">Používáme technické cookies nezbytné pro chod webu a analytické cookies, které nám pomáhají web vylepšovat.</p>
+            <ul class="list-disc list-inside space-y-1 mb-2">
+                <li><strong>Google Analytics:</strong> Anonymně sledujeme návštěvnost a chování uživatelů, abychom pochopili, jak je web využíván.</li>
+                <li><strong>Reklamní systémy (Google Ads, Facebook Pixel - pokud používáte):</strong> Můžeme používat cookies pro měření efektivity našich reklamních kampaní a cílení relevantní reklamy (remarketing). Tato data jsou anonymizovaná.</li>
+            </ul>
+            <p>Váš souhlas nám umožňuje tato data využívat. Svůj souhlas můžete kdykoli odvolat. <a href="#ochrana-udaju" class="hover:underline">Více v Zásadách ochrany osobních údajů</a>.</p>
+        </div>
     </div>
+
+    <script src="script.js?v=6.0" defer></script>
 </body>
 </html>

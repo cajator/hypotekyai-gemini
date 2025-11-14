@@ -1488,14 +1488,21 @@ const renderResults = () => {
 
              // ===== KONTROLA ZDE =====
              if (typeof gtag === 'function') {
+                 // Původní GA4 event
                  gtag('event', 'generate_lead', {
                      'event_category': 'form_submission',
                      'event_label': 'hypoteka_kontakt',
                  });
-                 // TENTO LOG SE MĚL OBJEVIT:
                  console.log('GA4 event generate_lead sent.'); 
+
+                 // ===== NOVÝ KÓD PRO GOOGLE ADS KONVERZI =====
+                 gtag('event', 'conversion', {
+                     'send_to': 'AW-778075298/UyVCMT9zpABEKLSgfgMC'
+                 });
+                 console.log('Google Ads conversion event sent.');
+                 // ===========================================
+
              } else {
-                 // TENTO LOG BY SE OBJEVIL, POKUD gtag NENÍ DEFINOVÁNA:
                  console.warn('gtag function not found. GA4 event not sent.');
              }
              // =======================

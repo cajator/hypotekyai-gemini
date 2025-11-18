@@ -3,105 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hypoteky Ai - Premium Hypoteční Stratég s AI</title>
-    <meta name="description" content="AI Hypoteční Stratég: Okamžité odpovědi + experti na dosah. Stress testy, refinancovací analýza, dlouhodobá strategie.">
+    <title>Nejlepší hypotéka s AI - Hypoteky Ai</title>
+    <meta name="description" content="Spočítejte si hypotéku za 30 sekund. AI porovná 19+ bank a experti vyjednají VIP sazbu.">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css?v=6.0">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💡</text></svg>">
-
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-W89NM98KYS"></script> 
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-
-      gtag('config', 'G-W89NM98KYS'); // <-- Zkontrolujte, že je zde vaše ID měření
+      gtag('config', 'G-W89NM98KYS');
     </script>
-    <script type="application/ld+json">
-        {
-          "@context": "https://schema.org",
-          "@type": "FinancialService",
-          "name": "Hypoteky Ai",
-          "url": "https://www.hypotekyai.cz/",
-          "serviceType": "Hypoteční poradenství",
-          "description": "Získejte nejlepší hypotéku s pomocí AI a expertů. Online kalkulačka, srovnání 19+ bank, stress testy a individuální sazby pro OSVČ i zaměstnance. Zdarma.",
-          "areaServed": {
-            "@type": "Country",
-            "name": "CZ"
-          },
-          
-          "address": {
-            "@type": "PostalAddress",
-            "streetAddress": "Opletalova 1417/25",
-            "addressLocality": "Praha 1",
-            "postalCode": "110 00",
-            "addressCountry": "CZ"
-          },
-          
-          "provider": {
-            "@type": "Organization",
-            "name": "Hypoteky Ai",
-            "address": {
-              "@type": "PostalAddress",
-              "streetAddress": "Opletalova 1417/25",
-              "addressLocality": "Praha 1",
-              "postalCode": "110 00",
-              "addressCountry": "CZ"
-            }
-          }
-        }
-        </script>
 </head>
 <body class="bg-gray-50 text-gray-800 antialiased">
 
     <header class="bg-white/95 backdrop-blur-lg sticky top-0 z-30 shadow-sm">
         <nav class="container mx-auto px-4 sm:px-6 py-2.5 flex justify-between items-center">
-            <a href="#" class="flex items-center scroll-to" data-target="#top">
+            <a href="index.html" class="flex items-center">
                 <img src="logo.png" alt="Hypoteky Ai Logo" class="h-10 sm:h-12 w-auto">
             </a>
             <div class="hidden md:flex items-center space-x-4 lg:space-x-6">
                 <a href="#kalkulacka" data-target="#kalkulacka" class="nav-link text-sm scroll-to">Kalkulačka</a>
-                <a href="#premium-features" data-target="#premium-features" class="nav-link text-sm scroll-to">Premium funkce</a>
-                <a href="faq.html" class="nav-link text-sm">FAQ</a>
-                <a href="#o-nas" data-target="#o-nas" class="nav-link text-sm scroll-to">O nás</a>
                 <a href="#pripadove-studie" data-target="#pripadove-studie" class="nav-link text-sm scroll-to">Příběhy</a>
+                <a href="#o-nas" data-target="#o-nas" class="nav-link text-sm scroll-to">O nás</a>
                 <a href="#myty-fakta" data-target="#myty-fakta" class="nav-link text-sm scroll-to">Mýty</a>
-                <a href="#partneri" data-target="#partneri" class="nav-link text-sm scroll-to">Partneři</a>
             </div>
             <div class="flex items-center space-x-2 sm:space-x-4">
                  <a href="#kontakt" class="nav-btn text-sm px-3 sm:px-4 py-2 scroll-to" data-action="show-lead-form-direct" data-target="#kontakt">📞 Specialista</a>
-                 <button id="mobile-menu-button" class="md:hidden p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
-                 </button>
             </div>
         </nav>
-        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200">
-            <a href="#kalkulacka" data-target="#kalkulacka" class="block py-2.5 px-6 text-sm text-gray-700 hover:bg-gray-50 scroll-to">Kalkulačka</a>
-            <a href="#premium-features" data-target="#premium-features" class="block py-2.5 px-6 text-sm text-gray-700 hover:bg-gray-50 scroll-to">Premium funkce</a>
-            <a href="faq.html" class="block py-2.5 px-6 text-sm text-gray-700 hover:bg-gray-50">FAQ</a>
-            <a href="#o-nas" data-target="#o-nas" class="block py-2.5 px-6 text-sm text-gray-700 hover:bg-gray-50 scroll-to">O nás</a>
-            <a href="#pripadove-studie" data-target="#pripadove-studie" class="block py-2.5 px-6 text-sm text-gray-700 hover:bg-gray-50 scroll-to">Příběhy klientů</a>
-            <a href="#myty-fakta" data-target="#myty-fakta" class="block py-2.5 px-6 text-sm text-gray-700 hover:bg-gray-50 scroll-to">Mýty a fakta</a>
-            <a href="#partneri" data-target="#partneri" class="block py-2.5 px-6 text-sm text-gray-700 hover:bg-gray-50 scroll-to">Partneři</a>
-        </div>
-        <div class="bg-blue-600 text-white py-1 border-t border-blue-700 shadow-inner hidden sm:flex sm:items-center sm:justify-center">
-                <div class="container mx-auto px-4 sm:px-6">
-                    <div class="flex flex-row flex-wrap justify-center items-center gap-x-4 gap-y-1 sm:gap-x-5 text-xs sm:text-[13px] font-medium">
-                        <span class="flex items-center whitespace-nowrap"><span class="text-sm mr-1">🔒</span> Zabezpečeno SSL</span>
-                        <span class="flex items-center whitespace-nowrap"><span class="text-sm mr-1">✓</span> GDPR Compliant</span>
-                        <span class="flex items-center whitespace-nowrap"><span class="text-sm mr-1">📊</span> Real-time data</span>
-                    </div>
-                </div>
-            </div>
     </header>
-
-    <div id="top"></div>
 
     <main class="container mx-auto px-4 sm:px-6 py-6 md:py-8">
         
-        <section class="text-center mb-12">
+        <section class="text-center mb-16">
             <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 leading-tight">
                 <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Nejlepší hypotéka</span>
                 díky AI a expertům
@@ -125,9 +63,7 @@
                         <div class="font-bold text-sm sm:text-base">AI Stratég</div>
                     </div>
                 </div>
-
-                <div id="content-container" class="p-4 sm:p-6 md:p-8 text-left">
-                    </div>
+                <div id="content-container" class="p-4 sm:p-6 md:p-8 text-left"></div>
             </div>
 
             <div class="mt-8 flex flex-wrap justify-center items-center gap-4 sm:gap-8 text-xs sm:text-sm text-gray-500 font-medium">
@@ -138,7 +74,7 @@
             </div>
         </section>
 
-        <section id="pripadove-studie" class="my-16 scroll-mt-20 border-t border-gray-100 pt-12">
+        <section id="pripadove-studie" class="my-16 pt-12 border-t border-gray-100">
             <div class="text-center mb-8">
                 <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">Jak pomáháme v praxi?</h2>
                 <p class="mt-2 text-gray-600">Reálné příklady řešení složitých situací.</p>
@@ -147,79 +83,100 @@
                  <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                     <div class="text-3xl mb-3">🏢</div>
                     <h3 class="font-bold mb-2">OSVČ s nízkým základem</h3>
-                    <p class="text-sm text-gray-600">Vyřešeno přes obratovou metodiku. Schváleno 5M Kč.</p>
+                    <p class="text-sm text-gray-600">Klient optimalizoval daně. Vyřešeno přes obratovou metodiku. Schváleno 5M Kč.</p>
                  </div>
                  <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                     <div class="text-3xl mb-3">🏠</div>
                     <h3 class="font-bold mb-2">Hypotéka bez úspor</h3>
-                    <p class="text-sm text-gray-600">Vyřešeno dozajištěním bytu rodičů. Sazba jako u 70% LTV.</p>
+                    <p class="text-sm text-gray-600">Klient neměl 20%. Vyřešeno dozajištěním bytu rodičů. Sazba jako u 70% LTV.</p>
                  </div>
                  <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                     <div class="text-3xl mb-3">⚠️</div>
                     <h3 class="font-bold mb-2">Záznam v registru</h3>
-                    <p class="text-sm text-gray-600">Starý dluh vysvětlen, vybrána tolerantní banka. Schváleno.</p>
+                    <p class="text-sm text-gray-600">Starý zapomenutý dluh. Vysvětleno, vybrána tolerantní banka. Schváleno bez přirážky.</p>
                  </div>
             </div>
         </section>
 
-        <section id="premium-features" class="my-16 scroll-mt-20">
-            <div class="text-center mb-8">
-                <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">Co získáte navíc?</h2>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-blue-50 p-6 rounded-xl border border-blue-100">
-                    <h3 class="font-bold text-blue-900 text-lg mb-2">🤖 AI Analýza</h3>
-                    <p class="text-sm text-gray-700">Okamžitý přehled trhu a stress testy.</p>
-                </div>
-                <div class="bg-green-50 p-6 rounded-xl border border-green-100">
-                    <h3 class="font-bold text-green-900 text-lg mb-2">👨‍💼 Lidský Expert</h3>
-                    <p class="text-sm text-gray-700">Vyjednání neveřejných slev a řešení komplikací.</p>
+        <section id="o-nas" class="my-16">
+            <div class="bg-white p-6 sm:p-10 rounded-2xl shadow-xl border border-gray-200">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">Kdo stojí za Hypoteky Ai?</h2>
+                        <p class="text-gray-600 mb-4">
+                            Jsme tým certifikovaných specialistů z <strong>Premium Financial Services</strong>. Spojili jsme 15 let praxe s moderní AI, abychom zrychlili a zpřehlednili proces získání hypotéky.
+                        </p>
+                        <p class="text-gray-600">
+                            Naše filozofie je jednoduchá: <strong>AI pro rychlost, člověk pro jistotu.</strong> Služba je pro vás zdarma, platí nás banky z jejich marže.
+                        </p>
+                    </div>
+                    <div class="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                        <h4 class="font-bold mb-3">Proč my?</h4>
+                        <ul class="space-y-2 text-sm text-gray-700">
+                            <li>🚀 Okamžité srovnání trhu</li>
+                            <li>🤝 Expertní řešení pro OSVČ a s.r.o.</li>
+                            <li>💯 Transparentní jednání bez poplatků</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <section id="o-nas" class="my-16">
-            </section>
+        <section id="myty-fakta" class="my-16">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold">Mýty o hypotékách</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                    <h3 class="font-bold text-purple-800 mb-2">🤔 Mýtus: OSVČ nedosáhne</h3>
+                    <p class="text-sm text-gray-600 mb-3">"S optimalizovaným daňovým přiznáním nemám šanci."</p>
+                    <div class="pt-3 border-t border-gray-100">
+                        <h4 class="font-bold text-purple-900 text-sm">💡 Fakt:</h4>
+                        <p class="text-sm text-gray-700">Dosáhnete. Umíme využít banky, které počítají příjem z **obratu** (až 25 %), nikoli ze zisku.</p>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                    <h3 class="font-bold text-red-800 mb-2">😟 Mýtus: Záznam = konec</h3>
+                    <p class="text-sm text-gray-600 mb-3">"Mám záznam v registru, hypotéku nedostanu."</p>
+                    <div class="pt-3 border-t border-gray-100">
+                        <h4 class="font-bold text-red-900 text-sm">👍 Fakt:</h4>
+                        <p class="text-sm text-gray-700">Záleží na typu. Drobný uhrazený prohřešek většina bank po vysvětlení akceptuje.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
 
         <section id="kontakt" class="my-12 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 sm:p-10 rounded-2xl border border-blue-200">
-            <div class="text-center">
-                <h2 class="text-2xl font-bold mb-4">Spojte se s expertem</h2>
+            <div class="text-center max-w-2xl mx-auto">
+                <h2 class="text-2xl sm:text-3xl font-bold mb-2">Získejte osobní nabídku</h2>
+                <p class="text-sm sm:text-base text-gray-600 mb-6">Ozveme se do 24 hodin.</p>
+                
+                <form id="lead-form" class="space-y-4 text-left">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><label class="form-label">Jméno *</label><input type="text" id="name" name="name" required class="modern-input"></div>
+                        <div><label class="form-label">Telefon *</label><input type="tel" id="phone" name="phone" required class="modern-input"></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                         <div><label class="form-label">E-mail *</label><input type="email" id="email" name="email" required class="modern-input"></div>
+                         <div><label class="form-label">PSČ *</label><input type="text" id="psc" name="psc" required class="modern-input"></div>
+                    </div>
+                    <div class="pt-2 text-center">
+                        <button type="submit" id="submit-lead-btn" class="w-full md:w-auto nav-btn bg-green-600 hover:bg-green-700 text-lg">📞 Odeslat nezávazně</button>
+                    </div>
+                </form>
+                <div id="form-success" class="hidden mt-6 text-center p-4 bg-green-100 text-green-800 rounded-lg">
+                    <h3 class="font-bold">✅ Děkujeme!</h3>
+                    <p>Požadavek odeslán.</p>
                 </div>
+            </div>
         </section>
 
     </main>
-    
-    <footer class="bg-gray-800 text-white">
-    <div class="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <div class="text-center text-xs sm:text-sm text-gray-400">
-            <p>&copy; 2025 Hypoteky Ai. Všechna práva vyhrazena.</p>
-            <div class="mt-3 sm:mt-4">
-                <a href="podminky-pouziti.html#ochrana-udaju" class="hover:underline">Ochrana osobních údajů</a>
-                <span class="mx-2">|</span>
-                <a href="podminky-pouziti.html#obchodni-podminky" class="hover:underline">Obchodní podmínky</a>
-                </div>
-            </div>
-        </div>
+
+    <footer class="bg-gray-800 text-white py-6 text-center text-xs sm:text-sm">
+        <p>&copy; 2025 Hypoteky Ai.</p>
     </footer>
 
-    <!-- GDPR Cookie Banner -->
-    <div id="cookie-banner-wrapper" class="fixed bottom-0 left-0 right-0 bg-gray-900 text-white z-50 transition-all duration-300">
-        <div class="p-3 sm:p-4 flex flex-wrap md:flex-nowrap justify-between items-center gap-3 sm:gap-4">
-            <p class="text-xs sm:text-sm">Tato webová stránka používá soubory cookies k zajištění co nejlepšího zážitku. 
-                <button id="cookie-more-info-btn" class="underline hover:text-blue-400 focus:outline-none">Více informací</button>
-            </p>
-            <button id="cookie-accept" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-xs sm:text-sm whitespace-nowrap flex-shrink-0">Rozumím a souhlasím</button>
-        </div>
-        <div id="cookie-details" class="p-4 border-t border-gray-700 text-xs text-gray-300">            <h4 class="font-semibold text-sm text-white mb-2">Jaké cookies používáme?</h4>
-            <p class="mb-2">Používáme technické cookies nezbytné pro chod webu a analytické cookies, které nám pomáhají web vylepšovat.</p>
-            <ul class="list-disc list-inside space-y-1 mb-2">
-                <li><strong>Google Analytics:</strong> Anonymně sledujeme návštěvnost a chování uživatelů, abychom pochopili, jak je web využíván.</li>
-                <li><strong>Reklamní systémy (Google Ads, Facebook Pixel - pokud používáte):</strong> Můžeme používat cookies pro měření efektivity našich reklamních kampaní a cílení relevantní reklamy (remarketing). Tato data jsou anonymizovaná.</li>
-            </ul>
-            <p>Váš souhlas nám umožňuje tato data využívat. Svůj souhlas můžete kdykoli odvolat. <a href="/ochrana-udaju" class="underline hover:text-blue-400">Více v Zásadách ochrany osobních údajů</a>.</p>
-        </div>
-    </div>
-
-    <script src="script.js?v=6.0" defer></script>
+    <script src="script-v2.js"></script> 
 </body>
 </html>

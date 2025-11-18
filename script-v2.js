@@ -785,134 +785,119 @@ const findQuickResponse = (message) => {
     };
 
     // ZAČÁTEK KOMPLETNÍ A OPRAVENÉ FUNKCE renderResults
-// script-v2.js - Upravená funkce renderResults (Hybridní verze)
+// script.js - Upravená část renderResults
 
     const renderResults = () => {
         const offers = state.calculation?.offers || [];
+        const approvability = state.calculation?.approvability;
         let selectedOffer = state.calculation?.selectedOffer;
-        const fixationDetails = state.calculation?.fixationDetails; // Načteme detaily
+
         const container = document.getElementById('results-container');
-        
         if (!container) return;
+
         container.classList.remove('hidden');
-
-        if (offers.length === 0) {
-            container.innerHTML = `<div class="text-center bg-red-50 p-6 rounded-lg"><p class="text-red-700">Pro zadané parametry nemáme online nabídku. Kontaktujte nás pro individuální řešení.</p></div>`;
-            return;
-        }
-
-        if (!selectedOffer && offers.length > 0) selectedOffer = offers[0];
-
-        // --- Příprava dat pro AI Insight ---
-        const taxSavings = fixationDetails?.quickAnalysis?.taxSavings || 0;
-        const dailyCost = fixationDetails?.quickAnalysis?.dailyCost || 0;
-        const isGoodLTV = state.formData.loanAmount / (state.formData.propertyValue + state.formData.landValue) <= 0.8;
         
-        let aiInsightText = "Tato nabídka je aktuálně jedna z nejlepších na trhu.";
-        if (isGoodLTV && selectedOffer.rate < 4.5) {
-            aiInsightText = "✅ <strong>Skvělá bonita:</strong> Díky LTV pod 80 % jste dosáhli na prémiovou sazbu.";
-        } else if (taxSavings > 1000) {
-            aiInsightText = `💡 <strong>Daňový tip:</strong> S touto hypotékou ušetříte na daních cca <strong>${formatNumber(taxSavings * 12)} ročně</strong>.`;
+        if (offers.length === 0) {
+             container.innerHTML = `<div class="text-center bg-red-50 p-8 rounded-lg mt-8"><h3 class="text-2xl font-bold text-red-800 mb-2">Dle zadaných parametrů to nevychází</h3><p class="text-red-700">Zkuste upravit parametry, nebo se <a href="#kontakt" data-target="#kontakt" data-action="show-lead-form" class="font-bold underline scroll-to">spojte s naším specialistou</a>.</p></div>`;
+             state.calculation.selectedOffer = null;
+             return;
         }
 
-        // ===== NOVÝ VZHLED VÝSLEDKŮ (HYBRID: LEAD + HODNOTA) =====
-        container.innerHTML = `
-            <div class="bg-white rounded-2xl shadow-xl border border-blue-100 overflow-hidden mt-8 relative">
-                <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-4 text-white flex justify-between items-center">
-                    <div class="flex items-center gap-2">
-                        <span class="text-xl">🏆</span>
-                        <span class="font-bold text-sm sm:text-base">Doporučeno AI systémem</span>
-                    </div>
-                    <span class="bg-white/20 text-xs font-semibold px-2 py-1 rounded">Top nabídka</span>
-                </div>
+        if (!selectedOffer && offers.length > 0) {
+            selectedOffer = offers[0];
+            state.calculation.selectedOffer = selectedOffer;
+        }
 
-                <div class="p-6 sm:p-8">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6 items-center">
-                        <div>
-                            <p class="text-sm text-gray-500 mb-1">Měsíční splátka</p>
-                            <p class="text-3xl sm:text-4xl font-extrabold text-gray-900">${formatNumber(selectedOffer.monthlyPayment)}</p>
+        // --- HTML PRO VÝSLEDKY ---
+        
+        // 1. HLAVNÍ VÍTĚZNÁ KARTA (Velká, jasná, s tlačítkem)
+        const winnerCardHTML = `
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl shadow-xl p-1 text-white mb-8 transform transition-all hover:scale-[1.01]">
+                <div class="bg-white rounded-xl p-6 sm:p-8 text-gray-800">
+                    <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                        
+                        <div class="text-center md:text-left">
+                            <div class="text-sm font-bold text-blue-600 uppercase tracking-wide mb-1">Doporučeno AI</div>
+                            <h3 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-1">
+                                ${formatNumber(selectedOffer.monthlyPayment)} <span class="text-lg font-normal text-gray-500">/měs</span>
+                            </h3>
+                            <p class="text-lg text-gray-600">Úroková sazba <strong>${selectedOffer.rate.toFixed(2)} %</strong> p.a.</p>
                         </div>
-                        <div class="flex items-center gap-4 sm:justify-end">
-                            <div>
-                                <p class="text-sm text-gray-500 mb-1">Úroková sazba</p>
-                                <p class="text-2xl sm:text-3xl font-bold text-blue-600">${selectedOffer.rate.toFixed(2)} %</p>
-                            </div>
-                            <div class="h-10 w-px bg-gray-200"></div>
-                            <div>
-                                <p class="text-sm text-gray-500 mb-1">Fixace</p>
-                                <p class="text-xl font-semibold text-gray-700">${state.formData.fixation} let</p>
-                            </div>
+
+                        <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                            <button onclick="document.getElementById('kontakt').scrollIntoView({behavior: 'smooth'});" class="nav-btn bg-green-600 hover:bg-green-700 text-white text-lg px-8 py-4 rounded-xl shadow-lg hover:shadow-xl flex items-center justify-center">
+                                <span class="mr-2">✅</span> Mám zájem o tuto sazbu
+                            </button>
+                            <button class="nav-btn bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-lg px-6 py-4 rounded-xl flex items-center justify-center" data-action="discuss-with-ai">
+                                <span class="mr-2">🤖</span> Zeptat se AI
+                            </button>
                         </div>
+
                     </div>
-
-                    <div class="bg-blue-50 rounded-xl p-4 mb-6 border border-blue-100">
-                        <div class="flex items-start gap-3 mb-3">
-                            <span class="text-xl mt-0.5">🤖</span>
-                            <p class="text-sm text-blue-900">${aiInsightText}</p>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4 pt-3 border-t border-blue-200/60">
-                            <div>
-                                <p class="text-xs text-blue-600 font-semibold">📅 Denní náklad</p>
-                                <p class="text-sm font-bold text-blue-900">${formatNumber(dailyCost)}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-blue-600 font-semibold">💰 Daňová úleva</p>
-                                <p class="text-sm font-bold text-blue-900">~${formatNumber(taxSavings)} / měs</p>
-                            </div>
-                        </div>
+                    
+                    <div class="mt-6 pt-6 border-t border-gray-100 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-gray-600 text-center sm:text-left">
+                        <div><span class="block font-bold text-gray-900">Fixace:</span> ${state.formData.fixation} let</div>
+                        <div><span class="block font-bold text-gray-900">Splatnost:</span> ${state.formData.loanTerm} let</div>
+                        <div><span class="block font-bold text-gray-900">LTV:</span> ${approvability ? approvability.ltv : '?'} %</div>
                     </div>
-
-                    <button onclick="document.getElementById('kontakt').scrollIntoView({behavior: 'smooth'});" class="w-full nav-btn bg-green-600 hover:bg-green-700 text-white text-lg font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transform transition hover:-translate-y-0.5 mb-4 flex justify-center items-center gap-2">
-                        <span>📞</span> Ověřit dostupnost a získat nabídku
-                    </button>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <button onclick="switchMode('ai', true)" class="text-xs sm:text-sm text-gray-600 hover:text-blue-600 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition flex justify-center items-center gap-1">
-                            <span>💬</span> Probrat s AI
-                        </button>
-                        <button onclick="toggleDetails()" class="text-xs sm:text-sm text-gray-600 hover:text-blue-600 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition flex justify-center items-center gap-1">
-                            <span>📊</span> Zobrazit graf
-                        </button>
-                    </div>
-                </div>
-
-                <div id="detailed-graph-container" class="hidden bg-gray-50 p-6 border-t border-gray-100">
-                    <h4 class="font-bold text-gray-800 mb-4">Vývoj splácení v čase</h4>
-                    <div class="relative h-60"><canvas id="resultsChart"></canvas></div>
                 </div>
             </div>
         `;
+
+        // 2. OSTATNÍ NABÍDKY (Menší karty pod tím)
+        const otherOffersHTML = offers.slice(1, 4).map(o => `
+            <div class="offer-card p-4 cursor-pointer border ${o.id === selectedOffer?.id ? 'border-blue-600 bg-blue-50' : 'border-gray-200 bg-white'} rounded-xl hover:shadow-md transition-all" data-offer-id="${o.id}">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h4 class="font-bold text-gray-800">${o.title}</h4>
+                        <div class="text-xs text-gray-500">${o.rate.toFixed(2)} %</div>
+                    </div>
+                    <div class="font-bold text-blue-600">${formatNumber(o.monthlyPayment)}</div>
+                </div>
+            </div>`).join('');
+
+        // Sestavení zbytku (grafy, skóre...) - Původní logika, jen zabalená
+        let detailsHTML = ''; 
+        // ... (zde pokračuje váš původní kód pro generování scoreHTML, chart, fixationDetails - ten NEMĚŇTE, jen ho vložte pod nové karty) ...
         
-        // Logika pro graf (inicializace)
-        setTimeout(() => {
-            const chartData = Array.from({ length: state.formData.loanTerm }, (_, i) => calculateAmortization(state.formData.loanAmount, selectedOffer.rate, state.formData.loanTerm, i + 1));
-            if (typeof Chart !== 'undefined') {
-                if (state.chart) state.chart.destroy();
-                const ctx = document.getElementById('resultsChart')?.getContext('2d');
-                if (ctx) {
-                     state.chart = new Chart(ctx, { 
-                        type: 'bar', 
-                        data: { 
-                            labels: chartData.map(item => item.year), 
-                            datasets: [
-                                { label: 'Úroky', data: chartData.map(item => item.interest), backgroundColor: '#ef4444' }, 
-                                { label: 'Jistina', data: chartData.map(item => item.principal), backgroundColor: '#22c55e' }
-                            ] 
-                        }, 
-                        options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true, ticks: { display: false } } } } 
-                    });
-                }
-            }
-        }, 100);
+        // === FINÁLNÍ SESTAVENÍ HTML ===
+        // (Zde použijeme naše nové bloky)
+        
+        // Původní kód pro fixationDetails a chart (zkopírujte si ho ze svého starého script.js nebo ho tam nechte)
+        // ...
+        
+        container.innerHTML = `
+            <div class="animate-fade-in-up">
+                ${winnerCardHTML}
+                
+                <div class="text-center mb-6">
+                    <p class="text-sm text-gray-500 mb-2">Další relevantní nabídky z trhu:</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-3xl mx-auto">
+                        ${otherOffersHTML}
+                    </div>
+                </div>
 
-        // Skrolování
-        setTimeout(() => container.scrollIntoView({behavior: 'smooth', block: 'center'}), 100);
-    };
+                <div class="text-center mb-8">
+                    <button onclick="document.getElementById('detailed-analysis').classList.toggle('hidden');" class="text-blue-600 hover:text-blue-800 text-sm font-semibold underline">
+                        Zobrazit detailní grafy a analýzu fixace ↓
+                    </button>
+                </div>
 
-    // Pomocná funkce pro přepínání grafu (musí být globální nebo dostupná)
-    window.toggleDetails = function() {
-        const el = document.getElementById('detailed-graph-container');
-        el.classList.toggle('hidden');
+                <div id="detailed-analysis" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mt-8">
+                    <div class="space-y-6">
+                        ${scoreSectionHTML} 
+                        <div class="bg-white p-4 sm:p-6 rounded-xl border border-gray-200 shadow-lg">
+                            <h3 class="text-lg sm:text-xl font-bold mb-4">Vývoj splácení</h3>
+                            <div class="relative h-60 sm:h-80"><canvas id="resultsChart"></canvas></div>
+                        </div>
+                    </div>
+                    <div class="space-y-6">
+                        ${fixationDetailsHTML} 
+                    </div>
+                </div>
+            </div>`;
+
+        // ... (zbytek funkce pro vykreslení grafu a listenery) ...
     };
     
 // KONEC KOMPLETNÍ A OPRAVENÉ FUNKCE renderResults

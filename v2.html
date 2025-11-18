@@ -39,40 +39,49 @@
 
     <main class="container mx-auto px-4 sm:px-6 py-6 md:py-8">
         
-        <section class="text-center mb-16">
-            <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 leading-tight">
-                <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Nejlepší hypotéka</span>
-                díky AI a expertům
-            </h1>
-            <p class="text-base text-gray-600 mb-8 max-w-2xl mx-auto">
-                Spočítejte si nezávazně nabídku z 19 bank během 30 sekund.
-            </p>
+        <section class="text-center mb-16 relative">
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl -z-10 opacity-30 pointer-events-none">
+        <div class="absolute top-20 left-10 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl animate-blob"></div>
+        <div class="absolute top-20 right-10 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-2000"></div>
+    </div>
 
-            <div id="kalkulacka" class="max-w-5xl mx-auto bg-white rounded-2xl shadow-2xl border border-blue-100 overflow-hidden relative z-10">
-                <div class="grid grid-cols-3 border-b border-gray-100 bg-gray-50/50">
-                     <div class="mode-card active p-3 sm:p-4 cursor-pointer hover:bg-white transition-colors text-center border-r border-gray-100" data-mode="express">
-                        <div class="text-xl mb-1">⚡</div>
-                        <div class="font-bold text-sm sm:text-base text-gray-800">Rychlý výpočet</div>
-                    </div>
-                    <div class="mode-card p-3 sm:p-4 cursor-pointer hover:bg-white transition-colors text-center border-r border-gray-100" data-mode="guided">
-                        <div class="text-xl mb-1">📊</div>
-                        <div class="font-bold text-sm sm:text-base text-gray-800">Detailní analýza</div>
-                    </div>
-                    <div class="mode-card p-3 sm:p-4 cursor-pointer hover:bg-white transition-colors text-center bg-gradient-to-br from-gray-800 to-gray-900 text-white" data-mode="ai">
-                         <div class="text-xl mb-1">🤖</div>
-                        <div class="font-bold text-sm sm:text-base">AI Stratég</div>
-                    </div>
-                </div>
-                <div id="content-container" class="p-4 sm:p-6 md:p-8 text-left"></div>
-            </div>
+    <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 mb-4 leading-tight tracking-tight">
+        <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Nejlepší hypotéka</span>
+        <span class="block sm:inline">díky AI a expertům</span>
+    </h2>
+    <p class="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto mb-8">
+        Okamžité porovnání trhu. Stress testy. Neveřejné VIP sazby.
+        <br><strong>Spočítejte si nabídku ihned:</strong>
+    </p>
 
-            <div class="mt-8 flex flex-wrap justify-center items-center gap-4 sm:gap-8 text-xs sm:text-sm text-gray-500 font-medium">
-                <span class="flex items-center"><span class="text-lg mr-1.5">👥</span> 12 847+ klientů</span>
-                <span class="flex items-center"><span class="text-lg mr-1.5">🏦</span> 19+ bank</span>
-                <span class="flex items-center"><span class="text-lg mr-1.5">💰</span> Úspora 136 000 Kč</span>
-                <span class="flex items-center"><span class="text-lg mr-1.5">🔒</span> Bezpečné SSL</span>
+    <div id="kalkulacka" class="max-w-5xl mx-auto bg-white rounded-2xl shadow-2xl border border-blue-100 overflow-hidden text-left relative z-10 transition-all duration-300 hover:shadow-3xl">
+        
+        <div class="grid grid-cols-3 border-b border-gray-100 bg-gray-50">
+                <div class="mode-card active p-4 cursor-pointer hover:bg-white transition-all text-center border-r border-gray-100 group" data-mode="express">
+                <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">⚡</div>
+                <div class="font-bold text-sm sm:text-base text-gray-800">Rychlý výpočet</div>
             </div>
-        </section>
+            <div class="mode-card p-4 cursor-pointer hover:bg-white transition-all text-center border-r border-gray-100 group" data-mode="guided">
+                <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">📊</div>
+                <div class="font-bold text-sm sm:text-base text-gray-800">Detailní analýza</div>
+            </div>
+            <div class="mode-card p-4 cursor-pointer hover:bg-white transition-all text-center bg-gradient-to-br from-gray-900 to-gray-800 text-white group relative overflow-hidden" data-mode="ai">
+                <div class="absolute inset-0 bg-purple-600 opacity-0 group-hover:opacity-20 transition-opacity"></div>
+                    <div class="text-2xl mb-1 group-hover:scale-110 transition-transform relative z-10">🤖</div>
+                <div class="font-bold text-sm sm:text-base relative z-10">AI Stratég</div>
+            </div>
+        </div>
+
+        <div id="content-container" class="p-4 sm:p-8 min-h-[300px]">
+            </div>
+    </div>
+    <div class="mt-10 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto text-sm text-gray-500 font-medium opacity-80">
+        <span class="flex items-center justify-center"><span class="text-xl mr-2">👥</span> 12 847+ klientů</span>
+        <span class="flex items-center justify-center"><span class="text-xl mr-2">🏦</span> 19+ bankovních domů</span>
+        <span class="flex items-center justify-center"><span class="text-xl mr-2">💰</span> Průměrná úspora 136k</span>
+        <span class="flex items-center justify-center"><span class="text-xl mr-2">🔒</span> Bezpečné SSL šifrování</span>
+    </div>
+</section>
 
         <section id="pripadove-studie" class="my-16 pt-12 border-t border-gray-100">
             <div class="text-center mb-8">

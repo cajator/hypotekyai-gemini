@@ -819,14 +819,14 @@ const renderResults = () => {
                     </div>
                 </div>
 
-                <div class="space-y-4 max-w-md mx-auto">
+                <div class="space-y-3 max-w-md mx-auto">
                     <button onclick="document.getElementById('kontakt').scrollIntoView({behavior: 'smooth'});" class="w-full nav-btn bg-green-600 hover:bg-green-700 text-white text-lg py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transform transition hover:-translate-y-1">
                         👉 Mám zájem o tuto sazbu
                     </button>
-                    <p class="text-xs text-gray-500">
-                        + Další 2 neveřejné nabídky dostupné u specialisty.<br>
-                        Nezávazná poptávka.
-                    </p>
+                    
+                    <button class="w-full py-3 px-6 text-blue-600 font-semibold hover:bg-blue-50 rounded-xl border border-transparent hover:border-blue-200 transition-colors" data-action="discuss-with-ai">
+                        💬 Chci to probrat s AI asistentem
+                    </button>
                 </div>
             </div>
         `;

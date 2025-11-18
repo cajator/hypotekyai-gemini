@@ -785,10 +785,13 @@ const findQuickResponse = (message) => {
     };
 
     // ZAČÁTEK KOMPLETNÍ A OPRAVENÉ FUNKCE renderResults
-const renderResults = () => {
+// script-v2.js - Vylepšená verze renderResults (AI Dashboard)
+
+    const renderResults = () => {
         const offers = state.calculation?.offers || [];
         let selectedOffer = state.calculation?.selectedOffer;
         const container = document.getElementById('results-container');
+        const approvability = state.calculation?.approvability; // Potřebujeme skóre
         
         if (!container) return;
         container.classList.remove('hidden');
@@ -800,41 +803,73 @@ const renderResults = () => {
 
         if (!selectedOffer && offers.length > 0) selectedOffer = offers[0];
 
-        // ===== NOVÝ VZHLED VÝSLEDKŮ (LEAD GEN FOCUS) =====
+        // Výpočet pro grafiku (jen pro vizuál)
+        const scoreColor = approvability?.total > 80 ? 'text-green-600' : (approvability?.total > 50 ? 'text-yellow-600' : 'text-red-600');
+        const scoreText = approvability?.total > 80 ? 'Vynikající' : (approvability?.total > 50 ? 'Dobrá' : 'Nízká');
+
+        // ===== NOVÝ "AI DASHBOARD" VZHLED =====
         container.innerHTML = `
-            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-200 p-6 sm:p-8 mt-8 text-center shadow-xl relative overflow-hidden">
-                <div class="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">DOPORUČENO AI</div>
+            <div class="mt-8 space-y-6">
                 
-                <h3 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2">Vaše nejlepší nabídka</h3>
-                <p class="text-gray-600 mb-6">Na základě srovnání 19 bank pro vás máme toto řešení:</p>
-                
-                <div class="grid grid-cols-2 gap-4 mb-8 max-w-md mx-auto">
-                    <div class="bg-white p-4 rounded-xl border border-blue-100 shadow-sm">
-                        <p class="text-xs text-gray-500 uppercase font-bold">Měsíční splátka</p>
-                        <p class="text-2xl sm:text-3xl font-extrabold text-blue-600">${formatNumber(selectedOffer.monthlyPayment)}</p>
+                <div class="bg-white rounded-2xl shadow-xl border-2 border-blue-100 overflow-hidden relative">
+                    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 flex justify-between items-center">
+                        <span class="font-bold flex items-center"><span class="text-xl mr-2">🏆</span> AI Doporučení</span>
+                        <span class="text-xs bg-white/20 px-2 py-1 rounded">Nejvýhodnější poměr</span>
                     </div>
-                    <div class="bg-white p-4 rounded-xl border border-blue-100 shadow-sm">
-                        <p class="text-xs text-gray-500 uppercase font-bold">Úroková sazba</p>
-                        <p class="text-2xl sm:text-3xl font-extrabold text-green-600">${selectedOffer.rate.toFixed(2)} %</p>
+                    
+                    <div class="p-6 sm:p-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                        <div class="text-center md:text-left">
+                            <p class="text-sm text-gray-500 mb-1">Vaše měsíční splátka</p>
+                            <div class="text-4xl sm:text-5xl font-extrabold text-blue-600 mb-2">
+                                ${formatNumber(selectedOffer.monthlyPayment)}
+                            </div>
+                            <div class="inline-flex items-center bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm font-semibold border border-green-100">
+                                <span class="mr-1">📉</span> Úrok ${selectedOffer.rate.toFixed(2)} %
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col gap-4">
+                            <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 text-sm text-blue-800 flex items-start">
+                                <span class="text-xl mr-3">🤖</span>
+                                <div>
+                                    <strong>AI Analýza:</strong> Vaše bonita je <span class="${scoreColor} font-bold">${scoreText}</span> (${approvability?.total}%). 
+                                    Dosáhnete na VIP sazby u 3 bank.
+                                </div>
+                            </div>
+                            <button onclick="document.getElementById('kontakt').scrollIntoView({behavior: 'smooth'});" class="w-full nav-btn bg-green-600 hover:bg-green-700 text-white text-lg py-3.5 rounded-xl shadow-lg hover:shadow-xl transform transition hover:-translate-y-1 flex items-center justify-center">
+                                <span>Ověřit tuto nabídku</span>
+                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                            </button>
+                            <p class="text-xs text-center text-gray-400">Nezávazná poptávka • Zdarma</p>
+                        </div>
                     </div>
                 </div>
 
-                <div class="space-y-4 max-w-md mx-auto">
-                    <button onclick="document.getElementById('kontakt').scrollIntoView({behavior: 'smooth'});" class="w-full nav-btn bg-green-600 hover:bg-green-700 text-white text-lg py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transform transition hover:-translate-y-1">
-                        👉 Mám zájem o tuto sazbu
-                    </button>
-                    <p class="text-xs text-gray-500">
-                        + Další 2 neveřejné nabídky dostupné u specialisty.<br>
-                        Nezávazná poptávka.
-                    </p>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm text-center">
+                        <div class="text-2xl mb-2">📊</div>
+                        <h4 class="font-bold text-gray-800 text-sm">Detailní srovnání</h4>
+                        <p class="text-xs text-gray-500 mt-1">Plný přehled 19 bank vám zašleme emailem.</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm text-center">
+                        <div class="text-2xl mb-2">🛡️</div>
+                        <h4 class="font-bold text-gray-800 text-sm">Stress Test</h4>
+                        <p class="text-xs text-gray-500 mt-1">AI ověřila bezpečnost splácení pro váš příjem.</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm text-center">
+                        <div class="text-2xl mb-2">🎁</div>
+                        <h4 class="font-bold text-gray-800 text-sm">VIP Bonusy</h4>
+                        <p class="text-xs text-gray-500 mt-1">Možnost odpuštění poplatků za odhad a zpracování.</p>
+                    </div>
                 </div>
+
             </div>
         `;
         
         // Skrolujeme k výsledku
-        setTimeout(() => container.scrollIntoView({behavior: 'smooth', block: 'center'}), 100);
+        setTimeout(() => container.scrollIntoView({behavior: 'smooth', block: 'start'}), 100);
     };
-    
+
 // KONEC KOMPLETNÍ A OPRAVENÉ FUNKCE renderResults
         
     const renderChart = (canvasId, schedule) => { 

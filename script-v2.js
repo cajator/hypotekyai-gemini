@@ -160,23 +160,12 @@ const findQuickResponse = (message) => {
     const updateActiveUsers = () => {
         const hour = new Date().getHours();
         let baseUsers = 120;
-        
-        if (hour >= 8 && hour <= 18) {
-            baseUsers = 140;
-        } else if (hour >= 19 && hour <= 22) {
-            baseUsers = 130;
-        } else if (hour >= 6 && hour <= 7) {
-            baseUsers = 125;
-        }
-        
+        if (hour >= 8 && hour <= 18) baseUsers = 140;
+        else if (hour >= 19 && hour <= 22) baseUsers = 130;
         state.activeUsers = baseUsers + Math.floor(Math.random() * 10) - 5;
-        
         const footerCounter = document.getElementById('active-users-counter');
-        if (footerCounter) {
-            footerCounter.textContent = `${state.activeUsers} lidí právě používá naše nástroje`;
-        }
+        if (footerCounter) footerCounter.textContent = `${state.activeUsers} lidí právě používá naše nástroje`;
     };
-
     setInterval(updateActiveUsers, 30000);
 
     // --- DOM ELEMENTS CACHE ---
@@ -225,7 +214,6 @@ const findQuickResponse = (message) => {
         const isMobileDevice = isMobile();
         const infoIcon = infoText ? `<span class="info-icon" data-info-key="${id}" data-info-text="${infoText}">?</span>` : '';
 
-        // Lepší layout pro mobil (pod sebou) vs desktop (vedle sebe)
         const topRowClasses = isMobileDevice ? "flex flex-col items-start mb-2 gap-1" : "flex flex-row justify-between items-center mb-2 gap-2";
         const labelClasses = isMobileDevice ? "form-label text-sm m-0 flex items-center gap-1.5" : "form-label m-0 flex-shrink-0 flex items-center gap-1.5";
         const inputWrapperClasses = isMobileDevice ? "flex items-center gap-1 w-full justify-end" : "flex items-center gap-1 relative z-10";
@@ -375,7 +363,7 @@ const findQuickResponse = (message) => {
                 </div>`;
         }
         
-        // DESKTOP VERZE - Přepnuto na grid layout
+        // DESKTOP VERZE
         return `
             <div class="lg:grid lg:grid-cols-12 lg:gap-8 items-start">
                 <div id="ai-chat-desktop-wrapper" class="lg:col-span-8 bg-white rounded-2xl shadow-xl border flex flex-col" style="min-height: calc(85vh - 100px);">
@@ -389,24 +377,14 @@ const findQuickResponse = (message) => {
                                 </div>
                             </div>
                             <div class="flex gap-2">
-                                <button class="text-xs bg-white px-3 py-1 rounded-lg border hover:bg-gray-50"
-                                        data-action="reset-chat">
-                                    🔄 Nový chat
-                                </button>
-                                <button class="text-xs bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700"
-                                        data-action="show-lead-form">
-                                    📞 Domluvit se specialistou
-                                </button>
+                                <button class="text-xs bg-white px-3 py-1 rounded-lg border hover:bg-gray-50" data-action="reset-chat">🔄 Nový chat</button>
+                                <button class="text-xs bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700" data-action="show-lead-form">📞 Domluvit se specialistou</button>
                             </div>
                         </div>
                     </div>
-                    
                     <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
-                    
                     <div id="ai-suggestions" class="p-4 border-t bg-gray-50"></div>
-                    
-                    <div id="chat-input-footer" class="p-4 border-t bg-white rounded-b-2xl">
-                        </div>
+                    <div id="chat-input-footer" class="p-4 border-t bg-white rounded-b-2xl"></div>
                 </div>
                 <div id="sidebar-container" class="lg:col-span-4 lg:sticky top-28"></div>
             </div>`;
@@ -775,7 +753,6 @@ const findQuickResponse = (message) => {
 
         if (!selectedOffer && offers.length > 0) selectedOffer = offers[0];
 
-        // NOVÝ DESIGN: Jedna hlavní karta s vítěznou nabídkou
         container.innerHTML = `
             <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-200 p-6 sm:p-8 mt-8 text-center shadow-xl relative overflow-hidden">
                 <div class="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">DOPORUČENO AI</div>
@@ -811,7 +788,6 @@ const findQuickResponse = (message) => {
             </div>
         `;
         
-        // Skrolujeme k výsledku
         setTimeout(() => container.scrollIntoView({behavior: 'smooth', block: 'center'}), 100);
     };
     

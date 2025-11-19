@@ -95,17 +95,18 @@ Použijte naši kalkulačku výše - za 30 sekund víte přesně kolik a od kter
     }
 };
 // ZAČÁTEK SPRÁVNÉ DEFINICE scoreHTML
-const scoreHTML = (label, value, color, icon, explanation) => {
+const scoreHTML = (label, value, color, icon, explanation, infoText = '') => {
     // Kontrola, zda hodnota existuje a je číslo
     const displayValue = (typeof value === 'number' && !isNaN(value)) ? Math.round(value) : 0; // Zaokrouhlíme pro jistotu
     const safeExplanation = explanation || ''; // Zajistíme, že explanation není undefined
+    const infoIcon = infoText ? `<span class="info-icon" data-info-key="${label.toLowerCase()}-score" data-info-text="${infoText}">?</span>` : '';
 
     // Správné sestavení HTML bez komentářů
     return `
     <div class="bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
        <div class="flex items-center justify-between mb-1">
-           <span class="text-sm font-semibold flex items-center">
-               <span class="text-lg mr-1">${icon}</span> ${label}
+           <span class="text-sm font-semibold flex items-center gap-1.5">
+               <span class="text-lg">${icon}</span> ${label} ${infoIcon}
            </span>
            <span class="font-bold text-lg text-gray-800">${displayValue}%</span>
        </div>
@@ -977,8 +978,9 @@ const renderResults = () => {
             <!-- INLINE LEAD FORM -->
             <div id="inline-lead-form-container" class="hidden mt-5 bg-white rounded-xl p-5 text-gray-800">
                 <h4 class="text-base font-bold mb-3 text-center text-gray-900">📋 Zadej své kontaktní údaje</h4>
-                <form id="inline-lead-form" name="inline-lead-form" method="POST" data-netlify="true" class="space-y-3">
+                <form id="inline-lead-form" name="inline-lead-form" method="POST" data-netlify="true" netlify-honeypot="bot-field" class="space-y-3">
                     <input type="hidden" name="form-name" value="inline-lead-form" />
+                    <p class="hidden"><label>Nevyplňujte: <input name="bot-field" /></label></p>
                     <input type="hidden" name="extraData" id="inline-extra-data" />
                     
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1080,9 +1082,9 @@ const renderResults = () => {
                     <span class="text-2xl mr-2">🎯</span> Skóre vaší žádosti
                 </h4>
                 <div class="space-y-3">
-                    ${scoreHTML('LTV', approvability.ltv, 'bg-green-500', '🏠', ltvExplanation)}
-                    ${scoreHTML('DSTI', approvability.dsti, 'bg-yellow-500', '💰', dstiExplanation)}
-                    ${scoreHTML('Bonita', approvability.bonita, 'bg-blue-500', '⭐', bonitaExplanation)}
+                    ${scoreHTML('LTV', approvability.ltv, 'bg-green-500', '🏠', ltvExplanation, 'LTV (Loan-to-Value) ukazuje poměr výše úvěru k hodnotě nemovitosti. Čím nižší LTV, tím lepší podmínky od banky. AI ti poradí, jak ho optimalizovat.')}
+                    ${scoreHTML('DSTI', approvability.dsti, 'bg-yellow-500', '💰', dstiExplanation, 'DSTI (Debt Service-to-Income) porovnává tvé splátky s příjmem. Banka hlídá, aby ti po splatk zůstalo dost na život. AI ti poradí, jak na to.')}
+                    ${scoreHTML('Bonita', approvability.bonita, 'bg-blue-500', '⭐', bonitaExplanation, 'Bonita hodnotí tvou celkovou spolehlivost jako klienta banky. Zahrnuje příjmy, stabilitu zaměstnání a další faktory. AI ti poradí, jak ji zvýšit.')}
                 </div>
                 <div class="mt-5 p-4 bg-white rounded-xl text-center">
                     <h5 class="text-sm font-bold mb-2">Celková šance na schválení:</h5>
@@ -1090,9 +1092,8 @@ const renderResults = () => {
                 </div>
                 
                 <div class="mt-4 text-center">
-                    <button class="nav-btn bg-purple-600 hover:bg-purple-700 text-white text-sm py-2 px-4 flex items-center justify-center gap-2 mx-auto" data-action="discuss-score-with-ai">
-                        <span>💬 Probrat skóre s AI</span>
-                        <span class="info-icon" data-info-key="score-ai" data-info-text="AI asistent ti pomůže pochopit tvé skóre a poradí, jak ho zlepšit. Získáš personalizované tipy podle tvé konkrétní situace.">?</span>
+                    <button class="nav-btn bg-purple-600 hover:bg-purple-700 text-white text-sm py-2 px-4" data-action="discuss-score-with-ai">
+                        💬 Probrat skóre s AI
                     </button>
                 </div>
             </div>`;
@@ -1177,9 +1178,8 @@ const renderResults = () => {
                 ` : ''}
                 
                 <div class="mt-4 text-center">
-                    <button class="nav-btn bg-purple-600 hover:bg-purple-700 text-white text-sm py-2 px-4 flex items-center justify-center gap-2 mx-auto" data-action="discuss-fixation-with-ai">
-                        <span>💬 Probrat fixaci s AI</span>
-                        <span class="info-icon" data-info-key="fixation-ai" data-info-text="AI ti poradí s výběrem optimální délky fixace podle tvé situace. Proberete scénáře, co když sazby porostou nebo klesnou.">?</span>
+                    <button class="nav-btn bg-purple-600 hover:bg-purple-700 text-white text-sm py-2 px-4" data-action="discuss-fixation-with-ai">
+                        💬 Probrat fixaci s AI
                     </button>
                 </div>
             </div>

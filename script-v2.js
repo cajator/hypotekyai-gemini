@@ -789,6 +789,18 @@ const findQuickResponse = (message) => {
 // ============================================
 // HLAVNÍ ZMĚNA V2: NOVÁ FUNKCE renderResults()
 // ============================================
+// OPRAVENÁ FUNKCE renderResults() - V2.1
+// ============================================
+// ZMĚNY V2.1:
+// - Odstranit RPSN z nejlepší nabídky
+// - Více informací (fixace, LTV, vhodné pro...)
+// - Všechny nabídky na šířku s více detaily
+// - Změněný text CTA (méně formální)
+// - Zmenšený CTA box
+// - Další CTA tlačítko pod grafem
+// - Opravené event listenery
+// ============================================
+
 const renderResults = () => {
     const offers = state.calculation?.offers || [];
     const approvability = state.calculation?.approvability;
@@ -836,57 +848,139 @@ const renderResults = () => {
         }
     }
 
+    // Výpočet LTV pro zobrazení
+    const ltvPercentage = approvability?.ltv || 0;
+    const currentFixation = state.formData.fixation || 3;
+    const employment = state.formData.employment || 'zaměstnanec';
+
+    // NOVÁ VERZE V2.1: Nejlepší nabídka s více informacemi
     const bestOfferHTML = selectedOffer ? `
-        <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 sm:p-6 rounded-xl border-2 border-green-300 shadow-lg mb-6">
-            <div class="flex items-center justify-between mb-3">
-                <h3 class="text-lg sm:text-xl font-bold text-green-900 flex items-center">
+        <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-5 sm:p-6 rounded-xl border-2 border-green-300 shadow-lg mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl sm:text-2xl font-bold text-green-900 flex items-center">
                     <span class="text-2xl mr-2">✅</span> Nejlepší nabídka pro vás
                 </h3>
-                ${offers.length > 1 ? `<button class="text-sm text-blue-600 hover:text-blue-800 underline" data-action="show-all-offers">Zobrazit všech ${offers.length} nabídek</button>` : ''}
+                ${offers.length > 1 ? `<button class="text-sm text-blue-600 hover:text-blue-800 font-semibold underline" data-action="show-all-offers">Zobrazit všech ${offers.length} nabídek ↓</button>` : ''}
             </div>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 bg-white p-4 rounded-lg">
+            
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 bg-white p-4 rounded-lg mb-3">
                 <div>
-                    <p class="text-xs text-gray-500 mb-1">Měsíční splátka</p>
-                    <p class="text-lg sm:text-xl font-bold text-gray-900">${formatNumber(selectedOffer.monthlyPayment)}</p>
+                    <p class="text-xs text-gray-500 mb-1">💰 Měsíční splátka</p>
+                    <p class="text-xl sm:text-2xl font-bold text-gray-900">${formatNumber(selectedOffer.monthlyPayment)}</p>
                 </div>
                 <div>
-                    <p class="text-xs text-gray-500 mb-1">Úroková sazba</p>
-                    <p class="text-lg sm:text-xl font-bold text-blue-600">${selectedOffer.rate?.toFixed(2)}%</p>
+                    <p class="text-xs text-gray-500 mb-1">📊 Úroková sazba</p>
+                    <p class="text-xl sm:text-2xl font-bold text-blue-600">${selectedOffer.rate?.toFixed(2)}%</p>
                 </div>
                 <div>
-                    <p class="text-xs text-gray-500 mb-1">RPSN</p>
-                    <p class="text-lg sm:text-xl font-bold text-gray-700">${selectedOffer.rpsn?.toFixed(2) || 'N/A'}%</p>
-                </div>
-                <div>
-                    <p class="text-xs text-gray-500 mb-1">Celkem zaplatíte</p>
-                    <p class="text-lg sm:text-xl font-bold text-gray-700">${formatNumber(selectedOffer.totalPayment || selectedOffer.monthlyPayment * (state.formData.loanTerm || 30) * 12)}</p>
+                    <p class="text-xs text-gray-500 mb-1">💵 Celkem zaplatíte</p>
+                    <p class="text-xl sm:text-2xl font-bold text-gray-700">${formatNumber(selectedOffer.totalPayment || selectedOffer.monthlyPayment * (state.formData.loanTerm || 30) * 12)}</p>
                 </div>
             </div>
-            ${selectedOffer.highlights ? `<div class="flex flex-wrap gap-2 mt-3">${selectedOffer.highlights.map(h => `<span class="inline-block px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full font-semibold">${h}</span>`).join('')}</div>` : ''}
+            
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs bg-white p-3 rounded-lg">
+                <div class="flex items-center">
+                    <span class="text-base mr-1">🔒</span>
+                    <div>
+                        <p class="text-gray-500">Fixace</p>
+                        <p class="font-semibold">${currentFixation} let</p>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-base mr-1">🏠</span>
+                    <div>
+                        <p class="text-gray-500">LTV</p>
+                        <p class="font-semibold">${ltvPercentage}%</p>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-base mr-1">⏳</span>
+                    <div>
+                        <p class="text-gray-500">Splatnost</p>
+                        <p class="font-semibold">${state.formData.loanTerm || 30} let</p>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-base mr-1">👤</span>
+                    <div>
+                        <p class="text-gray-500">Vhodné pro</p>
+                        <p class="font-semibold">${employment === 'osvč' ? 'OSVČ' : 'Zaměstnance'}</p>
+                    </div>
+                </div>
+            </div>
+            
+            ${selectedOffer.highlights ? `<div class="flex flex-wrap gap-2 mt-3">${selectedOffer.highlights.map(h => `<span class="inline-block px-3 py-1 text-xs bg-green-100 text-green-700 rounded-full font-semibold">${h}</span>`).join('')}</div>` : ''}
         </div>
     ` : '';
 
+    // NOVÁ VERZE V2.1: Všechny nabídky NA ŠÍŘKU s více informacemi
+    const allOffersHTML = offers.length > 1 ? `
+        <div id="all-offers-container" class="hidden mb-6">
+            <h4 class="text-lg font-bold mb-3 text-gray-700">📋 Porovnání všech ${offers.length} nabídek:</h4>
+            <div class="overflow-x-auto">
+                <table class="w-full bg-white rounded-lg shadow-md text-sm">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="px-4 py-3 text-left font-semibold">Nabídka</th>
+                            <th class="px-4 py-3 text-center font-semibold">Měsíční splátka</th>
+                            <th class="px-4 py-3 text-center font-semibold">Úrok</th>
+                            <th class="px-4 py-3 text-center font-semibold">Celkem</th>
+                            <th class="px-4 py-3 text-center font-semibold">Highlights</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${offers.map((o, idx) => `
+                            <tr class="border-t hover:bg-blue-50 cursor-pointer offer-row ${o.id === selectedOffer?.id ? 'bg-blue-50 border-l-4 border-blue-600' : ''}" data-offer-id="${o.id}">
+                                <td class="px-4 py-3">
+                                    <div class="font-bold text-blue-700">${idx === 0 ? '🏆 ' : ''}${o.title || 'Nabídka ' + (idx + 1)}</div>
+                                    <div class="text-xs text-gray-500">${o.description || ''}</div>
+                                </td>
+                                <td class="px-4 py-3 text-center">
+                                    <div class="font-bold text-lg">${formatNumber(o.monthlyPayment)}</div>
+                                </td>
+                                <td class="px-4 py-3 text-center">
+                                    <div class="font-semibold text-blue-600">${o.rate?.toFixed(2)}%</div>
+                                </td>
+                                <td class="px-4 py-3 text-center">
+                                    <div class="text-gray-700">${formatNumber(o.totalPayment || o.monthlyPayment * (state.formData.loanTerm || 30) * 12)}</div>
+                                </td>
+                                <td class="px-4 py-3">
+                                    ${o.highlights ? `<div class="flex flex-wrap gap-1 justify-center">${o.highlights.slice(0, 2).map(h => `<span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">${h}</span>`).join('')}</div>` : '<span class="text-xs text-gray-400">-</span>'}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    ` : '';
+
+    // NOVÁ VERZE V2.1: Kompaktnější CTA box s přátelštějším textem
     const megaCTAHTML = `
-        <div class="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 sm:p-8 rounded-2xl shadow-2xl mb-6 text-white">
-            <div class="text-center mb-6">
-                <div class="text-4xl sm:text-5xl mb-3">📞</div>
-                <h3 class="text-2xl sm:text-3xl font-extrabold mb-2">Nechte si zpracovat nabídku od specialisty</h3>
-                <p class="text-sm sm:text-base text-blue-100 mb-1">Vyjedná vám nejlepší individuální sazbu a provede celým procesem</p>
-                <p class="text-xs text-blue-200">✓ Služba zcela zdarma  ✓ Ozveme se do 24 hodin  ✓ Bez závazků</p>
+        <div class="bg-gradient-to-br from-blue-600 to-indigo-700 p-5 sm:p-6 rounded-2xl shadow-2xl mb-6 text-white">
+            <div class="text-center mb-4">
+                <div class="text-3xl sm:text-4xl mb-2">💬</div>
+                <h3 class="text-xl sm:text-2xl font-extrabold mb-1">Chci pomoc experta</h3>
+                <p class="text-sm text-blue-100 mb-1">Vyjedná ti nejlepší podmínky a provede celým procesem</p>
+                <p class="text-xs text-blue-200">✓ Zdarma  ✓ Do 24 hodin  ✓ Bez závazků</p>
             </div>
             
             <div class="text-center">
                 <button 
                     id="show-inline-lead-btn" 
                     data-action="toggle-inline-lead-form"
-                    class="nav-btn bg-green-600 hover:bg-green-700 text-white text-lg sm:text-xl font-bold px-8 sm:px-12 py-4 sm:py-5 rounded-xl shadow-xl hover:shadow-2xl transition-all inline-block">
-                    ✅ ZAVOLAT MI ZDARMA
+                    class="nav-btn bg-green-600 hover:bg-green-700 text-white text-base sm:text-lg font-bold px-6 sm:px-10 py-3 sm:py-4 rounded-xl shadow-xl hover:shadow-2xl transition-all inline-block">
+                    ✅ Chci zavolat zdarma
                 </button>
             </div>
             
-            <div id="inline-lead-form-container" class="hidden mt-6 bg-white rounded-xl p-6 text-gray-800">
-                <h4 class="text-lg font-bold mb-4 text-center text-gray-900">📋 Zadejte vaše kontaktní údaje</h4>
-                <form id="inline-lead-form" class="space-y-3">
+            <!-- INLINE LEAD FORM -->
+            <div id="inline-lead-form-container" class="hidden mt-5 bg-white rounded-xl p-5 text-gray-800">
+                <h4 class="text-base font-bold mb-3 text-center text-gray-900">📋 Zadej své kontaktní údaje</h4>
+                <form id="inline-lead-form" name="inline-lead-form" method="POST" data-netlify="true" class="space-y-3">
+                    <input type="hidden" name="form-name" value="inline-lead-form" />
+                    <input type="hidden" name="extraData" id="inline-extra-data" />
+                    
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label class="form-label text-sm">Jméno a příjmení *</label>
@@ -915,7 +1009,7 @@ const renderResults = () => {
                         </div>
                     </div>
                     <div>
-                        <label class="form-label text-sm">Kdy vás můžeme kontaktovat?</label>
+                        <label class="form-label text-sm">Kdy tě můžeme kontaktovat?</label>
                         <select name="contact-time" class="modern-select text-sm">
                             <option value="kdykoliv">Kdykoliv během dne</option>
                             <option value="rano">Ráno (8:00 - 12:00)</option>
@@ -926,10 +1020,10 @@ const renderResults = () => {
                     </div>
                     <div>
                         <label class="form-label text-sm">Poznámka (nepovinné)</label>
-                        <textarea name="note" rows="2" class="modern-input text-sm" placeholder="Např. už mám předschválenou hypotéku, refinancuji..."></textarea>
+                        <textarea name="note" rows="2" class="modern-input text-sm" placeholder="Např. už mám předschválenou hypotéku..."></textarea>
                     </div>
                     <div class="text-center pt-2">
-                        <p class="text-xs text-gray-500 mb-3">Odesláním souhlasíte se zpracováním osobních údajů.</p>
+                        <p class="text-xs text-gray-500 mb-3">Odesláním souhlasíš se zpracováním osobních údajů.</p>
                         <button type="submit" class="w-full nav-btn bg-green-600 hover:bg-green-700 text-white font-bold py-3 text-base">
                             📞 Odeslat nezávazně
                         </button>
@@ -943,25 +1037,26 @@ const renderResults = () => {
         </div>
     `;
 
+    // Alternativní možnosti
     const alternativesHTML = `
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-            <div class="bg-white p-4 sm:p-5 rounded-xl border-2 border-gray-200 hover:border-purple-300 hover:shadow-lg transition-all cursor-pointer" data-action="discuss-with-ai">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            <div class="bg-white p-4 rounded-xl border-2 border-gray-200 hover:border-purple-300 hover:shadow-lg transition-all cursor-pointer" data-action="discuss-with-ai">
                 <div class="flex items-center mb-2">
-                    <span class="text-3xl mr-3">💬</span>
-                    <h4 class="text-base sm:text-lg font-bold text-gray-900">Probrat s AI asistentem</h4>
+                    <span class="text-2xl mr-2">💬</span>
+                    <h4 class="text-base font-bold text-gray-900">Probrat s AI asistentem</h4>
                 </div>
-                <p class="text-xs sm:text-sm text-gray-600 mb-3">Okamžité odpovědi, stress testy, scénáře</p>
+                <p class="text-xs text-gray-600 mb-3">Okamžité odpovědi, stress testy, scénáře</p>
                 <button class="nav-btn bg-purple-600 hover:bg-purple-700 text-white text-sm py-2 px-4 w-full" data-action="discuss-with-ai">
                     Spustit AI chat
                 </button>
             </div>
             
-            <div class="bg-white p-4 sm:p-5 rounded-xl border-2 border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all cursor-pointer" data-action="switch-to-guided">
+            <div class="bg-white p-4 rounded-xl border-2 border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all cursor-pointer" data-action="switch-to-guided">
                 <div class="flex items-center mb-2">
-                    <span class="text-3xl mr-3">📊</span>
-                    <h4 class="text-base sm:text-lg font-bold text-gray-900">Detailní analýza</h4>
+                    <span class="text-2xl mr-2">📊</span>
+                    <h4 class="text-base font-bold text-gray-900">Detailní analýza</h4>
                 </div>
-                <p class="text-xs sm:text-sm text-gray-600 mb-3">Kompletní scoring, DSTI, stress testy ČNB</p>
+                <p class="text-xs text-gray-600 mb-3">Kompletní scoring, DSTI, stress testy ČNB</p>
                 <button class="nav-btn bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 px-4 w-full" data-action="switch-to-guided">
                     Přepnout na detailní
                 </button>
@@ -969,6 +1064,7 @@ const renderResults = () => {
         </div>
     `;
 
+    // Skóre (pokud existuje)
     let scoreSectionHTML = '';
     if (approvability) {
         const ltvExplanation = approvability.ltv > 85 ? 'Optimální LTV.' : approvability.ltv > 70 ? 'Dobré LTV.' : 'Hraniční LTV.';
@@ -977,7 +1073,7 @@ const renderResults = () => {
         const totalScoreValue = (typeof approvability.total === 'number' && !isNaN(approvability.total)) ? approvability.total : 0;
         
         scoreSectionHTML = `
-            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 sm:p-6 rounded-xl border border-blue-200 shadow-lg mb-6">
+            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 sm:p-5 rounded-xl border border-blue-200 shadow-lg mb-6">
                 <h4 class="text-lg sm:text-xl font-bold mb-4 flex items-center">
                     <span class="text-2xl mr-2">🎯</span> Skóre vaší žádosti
                 </h4>
@@ -986,15 +1082,16 @@ const renderResults = () => {
                     ${scoreHTML('DSTI', approvability.dsti, 'bg-yellow-500', '💰', dstiExplanation)}
                     ${scoreHTML('Bonita', approvability.bonita, 'bg-blue-500', '⭐', bonitaExplanation)}
                 </div>
-                <div class="mt-6 p-4 bg-white rounded-xl text-center">
-                    <h5 class="text-base font-bold mb-2">Celková šance na schválení:</h5>
-                    <div class="text-4xl sm:text-5xl font-bold text-green-600">${totalScoreValue}%</div>
+                <div class="mt-5 p-4 bg-white rounded-xl text-center">
+                    <h5 class="text-sm font-bold mb-2">Celková šance na schválení:</h5>
+                    <div class="text-3xl sm:text-4xl font-bold text-green-600">${totalScoreValue}%</div>
                 </div>
             </div>`;
     }
 
+    // Graf splácení
     const chartHTML = `
-        <div class="bg-white p-4 sm:p-6 rounded-xl border border-gray-200 shadow-lg mb-6">
+        <div class="bg-white p-4 sm:p-5 rounded-xl border border-gray-200 shadow-lg mb-6">
             <h4 class="text-lg sm:text-xl font-bold mb-4 flex items-center">
                 <span class="text-2xl mr-2">📈</span> Vývoj splácení v čase
             </h4>
@@ -1004,6 +1101,18 @@ const renderResults = () => {
         </div>
     `;
 
+    // NOVÉ: Další CTA pod grafem
+    const bottomCTAHTML = `
+        <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-5 rounded-xl border-2 border-green-300 text-center mb-6">
+            <h4 class="text-lg font-bold text-gray-900 mb-2">💡 Líbí se ti nabídka?</h4>
+            <p class="text-sm text-gray-600 mb-3">Nech si pomoci od experta s vyjednáním nejlepší sazby</p>
+            <button class="nav-btn bg-green-600 hover:bg-green-700 text-white font-bold px-8 py-3" data-action="scroll-to-form">
+                📞 Zavolat mi zdarma
+            </button>
+        </div>
+    `;
+
+    // Detaily fixace
     let fixationDetailsHTML = '';
     if (fixationDetails) {
         const currentFixation = state.formData.fixation || 3;
@@ -1011,7 +1120,7 @@ const renderResults = () => {
         const effectiveTerm = Math.min(state.formData.loanTerm || 30, Math.max(5, 70 - (state.formData.age || 35)));
         
         fixationDetailsHTML = `
-            <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 sm:p-6 rounded-xl border border-green-200 shadow-lg mb-6">
+            <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 sm:p-5 rounded-xl border border-green-200 shadow-lg mb-6">
                 <h4 class="text-lg sm:text-xl font-bold mb-3 flex items-center">
                     <span class="text-2xl mr-2">📊</span> Detaily fixace
                 </h4>
@@ -1061,36 +1170,23 @@ const renderResults = () => {
         `;
     }
 
+    // SESTAVENÍ FINÁLNÍHO HTML - V2.1
     container.innerHTML = `
         <div>
             <h3 class="text-2xl sm:text-3xl font-bold mb-6">✅ Vaše výsledky</h3>
             
             ${bestOfferHTML}
-            
-            <div id="all-offers-container" class="hidden mb-6">
-                <h4 class="text-lg font-bold mb-3">Všechny nabídky (${offers.length}):</h4>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    ${offers.map(o => `
-                        <div class="offer-card p-4 cursor-pointer border ${o.id === selectedOffer?.id ? 'border-blue-600 ring-2 ring-blue-200 bg-blue-50' : 'border-gray-200 bg-white'} rounded-xl shadow-md hover:shadow-lg transition-all" data-offer-id="${o.id}">
-                            <h5 class="text-base font-bold text-blue-700 mb-1">${o.title || 'Nabídka'}</h5>
-                            <p class="text-xs text-gray-600 mb-2">${o.description || ''}</p>
-                            <div class="text-right mt-2 pt-2 border-t">
-                                <div class="text-xl font-extrabold text-gray-900">${formatNumber(o.monthlyPayment)}</div>
-                                <div class="text-xs font-semibold text-gray-500">Úrok ${o.rate?.toFixed(2)}%</div>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
+            ${allOffersHTML}
             
             ${megaCTAHTML}
             
-            <h4 class="text-lg font-bold mb-3 text-center text-gray-600">Nebo raději:</h4>
+            <h4 class="text-base font-bold mb-3 text-center text-gray-600">Nebo raději:</h4>
             ${alternativesHTML}
             
             ${scoreSectionHTML}
             ${fixationDetailsHTML}
             ${chartHTML}
+            ${bottomCTAHTML}
         </div>
     `;
 
@@ -1104,13 +1200,15 @@ const renderResults = () => {
     }
 
     addOfferCardListeners();
-    addV2EventListeners();
+    addV21EventListeners(); // NOVÁ VERZE event listenerů
 
     if (!container.dataset.renderedOnce) {
         setTimeout(() => scrollToTarget('#results-container'), 150);
         container.dataset.renderedOnce = "true";
     }
 };
+// KONEC OPRAVENÉ FUNKCE renderResults V2.1
+
 // KONEC NOVÉ FUNKCE renderResults V2
 
         
@@ -2034,8 +2132,12 @@ const renderResults = () => {
 // ============================================
 // NOVÁ FUNKCE V2: Event Listeners pro nový layout
 // ============================================
-const addV2EventListeners = () => {
-    // Toggle inline lead form
+// ============================================
+// OPRAVENÉ EVENT LISTENERS - V2.1
+// ============================================
+
+const addV21EventListeners = () => {
+    // 1. Toggle inline lead form
     const toggleBtn = document.getElementById('show-inline-lead-btn');
     if (toggleBtn) {
         toggleBtn.addEventListener('click', (e) => {
@@ -2047,7 +2149,7 @@ const addV2EventListeners = () => {
             
             if (isVisible) {
                 formContainer.classList.add('hidden');
-                toggleBtn.innerHTML = '✅ ZAVOLAT MI ZDARMA';
+                toggleBtn.innerHTML = '✅ Chci zavolat zdarma';
                 toggleBtn.classList.remove('bg-gray-500', 'hover:bg-gray-600');
                 toggleBtn.classList.add('bg-green-600', 'hover:bg-green-700');
             } else {
@@ -2062,30 +2164,31 @@ const addV2EventListeners = () => {
         });
     }
     
-    // Inline lead form submit
+    // 2. OPRAVENÝ Inline lead form submit s Netlify Forms
     const inlineForm = document.getElementById('inline-lead-form');
     if (inlineForm) {
         inlineForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            // Připravit extra data
+            const extraData = JSON.stringify({
+                source: 'inline-form-v2.1',
+                calculation: {
+                    loanAmount: state.formData.loanAmount,
+                    propertyValue: state.formData.propertyValue,
+                    monthlyPayment: state.calculation.selectedOffer?.monthlyPayment,
+                    rate: state.calculation.selectedOffer?.rate
+                }
+            });
+            document.getElementById('inline-extra-data').value = extraData;
+            
             const formData = new FormData(inlineForm);
-            const data = {
-                name: formData.get('name'),
-                phone: formData.get('phone'),
-                email: formData.get('email'),
-                psc: formData.get('psc'),
-                'contact-time': formData.get('contact-time'),
-                note: formData.get('note') || '',
-                extraData: JSON.stringify({
-                    source: 'inline-form-v2',
-                    calculation: state.calculation
-                })
-            };
             
             try {
                 const response = await fetch('/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams(data).toString()
+                    body: new URLSearchParams(formData).toString()
                 });
                 
                 if (response.ok) {
@@ -2098,10 +2201,12 @@ const addV2EventListeners = () => {
                     // Google Analytics event
                     if (typeof gtag !== 'undefined') {
                         gtag('event', 'form_submit', {
-                            form_type: 'inline_lead_v2',
+                            form_type: 'inline_lead_v2.1',
                             value: state.formData.loanAmount || 0
                         });
                     }
+                } else {
+                    alert('Nastala chyba při odesílání. Zkuste to prosím znovu.');
                 }
             } catch (error) {
                 console.error('Chyba při odesílání formuláře:', error);
@@ -2110,7 +2215,7 @@ const addV2EventListeners = () => {
         });
     }
     
-    // Show all offers toggle
+    // 3. Show all offers toggle
     const showAllOffersBtn = document.querySelector('[data-action="show-all-offers"]');
     if (showAllOffersBtn) {
         showAllOffersBtn.addEventListener('click', () => {
@@ -2119,16 +2224,31 @@ const addV2EventListeners = () => {
                 const isHidden = allOffersContainer.classList.contains('hidden');
                 if (isHidden) {
                     allOffersContainer.classList.remove('hidden');
-                    showAllOffersBtn.textContent = 'Skrýt ostatní nabídky';
+                    showAllOffersBtn.innerHTML = 'Skrýt ostatní nabídky ↑';
                 } else {
                     allOffersContainer.classList.add('hidden');
-                    showAllOffersBtn.textContent = `Zobrazit všech ${state.calculation.offers.length} nabídek`;
+                    showAllOffersBtn.innerHTML = `Zobrazit všech ${state.calculation.offers.length} nabídek ↓`;
                 }
             }
         });
     }
     
-    // Discuss with AI button
+    // 4. Click na řádky tabulky (všechny nabídky)
+    const offerRows = document.querySelectorAll('.offer-row');
+    offerRows.forEach(row => {
+        row.addEventListener('click', () => {
+            const offerId = row.dataset.offerId;
+            const clickedOffer = state.calculation.offers.find(o => o.id === offerId);
+            
+            if (clickedOffer && clickedOffer.id !== state.calculation.selectedOffer?.id) {
+                console.log("Vybrána nabídka:", clickedOffer.title);
+                state.calculation.selectedOffer = clickedOffer;
+                renderResults(); // Překreslíme s novou vybranou nabídkou
+            }
+        });
+    });
+    
+    // 5. OPRAVENÝ Discuss with AI button
     const discussAIBtns = document.querySelectorAll('[data-action="discuss-with-ai"]');
     discussAIBtns.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -2136,7 +2256,7 @@ const addV2EventListeners = () => {
         });
     });
     
-    // Switch to guided mode button
+    // 6. OPRAVENÝ Switch to guided mode button
     const switchGuidedBtns = document.querySelectorAll('[data-action="switch-to-guided"]');
     switchGuidedBtns.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -2144,5 +2264,32 @@ const addV2EventListeners = () => {
             setTimeout(() => scrollToTarget('#content-container'), 300);
         });
     });
+    
+    // 7. NOVÉ: Bottom CTA scroll to form
+    const scrollToFormBtn = document.querySelector('[data-action="scroll-to-form"]');
+    if (scrollToFormBtn) {
+        scrollToFormBtn.addEventListener('click', () => {
+            const formContainer = document.getElementById('inline-lead-form-container');
+            const toggleBtn = document.getElementById('show-inline-lead-btn');
+            
+            if (formContainer && formContainer.classList.contains('hidden')) {
+                // Rozbal formulář
+                formContainer.classList.remove('hidden');
+                if (toggleBtn) {
+                    toggleBtn.innerHTML = '❌ Zrušit';
+                    toggleBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                    toggleBtn.classList.add('bg-gray-500', 'hover:bg-gray-600');
+                }
+            }
+            
+            // Scrolluj k formuláři
+            setTimeout(() => {
+                if (formContainer) {
+                    formContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
+        });
+    }
 };
+
 

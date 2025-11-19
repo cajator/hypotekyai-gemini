@@ -978,7 +978,7 @@ const renderResults = () => {
             <!-- INLINE LEAD FORM -->
             <div id="inline-lead-form-container" class="hidden mt-5 bg-white rounded-xl p-5 text-gray-800">
                 <h4 class="text-base font-bold mb-3 text-center text-gray-900">📋 Zadej své kontaktní údaje</h4>
-                <form id="inline-lead-form" name="inline-lead-form" action="/" method="POST" data-netlify="true" netlify-honeypot="bot-field" class="space-y-3">
+                <form id="inline-lead-form" class="space-y-3" name="inline-lead-form" data-netlify="true" netlify-honeypot="bot-field">
                     <input type="hidden" name="form-name" value="inline-lead-form" />
                     <p class="hidden"><label>Nevyplňujte: <input name="bot-field" /></label></p>
                     <input type="hidden" name="extraData" id="inline-extra-data" />
@@ -988,12 +988,14 @@ const renderResults = () => {
                             <label class="form-label text-sm">Jméno a příjmení *</label>
                             <input type="text" name="name" required 
                                 pattern="^[A-Za-zÀ-ž\\s]{2,}(\\s[A-Za-zÀ-ž\\s]{2,})?$"
+                                title="Zadejte prosím platné jméno a příjmení (alespoň 2 znaky)."
                                 class="modern-input text-sm">
                         </div>
                         <div>
                             <label class="form-label text-sm">Telefon *</label>
                             <input type="tel" name="phone" required
                                 pattern="^(\\+420)? ?[1-9][0-9]{2} ?[0-9]{3} ?[0-9]{3}$"
+                                title="Zadejte platné 9místné telefonní číslo (může začínat +420)."
                                 class="modern-input text-sm">
                         </div>
                     </div>
@@ -1006,6 +1008,7 @@ const renderResults = () => {
                             <label class="form-label text-sm">PSČ *</label>
                             <input type="text" name="psc" required 
                                 pattern="^\\d{3} ?\\d{2}$"
+                                title="Zadejte 5 číslic PSČ, např. 11000 nebo 110 00"
                                 placeholder="např. 110 00"
                                 class="modern-input text-sm">
                         </div>
@@ -2177,37 +2180,100 @@ const renderResults = () => {
             });
         }
         
-        // 2. OPRAVENÝ Inline lead form submit V2.5 - NATIVNÍ SUBMIT
+        // 2. OPRAVENÝ Inline lead form submit V2.6 - STEJNÁ LOGIKA JAKO HLAVNÍ FORM
         const inlineForm = document.getElementById('inline-lead-form');
         if (inlineForm) {
-            inlineForm.addEventListener('submit', (e) => {
-                console.log('📝 Formulář se odesílá...');
+            inlineForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                console.log('📝 Inline formulář se odesílá...');
                 
-                // Nastavím extraData před nativním submitnutím
-                const extraData = JSON.stringify({
-                    source: 'inline-form-v2.5',
-                    calculation: {
-                        loanAmount: state.formData.loanAmount,
-                        propertyValue: state.formData.propertyValue,
-                        monthlyPayment: state.calculation.selectedOffer?.monthlyPayment,
-                        rate: state.calculation.selectedOffer?.rate
+                const submitBtn = inlineForm.querySelector('button[type="submit"]');
+                
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = '⏳ Odesílám...';
+                }
+                
+                try {
+                    // 1. Ručně posbíráme data z viditelných polí formuláře
+                    const bodyParams = new URLSearchParams();
+                    bodyParams.append('form-name', 'inline-lead-form');
+                    bodyParams.append('name', inlineForm.querySelector('[name="name"]').value);
+                    bodyParams.append('phone', inlineForm.querySelector('[name="phone"]').value);
+                    bodyParams.append('email', inlineForm.querySelector('[name="email"]').value);
+                    bodyParams.append('psc', inlineForm.querySelector('[name="psc"]').value);
+                    bodyParams.append('contact-time', inlineForm.querySelector('[name="contact-time"]').value);
+                    bodyParams.append('note', inlineForm.querySelector('[name="note"]').value);
+
+                    // 2. Připravíme extra data
+                    const extraData = {
+                        source: 'inline-form-v2.6',
+                        chatHistory: state.chatHistory
+                    };
+
+                    if (state.calculatorInteracted) {
+                        const safeCalculationData = {
+                            offers: state.calculation.offers,
+                            selectedOffer: state.calculation.selectedOffer,
+                            approvability: state.calculation.approvability,
+                            ...(state.calculation.fixationDetails && { fixationDetails: state.calculation.fixationDetails })
+                        };
+                        extraData.calculation = safeCalculationData;
+                        extraData.formData = state.formData;
+                        console.log("Přidávám data z kalkulačky.");
                     }
-                });
-                const extraDataField = document.getElementById('inline-extra-data');
-                if (extraDataField) {
-                    extraDataField.value = extraData;
-                }
-                
-                // Google Analytics
-                if (typeof gtag !== 'undefined') {
-                    gtag('event', 'form_submit', {
-                        form_type: 'inline_lead_v2.5',
-                        value: state.formData.loanAmount || 0
+
+                    // 3. Přidáme extra data do těla požadavku
+                    if (Object.keys(extraData).length > 0) {
+                        bodyParams.append('extraData', JSON.stringify(extraData, null, 2));
+                    }
+
+                    // 4. Odešleme data na STEJNÝ endpoint jako hlavní formulář
+                    const response = await fetch('/.netlify/functions/form-handler', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: bodyParams.toString()
                     });
+                    
+                    console.log('📡 Response status:', response.status);
+                    
+                    // 5. Zkontrolujeme, zda funkce odpověděla úspěšně
+                    if (response.ok) {
+                        console.log('✅ Inline formulář odeslán!');
+                        
+                        // Skryjeme formulář a zobrazíme success message
+                        inlineForm.classList.add('hidden');
+                        const successMsg = document.getElementById('inline-form-success');
+                        if (successMsg) {
+                            successMsg.classList.remove('hidden');
+                        }
+                        
+                        // Google Analytics
+                        if (typeof gtag === 'function') {
+                            gtag('event', 'generate_lead', {
+                                'event_category': 'form_submission',
+                                'event_label': 'inline_form',
+                            });
+                            console.log('GA4 event generate_lead sent (inline form).');
+                            
+                            // Google Ads konverze
+                            gtag('event', 'conversion', {
+                                'send_to': 'AW-778075298/UyVCMT9zpABEKLSgfgMC'
+                            });
+                            console.log('Google Ads conversion event sent (inline form).');
+                        }
+                    } else {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                } catch (error) {
+                    console.error('❌ Chyba při odesílání inline formuláře:', error);
+                    alert('Nastala chyba při odesílání formuláře. Zkuste to prosím znovu nebo nás kontaktujte přímo.');
+                    
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = '📞 Odeslat nezávazně';
+                    }
                 }
-                
-                // Nechám nativní submit pokračovat (Netlify ho zpracuje)
-                // e.preventDefault() není voláno!
             });
         }
         

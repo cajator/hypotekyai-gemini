@@ -1037,9 +1037,9 @@ const renderResults = () => {
         </div>
     `;
 
-    // Alternativní možnosti
+    // Alternativní možnosti - V2.2: Podmíněné zobrazení
     const alternativesHTML = `
-        <div class="grid grid-cols-1 ${state.mode === \'guided\' ? \'\' : \'sm:grid-cols-2\'} gap-4 mb-6">
+        <div class="grid grid-cols-1 ${state.mode !== 'guided' ? 'sm:grid-cols-2' : ''} gap-4 mb-6">
             <div class="bg-white p-4 rounded-xl border-2 border-gray-200 hover:border-purple-300 hover:shadow-lg transition-all cursor-pointer" data-action="discuss-with-ai">
                 <div class="flex items-center mb-2">
                     <span class="text-2xl mr-2">💬</span>
@@ -1051,7 +1051,8 @@ const renderResults = () => {
                 </button>
             </div>
             
-            ${state.mode !== \'guided\' ? `<div class="bg-white p-4 rounded-xl border-2 border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all cursor-pointer" data-action="switch-to-guided">
+            ${state.mode !== 'guided' ? `
+            <div class="bg-white p-4 rounded-xl border-2 border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all cursor-pointer" data-action="switch-to-guided">
                 <div class="flex items-center mb-2">
                     <span class="text-2xl mr-2">📊</span>
                     <h4 class="text-base font-bold text-gray-900">Detailní analýza</h4>
@@ -1061,7 +1062,8 @@ const renderResults = () => {
                     Přepnout na detailní
                 </button>
             </div>
-        </div>` : \'\'}
+            ` : ''}
+        </div>
     `;
 
     // Skóre (pokud existuje)
@@ -1086,14 +1088,13 @@ const renderResults = () => {
                     <h5 class="text-sm font-bold mb-2">Celková šance na schválení:</h5>
                     <div class="text-3xl sm:text-4xl font-bold text-green-600">${totalScoreValue}%</div>
                 </div>
-        
-        <!-- NOVÉ V2.2: Tlačítko Probrat s AI -->
-        <div class="mt-4 text-center">
-            <button class="nav-btn bg-purple-600 hover:bg-purple-700 text-white text-sm py-2 px-4" data-action="discuss-score-with-ai">
-                💬 Probrat skóre s AI
-            </button>
-        </div>
-            </div>`</div>`);
+                
+                <div class="mt-4 text-center">
+                    <button class="nav-btn bg-purple-600 hover:bg-purple-700 text-white text-sm py-2 px-4" data-action="discuss-score-with-ai">
+                        💬 Probrat skóre s AI
+                    </button>
+                </div>
+            </div>`;
     }
 
     // Graf splácení
@@ -1173,6 +1174,12 @@ const renderResults = () => {
                         ` : ''}
                     </div>
                 ` : ''}
+                
+                <div class="mt-4 text-center">
+                    <button class="nav-btn bg-purple-600 hover:bg-purple-700 text-white text-sm py-2 px-4" data-action="discuss-fixation-with-ai">
+                        💬 Probrat fixaci s AI
+                    </button>
+                </div>
             </div>
         `;
     }
@@ -1195,13 +1202,6 @@ const renderResults = () => {
             ${chartHTML}
             ${bottomCTAHTML}
         </div>
-                
-                <!-- NOVÉ V2.2: Tlačítko Probrat s AI -->
-                <div class="mt-4 text-center">
-                    <button class="nav-btn bg-purple-600 hover:bg-purple-700 text-white text-sm py-2 px-4" data-action="discuss-fixation-with-ai">
-                        💬 Probrat fixaci s AI
-                    </button>
-                </div>
     `;
 
     if (chartData && typeof Chart !== 'undefined') {
@@ -1368,7 +1368,7 @@ const renderResults = () => {
               ).join('')}</div>`
             : `<div class="flex flex-wrap gap-2">${suggestions.map(s => 
                 `<button class="suggestion-btn" data-suggestion="${s}">${s}</button>`
-              ).join('')}</div>`;`;
+              ).join('')}</div>`;
             
         container.innerHTML = suggestionsHTML;
     };
@@ -2178,29 +2178,30 @@ const addV22EventListeners = () => {
         });
     }
     
-    // 2. OPRAVENÝ Inline lead form submit V2.2 - FUNGUJE!
+    // 2. OPRAVENÝ Inline lead form submit V2.2 - s lepším handlingem
     const inlineForm = document.getElementById('inline-lead-form');
     if (inlineForm) {
-        // Odstraň staré listenery
-        const newForm = inlineForm.cloneNode(true);
-        inlineForm.parentNode.replaceChild(newForm, inlineForm);
-        
-        newForm.addEventListener('submit', async (e) => {
+        inlineForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             console.log('📝 Formulář se odesílá...');
             
-            // Připrav extra data
-            const extraDataField = newForm.querySelector('#inline-extra-data');
-            if (extraDataField) {
-                extraDataField.value = JSON.stringify({
-                    source: 'inline-form-v2.2',
+            // Připravit extra data
+            const extraData = JSON.stringify({
+                source: 'inline-form-v2.2',
+                calculation: {
                     loanAmount: state.formData.loanAmount,
+                    propertyValue: state.formData.propertyValue,
+                    monthlyPayment: state.calculation.selectedOffer?.monthlyPayment,
                     rate: state.calculation.selectedOffer?.rate
-                });
+                }
+            });
+            const extraDataField = document.getElementById('inline-extra-data');
+            if (extraDataField) {
+                extraDataField.value = extraData;
             }
             
-            const formData = new FormData(newForm);
-            const submitBtn = newForm.querySelector('button[type="submit"]');
+            const formData = new FormData(inlineForm);
+            const submitBtn = inlineForm.querySelector('button[type="submit"]');
             
             try {
                 if (submitBtn) {
@@ -2218,11 +2219,13 @@ const addV22EventListeners = () => {
                 
                 if (response.ok || response.status === 200) {
                     console.log('✅ Formulář odeslán!');
-                    newForm.classList.add('hidden');
+                    inlineForm.classList.add('hidden');
                     const successMsg = document.getElementById('inline-form-success');
-                    if (successMsg) successMsg.classList.remove('hidden');
+                    if (successMsg) {
+                        successMsg.classList.remove('hidden');
+                    }
                     
-                    // Google Analytics
+                    // Google Analytics event
                     if (typeof gtag !== 'undefined') {
                         gtag('event', 'form_submit', {
                             form_type: 'inline_lead_v2.2',
@@ -2234,46 +2237,12 @@ const addV22EventListeners = () => {
                 }
             } catch (error) {
                 console.error('❌ Chyba při odesílání:', error);
-                alert('Nastala chyba při odesílání formuláře. Zkuste to prosím znovu nebo nás kontaktujte přímo na telefonu.');
+                alert('Nastala chyba při odesílání formuláře. Zkuste to prosím znovu nebo nás kontaktujte přímo.');
                 
                 if (submitBtn) {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '📞 Odeslat nezávazně';
                 }
-            }
-        });
-    }
-            document.getElementById('inline-extra-data').value = extraData;
-            
-            const formData = new FormData(inlineForm);
-            
-            try {
-                const response = await fetch('/', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams(formData).toString()
-                });
-                
-                if (response.ok) {
-                    inlineForm.classList.add('hidden');
-                    const successMsg = document.getElementById('inline-form-success');
-                    if (successMsg) {
-                        successMsg.classList.remove('hidden');
-                    }
-                    
-                    // Google Analytics event
-                    if (typeof gtag !== 'undefined') {
-                        gtag('event', 'form_submit', {
-                            form_type: 'inline_lead_v2.1',
-                            value: state.formData.loanAmount || 0
-                        });
-                    }
-                } else {
-                    alert('Nastala chyba při odesílání. Zkuste to prosím znovu.');
-                }
-            } catch (error) {
-                console.error('Chyba při odesílání formuláře:', error);
-                alert('Nastala chyba při odesílání. Zkuste to prosím znovu.');
             }
         });
     }
@@ -2356,7 +2325,6 @@ const addV22EventListeners = () => {
             }, 100);
         });
     }
-
     
     // 8. NOVÉ V2.2: Probrat skóre s AI
     const discussScoreBtns = document.querySelectorAll('[data-action="discuss-score-with-ai"]');

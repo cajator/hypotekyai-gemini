@@ -160,12 +160,23 @@ const findQuickResponse = (message) => {
     const updateActiveUsers = () => {
         const hour = new Date().getHours();
         let baseUsers = 120;
-        if (hour >= 8 && hour <= 18) baseUsers = 140;
-        else if (hour >= 19 && hour <= 22) baseUsers = 130;
+        
+        if (hour >= 8 && hour <= 18) {
+            baseUsers = 140;
+        } else if (hour >= 19 && hour <= 22) {
+            baseUsers = 130;
+        } else if (hour >= 6 && hour <= 7) {
+            baseUsers = 125;
+        }
+        
         state.activeUsers = baseUsers + Math.floor(Math.random() * 10) - 5;
+        
         const footerCounter = document.getElementById('active-users-counter');
-        if (footerCounter) footerCounter.textContent = `${state.activeUsers} lidí právě používá naše nástroje`;
+        if (footerCounter) {
+            footerCounter.textContent = `${state.activeUsers} lidí právě používá naše nástroje`;
+        }
     };
+
     setInterval(updateActiveUsers, 30000);
 
     // --- DOM ELEMENTS CACHE ---
@@ -207,32 +218,56 @@ const findQuickResponse = (message) => {
     
     // --- COMPONENT FACTORIES ---
     const createSlider = (id, label, value, min, max, step, containerClass = '', infoText = '') => {
-        let suffix = ' Kč';
-        if (id.includes('Term') || id.includes('age') || id.includes('fixation')) suffix = ' let';
-        else if (id.includes('children')) suffix = '';
+    let suffix = ' Kč';
+    if (id.includes('Term') || id.includes('age') || id.includes('fixation')) {
+        suffix = ' let';
+    } else if (id.includes('children')) {
+        suffix = '';
+    }
 
-        const isMobileDevice = isMobile();
-        const infoIcon = infoText ? `<span class="info-icon" data-info-key="${id}" data-info-text="${infoText}">?</span>` : '';
+    const isMobileDevice = isMobile(); // Získáme informaci, zda je to mobil
+    const infoIcon = infoText ? `<span class="info-icon" data-info-key="${id}" data-info-text="${infoText}">?</span>` : '';
 
-        const topRowClasses = isMobileDevice ? "flex flex-col items-start mb-2 gap-1" : "flex flex-row justify-between items-center mb-2 gap-2";
-        const labelClasses = isMobileDevice ? "form-label text-sm m-0 flex items-center gap-1.5" : "form-label m-0 flex-shrink-0 flex items-center gap-1.5";
-        const inputWrapperClasses = isMobileDevice ? "flex items-center gap-1 w-full justify-end" : "flex items-center gap-1 relative z-10";
-        const inputClasses = isMobileDevice ? "slider-value-input text-base max-w-[140px]" : "slider-value-input max-w-[140px]";
-        const suffixClasses = isMobileDevice ? "font-semibold text-gray-500 text-sm flex-shrink-0" : "font-semibold text-gray-500 text-sm flex-shrink-0";
+    // --- Změna layoutu pro mobil ---
+    // Na mobilu: Label a Input pod sebou (flex-col). Na desktopu: Vedle sebe (sm:flex-row).
+    const topRowClasses = isMobileDevice
+        ? "flex flex-col items-start mb-2 gap-1" // Mobil: Pod sebou, zarovnání doleva, mezera 1
+        : "flex flex-row justify-between items-center mb-2 gap-2"; // Desktop: Vedle sebe, mezery mezi, zarovnání na střed
 
-        return `<div class="${containerClass}" id="${id}-group" style="width: 100%;">
-            <div class="${topRowClasses}">
-                <label for="${id}" class="${labelClasses}">${label} ${infoIcon}</label>
-                <div class="${inputWrapperClasses}">
-                    <input type="text" id="${id}-input" value="${formatNumber(value, false)}" class="${inputClasses}" style="position: relative; z-index: 2;">
-                    <span class="${suffixClasses}">${suffix}</span>
-                </div>
+    const labelClasses = isMobileDevice
+        ? "form-label text-sm m-0 flex items-center gap-1.5" // Mobil: Menší text
+        : "form-label m-0 flex-shrink-0 flex items-center gap-1.5"; // Desktop
+
+    const inputWrapperClasses = isMobileDevice
+        ? "flex items-center gap-1 w-full justify-end" // Mobil: Input zabere celou šířku, zarovnání doprava
+        : "flex items-center gap-1 relative z-10"; // Desktop: Původní styl
+
+    const inputClasses = isMobileDevice
+        ? "slider-value-input text-base max-w-[140px]" // Mobil: Větší písmo, mírně větší šířka
+        : "slider-value-input max-w-[140px]"; // Desktop: Původní styl
+
+    const suffixClasses = isMobileDevice
+        ? "font-semibold text-gray-500 text-sm flex-shrink-0" // Mobil: Menší text
+        : "font-semibold text-gray-500 text-sm flex-shrink-0"; // Desktop: Původní styl (upravena velikost)
+
+    // Sestavení HTML s novými třídami
+    return `<div class="${containerClass}" id="${id}-group" style="width: 100%;">
+        <div class="${topRowClasses}">
+            <label for="${id}" class="${labelClasses}">
+                ${label} ${infoIcon}
+            </label>
+            <div class="${inputWrapperClasses}">
+                <input type="text" id="${id}-input" value="${formatNumber(value, false)}"
+                       class="${inputClasses}"
+                       style="position: relative; z-index: 2;"> 
+                <span class="${suffixClasses}">${suffix}</span>
             </div>
-            <div class="slider-container pt-1 pb-2">
-                <input type="range" id="${id}" name="${id}" min="${min}" max="${max}" value="${value}" step="${step}" class="slider-input">
-            </div>
-        </div>`;
-    };
+        </div>
+        <div class="slider-container pt-1 pb-2"> 
+            <input type="range" id="${id}" name="${id}" min="${min}" max="${max}" value="${value}" step="${step}" class="slider-input">
+        </div>
+    </div>`;
+};
     
     const createSelect = (id, label, options, selectedValue, containerClass = '') => {
         const optionsHTML = Object.entries(options).map(([key, val]) => 
@@ -341,20 +376,22 @@ const findQuickResponse = (message) => {
         
         if (isMobileDevice) {
             // MOBILNÍ VERZE - input je fixní dole, zprávy mají padding-bottom
-            const inputFooterHeight = '68px';
-            const suggestionsHeight = '45px';
+            const inputFooterHeight = '68px'; // Odhadovaná výška inputu + padding
+            const suggestionsHeight = '45px'; // Odhadovaná výška suggestions
             return `
                 <div id="ai-chat-wrapper" style="position: relative; width: 100%; height: calc(100vh - 8rem); display: flex; flex-direction: column; overflow: hidden;">
-                    
-                    <div id="chat-messages" style="flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 12px; padding-bottom: calc(${inputFooterHeight} + ${suggestionsHeight} + 12px); background: #f9fafb; border: 1px solid #e5e7eb; border-bottom: none; border-radius: 8px 8px 0 0;"></div>
-                    
-                    <div id="ai-suggestions" style="padding: 8px 12px; border-left: 1px solid #e5e7eb; border-right: 1px solid #e5e7eb; background: white; overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; height: ${suggestionsHeight}; box-sizing: border-box;"></div>
-                    
+
+                    <div id="chat-messages" style="flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 12px; padding-bottom: calc(${inputFooterHeight} + ${suggestionsHeight} + 12px); background: #f9fafb; border: 1px solid #e5e7eb; border-bottom: none; border-radius: 8px 8px 0 0;">
+                    </div>
+
+                     <div id="ai-suggestions" style="padding: 8px 12px; border-left: 1px solid #e5e7eb; border-right: 1px solid #e5e7eb; background: white; overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; height: ${suggestionsHeight}; box-sizing: border-box;">
+                     </div>
+
                     <div id="chat-input-footer" style="position: fixed; bottom: 0; left: 0; right: 0; padding: 12px; background: white; border-top: 2px solid #2563eb; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 1000; height: ${inputFooterHeight}; box-sizing: border-box;">
-                        </div>
-                    
+                    </div>
+
                     ${state.calculation.selectedOffer ? `
-                    <button id="mobile-sidebar-toggle" 
+                    <button id="mobile-sidebar-toggle"
                             style="position: fixed; bottom: calc(${inputFooterHeight} + 20px); right: 20px; width: 56px; height: 56px; background: #2563eb; color: white; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 900; border: none; cursor: pointer;"
                             data-action="toggle-mobile-sidebar">
                         <span style="font-size: 24px;">📊</span>
@@ -363,7 +400,7 @@ const findQuickResponse = (message) => {
                 </div>`;
         }
         
-        // DESKTOP VERZE
+        // DESKTOP VERZE - Přepnuto na grid layout
         return `
             <div class="lg:grid lg:grid-cols-12 lg:gap-8 items-start">
                 <div id="ai-chat-desktop-wrapper" class="lg:col-span-8 bg-white rounded-2xl shadow-xl border flex flex-col" style="min-height: calc(85vh - 100px);">
@@ -377,14 +414,24 @@ const findQuickResponse = (message) => {
                                 </div>
                             </div>
                             <div class="flex gap-2">
-                                <button class="text-xs bg-white px-3 py-1 rounded-lg border hover:bg-gray-50" data-action="reset-chat">🔄 Nový chat</button>
-                                <button class="text-xs bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700" data-action="show-lead-form">📞 Domluvit se specialistou</button>
+                                <button class="text-xs bg-white px-3 py-1 rounded-lg border hover:bg-gray-50"
+                                        data-action="reset-chat">
+                                    🔄 Nový chat
+                                </button>
+                                <button class="text-xs bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700"
+                                        data-action="show-lead-form">
+                                    📞 Domluvit se specialistou
+                                </button>
                             </div>
                         </div>
                     </div>
+                    
                     <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
+                    
                     <div id="ai-suggestions" class="p-4 border-t bg-gray-50"></div>
-                    <div id="chat-input-footer" class="p-4 border-t bg-white rounded-b-2xl"></div>
+                    
+                    <div id="chat-input-footer" class="p-4 border-t bg-white rounded-b-2xl">
+                        </div>
                 </div>
                 <div id="sidebar-container" class="lg:col-span-4 lg:sticky top-28"></div>
             </div>`;
@@ -738,60 +785,334 @@ const findQuickResponse = (message) => {
     };
 
     // ZAČÁTEK KOMPLETNÍ A OPRAVENÉ FUNKCE renderResults
-    const renderResults = () => {
-        const offers = state.calculation?.offers || [];
-        let selectedOffer = state.calculation?.selectedOffer;
-        const container = document.getElementById('results-container');
-        
-        if (!container) return;
-        container.classList.remove('hidden');
 
-        if (offers.length === 0) {
-            container.innerHTML = `<div class="text-center bg-red-50 p-6 rounded-lg"><p class="text-red-700">Pro zadané parametry nemáme online nabídku. Kontaktujte nás pro individuální řešení.</p></div>`;
-            return;
+// ============================================
+// HLAVNÍ ZMĚNA V2: NOVÁ FUNKCE renderResults()
+// ============================================
+const renderResults = () => {
+    const offers = state.calculation?.offers || [];
+    const approvability = state.calculation?.approvability;
+    let selectedOffer = state.calculation?.selectedOffer;
+
+    const container = document.getElementById('results-container');
+    if (!container) {
+        console.error("Kontejner pro výsledky (#results-container) nebyl nalezen.");
+        return;
+    }
+
+    container.classList.remove('hidden');
+    if (offers.length === 0) {
+        container.innerHTML = `<div class="text-center bg-red-50 p-8 rounded-lg mt-8"><h3 class="text-2xl font-bold text-red-800 mb-2">Dle zadaných parametrů to nevychází</h3><p class="text-red-700">Zkuste upravit parametry, nebo se <a href="#kontakt" data-target="#kontakt" data-action="show-lead-form" class="font-bold underline scroll-to">spojte s naším specialistou</a>.</p></div>`;
+        state.calculation.selectedOffer = null;
+        return;
+    }
+
+    if (!selectedOffer && offers.length > 0) {
+        selectedOffer = offers[0];
+        state.calculation.selectedOffer = selectedOffer;
+    }
+
+    let chartData = null;
+    let fixationDetails = null;
+    
+    if (selectedOffer) {
+        try {
+            const currentPropertyValue = state.formData.propertyValue || 0;
+            const currentLandValue = state.formData.landValue || 0;
+            const currentLoanAmount = state.formData.loanAmount || 0;
+            const currentLoanTerm = state.formData.loanTerm || 30;
+            const currentAge = state.formData.age || 35;
+            const currentFixation = state.formData.fixation || 3;
+            const currentPurpose = state.formData.purpose || 'koupě';
+            const effectivePropertyValue = currentPurpose === 'výstavba' ? currentPropertyValue + currentLandValue : currentPropertyValue;
+            const effectiveTerm = Math.min(currentLoanTerm, Math.max(5, 70 - currentAge));
+            
+            if (effectivePropertyValue > 0 && currentLoanAmount > 0 && selectedOffer.rate > 0 && effectiveTerm > 0 && currentFixation > 0) {
+                fixationDetails = calculateFixationAnalysis(currentLoanAmount, effectivePropertyValue, selectedOffer.rate, effectiveTerm, currentFixation);
+                chartData = Array.from({ length: effectiveTerm }, (_, i) => calculateAmortization(currentLoanAmount, selectedOffer.rate, effectiveTerm, i + 1));
+            }
+        } catch (e) {
+            console.error("Chyba při výpočtu detailů:", e);
         }
+    }
 
-        if (!selectedOffer && offers.length > 0) selectedOffer = offers[0];
-
-        container.innerHTML = `
-            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-200 p-6 sm:p-8 mt-8 text-center shadow-xl relative overflow-hidden">
-                <div class="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">DOPORUČENO AI</div>
-                
-                <h3 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2">Vaše nejlepší nabídka</h3>
-                <p class="text-gray-600 mb-6">Na základě srovnání 19 bank pro vás máme toto řešení:</p>
-                
-                <div class="grid grid-cols-2 gap-4 mb-8 max-w-md mx-auto">
-                    <div class="bg-white p-4 rounded-xl border border-blue-100 shadow-sm">
-                        <p class="text-xs text-gray-500 uppercase font-bold">Měsíční splátka</p>
-                        <p class="text-2xl sm:text-3xl font-extrabold text-blue-600">${formatNumber(selectedOffer.monthlyPayment)}</p>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl border border-blue-100 shadow-sm">
-                        <p class="text-xs text-gray-500 uppercase font-bold">Úroková sazba</p>
-                        <p class="text-2xl sm:text-3xl font-extrabold text-green-600">${selectedOffer.rate.toFixed(2)} %</p>
-                    </div>
+    const bestOfferHTML = selectedOffer ? `
+        <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 sm:p-6 rounded-xl border-2 border-green-300 shadow-lg mb-6">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg sm:text-xl font-bold text-green-900 flex items-center">
+                    <span class="text-2xl mr-2">✅</span> Nejlepší nabídka pro vás
+                </h3>
+                ${offers.length > 1 ? `<button class="text-sm text-blue-600 hover:text-blue-800 underline" data-action="show-all-offers">Zobrazit všech ${offers.length} nabídek</button>` : ''}
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 bg-white p-4 rounded-lg">
+                <div>
+                    <p class="text-xs text-gray-500 mb-1">Měsíční splátka</p>
+                    <p class="text-lg sm:text-xl font-bold text-gray-900">${formatNumber(selectedOffer.monthlyPayment)}</p>
                 </div>
-
-                <div class="space-y-3 max-w-md mx-auto">
-                    <button onclick="document.getElementById('kontakt').scrollIntoView({behavior: 'smooth'});" class="w-full nav-btn bg-green-600 hover:bg-green-700 text-white text-lg py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transform transition hover:-translate-y-1">
-                        👉 Mám zájem o tuto sazbu
-                    </button>
-                    
-                    <button class="w-full py-3 px-6 text-blue-600 font-semibold hover:bg-blue-50 rounded-xl border border-transparent hover:border-blue-200 transition-colors" data-action="discuss-with-ai">
-                        💬 Chci to probrat s AI asistentem
-                    </button>
-                    
-                    <p class="text-xs text-gray-500 mt-2">
-                        + Další 2 neveřejné nabídky dostupné u specialisty.<br>
-                        Nezávazná poptávka.
-                    </p>
+                <div>
+                    <p class="text-xs text-gray-500 mb-1">Úroková sazba</p>
+                    <p class="text-lg sm:text-xl font-bold text-blue-600">${selectedOffer.rate?.toFixed(2)}%</p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500 mb-1">RPSN</p>
+                    <p class="text-lg sm:text-xl font-bold text-gray-700">${selectedOffer.rpsn?.toFixed(2) || 'N/A'}%</p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500 mb-1">Celkem zaplatíte</p>
+                    <p class="text-lg sm:text-xl font-bold text-gray-700">${formatNumber(selectedOffer.totalPayment || selectedOffer.monthlyPayment * (state.formData.loanTerm || 30) * 12)}</p>
                 </div>
             </div>
-        `;
+            ${selectedOffer.highlights ? `<div class="flex flex-wrap gap-2 mt-3">${selectedOffer.highlights.map(h => `<span class="inline-block px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full font-semibold">${h}</span>`).join('')}</div>` : ''}
+        </div>
+    ` : '';
+
+    const megaCTAHTML = `
+        <div class="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 sm:p-8 rounded-2xl shadow-2xl mb-6 text-white">
+            <div class="text-center mb-6">
+                <div class="text-4xl sm:text-5xl mb-3">📞</div>
+                <h3 class="text-2xl sm:text-3xl font-extrabold mb-2">Nechte si zpracovat nabídku od specialisty</h3>
+                <p class="text-sm sm:text-base text-blue-100 mb-1">Vyjedná vám nejlepší individuální sazbu a provede celým procesem</p>
+                <p class="text-xs text-blue-200">✓ Služba zcela zdarma  ✓ Ozveme se do 24 hodin  ✓ Bez závazků</p>
+            </div>
+            
+            <div class="text-center">
+                <button 
+                    id="show-inline-lead-btn" 
+                    data-action="toggle-inline-lead-form"
+                    class="nav-btn bg-green-600 hover:bg-green-700 text-white text-lg sm:text-xl font-bold px-8 sm:px-12 py-4 sm:py-5 rounded-xl shadow-xl hover:shadow-2xl transition-all inline-block">
+                    ✅ ZAVOLAT MI ZDARMA
+                </button>
+            </div>
+            
+            <div id="inline-lead-form-container" class="hidden mt-6 bg-white rounded-xl p-6 text-gray-800">
+                <h4 class="text-lg font-bold mb-4 text-center text-gray-900">📋 Zadejte vaše kontaktní údaje</h4>
+                <form id="inline-lead-form" class="space-y-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="form-label text-sm">Jméno a příjmení *</label>
+                            <input type="text" name="name" required 
+                                pattern="^[A-Za-zÀ-ž\\s]{2,}(\\s[A-Za-zÀ-ž\\s]{2,})?$"
+                                class="modern-input text-sm">
+                        </div>
+                        <div>
+                            <label class="form-label text-sm">Telefon *</label>
+                            <input type="tel" name="phone" required
+                                pattern="^(\\+420)? ?[1-9][0-9]{2} ?[0-9]{3} ?[0-9]{3}$"
+                                class="modern-input text-sm">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="form-label text-sm">E-mail *</label>
+                            <input type="email" name="email" required class="modern-input text-sm">
+                        </div>
+                        <div>
+                            <label class="form-label text-sm">PSČ *</label>
+                            <input type="text" name="psc" required 
+                                pattern="^\\d{3} ?\\d{2}$"
+                                placeholder="např. 110 00"
+                                class="modern-input text-sm">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label text-sm">Kdy vás můžeme kontaktovat?</label>
+                        <select name="contact-time" class="modern-select text-sm">
+                            <option value="kdykoliv">Kdykoliv během dne</option>
+                            <option value="rano">Ráno (8:00 - 12:00)</option>
+                            <option value="odpoledne">Odpoledne (12:00 - 17:00)</option>
+                            <option value="vecer">Večer (17:00 - 20:00)</option>
+                            <option value="vikend">Pouze o víkendu</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label text-sm">Poznámka (nepovinné)</label>
+                        <textarea name="note" rows="2" class="modern-input text-sm" placeholder="Např. už mám předschválenou hypotéku, refinancuji..."></textarea>
+                    </div>
+                    <div class="text-center pt-2">
+                        <p class="text-xs text-gray-500 mb-3">Odesláním souhlasíte se zpracováním osobních údajů.</p>
+                        <button type="submit" class="w-full nav-btn bg-green-600 hover:bg-green-700 text-white font-bold py-3 text-base">
+                            📞 Odeslat nezávazně
+                        </button>
+                    </div>
+                </form>
+                <div id="inline-form-success" class="hidden mt-4 text-center p-3 bg-green-100 text-green-800 rounded-lg">
+                    <h5 class="font-bold">✅ Děkujeme!</h5>
+                    <p class="text-sm">Váš požadavek byl odeslán. Ozveme se vám brzy.</p>
+                </div>
+            </div>
+        </div>
+    `;
+
+    const alternativesHTML = `
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+            <div class="bg-white p-4 sm:p-5 rounded-xl border-2 border-gray-200 hover:border-purple-300 hover:shadow-lg transition-all cursor-pointer" data-action="discuss-with-ai">
+                <div class="flex items-center mb-2">
+                    <span class="text-3xl mr-3">💬</span>
+                    <h4 class="text-base sm:text-lg font-bold text-gray-900">Probrat s AI asistentem</h4>
+                </div>
+                <p class="text-xs sm:text-sm text-gray-600 mb-3">Okamžité odpovědi, stress testy, scénáře</p>
+                <button class="nav-btn bg-purple-600 hover:bg-purple-700 text-white text-sm py-2 px-4 w-full" data-action="discuss-with-ai">
+                    Spustit AI chat
+                </button>
+            </div>
+            
+            <div class="bg-white p-4 sm:p-5 rounded-xl border-2 border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all cursor-pointer" data-action="switch-to-guided">
+                <div class="flex items-center mb-2">
+                    <span class="text-3xl mr-3">📊</span>
+                    <h4 class="text-base sm:text-lg font-bold text-gray-900">Detailní analýza</h4>
+                </div>
+                <p class="text-xs sm:text-sm text-gray-600 mb-3">Kompletní scoring, DSTI, stress testy ČNB</p>
+                <button class="nav-btn bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 px-4 w-full" data-action="switch-to-guided">
+                    Přepnout na detailní
+                </button>
+            </div>
+        </div>
+    `;
+
+    let scoreSectionHTML = '';
+    if (approvability) {
+        const ltvExplanation = approvability.ltv > 85 ? 'Optimální LTV.' : approvability.ltv > 70 ? 'Dobré LTV.' : 'Hraniční LTV.';
+        const dstiExplanation = approvability.dsti > 80 ? 'Výborné DSTI.' : approvability.dsti > 60 ? 'Dostatečná rezerva.' : 'Nižší rezerva.';
+        const bonitaExplanation = approvability.bonita > 85 ? 'Excelentní bonita.' : approvability.bonita > 70 ? 'Velmi dobrá bonita.' : 'Standardní bonita.';
+        const totalScoreValue = (typeof approvability.total === 'number' && !isNaN(approvability.total)) ? approvability.total : 0;
         
-        setTimeout(() => container.scrollIntoView({behavior: 'smooth', block: 'center'}), 100);
-    };
-    
-// KONEC KOMPLETNÍ A OPRAVENÉ FUNKCE renderResults
+        scoreSectionHTML = `
+            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 sm:p-6 rounded-xl border border-blue-200 shadow-lg mb-6">
+                <h4 class="text-lg sm:text-xl font-bold mb-4 flex items-center">
+                    <span class="text-2xl mr-2">🎯</span> Skóre vaší žádosti
+                </h4>
+                <div class="space-y-3">
+                    ${scoreHTML('LTV', approvability.ltv, 'bg-green-500', '🏠', ltvExplanation)}
+                    ${scoreHTML('DSTI', approvability.dsti, 'bg-yellow-500', '💰', dstiExplanation)}
+                    ${scoreHTML('Bonita', approvability.bonita, 'bg-blue-500', '⭐', bonitaExplanation)}
+                </div>
+                <div class="mt-6 p-4 bg-white rounded-xl text-center">
+                    <h5 class="text-base font-bold mb-2">Celková šance na schválení:</h5>
+                    <div class="text-4xl sm:text-5xl font-bold text-green-600">${totalScoreValue}%</div>
+                </div>
+            </div>`;
+    }
+
+    const chartHTML = `
+        <div class="bg-white p-4 sm:p-6 rounded-xl border border-gray-200 shadow-lg mb-6">
+            <h4 class="text-lg sm:text-xl font-bold mb-4 flex items-center">
+                <span class="text-2xl mr-2">📈</span> Vývoj splácení v čase
+            </h4>
+            <div class="relative h-60 sm:h-80">
+                <canvas id="resultsChart"></canvas>
+            </div>
+        </div>
+    `;
+
+    let fixationDetailsHTML = '';
+    if (fixationDetails) {
+        const currentFixation = state.formData.fixation || 3;
+        const currentLoanAmount = state.formData.loanAmount || 0;
+        const effectiveTerm = Math.min(state.formData.loanTerm || 30, Math.max(5, 70 - (state.formData.age || 35)));
+        
+        fixationDetailsHTML = `
+            <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 sm:p-6 rounded-xl border border-green-200 shadow-lg mb-6">
+                <h4 class="text-lg sm:text-xl font-bold mb-3 flex items-center">
+                    <span class="text-2xl mr-2">📊</span> Detaily fixace
+                </h4>
+                <div class="bg-white p-4 rounded-xl space-y-2 text-sm shadow-sm mb-4">
+                    <div class="flex justify-between items-center pb-2 border-b">
+                        <span>Výše úvěru:</span>
+                        <strong class="text-base">${formatNumber(currentLoanAmount)}</strong>
+                    </div>
+                    <div class="flex justify-between items-center pb-2 border-b">
+                        <span>Splatnost:</span>
+                        <strong class="text-base">${effectiveTerm} let</strong>
+                    </div>
+                    <div class="flex justify-between items-center pb-2 border-b">
+                        <span>Celkem za ${currentFixation} let fixace:</span>
+                        <strong class="text-base">${formatNumber(fixationDetails.totalPaymentsInFixation)}</strong>
+                    </div>
+                    <div class="flex justify-between items-center pb-2 border-b">
+                        <span>Z toho úroky:</span>
+                        <strong class="text-base text-red-600">${formatNumber(fixationDetails.totalInterestForFixation)}</strong>
+                    </div>
+                    <div class="flex justify-between items-center pt-2">
+                        <span>Zbývající dluh po fixaci:</span>
+                        <strong class="text-base">${formatNumber(fixationDetails.remainingBalanceAfterFixation)}</strong>
+                    </div>
+                </div>
+                
+                ${fixationDetails.futureScenario ? `
+                    <div class="space-y-3">
+                        <div class="bg-blue-50 p-3 rounded-lg border border-blue-200 text-xs">
+                            <h5 class="font-bold mb-1">💡 Scénář: Pokles sazeb</h5>
+                            <p class="text-gray-600 mb-1">Pokud po ${currentFixation} letech klesne sazba na ${fixationDetails.futureScenario.optimistic.rate.toFixed(2)}%:</p>
+                            <div>Nová splátka: <strong class="text-green-600">${formatNumber(fixationDetails.futureScenario.optimistic.newMonthlyPayment)}</strong></div>
+                            <div>Úspora: <strong class="text-green-600">${formatNumber(fixationDetails.futureScenario.optimistic.monthlySavings)}/měs</strong></div>
+                        </div>
+                        
+                        ${fixationDetails.futureScenario.moderateIncrease ? `
+                            <div class="bg-orange-50 p-3 rounded-lg border border-orange-200 text-xs">
+                                <h5 class="font-bold mb-1">📈 Scénář: Mírný růst sazeb</h5>
+                                <p class="text-gray-600 mb-1">Pokud po ${currentFixation} letech vzroste sazba na ${fixationDetails.futureScenario.moderateIncrease.rate.toFixed(2)}%:</p>
+                                <div>Nová splátka: <strong class="text-orange-600">${formatNumber(fixationDetails.futureScenario.moderateIncrease.newMonthlyPayment)}</strong></div>
+                                <div>Navýšení: <strong class="text-orange-600">+${formatNumber(fixationDetails.futureScenario.moderateIncrease.monthlyIncrease)}/měs</strong></div>
+                            </div>
+                        ` : ''}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    container.innerHTML = `
+        <div>
+            <h3 class="text-2xl sm:text-3xl font-bold mb-6">✅ Vaše výsledky</h3>
+            
+            ${bestOfferHTML}
+            
+            <div id="all-offers-container" class="hidden mb-6">
+                <h4 class="text-lg font-bold mb-3">Všechny nabídky (${offers.length}):</h4>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    ${offers.map(o => `
+                        <div class="offer-card p-4 cursor-pointer border ${o.id === selectedOffer?.id ? 'border-blue-600 ring-2 ring-blue-200 bg-blue-50' : 'border-gray-200 bg-white'} rounded-xl shadow-md hover:shadow-lg transition-all" data-offer-id="${o.id}">
+                            <h5 class="text-base font-bold text-blue-700 mb-1">${o.title || 'Nabídka'}</h5>
+                            <p class="text-xs text-gray-600 mb-2">${o.description || ''}</p>
+                            <div class="text-right mt-2 pt-2 border-t">
+                                <div class="text-xl font-extrabold text-gray-900">${formatNumber(o.monthlyPayment)}</div>
+                                <div class="text-xs font-semibold text-gray-500">Úrok ${o.rate?.toFixed(2)}%</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            
+            ${megaCTAHTML}
+            
+            <h4 class="text-lg font-bold mb-3 text-center text-gray-600">Nebo raději:</h4>
+            ${alternativesHTML}
+            
+            ${scoreSectionHTML}
+            ${fixationDetailsHTML}
+            ${chartHTML}
+        </div>
+    `;
+
+    if (chartData && typeof Chart !== 'undefined') {
+        setTimeout(() => {
+            if (state.chart) { 
+                try { state.chart.destroy(); } catch(e) {}
+            }
+            renderChart('resultsChart', chartData);
+        }, 50);
+    }
+
+    addOfferCardListeners();
+    addV2EventListeners();
+
+    if (!container.dataset.renderedOnce) {
+        setTimeout(() => scrollToTarget('#results-container'), 150);
+        container.dataset.renderedOnce = "true";
+    }
+};
+// KONEC NOVÉ FUNKCE renderResults V2
+
         
     const renderChart = (canvasId, schedule) => { 
         if (state.chart) { 
@@ -1709,3 +2030,119 @@ const findQuickResponse = (message) => {
 
     init();
     });
+
+// ============================================
+// NOVÁ FUNKCE V2: Event Listeners pro nový layout
+// ============================================
+const addV2EventListeners = () => {
+    // Toggle inline lead form
+    const toggleBtn = document.getElementById('show-inline-lead-btn');
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const formContainer = document.getElementById('inline-lead-form-container');
+            if (!formContainer) return;
+            
+            const isVisible = !formContainer.classList.contains('hidden');
+            
+            if (isVisible) {
+                formContainer.classList.add('hidden');
+                toggleBtn.innerHTML = '✅ ZAVOLAT MI ZDARMA';
+                toggleBtn.classList.remove('bg-gray-500', 'hover:bg-gray-600');
+                toggleBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+            } else {
+                formContainer.classList.remove('hidden');
+                toggleBtn.innerHTML = '❌ Zrušit';
+                toggleBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                toggleBtn.classList.add('bg-gray-500', 'hover:bg-gray-600');
+                setTimeout(() => {
+                    formContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+            }
+        });
+    }
+    
+    // Inline lead form submit
+    const inlineForm = document.getElementById('inline-lead-form');
+    if (inlineForm) {
+        inlineForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(inlineForm);
+            const data = {
+                name: formData.get('name'),
+                phone: formData.get('phone'),
+                email: formData.get('email'),
+                psc: formData.get('psc'),
+                'contact-time': formData.get('contact-time'),
+                note: formData.get('note') || '',
+                extraData: JSON.stringify({
+                    source: 'inline-form-v2',
+                    calculation: state.calculation
+                })
+            };
+            
+            try {
+                const response = await fetch('/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams(data).toString()
+                });
+                
+                if (response.ok) {
+                    inlineForm.classList.add('hidden');
+                    const successMsg = document.getElementById('inline-form-success');
+                    if (successMsg) {
+                        successMsg.classList.remove('hidden');
+                    }
+                    
+                    // Google Analytics event
+                    if (typeof gtag !== 'undefined') {
+                        gtag('event', 'form_submit', {
+                            form_type: 'inline_lead_v2',
+                            value: state.formData.loanAmount || 0
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Chyba při odesílání formuláře:', error);
+                alert('Nastala chyba při odesílání. Zkuste to prosím znovu.');
+            }
+        });
+    }
+    
+    // Show all offers toggle
+    const showAllOffersBtn = document.querySelector('[data-action="show-all-offers"]');
+    if (showAllOffersBtn) {
+        showAllOffersBtn.addEventListener('click', () => {
+            const allOffersContainer = document.getElementById('all-offers-container');
+            if (allOffersContainer) {
+                const isHidden = allOffersContainer.classList.contains('hidden');
+                if (isHidden) {
+                    allOffersContainer.classList.remove('hidden');
+                    showAllOffersBtn.textContent = 'Skrýt ostatní nabídky';
+                } else {
+                    allOffersContainer.classList.add('hidden');
+                    showAllOffersBtn.textContent = `Zobrazit všech ${state.calculation.offers.length} nabídek`;
+                }
+            }
+        });
+    }
+    
+    // Discuss with AI button
+    const discussAIBtns = document.querySelectorAll('[data-action="discuss-with-ai"]');
+    discussAIBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            switchMode('ai', true);
+        });
+    });
+    
+    // Switch to guided mode button
+    const switchGuidedBtns = document.querySelectorAll('[data-action="switch-to-guided"]');
+    switchGuidedBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            switchMode('guided');
+            setTimeout(() => scrollToTarget('#content-container'), 300);
+        });
+    });
+};
+

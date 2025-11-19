@@ -218,56 +218,33 @@ const findQuickResponse = (message) => {
     
     // --- COMPONENT FACTORIES ---
     const createSlider = (id, label, value, min, max, step, containerClass = '', infoText = '') => {
-    let suffix = ' Kč';
-    if (id.includes('Term') || id.includes('age') || id.includes('fixation')) {
-        suffix = ' let';
-    } else if (id.includes('children')) {
-        suffix = '';
-    }
+        let suffix = ' Kč';
+        if (id.includes('Term') || id.includes('age') || id.includes('fixation')) suffix = ' let';
+        else if (id.includes('children')) suffix = '';
 
-    const isMobileDevice = isMobile(); // Získáme informaci, zda je to mobil
-    const infoIcon = infoText ? `<span class="info-icon" data-info-key="${id}" data-info-text="${infoText}">?</span>` : '';
+        const isMobileDevice = isMobile();
+        const infoIcon = infoText ? `<span class="info-icon" data-info-key="${id}" data-info-text="${infoText}">?</span>` : '';
 
-    // --- Změna layoutu pro mobil ---
-    // Na mobilu: Label a Input pod sebou (flex-col). Na desktopu: Vedle sebe (sm:flex-row).
-    const topRowClasses = isMobileDevice
-        ? "flex flex-col items-start mb-2 gap-1" // Mobil: Pod sebou, zarovnání doleva, mezera 1
-        : "flex flex-row justify-between items-center mb-2 gap-2"; // Desktop: Vedle sebe, mezery mezi, zarovnání na střed
+        // Lepší layout pro mobil (pod sebou) vs desktop (vedle sebe)
+        const topRowClasses = isMobileDevice ? "flex flex-col items-start mb-2 gap-1" : "flex flex-row justify-between items-center mb-2 gap-2";
+        const labelClasses = isMobileDevice ? "form-label text-sm m-0 flex items-center gap-1.5" : "form-label m-0 flex-shrink-0 flex items-center gap-1.5";
+        const inputWrapperClasses = isMobileDevice ? "flex items-center gap-1 w-full justify-end" : "flex items-center gap-1 relative z-10";
+        const inputClasses = isMobileDevice ? "slider-value-input text-base max-w-[140px]" : "slider-value-input max-w-[140px]";
+        const suffixClasses = isMobileDevice ? "font-semibold text-gray-500 text-sm flex-shrink-0" : "font-semibold text-gray-500 text-sm flex-shrink-0";
 
-    const labelClasses = isMobileDevice
-        ? "form-label text-sm m-0 flex items-center gap-1.5" // Mobil: Menší text
-        : "form-label m-0 flex-shrink-0 flex items-center gap-1.5"; // Desktop
-
-    const inputWrapperClasses = isMobileDevice
-        ? "flex items-center gap-1 w-full justify-end" // Mobil: Input zabere celou šířku, zarovnání doprava
-        : "flex items-center gap-1 relative z-10"; // Desktop: Původní styl
-
-    const inputClasses = isMobileDevice
-        ? "slider-value-input text-base max-w-[140px]" // Mobil: Větší písmo, mírně větší šířka
-        : "slider-value-input max-w-[140px]"; // Desktop: Původní styl
-
-    const suffixClasses = isMobileDevice
-        ? "font-semibold text-gray-500 text-sm flex-shrink-0" // Mobil: Menší text
-        : "font-semibold text-gray-500 text-sm flex-shrink-0"; // Desktop: Původní styl (upravena velikost)
-
-    // Sestavení HTML s novými třídami
-    return `<div class="${containerClass}" id="${id}-group" style="width: 100%;">
-        <div class="${topRowClasses}">
-            <label for="${id}" class="${labelClasses}">
-                ${label} ${infoIcon}
-            </label>
-            <div class="${inputWrapperClasses}">
-                <input type="text" id="${id}-input" value="${formatNumber(value, false)}"
-                       class="${inputClasses}"
-                       style="position: relative; z-index: 2;"> 
-                <span class="${suffixClasses}">${suffix}</span>
+        return `<div class="${containerClass}" id="${id}-group" style="width: 100%;">
+            <div class="${topRowClasses}">
+                <label for="${id}" class="${labelClasses}">${label} ${infoIcon}</label>
+                <div class="${inputWrapperClasses}">
+                    <input type="text" id="${id}-input" value="${formatNumber(value, false)}" class="${inputClasses}" style="position: relative; z-index: 2;">
+                    <span class="${suffixClasses}">${suffix}</span>
+                </div>
             </div>
-        </div>
-        <div class="slider-container pt-1 pb-2"> 
-            <input type="range" id="${id}" name="${id}" min="${min}" max="${max}" value="${value}" step="${step}" class="slider-input">
-        </div>
-    </div>`;
-};
+            <div class="slider-container pt-1 pb-2">
+                <input type="range" id="${id}" name="${id}" min="${min}" max="${max}" value="${value}" step="${step}" class="slider-input">
+            </div>
+        </div>`;
+    };
     
     const createSelect = (id, label, options, selectedValue, containerClass = '') => {
         const optionsHTML = Object.entries(options).map(([key, val]) => 
@@ -376,22 +353,20 @@ const findQuickResponse = (message) => {
         
         if (isMobileDevice) {
             // MOBILNÍ VERZE - input je fixní dole, zprávy mají padding-bottom
-            const inputFooterHeight = '68px'; // Odhadovaná výška inputu + padding
-            const suggestionsHeight = '45px'; // Odhadovaná výška suggestions
+            const inputFooterHeight = '68px';
+            const suggestionsHeight = '45px';
             return `
                 <div id="ai-chat-wrapper" style="position: relative; width: 100%; height: calc(100vh - 8rem); display: flex; flex-direction: column; overflow: hidden;">
-
-                    <div id="chat-messages" style="flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 12px; padding-bottom: calc(${inputFooterHeight} + ${suggestionsHeight} + 12px); background: #f9fafb; border: 1px solid #e5e7eb; border-bottom: none; border-radius: 8px 8px 0 0;">
-                    </div>
-
-                     <div id="ai-suggestions" style="padding: 8px 12px; border-left: 1px solid #e5e7eb; border-right: 1px solid #e5e7eb; background: white; overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; height: ${suggestionsHeight}; box-sizing: border-box;">
-                     </div>
-
+                    
+                    <div id="chat-messages" style="flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 12px; padding-bottom: calc(${inputFooterHeight} + ${suggestionsHeight} + 12px); background: #f9fafb; border: 1px solid #e5e7eb; border-bottom: none; border-radius: 8px 8px 0 0;"></div>
+                    
+                    <div id="ai-suggestions" style="padding: 8px 12px; border-left: 1px solid #e5e7eb; border-right: 1px solid #e5e7eb; background: white; overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; height: ${suggestionsHeight}; box-sizing: border-box;"></div>
+                    
                     <div id="chat-input-footer" style="position: fixed; bottom: 0; left: 0; right: 0; padding: 12px; background: white; border-top: 2px solid #2563eb; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 1000; height: ${inputFooterHeight}; box-sizing: border-box;">
-                    </div>
-
+                        </div>
+                    
                     ${state.calculation.selectedOffer ? `
-                    <button id="mobile-sidebar-toggle"
+                    <button id="mobile-sidebar-toggle" 
                             style="position: fixed; bottom: calc(${inputFooterHeight} + 20px); right: 20px; width: 56px; height: 56px; background: #2563eb; color: white; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 900; border: none; cursor: pointer;"
                             data-action="toggle-mobile-sidebar">
                         <span style="font-size: 24px;">📊</span>
@@ -785,7 +760,7 @@ const findQuickResponse = (message) => {
     };
 
     // ZAČÁTEK KOMPLETNÍ A OPRAVENÉ FUNKCE renderResults
-const renderResults = () => {
+    const renderResults = () => {
         const offers = state.calculation?.offers || [];
         let selectedOffer = state.calculation?.selectedOffer;
         const container = document.getElementById('results-container');
@@ -800,7 +775,7 @@ const renderResults = () => {
 
         if (!selectedOffer && offers.length > 0) selectedOffer = offers[0];
 
-        // ===== NOVÝ VZHLED VÝSLEDKŮ (LEAD GEN FOCUS) =====
+        // NOVÝ DESIGN: Jedna hlavní karta s vítěznou nabídkou
         container.innerHTML = `
             <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-200 p-6 sm:p-8 mt-8 text-center shadow-xl relative overflow-hidden">
                 <div class="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">DOPORUČENO AI</div>
@@ -827,6 +802,11 @@ const renderResults = () => {
                     <button class="w-full py-3 px-6 text-blue-600 font-semibold hover:bg-blue-50 rounded-xl border border-transparent hover:border-blue-200 transition-colors" data-action="discuss-with-ai">
                         💬 Chci to probrat s AI asistentem
                     </button>
+                    
+                    <p class="text-xs text-gray-500 mt-2">
+                        + Další 2 neveřejné nabídky dostupné u specialisty.<br>
+                        Nezávazná poptávka.
+                    </p>
                 </div>
             </div>
         `;

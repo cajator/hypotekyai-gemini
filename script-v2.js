@@ -1090,8 +1090,9 @@ const renderResults = () => {
                 </div>
                 
                 <div class="mt-4 text-center">
-                    <button class="nav-btn bg-purple-600 hover:bg-purple-700 text-white text-sm py-2 px-4" data-action="discuss-score-with-ai">
-                        💬 Probrat skóre s AI
+                    <button class="nav-btn bg-purple-600 hover:bg-purple-700 text-white text-sm py-2 px-4 flex items-center justify-center gap-2 mx-auto" data-action="discuss-score-with-ai">
+                        <span>💬 Probrat skóre s AI</span>
+                        <span class="info-icon" data-info-key="score-ai" data-info-text="AI asistent ti pomůže pochopit tvé skóre a poradí, jak ho zlepšit. Získáš personalizované tipy podle tvé konkrétní situace.">?</span>
                     </button>
                 </div>
             </div>`;
@@ -1176,8 +1177,9 @@ const renderResults = () => {
                 ` : ''}
                 
                 <div class="mt-4 text-center">
-                    <button class="nav-btn bg-purple-600 hover:bg-purple-700 text-white text-sm py-2 px-4" data-action="discuss-fixation-with-ai">
-                        💬 Probrat fixaci s AI
+                    <button class="nav-btn bg-purple-600 hover:bg-purple-700 text-white text-sm py-2 px-4 flex items-center justify-center gap-2 mx-auto" data-action="discuss-fixation-with-ai">
+                        <span>💬 Probrat fixaci s AI</span>
+                        <span class="info-icon" data-info-key="fixation-ai" data-info-text="AI ti poradí s výběrem optimální délky fixace podle tvé situace. Proberete scénáře, co když sazby porostou nebo klesnou.">?</span>
                     </button>
                 </div>
             </div>
@@ -2141,222 +2143,216 @@ const renderResults = () => {
     };
 
     init();
-    });
 
-// ============================================
-// NOVÁ FUNKCE V2: Event Listeners pro nový layout
-// ============================================
-// ============================================
-// OPRAVENÉ EVENT LISTENERS - V2.1
-// ============================================
-
-const addV22EventListeners = () => {
-    // 1. Toggle inline lead form
-    const toggleBtn = document.getElementById('show-inline-lead-btn');
-    if (toggleBtn) {
-        toggleBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const formContainer = document.getElementById('inline-lead-form-container');
-            if (!formContainer) return;
-            
-            const isVisible = !formContainer.classList.contains('hidden');
-            
-            if (isVisible) {
-                formContainer.classList.add('hidden');
-                toggleBtn.innerHTML = '✅ Chci zavolat zdarma';
-                toggleBtn.classList.remove('bg-gray-500', 'hover:bg-gray-600');
-                toggleBtn.classList.add('bg-green-600', 'hover:bg-green-700');
-            } else {
-                formContainer.classList.remove('hidden');
-                toggleBtn.innerHTML = '❌ Zrušit';
-                toggleBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
-                toggleBtn.classList.add('bg-gray-500', 'hover:bg-gray-600');
-                setTimeout(() => {
-                    formContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }, 100);
-            }
-        });
-    }
+    // ============================================
+    // OPRAVENÉ EVENT LISTENERS - V2.3
+    // Přesunuty DOVNITŘ DOMContentLoaded pro přístup k state a switchMode
+    // ============================================
     
-    // 2. OPRAVENÝ Inline lead form submit V2.2 - s lepším handlingem
-    const inlineForm = document.getElementById('inline-lead-form');
-    if (inlineForm) {
-        inlineForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            console.log('📝 Formulář se odesílá...');
-            
-            // Připravit extra data
-            const extraData = JSON.stringify({
-                source: 'inline-form-v2.2',
-                calculation: {
-                    loanAmount: state.formData.loanAmount,
-                    propertyValue: state.formData.propertyValue,
-                    monthlyPayment: state.calculation.selectedOffer?.monthlyPayment,
-                    rate: state.calculation.selectedOffer?.rate
-                }
-            });
-            const extraDataField = document.getElementById('inline-extra-data');
-            if (extraDataField) {
-                extraDataField.value = extraData;
-            }
-            
-            const formData = new FormData(inlineForm);
-            const submitBtn = inlineForm.querySelector('button[type="submit"]');
-            
-            try {
-                if (submitBtn) {
-                    submitBtn.disabled = true;
-                    submitBtn.innerHTML = '⏳ Odesílám...';
-                }
+    function addV22EventListeners() {
+        // 1. Toggle inline lead form
+        const toggleBtn = document.getElementById('show-inline-lead-btn');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const formContainer = document.getElementById('inline-lead-form-container');
+                if (!formContainer) return;
                 
-                const response = await fetch('/', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams(formData).toString()
-                });
+                const isVisible = !formContainer.classList.contains('hidden');
                 
-                console.log('📡 Response status:', response.status);
-                
-                if (response.ok || response.status === 200) {
-                    console.log('✅ Formulář odeslán!');
-                    inlineForm.classList.add('hidden');
-                    const successMsg = document.getElementById('inline-form-success');
-                    if (successMsg) {
-                        successMsg.classList.remove('hidden');
-                    }
-                    
-                    // Google Analytics event
-                    if (typeof gtag !== 'undefined') {
-                        gtag('event', 'form_submit', {
-                            form_type: 'inline_lead_v2.2',
-                            value: state.formData.loanAmount || 0
-                        });
-                    }
+                if (isVisible) {
+                    formContainer.classList.add('hidden');
+                    toggleBtn.innerHTML = '✅ Chci zavolat zdarma';
+                    toggleBtn.classList.remove('bg-gray-500', 'hover:bg-gray-600');
+                    toggleBtn.classList.add('bg-green-600', 'hover:bg-green-700');
                 } else {
-                    throw new Error(`HTTP ${response.status}`);
-                }
-            } catch (error) {
-                console.error('❌ Chyba při odesílání:', error);
-                alert('Nastala chyba při odesílání formuláře. Zkuste to prosím znovu nebo nás kontaktujte přímo.');
-                
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '📞 Odeslat nezávazně';
-                }
-            }
-        });
-    }
-    
-    // 3. Show all offers toggle
-    const showAllOffersBtn = document.querySelector('[data-action="show-all-offers"]');
-    if (showAllOffersBtn) {
-        showAllOffersBtn.addEventListener('click', () => {
-            const allOffersContainer = document.getElementById('all-offers-container');
-            if (allOffersContainer) {
-                const isHidden = allOffersContainer.classList.contains('hidden');
-                if (isHidden) {
-                    allOffersContainer.classList.remove('hidden');
-                    showAllOffersBtn.innerHTML = 'Skrýt ostatní nabídky ↑';
-                } else {
-                    allOffersContainer.classList.add('hidden');
-                    showAllOffersBtn.innerHTML = `Zobrazit všech ${state.calculation.offers.length} nabídek ↓`;
-                }
-            }
-        });
-    }
-    
-    // 4. OPRAVENO V2.2: Event delegation pro řádky tabulky
-    const allOffersContainer = document.getElementById('all-offers-container');
-    if (allOffersContainer) {
-        allOffersContainer.addEventListener('click', (e) => {
-            const row = e.target.closest('.offer-row');
-            if (row) {
-                const offerId = row.dataset.offerId;
-                const clickedOffer = state.calculation.offers.find(o => o.id === offerId);
-                
-                if (clickedOffer && clickedOffer.id !== state.calculation.selectedOffer?.id) {
-                    console.log("Vybrána nabídka:", clickedOffer.title);
-                    state.calculation.selectedOffer = clickedOffer;
-                    renderResults();
-                }
-            }
-        });
-    }
-    
-    // 5. OPRAVENÝ Discuss with AI button
-    const discussAIBtns = document.querySelectorAll('[data-action="discuss-with-ai"]');
-    discussAIBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            switchMode('ai', true);
-        });
-    });
-    
-    // 6. OPRAVENÝ Switch to guided mode button
-    const switchGuidedBtns = document.querySelectorAll('[data-action="switch-to-guided"]');
-    switchGuidedBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            switchMode('guided');
-            setTimeout(() => scrollToTarget('#content-container'), 300);
-        });
-    });
-    
-    // 7. NOVÉ: Bottom CTA scroll to form
-    const scrollToFormBtn = document.querySelector('[data-action="scroll-to-form"]');
-    if (scrollToFormBtn) {
-        scrollToFormBtn.addEventListener('click', () => {
-            const formContainer = document.getElementById('inline-lead-form-container');
-            const toggleBtn = document.getElementById('show-inline-lead-btn');
-            
-            if (formContainer && formContainer.classList.contains('hidden')) {
-                // Rozbal formulář
-                formContainer.classList.remove('hidden');
-                if (toggleBtn) {
+                    formContainer.classList.remove('hidden');
                     toggleBtn.innerHTML = '❌ Zrušit';
                     toggleBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
                     toggleBtn.classList.add('bg-gray-500', 'hover:bg-gray-600');
+                    setTimeout(() => {
+                        formContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }, 100);
                 }
-            }
-            
-            // Scrolluj k formuláři
-            setTimeout(() => {
-                if (formContainer) {
-                    formContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+        }
+        
+        // 2. OPRAVENÝ Inline lead form submit V2.3
+        const inlineForm = document.getElementById('inline-lead-form');
+        if (inlineForm) {
+            inlineForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                console.log('📝 Formulář se odesílá...');
+                
+                const extraData = JSON.stringify({
+                    source: 'inline-form-v2.3',
+                    calculation: {
+                        loanAmount: state.formData.loanAmount,
+                        propertyValue: state.formData.propertyValue,
+                        monthlyPayment: state.calculation.selectedOffer?.monthlyPayment,
+                        rate: state.calculation.selectedOffer?.rate
+                    }
+                });
+                const extraDataField = document.getElementById('inline-extra-data');
+                if (extraDataField) {
+                    extraDataField.value = extraData;
                 }
-            }, 100);
+                
+                const formData = new FormData(inlineForm);
+                const submitBtn = inlineForm.querySelector('button[type="submit"]');
+                
+                try {
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '⏳ Odesílám...';
+                    }
+                    
+                    const response = await fetch('/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams(formData).toString()
+                    });
+                    
+                    console.log('📡 Response status:', response.status);
+                    
+                    if (response.ok || response.status === 200) {
+                        console.log('✅ Formulář odeslán!');
+                        inlineForm.classList.add('hidden');
+                        const successMsg = document.getElementById('inline-form-success');
+                        if (successMsg) {
+                            successMsg.classList.remove('hidden');
+                        }
+                        
+                        if (typeof gtag !== 'undefined') {
+                            gtag('event', 'form_submit', {
+                                form_type: 'inline_lead_v2.3',
+                                value: state.formData.loanAmount || 0
+                            });
+                        }
+                    } else {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                } catch (error) {
+                    console.error('❌ Chyba při odesílání:', error);
+                    alert('Nastala chyba při odesílání formuláře. Zkuste to prosím znovu nebo nás kontaktujte přímo.');
+                    
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '📞 Odeslat nezávazně';
+                    }
+                }
+            });
+        }
+        
+        // 3. Show all offers toggle
+        const showAllOffersBtn = document.querySelector('[data-action="show-all-offers"]');
+        if (showAllOffersBtn) {
+            showAllOffersBtn.addEventListener('click', () => {
+                const allOffersContainer = document.getElementById('all-offers-container');
+                if (allOffersContainer) {
+                    const isHidden = allOffersContainer.classList.contains('hidden');
+                    if (isHidden) {
+                        allOffersContainer.classList.remove('hidden');
+                        showAllOffersBtn.innerHTML = 'Skrýt ostatní nabídky ↑';
+                    } else {
+                        allOffersContainer.classList.add('hidden');
+                        showAllOffersBtn.innerHTML = `Zobrazit všech ${state.calculation.offers.length} nabídek ↓`;
+                    }
+                }
+            });
+        }
+        
+        // 4. OPRAVENO V2.3: Event delegation pro řádky tabulky
+        const allOffersContainer = document.getElementById('all-offers-container');
+        if (allOffersContainer) {
+            allOffersContainer.addEventListener('click', (e) => {
+                const row = e.target.closest('.offer-row');
+                if (row) {
+                    const offerId = row.dataset.offerId;
+                    const clickedOffer = state.calculation.offers.find(o => o.id === offerId);
+                    
+                    if (clickedOffer && clickedOffer.id !== state.calculation.selectedOffer?.id) {
+                        console.log("Vybrána nabídka:", clickedOffer.title);
+                        state.calculation.selectedOffer = clickedOffer;
+                        renderResults();
+                    }
+                }
+            });
+        }
+        
+        // 5. Discuss with AI button
+        const discussAIBtns = document.querySelectorAll('[data-action="discuss-with-ai"]');
+        discussAIBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                switchMode('ai', true);
+            });
+        });
+        
+        // 6. Switch to guided mode button
+        const switchGuidedBtns = document.querySelectorAll('[data-action="switch-to-guided"]');
+        switchGuidedBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                switchMode('guided');
+                setTimeout(() => scrollToTarget('#content-container'), 300);
+            });
+        });
+        
+        // 7. Bottom CTA scroll to form
+        const scrollToFormBtn = document.querySelector('[data-action="scroll-to-form"]');
+        if (scrollToFormBtn) {
+            scrollToFormBtn.addEventListener('click', () => {
+                const formContainer = document.getElementById('inline-lead-form-container');
+                const toggleBtn = document.getElementById('show-inline-lead-btn');
+                
+                if (formContainer && formContainer.classList.contains('hidden')) {
+                    formContainer.classList.remove('hidden');
+                    if (toggleBtn) {
+                        toggleBtn.innerHTML = '❌ Zrušit';
+                        toggleBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                        toggleBtn.classList.add('bg-gray-500', 'hover:bg-gray-600');
+                    }
+                }
+                
+                setTimeout(() => {
+                    if (formContainer) {
+                        formContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 100);
+            });
+        }
+        
+        // 8. NOVÉ V2.3: Probrat skóre s AI
+        const discussScoreBtns = document.querySelectorAll('[data-action="discuss-score-with-ai"]');
+        discussScoreBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                console.log('💬 Přepínám na AI chat (skóre)');
+                switchMode('ai', true);
+                setTimeout(() => {
+                    const input = document.getElementById('permanent-chat-input');
+                    if (input) {
+                        input.value = "Vysvětli mi prosím mé skóre a jak ho můžu zlepšit.";
+                        input.focus();
+                    }
+                }, 500);
+            });
+        });
+        
+        // 9. NOVÉ V2.3: Probrat fixaci s AI
+        const discussFixationBtns = document.querySelectorAll('[data-action="discuss-fixation-with-ai"]');
+        discussFixationBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                console.log('💬 Přepínám na AI chat (fixace)');
+                switchMode('ai', true);
+                setTimeout(() => {
+                    const input = document.getElementById('permanent-chat-input');
+                    if (input) {
+                        input.value = "Poraď mi prosím s výběrem délky fixace.";
+                        input.focus();
+                    }
+                }, 500);
+            });
         });
     }
     
-    // 8. NOVÉ V2.2: Probrat skóre s AI
-    const discussScoreBtns = document.querySelectorAll('[data-action="discuss-score-with-ai"]');
-    discussScoreBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            console.log('💬 Přepínám na AI chat (skóre)');
-            switchMode('ai', true);
-            setTimeout(() => {
-                const input = document.getElementById('permanent-chat-input');
-                if (input) {
-                    input.value = "Vysvětli mi prosím mé skóre a jak ho můžu zlepšit.";
-                    input.focus();
-                }
-            }, 500);
-        });
-    });
-    
-    // 9. NOVÉ V2.2: Probrat fixaci s AI
-    const discussFixationBtns = document.querySelectorAll('[data-action="discuss-fixation-with-ai"]');
-    discussFixationBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            console.log('💬 Přepínám na AI chat (fixace)');
-            switchMode('ai', true);
-            setTimeout(() => {
-                const input = document.getElementById('permanent-chat-input');
-                if (input) {
-                    input.value = "Poraď mi prosím s výběrem délky fixace.";
-                    input.focus();
-                }
-            }, 500);
-        });
-    });
-};
-
-
+    init();
+}); // KONEC DOMContentLoaded

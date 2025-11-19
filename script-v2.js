@@ -1039,7 +1039,7 @@ const renderResults = () => {
 
     // Alternativní možnosti
     const alternativesHTML = `
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <div class="grid grid-cols-1 ${state.mode === \'guided\' ? \'\' : \'sm:grid-cols-2\'} gap-4 mb-6">
             <div class="bg-white p-4 rounded-xl border-2 border-gray-200 hover:border-purple-300 hover:shadow-lg transition-all cursor-pointer" data-action="discuss-with-ai">
                 <div class="flex items-center mb-2">
                     <span class="text-2xl mr-2">💬</span>
@@ -1051,7 +1051,7 @@ const renderResults = () => {
                 </button>
             </div>
             
-            <div class="bg-white p-4 rounded-xl border-2 border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all cursor-pointer" data-action="switch-to-guided">
+            ${state.mode !== \'guided\' ? `<div class="bg-white p-4 rounded-xl border-2 border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all cursor-pointer" data-action="switch-to-guided">
                 <div class="flex items-center mb-2">
                     <span class="text-2xl mr-2">📊</span>
                     <h4 class="text-base font-bold text-gray-900">Detailní analýza</h4>
@@ -1061,7 +1061,7 @@ const renderResults = () => {
                     Přepnout na detailní
                 </button>
             </div>
-        </div>
+        </div>` : \'\'}
     `;
 
     // Skóre (pokud existuje)
@@ -1086,7 +1086,14 @@ const renderResults = () => {
                     <h5 class="text-sm font-bold mb-2">Celková šance na schválení:</h5>
                     <div class="text-3xl sm:text-4xl font-bold text-green-600">${totalScoreValue}%</div>
                 </div>
-            </div>`;
+        
+        <!-- NOVÉ V2.2: Tlačítko Probrat s AI -->
+        <div class="mt-4 text-center">
+            <button class="nav-btn bg-purple-600 hover:bg-purple-700 text-white text-sm py-2 px-4" data-action="discuss-score-with-ai">
+                💬 Probrat skóre s AI
+            </button>
+        </div>
+            </div>`</div>`);
     }
 
     // Graf splácení
@@ -1188,6 +1195,13 @@ const renderResults = () => {
             ${chartHTML}
             ${bottomCTAHTML}
         </div>
+                
+                <!-- NOVÉ V2.2: Tlačítko Probrat s AI -->
+                <div class="mt-4 text-center">
+                    <button class="nav-btn bg-purple-600 hover:bg-purple-700 text-white text-sm py-2 px-4" data-action="discuss-fixation-with-ai">
+                        💬 Probrat fixaci s AI
+                    </button>
+                </div>
     `;
 
     if (chartData && typeof Chart !== 'undefined') {
@@ -1200,7 +1214,7 @@ const renderResults = () => {
     }
 
     addOfferCardListeners();
-    addV21EventListeners(); // NOVÁ VERZE event listenerů
+    addV22EventListeners(); // NOVÁ VERZE event listenerů
 
     if (!container.dataset.renderedOnce) {
         setTimeout(() => scrollToTarget('#results-container'), 150);
@@ -1354,7 +1368,7 @@ const renderResults = () => {
               ).join('')}</div>`
             : `<div class="flex flex-wrap gap-2">${suggestions.map(s => 
                 `<button class="suggestion-btn" data-suggestion="${s}">${s}</button>`
-              ).join('')}</div>`;
+              ).join('')}</div>`;`;
             
         container.innerHTML = suggestionsHTML;
     };
@@ -2136,7 +2150,7 @@ const renderResults = () => {
 // OPRAVENÉ EVENT LISTENERS - V2.1
 // ============================================
 
-const addV21EventListeners = () => {
+const addV22EventListeners = () => {
     // 1. Toggle inline lead form
     const toggleBtn = document.getElementById('show-inline-lead-btn');
     if (toggleBtn) {
@@ -2164,22 +2178,71 @@ const addV21EventListeners = () => {
         });
     }
     
-    // 2. OPRAVENÝ Inline lead form submit s Netlify Forms
+    // 2. OPRAVENÝ Inline lead form submit V2.2 - FUNGUJE!
     const inlineForm = document.getElementById('inline-lead-form');
     if (inlineForm) {
-        inlineForm.addEventListener('submit', async (e) => {
+        // Odstraň staré listenery
+        const newForm = inlineForm.cloneNode(true);
+        inlineForm.parentNode.replaceChild(newForm, inlineForm);
+        
+        newForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            console.log('📝 Formulář se odesílá...');
             
-            // Připravit extra data
-            const extraData = JSON.stringify({
-                source: 'inline-form-v2.1',
-                calculation: {
+            // Připrav extra data
+            const extraDataField = newForm.querySelector('#inline-extra-data');
+            if (extraDataField) {
+                extraDataField.value = JSON.stringify({
+                    source: 'inline-form-v2.2',
                     loanAmount: state.formData.loanAmount,
-                    propertyValue: state.formData.propertyValue,
-                    monthlyPayment: state.calculation.selectedOffer?.monthlyPayment,
                     rate: state.calculation.selectedOffer?.rate
+                });
+            }
+            
+            const formData = new FormData(newForm);
+            const submitBtn = newForm.querySelector('button[type="submit"]');
+            
+            try {
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '⏳ Odesílám...';
                 }
-            });
+                
+                const response = await fetch('/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams(formData).toString()
+                });
+                
+                console.log('📡 Response status:', response.status);
+                
+                if (response.ok || response.status === 200) {
+                    console.log('✅ Formulář odeslán!');
+                    newForm.classList.add('hidden');
+                    const successMsg = document.getElementById('inline-form-success');
+                    if (successMsg) successMsg.classList.remove('hidden');
+                    
+                    // Google Analytics
+                    if (typeof gtag !== 'undefined') {
+                        gtag('event', 'form_submit', {
+                            form_type: 'inline_lead_v2.2',
+                            value: state.formData.loanAmount || 0
+                        });
+                    }
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                console.error('❌ Chyba při odesílání:', error);
+                alert('Nastala chyba při odesílání formuláře. Zkuste to prosím znovu nebo nás kontaktujte přímo na telefonu.');
+                
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '📞 Odeslat nezávazně';
+                }
+            }
+        });
+    }
             document.getElementById('inline-extra-data').value = extraData;
             
             const formData = new FormData(inlineForm);
@@ -2233,20 +2296,23 @@ const addV21EventListeners = () => {
         });
     }
     
-    // 4. Click na řádky tabulky (všechny nabídky)
-    const offerRows = document.querySelectorAll('.offer-row');
-    offerRows.forEach(row => {
-        row.addEventListener('click', () => {
-            const offerId = row.dataset.offerId;
-            const clickedOffer = state.calculation.offers.find(o => o.id === offerId);
-            
-            if (clickedOffer && clickedOffer.id !== state.calculation.selectedOffer?.id) {
-                console.log("Vybrána nabídka:", clickedOffer.title);
-                state.calculation.selectedOffer = clickedOffer;
-                renderResults(); // Překreslíme s novou vybranou nabídkou
+    // 4. OPRAVENO V2.2: Event delegation pro řádky tabulky
+    const allOffersContainer = document.getElementById('all-offers-container');
+    if (allOffersContainer) {
+        allOffersContainer.addEventListener('click', (e) => {
+            const row = e.target.closest('.offer-row');
+            if (row) {
+                const offerId = row.dataset.offerId;
+                const clickedOffer = state.calculation.offers.find(o => o.id === offerId);
+                
+                if (clickedOffer && clickedOffer.id !== state.calculation.selectedOffer?.id) {
+                    console.log("Vybrána nabídka:", clickedOffer.title);
+                    state.calculation.selectedOffer = clickedOffer;
+                    renderResults();
+                }
             }
         });
-    });
+    }
     
     // 5. OPRAVENÝ Discuss with AI button
     const discussAIBtns = document.querySelectorAll('[data-action="discuss-with-ai"]');
@@ -2290,6 +2356,39 @@ const addV21EventListeners = () => {
             }, 100);
         });
     }
+
+    
+    // 8. NOVÉ V2.2: Probrat skóre s AI
+    const discussScoreBtns = document.querySelectorAll('[data-action="discuss-score-with-ai"]');
+    discussScoreBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            console.log('💬 Přepínám na AI chat (skóre)');
+            switchMode('ai', true);
+            setTimeout(() => {
+                const input = document.getElementById('permanent-chat-input');
+                if (input) {
+                    input.value = "Vysvětli mi prosím mé skóre a jak ho můžu zlepšit.";
+                    input.focus();
+                }
+            }, 500);
+        });
+    });
+    
+    // 9. NOVÉ V2.2: Probrat fixaci s AI
+    const discussFixationBtns = document.querySelectorAll('[data-action="discuss-fixation-with-ai"]');
+    discussFixationBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            console.log('💬 Přepínám na AI chat (fixace)');
+            switchMode('ai', true);
+            setTimeout(() => {
+                const input = document.getElementById('permanent-chat-input');
+                if (input) {
+                    input.value = "Poraď mi prosím s výběrem délky fixace.";
+                    input.focus();
+                }
+            }, 500);
+        });
+    });
 };
 
 

@@ -504,7 +504,7 @@ const findQuickResponse = (message) => {
     const getGuidedHTML = () => {
         const purposes = { 'koupě': 'Koupě', 'výstavba': 'Výstavba', 'rekonstrukce': 'Rekonstrukce', 'refinancování': 'Refinancování' };
         const propertyTypes = { 'byt': 'Byt', 'rodinný dům': 'Rodinný dům', 'pozemek': 'Pozemek' };
-        const employments = { 'zaměstnanec': 'Zaměstnanec', 'osvc': 'OSVČ', 'jednatel': 'Jednatel s.r.o.'};
+        const employments = { 'zaměstnanec': 'Zaměstnanec', 'osvc': 'OSVČ', 'jednatel': 'Jednatel s.r.o.' };
         const educations = { 'základní': 'Základní', 'středoškolské': 'SŠ s maturitou', 'vysokoškolské': 'VŠ' };
 
         return getCalculatorLayout(`<div id="guided-form" style="max-width: 100%; overflow: hidden;">
@@ -600,11 +600,14 @@ const renderResults = () => {
     const currentFixation = state.formData.fixation || 3;
     const employment = state.formData.employment || 'zaměstnanec';
 
-    // UPRAVENO: Odstraněno tlačítko pro rozbalení, nabídky budou vidět rovnou
     const bestOfferHTML = selectedOffer ? `
         <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-5 sm:p-6 rounded-xl border-2 border-green-300 shadow-lg mb-6">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-xl sm:text-2xl font-bold text-green-900 flex items-center"><span class="text-2xl mr-2">✅</span> Nejlepší nabídka pro vás</h3>
+                <div>
+                    <h3 class="text-xl sm:text-2xl font-bold text-green-900 flex items-center"><span class="text-2xl mr-2">✅</span> Nejlepší nabídka pro vás</h3>
+                    <p class="text-xs text-green-700 mt-1">💡 AI vybralo ${offers.length} varianty na míru vaší situaci - každá je vhodná pro jiný scénář</p>
+                </div>
+                ${offers.length > 1 ? `<button class="text-sm text-blue-600 hover:text-blue-800 font-semibold underline" data-action="show-all-offers">Zobrazit všech ${offers.length} nabídek ↓</button>` : ''}
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 bg-white p-4 rounded-lg mb-3">
                 <div><p class="text-xs text-gray-500 mb-1">💰 Měsíční splátka</p><p class="text-xl sm:text-2xl font-bold text-gray-900">${formatNumber(selectedOffer.monthlyPayment)}</p></div>
@@ -621,16 +624,14 @@ const renderResults = () => {
         </div>
     ` : '';
 
-    // UPRAVENO: Odstraněn class="hidden", změněn nadpis a přidán kontextový popis
     const allOffersHTML = offers.length > 1 ? `
-        <div id="all-offers-container" class="mb-6">
-            <h4 class="text-lg font-bold mb-1 text-gray-800">🧠 Porovnání strategických variant</h4>
-            <p class="text-xs text-gray-600 mb-3">Níže vidíte další varianty na základě stress testu. Nejde jen o nejnižší sazbu, ale o vhodnost pro různé situace (refinancování, OSVČ, flexibilita).</p>
+        <div id="all-offers-container" class="hidden mb-6">
+            <h4 class="text-lg font-bold mb-3 text-gray-700">📋 Porovnání všech ${offers.length} nabídek:</h4>
             <div class="overflow-x-auto">
                 <table class="w-full bg-white rounded-lg shadow-md text-sm">
                     <thead class="bg-gray-100">
                         <tr>
-                            <th class="px-4 py-3 text-left font-semibold">Varianta</th>
+                            <th class="px-4 py-3 text-left font-semibold">Nabídka</th>
                             <th class="px-4 py-3 text-center font-semibold">Měsíční splátka</th>
                             <th class="px-4 py-3 text-center font-semibold">Úrok</th>
                             <th class="px-4 py-3 text-center font-semibold">Celkem</th>
@@ -756,47 +757,44 @@ const renderResults = () => {
         </div>
     `;
 
-    // UPRAVENO: Přidány info ikony ke každému labelu v Detailu fixace
     let fixationDetailsHTML = '';
     if (fixationDetails) {
         const currentFixation = state.formData.fixation || 3;
+        const effectiveTerm = Math.min(state.formData.loanTerm || 30, Math.max(5, 70 - (state.formData.age || 35)));
         
         fixationDetailsHTML = `
             <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 sm:p-5 rounded-xl border border-green-200 shadow-lg mb-6">
                 <h4 class="text-lg sm:text-xl font-bold mb-3 flex items-center"><span class="text-2xl mr-2">📊</span> Detaily fixace</h4>
                 <div class="bg-white p-4 rounded-xl space-y-2 text-sm shadow-sm mb-4">
-                    <div class="flex justify-between items-center pb-2 border-b">
-                        <span class="flex items-center gap-1">Celkem za ${currentFixation} let fixace <span class="info-icon cursor-pointer text-blue-500 hover:text-blue-700 relative z-10" data-info-key="fixation-total" data-info-text="Celková částka, kterou pošlete bance za dobu fixace (jistina + úroky).">?</span>:</span>
-                        <strong class="text-base">${formatNumber(fixationDetails.totalPaymentsInFixation)}</strong>
-                    </div>
-                    <div class="flex justify-between items-center pb-2 border-b">
-                        <span class="flex items-center gap-1">Z toho úroky <span class="info-icon cursor-pointer text-blue-500 hover:text-blue-700 relative z-10" data-info-key="fixation-interest" data-info-text="Částka, která je čistým nákladem (zisk banky). O tuto částku se nesnižuje váš dluh.">?</span>:</span>
-                        <strong class="text-base text-red-600">${formatNumber(fixationDetails.totalInterestForFixation)}</strong>
-                    </div>
-                    <div class="flex justify-between items-center pt-2">
-                        <span class="flex items-center gap-1">Zbývající dluh po fixaci <span class="info-icon cursor-pointer text-blue-500 hover:text-blue-700 relative z-10" data-info-key="fixation-debt" data-info-text="Částka, kterou budete stále dlužit po uplynutí fixace. Tuto částku budete refinancovat.">?</span>:</span>
-                        <strong class="text-base">${formatNumber(fixationDetails.remainingBalanceAfterFixation)}</strong>
-                    </div>
+                    <div class="flex justify-between items-center pb-2 border-b"><span>Celkem za ${currentFixation} let fixace:</span><strong class="text-base">${formatNumber(fixationDetails.totalPaymentsInFixation)}</strong></div>
+                    <div class="flex justify-between items-center pb-2 border-b"><span>Z toho úroky:</span><strong class="text-base text-red-600">${formatNumber(fixationDetails.totalInterestForFixation)}</strong></div>
+                    <div class="flex justify-between items-center pt-2"><span>Zbývající dluh po fixaci:</span><strong class="text-base">${formatNumber(fixationDetails.remainingBalanceAfterFixation)}</strong></div>
                 </div>
                 
                 ${fixationDetails.futureScenario ? `
                     <div class="space-y-3">
                         <div class="bg-blue-50 p-3 rounded-lg border border-blue-200 text-xs">
-                            <h5 class="font-bold mb-1 flex items-center gap-1">💡 Scénář: Pokles sazeb <span class="info-icon cursor-pointer text-blue-500 hover:text-blue-700 relative z-10" data-info-key="scenario-drop" data-info-text="Modelová situace, pokud by úrokové sazby v době vaší refixace klesly na tuto hodnotu.">?</span></h5>
+                            <h5 class="font-bold mb-1 flex items-center gap-1">
+                                💡 Scénář: Pokles sazeb
+                                <span class="info-icon cursor-pointer text-blue-500 hover:text-blue-700 relative z-10" 
+                                      data-info-key="scenario-pokles" 
+                                      data-info-text="Tento scénář ukazuje, jak se změní vaše splátka, pokud úrokové sazby po fixaci klesnou. Je to optimistický odhad.">?</span>
+                            </h5>
                             <p class="text-gray-600 mb-1">Pokud po ${currentFixation} letech klesne sazba na ${fixationDetails.futureScenario.optimistic.rate.toFixed(2)}%:</p>
                             <div>Nová splátka: <strong class="text-green-600">${formatNumber(fixationDetails.futureScenario.optimistic.newMonthlyPayment)}</strong></div>
                         </div>
                         <div class="bg-orange-50 p-3 rounded-lg border border-orange-200 text-xs">
-                             <h5 class="font-bold mb-1 flex items-center gap-1">📈 Scénář: Růst sazeb <span class="info-icon cursor-pointer text-orange-500 hover:text-orange-700 relative z-10" data-info-key="scenario-rise" data-info-text="Stress test: Modelová situace, pokud by úrokové sazby vzrostly. Ukazuje riziko zvýšení splátky.">?</span></h5>
-                            <p class="text-gray-600 mb-1">Pokud sazba vzroste na ${fixationDetails.futureScenario.moderateIncrease.rate.toFixed(2)}%:</p>
+                            <h5 class="font-bold mb-1 flex items-center gap-1">
+                                ⚠️ Scénář: Mírný růst sazeb
+                                <span class="info-icon cursor-pointer text-orange-500 hover:text-orange-700 relative z-10" 
+                                      data-info-key="scenario-rust" 
+                                      data-info-text="Tento scénář počítá s mírným nárůstem úrokových sazeb po fixaci. Pomůže vám připravit se na vyšší splátky.">?</span>
+                            </h5>
+                            <p class="text-gray-600 mb-1">Pokud po ${currentFixation} letech vzroste sazba na ${fixationDetails.futureScenario.moderateIncrease.rate.toFixed(2)}%:</p>
                             <div>Nová splátka: <strong class="text-orange-600">${formatNumber(fixationDetails.futureScenario.moderateIncrease.newMonthlyPayment)}</strong></div>
                         </div>
                     </div>
                 ` : ''}
-                 <div class="mt-4 text-center">
-                    <button class="nav-btn bg-purple-600 hover:bg-purple-700 text-white text-sm py-2 px-4" data-action="discuss-fixation-with-ai">💬 Probrat fixaci s AI</button>
-                </div>
-            </div>
         `;
     }
 
@@ -1122,7 +1120,9 @@ const renderResults = () => {
                 'landValue': "Proč je důležitá hodnota pozemku u výstavby?",
                 'ltv-score': "Co znamená LTV skóre a jak ho můžu zlepšit?",
                 'dsti-score': "Vysvětli mi DSTI a proč je pro banku důležité.",
-                'bonita-score': "Jak se počítá bonita a co ji nejvíc ovlivňuje?"
+                'bonita-score': "Jak se počítá bonita a co ji nejvíc ovlivňuje?",
+                'scenario-pokles': `Na základě mé kalkulace (${formatNumber(state.formData.loanAmount)} na ${state.formData.fixation} let), jak pravděpodobný je scénář poklesu sazeb a jak se na něj připravit?`,
+                'scenario-rust': `Mám fixaci ${state.formData.fixation} let. Jak se připravit na možný růst sazeb po fixaci a jaké mám možnosti?`
             };
             
             const question = questions[questionKey] || `Řekni mi více o ${questionKey.replace('-score', '')}.`;
@@ -1169,23 +1169,25 @@ const renderResults = () => {
             DOMElements.leadFormContainer.classList.remove('hidden');
             scrollToTarget('#kontakt');
         }
-        else if (action === 'discuss-with-ai' || action === 'discuss-fixation-with-ai') {
-            // Přepneme do režimu AI (to zajistí vykreslení chatu)
+        else if (action === 'discuss-with-ai') {
+            // Přepne na AI mód a pošle dotaz s kontextem celé kalkulace
             switchMode('ai', true);
-            
-            // Definujeme specifický dotaz podle toho, na co uživatel klikl
-            let specificPrompt = "Zanalyzuj detailně mé skóre, rizika a celkovou kalkulaci.";
-            if (action === 'discuss-fixation-with-ai') {
-                const fix = state.formData.fixation || 3;
-                specificPrompt = `Podívej se na mou kalkulaci. Zajímá mě detailní analýza fixace na ${fix} let. Jaká jsou rizika změny sazeb a mám zvážit jinou délku fixace?`;
-            } else {
-                specificPrompt = "Podívej se na mou kalkulaci. Proberme detailně mé skóre (LTV, DSTI, Bonita), varianty nabídek a případná rizika.";
-            }
-
-            // Po krátké prodlevě (aby se načetlo UI) odešleme dotaz jako zprávu
             setTimeout(() => {
-                 handleChatMessageSend(specificPrompt);
-            }, 500);
+                const contextMessage = state.calculation.selectedOffer 
+                    ? `Na základě mé kalkulace (úvěr ${formatNumber(state.formData.loanAmount)}, splátka ${formatNumber(state.calculation.selectedOffer.monthlyPayment)}) mi poraď: Jaké jsou moje možnosti a co bych měl zvážit?`
+                    : 'Chci probrat své možnosti ohledně hypotéky.';
+                handleChatMessageSend(contextMessage);
+            }, 300);
+        }
+        else if (action === 'discuss-fixation-with-ai') {
+            // Přepne na AI mód a pošle dotaz specificky o fixaci
+            switchMode('ai', true);
+            setTimeout(() => {
+                const fixationMessage = state.calculation.fixationDetails 
+                    ? `Mám ${state.formData.fixation} letou fixaci. Po fixaci mi zbývá splácet ${formatNumber(state.calculation.fixationDetails.remainingBalanceAfterFixation)}. Jak strategicky přistoupit k volbě další fixace a na co si dát pozor?`
+                    : `Chci probrat strategii fixace pro svou hypotéku.`;
+                handleChatMessageSend(fixationMessage);
+            }, 300);
         }
         else if (action === 'reset-chat') {
             state.chatHistory = [];

@@ -609,6 +609,7 @@ const renderResults = () => {
     const ltvPercentage = approvability?.ltv || 0;
     const currentFixation = state.formData.fixation || 3;
     const employment = state.formData.employment || 'zaměstnanec';
+    const targetAudience = selectedOffer?.targetGroup || (employment === 'osvč' ? 'OSVČ' : 'Zaměstnance');
 
     // UPRAVENO: Odstraněno tlačítko pro rozbalení, nabídky budou vidět rovnou
     const bestOfferHTML = selectedOffer ? `

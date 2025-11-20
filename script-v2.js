@@ -358,36 +358,34 @@ const findQuickResponse = (message) => {
         
         return `
             <style>
-                /* Výchozí styl pro mobil (pod sebou) */
-                #ai-layout-container {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 24px;
-                    width: 100%;
+                /* Vynucení layoutu přes CSS Grid - toto přebije všechno ostatní */
+                #desktop-grid-container {
+                    display: grid !important;
+                    /* Sloupec 1: 1fr (všechno volné místo), Sloupec 2: 400px fixně */
+                    grid-template-columns: 1fr 400px !important; 
+                    gap: 24px !important;
+                    width: 100% !important;
+                    align-items: start !important;
                 }
-                
-                /* Styl pro desktop (vedle sebe) */
-                @media (min-width: 1024px) {
-                    #ai-layout-container {
-                        display: grid !important;
-                        grid-template-columns: 1fr 400px !important; /* ZDE JE TO KOUZLO: 1fr (zbytek) a 400px (sidebar) */
-                        gap: 24px !important;
-                        align-items: start !important;
-                    }
-                    
-                    /* Zajistí, že sidebar má opravdu 100% šířky toho 400px sloupce */
-                    #sidebar-container {
-                        width: 100% !important;
-                        min-width: 0 !important;
-                    }
+
+                /* Chat okno se musí roztáhnout na 100% své buňky v gridu */
+                #ai-chat-desktop-wrapper {
+                    width: 100% !important;
+                    max-width: none !important; /* Zrušíme případné omezení šířky */
+                }
+
+                /* Sidebar musí mít fixní šířku */
+                #sidebar-container {
+                    width: 100% !important; /* Vyplní 400px buňku */
+                    min-width: 0 !important;
                 }
             </style>
 
-            <div id="ai-layout-container">
+            <div id="desktop-grid-container">
                 
                 <div id="ai-chat-desktop-wrapper" 
                      class="bg-white rounded-2xl shadow-xl border flex flex-col" 
-                     style="width: 100%; min-width: 0; min-height: calc(85vh - 100px);">
+                     style="min-height: calc(85vh - 100px);">
                     
                     <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-t-2xl border-b">
                         <div class="flex items-center justify-between">
@@ -404,7 +402,9 @@ const findQuickResponse = (message) => {
                             </div>
                         </div>
                     </div>
+                    
                     <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
+                    
                     <div id="ai-suggestions" class="p-4 border-t bg-gray-50"></div>
                     <div id="chat-input-footer" class="p-4 border-t bg-white rounded-b-2xl"></div>
                 </div>

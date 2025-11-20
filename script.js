@@ -357,7 +357,7 @@ const findQuickResponse = (message) => {
         }
         
         return `
-            <div class="lg:grid lg:grid-cols-[1fr_280px] lg:gap-4 items-start">
+            <div class="lg:grid lg:grid-cols-[1fr_400px] lg:gap-6 items-start">
                 <div id="ai-chat-desktop-wrapper" class="min-w-0 bg-white rounded-2xl shadow-xl border flex flex-col" style="min-height: calc(85vh - 100px);">
                     <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-t-2xl border-b">
                         <div class="flex items-center justify-between">

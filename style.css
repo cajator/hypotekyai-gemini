@@ -739,7 +739,7 @@ body {
     
     .chat-bubble-ai,
     .chat-bubble-user {
-        max-width: 70%;
+        max-width: 90%;
     }
 }
 
@@ -1056,20 +1056,3 @@ textarea {
     position: absolute;
 }
 
-/* ============================================
-   CHAT NA CELOU ŠÍŘKU - PŘEPSÁNÍ CONTAINER OMEZENÍ
-   ============================================ */
-#content-container {
-    max-width: 100% !important;
-    width: 100% !important;
-}
-
-#ai-chat-desktop-wrapper {
-    max-width: 100% !important;
-    width: 100% !important;
-}
-
-/* Pokud je potřeba ještě více prostoru, odstraníme i padding z main */
-main:has(#ai-chat-desktop-wrapper) {
-    max-width: 100% !important;
-}

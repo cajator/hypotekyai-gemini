@@ -357,37 +357,8 @@ const findQuickResponse = (message) => {
         }
         
         return `
-            <style>
-                /* Vynucení layoutu pro desktop */
-                @media (min-width: 1024px) {
-                    #desktop-grid-wrapper {
-                        display: grid !important;
-                        /* Definice sloupců: 1fr (zbytek) a 400px (fixně) */
-                        grid-template-columns: 1fr 400px !important;
-                        gap: 24px !important;
-                        align-items: start !important;
-                        width: 100% !important;
-                    }
-                    
-                    /* Levý sloupec (Chat) */
-                    #ai-chat-column {
-                        width: 100% !important;
-                        min-width: 0 !important; /* Důležité pro Grid, aby nepřetekl */
-                    }
-
-                    /* Pravý sloupec (Sidebar) */
-                    #sidebar-column {
-                        width: 100% !important; /* Vyplní těch 400px */
-                    }
-                }
-            </style>
-
-            <div id="desktop-grid-wrapper" class="flex flex-col lg:block w-full">
-                
-                <div id="ai-chat-column" 
-                     class="bg-white rounded-2xl shadow-xl border flex flex-col" 
-                     style="min-height: calc(85vh - 100px);">
-                    
+            <div class="lg:grid lg:grid-cols-[1fr_400px] lg:gap-6 items-start">
+                <div id="ai-chat-desktop-wrapper" class="min-w-0 bg-white rounded-2xl shadow-xl border flex flex-col" style="min-height: calc(85vh - 100px);">
                     <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-t-2xl border-b">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center">
@@ -403,15 +374,12 @@ const findQuickResponse = (message) => {
                             </div>
                         </div>
                     </div>
-                    
                     <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
                     <div id="ai-suggestions" class="p-4 border-t bg-gray-50"></div>
                     <div id="chat-input-footer" class="p-4 border-t bg-white rounded-b-2xl"></div>
                 </div>
                 
-                <div id="sidebar-column" class="lg:sticky top-28 mt-6 lg:mt-0">
-                    <div id="sidebar-container" class="w-full"></div>
-                </div>
+                <div id="sidebar-container" class="w-full lg:sticky top-28"></div>
             </div>`;
     };
     

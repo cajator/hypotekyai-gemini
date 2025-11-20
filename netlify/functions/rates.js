@@ -5,10 +5,10 @@ const ALL_OFFERS = [
     {
         id: 'offer-premium',
         title: "💎 VIP Sazba 3.99%",
-        description: "Exkluzivní sazba pro bonitní klienty. Podmínkou je aktivní využívání účtu a pojištění schopnosti splácet.",
-        highlights: ["Sazba 3.99%", "Sleva za pojištění", "Fixace 3 roky"],
+        description: "Exkluzivní sazba pro bonitní klienty. Podmínkou je aktivní využívání účtu a pojištění.",
+        highlights: ["Nejnižší sazba na trhu", "Sleva za domicil", "Osobní bankéř"], // Upraveno
         max_ltv: 70,
-        targetGroup: "Bonitní klienty", // Nový parametr pro UI
+        targetGroup: "Bonitní klienty", // Opraveno
         rates: {
             '3': { rate_ltv70: 3.99 },
             '5': { rate_ltv70: 4.19 },
@@ -19,12 +19,11 @@ const ALL_OFFERS = [
     {
         id: 'offer-1',
         title: "🏆 Premium + Pojištění",
-        description: "Výhodná sazba při sjednání pojištění nemovitosti/životního pojištění. Ideální balíček.",
-        highlights: ["Sleva za pojištění", "Nízká sazba", "Komplexní krytí"],
+        description: "Výhodná sazba při sjednání pojištění nemovitosti a schopnosti splácet. Nejoblíbenější volba.",
+        highlights: ["Sleva za pojištění", "Rychlé čerpání", "Odhad zdarma"], // Upraveno "Komplexní krytí" na něco konkrétního
         max_ltv: 80, 
-        targetGroup: "Slevu za pojištění", // Nový parametr pro UI
+        targetGroup: "Maximální úsporu", // Opraveno "Slevu za pojištění" -> dává smysl ve větě "Vhodné pro Maximální úsporu"
         rates: {
-            // Aktualizované sazby dle vašeho zadání (<=80% LTV)
             '3': { rate_ltv70: 4.19, rate_ltv80: 4.19, rate_ltv90: 4.72 },
             '5': { rate_ltv70: 4.29, rate_ltv80: 4.29, rate_ltv90: 4.89 },
             '7': { rate_ltv70: 4.59, rate_ltv80: 4.59, rate_ltv90: 4.99 },
@@ -35,9 +34,9 @@ const ALL_OFFERS = [
         id: 'offer-2',
         title: "⚖️ Flexibilní / OSVČ",
         description: "Nabídka s benevolentnějším posuzováním příjmů (obratové hypotéky).",
-        highlights: ["Akceptace obratu", "OSVČ friendly", "Bez zbytečných poplatků"],
+        highlights: ["Akceptace obratu", "OSVČ friendly", "Bez poplatků"],
         max_ltv: 90,
-        targetGroup: "OSVČ a podnikatele", // Nový parametr pro UI
+        targetGroup: "Podnikatele a OSVČ", // Opraveno
         rates: {
             '3': { rate_ltv70: 4.39, rate_ltv80: 4.49, rate_ltv90: 4.89 },
             '5': { rate_ltv70: 4.49, rate_ltv80: 4.59, rate_ltv90: 4.99 },
@@ -51,7 +50,7 @@ const ALL_OFFERS = [
         description: "Řešení pro klienty s minimem vlastních zdrojů (stačí 10 %).",
         highlights: ["LTV až 90%", "Akceptace diet", "Mimořádné splátky"],
         max_ltv: 90,
-        targetGroup: "Nízké vlastní zdroje", // Nový parametr pro UI
+        targetGroup: "Nízké vlastní zdroje",
         rates: {
             '3': { rate_ltv70: 4.54, rate_ltv80: 4.89, rate_ltv90: 5.04 },
             '5': { rate_ltv70: 4.69, rate_ltv80: 4.84, rate_ltv90: 5.19 },

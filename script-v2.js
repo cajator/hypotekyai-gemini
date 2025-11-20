@@ -622,20 +622,20 @@ const renderResults = () => {
                 <h3 class="text-xl sm:text-2xl font-bold text-green-900 flex items-center"><span class="text-2xl mr-2">✅</span> Nejlepší nabídka pro vás</h3>
             </div>
             
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 bg-white p-4 rounded-lg mb-3 border border-green-100 shadow-sm">
-                <div>
-                    <p class="text-xs text-gray-500 mb-1">💰 Měsíční splátka</p>
-                    <p class="text-xl sm:text-2xl font-bold text-gray-900">${formatNumber(selectedOffer.monthlyPayment)}</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white p-4 rounded-lg mb-3 border border-green-100 shadow-sm">
+                <div class="flex flex-col justify-center items-center sm:items-start p-2">
+                    <p class="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">Měsíční splátka</p>
+                    <p class="text-3xl font-extrabold text-gray-900">${formatNumber(selectedOffer.monthlyPayment)}</p>
                 </div>
-                <div>
-                    <p class="text-xs text-gray-500 mb-1">📊 Úroková sazba</p>
-                    <p class="text-xl sm:text-2xl font-bold text-blue-600">${selectedOffer.rate?.toFixed(2)}%</p>
-                </div>
-                <div>
-                    <p class="text-xs text-gray-500 mb-1">💵 Celkem zaplatíte</p>
-                    <p class="text-xl sm:text-2xl font-bold text-gray-700">${formatNumber(selectedOffer.totalPayment || selectedOffer.monthlyPayment * (state.formData.loanTerm || 30) * 12)}</p>
+                <div class="flex flex-col justify-center items-center sm:items-start p-2 border-t sm:border-t-0 sm:border-l border-gray-100">
+                    <p class="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">Úroková sazba</p>
+                    <div class="flex items-baseline">
+                        <p class="text-3xl font-extrabold text-blue-600">${selectedOffer.rate?.toFixed(2)}%</p>
+                        <span class="ml-2 text-xs text-gray-400 font-medium">p.a.</span>
+                    </div>
                 </div>
             </div>
+
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs bg-white p-3 rounded-lg">
                 <div class="flex items-center"><span class="text-base mr-1">🔒</span><div><p class="text-gray-500">Fixace</p><p class="font-semibold">${currentFixation} let</p></div></div>
                 <div class="flex items-center"><span class="text-base mr-1">🏠</span><div><p class="text-gray-500">LTV</p><p class="font-semibold">${ltvPercentage}%</p></div></div>
@@ -972,12 +972,25 @@ const renderResults = () => {
         try {
             const response = await fetch(`${CONFIG.API_RATES_ENDPOINT}?${new URLSearchParams(state.formData).toString()}`);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            state.calculation = { ...state.calculation, ...(await response.json()), isFromOurCalculator: true };
+            
+            // 1. Načteme data do proměnné
+            const data = await response.json();
+            
+            // 2. Uložíme do stavu a VYNUTÍME výběr první nabídky
+            state.calculation = { 
+                ...state.calculation, 
+                ...data, 
+                isFromOurCalculator: true,
+                selectedOffer: data.offers && data.offers.length > 0 ? data.offers[0] : null
+            };
+            
             if (!isSilent) {
                 renderResults();
                 setTimeout(() => scrollToTarget('#results-container'), 150); 
             }
             return true;
+        // === KONEC UPRAVENÉ ČÁSTI ===
+        
         } catch (error) {
             console.error('Chyba při načítání sazeb:', error);
             if (!isSilent) { 

@@ -606,10 +606,14 @@ const renderResults = () => {
         }
     }
 
-    const ltvPercentage = approvability?.ltv || 0;
+    const { loanAmount, propertyValue, landValue, purpose } = state.formData;
+    const effectiveValue = (purpose === 'výstavba' && landValue > 0) ? propertyValue + landValue : propertyValue;
+    const ltvPercentage = effectiveValue > 0 ? Math.round((loanAmount / effectiveValue) * 100) : 0;
+    // ====================
+
     const currentFixation = state.formData.fixation || 3;
     const employment = state.formData.employment || 'zaměstnanec';
-    const targetAudience = selectedOffer?.targetGroup || (employment === 'osvč' ? 'OSVČ' : 'Zaměstnance');
+    const targetAudience = employment === 'osvc' ? 'OSVČ' : (employment === 'jednatel' ? 'Jednatel s.r.o.' : 'Zaměstnanec');
 
     // UPRAVENO: Odstraněno tlačítko pro rozbalení, nabídky budou vidět rovnou
     const bestOfferHTML = selectedOffer ? `
@@ -1455,9 +1459,7 @@ const renderResults = () => {
                     container.appendChild(bubble);
                 });
             } 
-            else if (fromResults) {
-                setTimeout(() => handleChatMessageSend("Stručně zanalyzuj klíčové body mé kalkulace."), 100);
-            } else {
+            if (!fromResults && state.chatHistory.length === 0) {
                 addChatMessage('Jsem váš hypoteční poradce s přístupem k datům z 19+ bank. Co vás zajímá?', 'ai');
             }
             

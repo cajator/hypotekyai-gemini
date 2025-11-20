@@ -244,9 +244,10 @@ const handler = async (event) => {
                     dsti: Math.round(dsti), 
                     title: o.title, 
                     description: o.description, 
-                    highlights: o.highlights || [] 
+                    highlights: o.highlights || [],
+                    targetGroup: o.targetGroup // <--- TENTO ŘÁDEK PŘIDAT
                 };
-            }).filter(Boolean); // Odstraní null hodnoty
+            }).filter(Boolean);
 
         // Seřadíme finální nabídky podle sazby
         const finalOffers = allQualifiedOffers.sort((a, b) => a.rate - b.rate);

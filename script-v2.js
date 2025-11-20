@@ -614,19 +614,34 @@ const renderResults = () => {
 
     const currentFixation = state.formData.fixation || 3;
     const employment = state.formData.employment || 'zaměstnanec';
-    const targetAudience = employment === 'osvc' ? 'OSVČ' : (employment === 'jednatel' ? 'Jednatel s.r.o.' : 'Zaměstnanec');
+    const targetAudience = selectedOffer?.targetGroup || (employment === 'osvč' ? 'OSVČ' : 'Zaměstnance');
 
-    // UPRAVENO: Odstraněno tlačítko pro rozbalení, nabídky budou vidět rovnou
     const bestOfferHTML = selectedOffer ? `
         <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-5 sm:p-6 rounded-xl border-2 border-green-300 shadow-lg mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl sm:text-2xl font-bold text-green-900 flex items-center"><span class="text-2xl mr-2">✅</span> Nejlepší nabídka pro vás</h3>
+            </div>
+            
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 bg-white p-4 rounded-lg mb-3 border border-green-100 shadow-sm">
+                <div>
+                    <p class="text-xs text-gray-500 mb-1">💰 Měsíční splátka</p>
+                    <p class="text-xl sm:text-2xl font-bold text-gray-900">${formatNumber(selectedOffer.monthlyPayment)}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500 mb-1">📊 Úroková sazba</p>
+                    <p class="text-xl sm:text-2xl font-bold text-blue-600">${selectedOffer.rate?.toFixed(2)}%</p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500 mb-1">💵 Celkem zaplatíte</p>
+                    <p class="text-xl sm:text-2xl font-bold text-gray-700">${formatNumber(selectedOffer.totalPayment || selectedOffer.monthlyPayment * (state.formData.loanTerm || 30) * 12)}</p>
+                </div>
+            </div>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs bg-white p-3 rounded-lg">
                 <div class="flex items-center"><span class="text-base mr-1">🔒</span><div><p class="text-gray-500">Fixace</p><p class="font-semibold">${currentFixation} let</p></div></div>
                 <div class="flex items-center"><span class="text-base mr-1">🏠</span><div><p class="text-gray-500">LTV</p><p class="font-semibold">${ltvPercentage}%</p></div></div>
                 <div class="flex items-center"><span class="text-base mr-1">⏳</span><div><p class="text-gray-500">Splatnost</p><p class="font-semibold">${state.formData.loanTerm || 30} let</p></div></div>
-                
                 <div class="flex items-center"><span class="text-base mr-1">👤</span><div><p class="text-gray-500">Vhodné pro</p><p class="font-semibold text-green-700">${targetAudience}</p></div></div>
             </div>
-            
             ${selectedOffer.highlights ? `<div class="flex flex-wrap gap-2 mt-3">${selectedOffer.highlights.map(h => `<span class="inline-block px-3 py-1 text-xs bg-green-100 text-green-700 rounded-full font-semibold">${h}</span>`).join('')}</div>` : ''}
         </div>
     ` : '';

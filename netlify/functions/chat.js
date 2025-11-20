@@ -161,9 +161,10 @@ function createSystemPrompt(userMessage, context) {
 
     **SEKCE 3: KLIENT (Status a výhody)**
     * **VIP Klient:** (Úvěr > 7M NEBO Příjem > 80k NEBO Vzdělání VŠ). Získá slevu 0.1-0.2 % a lepší DSTI (až 55 %).
-    * **LTV 80 % a méně:** Toto je **STANDARD** pro nejlepší sazby. Zde není potřeba dozajištění.
-    * **LTV 90 %:** Vyšší sazba. Řešitelné dozajištěním nebo pro **Věk < 36 let**, kde jsou banky mírnější.
-    * **Registry (SOLUS, BRKI):** Drobný opožděný zápis (po telefonu) = řešitelný. Aktivní exekuce/insolvence = neřešitelné.
+    * **LTV 80 % a méně:** Standard pro nejlepší sazby. Není potřeba dozajištění.
+    * **Mladí do 36 let (LTV 90 %):** ZÁSADNÍ VÝHODA. Banky jim nabízejí LTV 90 % za sazbu téměř shodnou s LTV 80 % (navýšení jen cca o 0,1 %). Nepotřebují dozajištění, pokud mají bonitu.
+    * **Nad 36 let a LTV 90 %:** Zde je sazba výrazně vyšší. Řešením je dozajištění druhou nemovitostí.
+    * **Registry (SOLUS, BRKI):** Drobný opožděný zápis (po telefonu) = řešitelný. Aktivní exekuce = neřešitelné.
     * **Rozvod (SJM):** Nutné mít majetkové vypořádání (SJM) vyřešené PŘED žádostí o hypotéku.
     
     **SEKCE 4: SLEVY A POJIŠTĚNÍ (Insider Tipy)**

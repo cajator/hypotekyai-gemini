@@ -204,26 +204,48 @@ const handler = async (event) => {
             console.log(`PREMIUM KLIENT (Úvěr: ${isPremiumLoan}, Příjem: ${isPremiumIncome}, Vzdělání: ${isPremiumEducation}): Uplatněna sleva ${premiumDiscount}%`);
         }
         // ===================================
+        
+        const isYoungApplicant = age < 36; 
+        if (isYoungApplicant) {
+            console.log("Detekován žadatel do 36 let -> Aplikuji zvýhodněné sazby pro LTV 90%.");
+        }
+        // ===============================================
 
         const allQualifiedOffers = ALL_OFFERS
-            .filter(o => ltv <= o.max_ltv) // Filtrujeme dle max_ltv nabídky
+            .filter(o => ltv <= o.max_ltv) 
             .map(o => {
-                const ratesForFixation = o.rates[fixationInput] || o.rates['5']; // Fallback na 5 let
+                const ratesForFixation = o.rates[fixationInput] || o.rates['5']; 
                 if (!ratesForFixation) {
-                    console.log(`Chybí sazby pro fixaci ${fixationInput} u nabídky ${o.id}`);
                     return null;
                 }
 
                 let rate;
-                // Pečlivý výběr sazby s fallbacky
-                if (ltv <= 70) rate = ratesForFixation.rate_ltv70;
-                else if (ltv <= 80) rate = ratesForFixation.rate_ltv80 || ratesForFixation.rate_ltv70;
-                else if (ltv <= 90) rate = ratesForFixation.rate_ltv90 || ratesForFixation.rate_ltv80 || ratesForFixation.rate_ltv70;
+                
+                // === 2. ZDE JE UPRAVENÁ LOGIKA VÝBĚRU SAZBY ===
+                if (ltv <= 70) {
+                    rate = ratesForFixation.rate_ltv70;
+                } else if (ltv <= 80) {
+                    // Fallback: pokud není definována sazba pro 80, bereme 70
+                    rate = ratesForFixation.rate_ltv80 || ratesForFixation.rate_ltv70;
+                } else if (ltv <= 90) {
+                    // LOGIKA PRO MLADÉ DO 36 LET
+                    if (isYoungApplicant) {
+                        // Vezmeme sazbu pro LTV 80 a přičteme jen 0.1%
+                        // (místo braní drahé sazby rate_ltv90)
+                        const baseRate = ratesForFixation.rate_ltv80 || ratesForFixation.rate_ltv70;
+                        if (baseRate) rate = baseRate + 0.1;
+                        else rate = ratesForFixation.rate_ltv90; // Záchrana kdyby nebylo nic jiného
+                    } else {
+                        // Pro starší (36+) platí standardní drahá sazba pro 90%
+                        rate = ratesForFixation.rate_ltv90 || ratesForFixation.rate_ltv80;
+                    }
+                }
+                // ==============================================
                 
                 if (!rate) {
-                    console.log(`Nenalezena sazba pro LTV ${ltv.toFixed(1)}% a fixaci ${fixationInput} u nabídky ${o.id}`);
-                    return null; // Přeskočíme nabídku, pokud pro danou kombinaci LTV/fixace nemá sazbu
+                    return null; 
                 }
+        
                 
                 const monthlyPayment = calculateMonthlyPayment(loanAmount, rate, effectiveTerm);
                 const dsti = income > 0 ? ((monthlyPayment + liabilities) / income) * 100 : Infinity; // DSTI

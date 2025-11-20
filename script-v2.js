@@ -357,9 +357,9 @@ const findQuickResponse = (message) => {
         }
         
         return `
-            <div class="flex flex-col lg:flex-row gap-6 items-start">
+            <div class="flex flex-col lg:flex-row gap-6 w-full items-start">
                 
-                <div id="ai-chat-desktop-wrapper" class="flex-1 w-full bg-white rounded-2xl shadow-xl border flex flex-col" style="min-height: calc(85vh - 100px);">
+                <div id="ai-chat-desktop-wrapper" class="flex-1 min-w-0 w-full bg-white rounded-2xl shadow-xl border flex flex-col" style="min-height: calc(85vh - 100px);">
                     <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-t-2xl border-b">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center">

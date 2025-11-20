@@ -357,7 +357,15 @@ const findQuickResponse = (message) => {
         }
         
         return `
-            <div class="flex flex-col lg:flex-row gap-6 w-full items-start">
+            <style>
+                @media (min-width: 1024px) {
+                    #sidebar-container {
+                        width: 400px !important;
+                        flex: none !important;
+                    }
+                }
+            </style>
+            <div class="flex flex-col lg:flex-row gap-6 items-start w-full">
                 
                 <div id="ai-chat-desktop-wrapper" class="flex-1 min-w-0 w-full bg-white rounded-2xl shadow-xl border flex flex-col" style="min-height: calc(85vh - 100px);">
                     <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-t-2xl border-b">
@@ -380,7 +388,7 @@ const findQuickResponse = (message) => {
                     <div id="chat-input-footer" class="p-4 border-t bg-white rounded-b-2xl"></div>
                 </div>
                 
-                <div id="sidebar-container" class="w-full lg:w-96 lg:max-w-sm flex-none lg:sticky top-28"></div>
+                <div id="sidebar-container" class="w-full lg:sticky top-28"></div>
             </div>`;
     };
     

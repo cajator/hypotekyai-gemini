@@ -407,8 +407,6 @@ const findQuickResponse = (message) => {
                 handleChatMessageSend(input.value.trim());
                 input.value = '';
             }
-        
-            addV22EventListeners();
         });
         
         button.addEventListener('click', () => {
@@ -551,8 +549,9 @@ const findQuickResponse = (message) => {
     };
 
 // ============================================
-// UPDATED renderResults - SCENARIOS & TOOLTIPS
+// RENDEROVÁNÍ VÝSLEDKŮ V2.2
 // ============================================
+
 const renderResults = () => {
     const offers = state.calculation?.offers || [];
     const approvability = state.calculation?.approvability;
@@ -562,232 +561,253 @@ const renderResults = () => {
     if (!container) return;
 
     container.classList.remove('hidden');
-
-    // 1. Ošetření prázdných výsledků
     if (offers.length === 0) {
         container.innerHTML = `<div class="text-center bg-red-50 p-8 rounded-lg mt-8"><h3 class="text-2xl font-bold text-red-800 mb-2">Dle zadaných parametrů to nevychází</h3><p class="text-red-700">Zkuste upravit parametry, nebo se <a href="#kontakt" data-target="#kontakt" data-action="show-lead-form" class="font-bold underline scroll-to">spojte s naším specialistou</a>.</p></div>`;
         state.calculation.selectedOffer = null;
         return;
     }
 
-    // 2. Pokud není vybrána nabídka, vybereme první
     if (!selectedOffer && offers.length > 0) {
         selectedOffer = offers[0];
         state.calculation.selectedOffer = selectedOffer;
     }
 
-    // 3. Příprava dat pro grafy a detaily
     let chartData = null;
     let fixationDetails = null;
     
     if (selectedOffer) {
         try {
-            // Načtení hodnot
-            const { propertyValue, landValue, loanAmount, loanTerm, age, fixation, purpose } = state.formData;
-            const effectivePropertyValue = purpose === 'výstavba' ? (propertyValue || 0) + (landValue || 0) : (propertyValue || 0);
-            const effectiveTerm = Math.min(loanTerm || 30, Math.max(5, 70 - (age || 35)));
+            const currentPropertyValue = state.formData.propertyValue || 0;
+            const currentLandValue = state.formData.landValue || 0;
+            const currentLoanAmount = state.formData.loanAmount || 0;
+            const currentLoanTerm = state.formData.loanTerm || 30;
+            const currentAge = state.formData.age || 35;
+            const currentFixation = state.formData.fixation || 3;
+            const currentPurpose = state.formData.purpose || 'koupě';
+            const effectivePropertyValue = currentPurpose === 'výstavba' ? currentPropertyValue + currentLandValue : currentPropertyValue;
+            const effectiveTerm = Math.min(currentLoanTerm, Math.max(5, 70 - currentAge));
             
-            if (effectivePropertyValue > 0 && loanAmount > 0 && selectedOffer.rate > 0) {
-                fixationDetails = calculateFixationAnalysis(loanAmount, effectivePropertyValue, selectedOffer.rate, effectiveTerm, fixation || 3);
-                chartData = Array.from({ length: effectiveTerm }, (_, i) => calculateAmortization(loanAmount, selectedOffer.rate, effectiveTerm, i + 1));
+            if (effectivePropertyValue > 0 && currentLoanAmount > 0 && selectedOffer.rate > 0 && effectiveTerm > 0 && currentFixation > 0) {
+                fixationDetails = calculateFixationAnalysis(currentLoanAmount, effectivePropertyValue, selectedOffer.rate, effectiveTerm, currentFixation);
+                chartData = Array.from({ length: effectiveTerm }, (_, i) => calculateAmortization(currentLoanAmount, selectedOffer.rate, effectiveTerm, i + 1));
             }
-        } catch (e) { console.error("Chyba výpočtu:", e); }
+        } catch (e) {
+            console.error("Chyba při výpočtu detailů:", e);
+        }
     }
 
-    // 4. Zobrazení nabídek jako "AI Scénářů" (Top 3)
-    const top3Offers = offers.slice(0, 3);
-    const scenarios = [
-        { label: "🏆 Optimální varianta", desc: "Matematicky nejvýhodnější", color: "green", bg: "bg-green-50", border: "border-green-300" },
-        { label: "🛡️ Konzervativní volba", desc: "Důraz na stabilitu banky", color: "blue", bg: "bg-blue-50", border: "border-blue-300" },
-        { label: "⚖️ Alternativní strategie", desc: "Vyvážený poměr cena/výkon", color: "purple", bg: "bg-purple-50", border: "border-purple-300" }
-    ];
+    const ltvPercentage = approvability?.ltv || 0;
+    const currentFixation = state.formData.fixation || 3;
+    const employment = state.formData.employment || 'zaměstnanec';
 
-    const offersHTML = `
-        <div class="mb-8">
-             <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                <span class="text-2xl mr-2">🤖</span> Navržené scénáře financování
-            </h3>
-            <div class="grid grid-cols-1 gap-4">
-                ${top3Offers.map((offer, index) => {
-                    const sc = scenarios[index] || scenarios[2];
-                    const isSelected = offer.id === selectedOffer?.id;
-                    const activeClass = isSelected ? 'ring-2 ring-offset-2 ring-blue-500 transform scale-[1.01]' : 'opacity-90 hover:opacity-100';
-                    
-                    return `
-                    <div class="offer-card relative cursor-pointer transition-all duration-300 rounded-xl border-2 ${sc.border} ${sc.bg} p-4 sm:p-5 shadow-sm hover:shadow-md ${activeClass}" 
-                         data-offer-id="${offer.id}">
-                        
-                        ${isSelected ? `<div class="absolute -top-3 -right-2 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">Vybráno</div>` : ''}
-
-                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                            
-                            <div class="flex-1">
-                                <div class="flex items-center gap-2 mb-1">
-                                    <h4 class="font-bold text-${sc.color}-900 text-lg">${sc.label}</h4>
-                                </div>
-                                <p class="text-xs text-gray-600 mb-2">${sc.desc}</p>
-                                <div class="text-sm font-medium text-gray-800">${offer.title}</div>
-                            </div>
-
-                            <div class="flex gap-6 text-center">
-                                <div>
-                                    <div class="text-xs text-gray-500 uppercase tracking-wide">Splátka</div>
-                                    <div class="text-xl font-bold text-gray-900">${formatNumber(offer.monthlyPayment)}</div>
-                                </div>
-                                <div>
-                                    <div class="text-xs text-gray-500 uppercase tracking-wide">Úrok</div>
-                                    <div class="text-xl font-bold text-blue-600">${offer.rate.toFixed(2)}%</div>
-                                </div>
-                            </div>
-
-                            <div class="hidden sm:flex flex-col items-end gap-1">
-                                ${offer.highlights ? offer.highlights.slice(0,2).map(h => 
-                                    `<span class="text-[10px] bg-white/60 px-2 py-1 rounded border border-${sc.color}-200 text-${sc.color}-800">${h}</span>`
-                                ).join('') : ''}
-                            </div>
-                        </div>
-                    </div>`;
-                }).join('')}
+    const bestOfferHTML = selectedOffer ? `
+        <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-5 sm:p-6 rounded-xl border-2 border-green-300 shadow-lg mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl sm:text-2xl font-bold text-green-900 flex items-center"><span class="text-2xl mr-2">✅</span> Nejlepší nabídka pro vás</h3>
+                ${offers.length > 1 ? `<button class="text-sm text-blue-600 hover:text-blue-800 font-semibold underline" data-action="show-all-offers">Zobrazit všech ${offers.length} nabídek ↓</button>` : ''}
             </div>
-            ${offers.length > 3 ? `<div class="text-center mt-2 text-xs text-gray-500">... a dalších ${offers.length - 3} nabídek na pozadí</div>` : ''}
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 bg-white p-4 rounded-lg mb-3">
+                <div><p class="text-xs text-gray-500 mb-1">💰 Měsíční splátka</p><p class="text-xl sm:text-2xl font-bold text-gray-900">${formatNumber(selectedOffer.monthlyPayment)}</p></div>
+                <div><p class="text-xs text-gray-500 mb-1">📊 Úroková sazba</p><p class="text-xl sm:text-2xl font-bold text-blue-600">${selectedOffer.rate?.toFixed(2)}%</p></div>
+                <div><p class="text-xs text-gray-500 mb-1">💵 Celkem zaplatíte</p><p class="text-xl sm:text-2xl font-bold text-gray-700">${formatNumber(selectedOffer.totalPayment || selectedOffer.monthlyPayment * (state.formData.loanTerm || 30) * 12)}</p></div>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs bg-white p-3 rounded-lg">
+                <div class="flex items-center"><span class="text-base mr-1">🔒</span><div><p class="text-gray-500">Fixace</p><p class="font-semibold">${currentFixation} let</p></div></div>
+                <div class="flex items-center"><span class="text-base mr-1">🏠</span><div><p class="text-gray-500">LTV</p><p class="font-semibold">${ltvPercentage}%</p></div></div>
+                <div class="flex items-center"><span class="text-base mr-1">⏳</span><div><p class="text-gray-500">Splatnost</p><p class="font-semibold">${state.formData.loanTerm || 30} let</p></div></div>
+                <div class="flex items-center"><span class="text-base mr-1">👤</span><div><p class="text-gray-500">Vhodné pro</p><p class="font-semibold">${employment === 'osvč' ? 'OSVČ' : 'Zaměstnance'}</p></div></div>
+            </div>
+            ${selectedOffer.highlights ? `<div class="flex flex-wrap gap-2 mt-3">${selectedOffer.highlights.map(h => `<span class="inline-block px-3 py-1 text-xs bg-green-100 text-green-700 rounded-full font-semibold">${h}</span>`).join('')}</div>` : ''}
+        </div>
+    ` : '';
+
+    const allOffersHTML = offers.length > 1 ? `
+        <div id="all-offers-container" class="hidden mb-6">
+            <h4 class="text-lg font-bold mb-3 text-gray-700">📋 Porovnání všech ${offers.length} nabídek:</h4>
+            <div class="overflow-x-auto">
+                <table class="w-full bg-white rounded-lg shadow-md text-sm">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="px-4 py-3 text-left font-semibold">Nabídka</th>
+                            <th class="px-4 py-3 text-center font-semibold">Měsíční splátka</th>
+                            <th class="px-4 py-3 text-center font-semibold">Úrok</th>
+                            <th class="px-4 py-3 text-center font-semibold">Celkem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${offers.map((o, idx) => `
+                            <tr class="border-t hover:bg-blue-50 cursor-pointer offer-row ${o.id === selectedOffer?.id ? 'bg-blue-50 border-l-4 border-blue-600' : ''}" data-offer-id="${o.id}">
+                                <td class="px-4 py-3">
+                                    <div class="font-bold text-blue-700">${idx === 0 ? '🏆 ' : ''}${o.title || 'Nabídka ' + (idx + 1)}</div>
+                                    <div class="text-xs text-gray-500">${o.description || ''}</div>
+                                </td>
+                                <td class="px-4 py-3 text-center"><div class="font-bold text-lg">${formatNumber(o.monthlyPayment)}</div></td>
+                                <td class="px-4 py-3 text-center"><div class="font-semibold text-blue-600">${o.rate?.toFixed(2)}%</div></td>
+                                <td class="px-4 py-3 text-center"><div class="text-gray-700">${formatNumber(o.totalPayment || o.monthlyPayment * (state.formData.loanTerm || 30) * 12)}</div></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    ` : '';
+
+    const megaCTAHTML = `
+        <div class="bg-gradient-to-br from-blue-600 to-indigo-700 p-5 sm:p-6 rounded-2xl shadow-2xl mb-6 text-white">
+            <div class="text-center mb-4">
+                <div class="text-3xl sm:text-4xl mb-2">💬</div>
+                <h3 class="text-xl sm:text-2xl font-extrabold mb-1">Chci pomoc experta</h3>
+                <p class="text-sm text-blue-100 mb-1">Vyjedná ti nejlepší podmínky a provede celým procesem</p>
+                <p class="text-xs text-blue-200">✓ Zdarma  ✓ Do 24 hodin  ✓ Bez závazků</p>
+            </div>
+            <div class="text-center">
+                <button id="show-inline-lead-btn" data-action="toggle-inline-lead-form" class="nav-btn bg-green-600 hover:bg-green-700 text-white text-base sm:text-lg font-bold px-6 sm:px-10 py-3 sm:py-4 rounded-xl shadow-xl hover:shadow-2xl transition-all inline-block">✅ Chci zavolat zdarma</button>
+            </div>
+            
+            <div id="inline-lead-form-container" class="hidden mt-5 bg-white rounded-xl p-5 text-gray-800">
+                <h4 class="text-base font-bold mb-3 text-center text-gray-900">📋 Zadej své kontaktní údaje</h4>
+                <form id="inline-lead-form" name="inline-lead-form" method="POST" data-netlify="true" netlify-honeypot="bot-field" class="space-y-3">
+                    <input type="hidden" name="form-name" value="inline-lead-form" />
+                    <p class="hidden"><label>Nevyplňujte: <input name="bot-field" /></label></p>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div><label class="form-label text-sm">Jméno a příjmení *</label><input type="text" name="name" required pattern="^[A-Za-zÀ-ž\\s]{2,}(\\s[A-Za-zÀ-ž\\s]{2,})?$" class="modern-input text-sm"></div>
+                        <div><label class="form-label text-sm">Telefon *</label><input type="tel" name="phone" required pattern="^(\\+420)? ?[1-9][0-9]{2} ?[0-9]{3} ?[0-9]{3}$" class="modern-input text-sm"></div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div><label class="form-label text-sm">E-mail *</label><input type="email" name="email" required class="modern-input text-sm"></div>
+                        <div><label class="form-label text-sm">PSČ *</label><input type="text" name="psc" required pattern="^\\d{3} ?\\d{2}$" placeholder="např. 110 00" class="modern-input text-sm"></div>
+                    </div>
+                    <div>
+                        <label class="form-label text-sm">Kdy tě můžeme kontaktovat?</label>
+                        <select name="contact-time" class="modern-select text-sm">
+                            <option value="kdykoliv">Kdykoliv během dne</option>
+                            <option value="rano">Ráno (8:00 - 12:00)</option>
+                            <option value="odpoledne">Odpoledne (12:00 - 17:00)</option>
+                            <option value="vecer">Večer (17:00 - 20:00)</option>
+                        </select>
+                    </div>
+                    <div><label class="form-label text-sm">Poznámka</label><textarea name="note" rows="2" class="modern-input text-sm" placeholder="Např. už mám předschválenou hypotéku..."></textarea></div>
+                    <div class="text-center pt-2">
+                        <p class="text-xs text-gray-500 mb-3">Odesláním souhlasíš se zpracováním osobních údajů.</p>
+                        <button type="submit" class="w-full nav-btn bg-green-600 hover:bg-green-700 text-white font-bold py-3 text-base">📞 Odeslat nezávazně</button>
+                    </div>
+                </form>
+                <div id="inline-form-success" class="hidden mt-4 text-center p-3 bg-green-100 text-green-800 rounded-lg">
+                    <h5 class="font-bold">✅ Děkujeme!</h5>
+                    <p class="text-sm">Váš požadavek byl odeslán. Ozveme se vám brzy.</p>
+                </div>
+            </div>
         </div>
     `;
 
+    const alternativesHTML = `
+        <div class="grid grid-cols-1 ${state.mode !== 'guided' ? 'sm:grid-cols-2' : ''} gap-4 mb-6">
+            <div class="bg-white p-4 rounded-xl border-2 border-gray-200 hover:border-purple-300 hover:shadow-lg transition-all cursor-pointer" data-action="discuss-with-ai">
+                <div class="flex items-center mb-2"><span class="text-2xl mr-2">💬</span><h4 class="text-base font-bold text-gray-900">Probrat s AI asistentem</h4></div>
+                <p class="text-xs text-gray-600 mb-3">Okamžité odpovědi, stress testy, scénáře</p>
+                <button class="nav-btn bg-purple-600 hover:bg-purple-700 text-white text-sm py-2 px-4 w-full" data-action="discuss-with-ai">Spustit AI chat</button>
+            </div>
+            ${state.mode !== 'guided' ? `
+            <div class="bg-white p-4 rounded-xl border-2 border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all cursor-pointer" data-action="switch-to-guided">
+                <div class="flex items-center mb-2"><span class="text-2xl mr-2">📊</span><h4 class="text-base font-bold text-gray-900">Detailní analýza</h4></div>
+                <p class="text-xs text-gray-600 mb-3">Kompletní scoring, DSTI, stress testy ČNB</p>
+                <button class="nav-btn bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 px-4 w-full" data-action="switch-to-guided">Přepnout na detailní</button>
+            </div>` : ''}
+        </div>
+    `;
 
-    // 5. Skóre sekce (Zůstává podobná, jen zajištění proměnných)
     let scoreSectionHTML = '';
     if (approvability) {
-        const ltvExplain = approvability.ltv > 85 ? 'Optimální LTV.' : 'Hraniční LTV.';
+        const ltvExplanation = approvability.ltv > 85 ? 'Optimální LTV.' : approvability.ltv > 70 ? 'Dobré LTV.' : 'Hraniční LTV.';
+        const dstiExplanation = approvability.dsti > 80 ? 'Výborné DSTI.' : approvability.dsti > 60 ? 'Dostatečná rezerva.' : 'Nižší rezerva.';
+        const bonitaExplanation = approvability.bonita > 85 ? 'Excelentní bonita.' : approvability.bonita > 70 ? 'Velmi dobrá bonita.' : 'Standardní bonita.';
+        const totalScoreValue = (typeof approvability.total === 'number' && !isNaN(approvability.total)) ? approvability.total : 0;
+        
         scoreSectionHTML = `
-            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-5 rounded-xl border border-blue-200 shadow-lg mb-6">
-                <h4 class="text-lg font-bold mb-4 flex items-center">
-                    <span class="text-2xl mr-2">🎯</span> Skóre schvalovatelnosti
-                </h4>
+            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 sm:p-5 rounded-xl border border-blue-200 shadow-lg mb-6">
+                <h4 class="text-lg sm:text-xl font-bold mb-4 flex items-center"><span class="text-2xl mr-2">🎯</span> Skóre vaší žádosti</h4>
                 <div class="space-y-3">
-                    ${scoreHTML('LTV', approvability.ltv, 'bg-green-500', '🏠', ltvExplain, 'LTV určuje poměr úvěru k ceně. Nízké je lepší.')}
-                    ${scoreHTML('DSTI', approvability.dsti, 'bg-yellow-500', '💰', 'Rezerva splátky', 'Poměr splátek k příjmu. ČNB má limity.')}
-                    ${scoreHTML('Bonita', approvability.bonita, 'bg-blue-500', '⭐', 'Celková bonita', 'Vaše hodnocení pro banku.')}
+                    ${scoreHTML('LTV', approvability.ltv, 'bg-green-500', '🏠', ltvExplanation, 'LTV (Loan-to-Value) ukazuje poměr výše úvěru k hodnotě nemovitosti. Čím nižší LTV, tím lepší podmínky od banky. AI ti poradí, jak ho optimalizovat.')}
+                    ${scoreHTML('DSTI', approvability.dsti, 'bg-yellow-500', '💰', dstiExplanation, 'DSTI (Debt Service-to-Income) porovnává tvé splátky s příjmem. Banka hlídá, aby ti po splatk zůstalo dost na život. AI ti poradí, jak na to.')}
+                    ${scoreHTML('Bonita', approvability.bonita, 'bg-blue-500', '⭐', bonitaExplanation, 'Bonita hodnotí tvou celkovou spolehlivost jako klienta banky. Zahrnuje příjmy, stabilitu zaměstnání a další faktory. AI ti poradí, jak ji zvýšit.')}
                 </div>
-                 <div class="mt-4 text-center">
-                    <button class="nav-btn bg-purple-600 hover:bg-purple-700 text-white text-sm py-2 px-4 shadow-md transition-transform hover:scale-105" 
-                            data-action="discuss-score-with-ai">
-                        💬 Probrat mé skóre s AI (Stress Test)
-                    </button>
+                <div class="mt-5 p-4 bg-white rounded-xl text-center">
+                    <h5 class="text-sm font-bold mb-2">Celková šance na schválení:</h5>
+                    <div class="text-3xl sm:text-4xl font-bold text-green-600">${totalScoreValue}%</div>
                 </div>
             </div>`;
     }
 
-    // 6. Detaily Fixace (S PŘIDANÝMI OTAZNÍKY A INFO TAGY)
+    const chartHTML = `
+        <div class="bg-white p-4 sm:p-5 rounded-xl border border-gray-200 shadow-lg mb-6">
+            <h4 class="text-lg sm:text-xl font-bold mb-4 flex items-center"><span class="text-2xl mr-2">📈</span> Vývoj splácení v čase</h4>
+            <div class="relative h-60 sm:h-80"><canvas id="resultsChart"></canvas></div>
+        </div>
+    `;
+
+    const bottomCTAHTML = `
+        <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-5 rounded-xl border-2 border-green-300 text-center mb-6">
+            <h4 class="text-lg font-bold text-gray-900 mb-2">💡 Líbí se ti nabídka?</h4>
+            <p class="text-sm text-gray-600 mb-3">Nech si pomoci od experta s vyjednáním nejlepší sazby</p>
+            <button class="nav-btn bg-green-600 hover:bg-green-700 text-white font-bold px-8 py-3" data-action="scroll-to-form">📞 Zavolat mi zdarma</button>
+        </div>
+    `;
+
     let fixationDetailsHTML = '';
     if (fixationDetails) {
+        const currentFixation = state.formData.fixation || 3;
+        const effectiveTerm = Math.min(state.formData.loanTerm || 30, Math.max(5, 70 - (state.formData.age || 35)));
+        
         fixationDetailsHTML = `
-            <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-5 rounded-xl border border-green-200 shadow-lg mb-6">
-                <h4 class="text-lg font-bold mb-4 flex items-center">
-                    <span class="text-2xl mr-2">📊</span> Detaily fixace
-                </h4>
-                
-                <div class="bg-white p-4 rounded-xl space-y-3 text-sm shadow-sm mb-4">
-                    <div class="flex justify-between items-center pb-2 border-b border-gray-100">
-                        <span class="flex items-center gap-1.5 text-gray-600">
-                            Výše úvěru <span class="info-icon" data-info-key="loanAmount" data-info-text="Celková částka, kterou si půjčujete od banky.">?</span>
-                        </span>
-                        <strong class="text-gray-900">${formatNumber(state.formData.loanAmount)}</strong>
-                    </div>
-                    <div class="flex justify-between items-center pb-2 border-b border-gray-100">
-                        <span class="flex items-center gap-1.5 text-gray-600">
-                            Celkem zaplatíte za ${state.formData.fixation} let <span class="info-icon" data-info-key="fixationTotal" data-info-text="Součet všech měsíčních splátek, které odešlete bance během fixace.">?</span>
-                        </span>
-                        <strong class="text-gray-900">${formatNumber(fixationDetails.totalPaymentsInFixation)}</strong>
-                    </div>
-                    <div class="flex justify-between items-center pb-2 border-b border-gray-100">
-                        <span class="flex items-center gap-1.5 text-gray-600">
-                            Z toho úroky <span class="info-icon" data-info-key="fixationInterest" data-info-text="Část peněz, která je čistým nákladem (ziskem banky). O tuto částku se dluh nesnižuje.">?</span>
-                        </span>
-                        <strong class="text-red-600">${formatNumber(fixationDetails.totalInterestForFixation)}</strong>
-                    </div>
-                    <div class="flex justify-between items-center pt-1">
-                        <span class="flex items-center gap-1.5 text-gray-600">
-                            Zbývající dluh po fixaci <span class="info-icon" data-info-key="remainingDebt" data-info-text="Částka, kterou budete stále dlužit bance po skončení fixace.">?</span>
-                        </span>
-                        <strong class="text-gray-900">${formatNumber(fixationDetails.remainingBalanceAfterFixation)}</strong>
-                    </div>
+            <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 sm:p-5 rounded-xl border border-green-200 shadow-lg mb-6">
+                <h4 class="text-lg sm:text-xl font-bold mb-3 flex items-center"><span class="text-2xl mr-2">📊</span> Detaily fixace</h4>
+                <div class="bg-white p-4 rounded-xl space-y-2 text-sm shadow-sm mb-4">
+                    <div class="flex justify-between items-center pb-2 border-b"><span>Celkem za ${currentFixation} let fixace:</span><strong class="text-base">${formatNumber(fixationDetails.totalPaymentsInFixation)}</strong></div>
+                    <div class="flex justify-between items-center pb-2 border-b"><span>Z toho úroky:</span><strong class="text-base text-red-600">${formatNumber(fixationDetails.totalInterestForFixation)}</strong></div>
+                    <div class="flex justify-between items-center pt-2"><span>Zbývající dluh po fixaci:</span><strong class="text-base">${formatNumber(fixationDetails.remainingBalanceAfterFixation)}</strong></div>
                 </div>
                 
                 ${fixationDetails.futureScenario ? `
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-                        <div class="bg-blue-50 p-3 rounded-lg border border-blue-200 text-xs relative group">
-                            <h5 class="font-bold mb-1 text-blue-800 flex items-center gap-1">
-                                💡 Scénář: Pokles sazeb 
-                                <span class="info-icon scale-75" data-info-key="optimisticScenario" data-info-text="Modelová situace, kdy tržní sazby klesnou.">?</span>
-                            </h5>
-                            <p class="text-gray-600 mb-2">Při poklesu na ${fixationDetails.futureScenario.optimistic.rate.toFixed(2)}%:</p>
-                            <div class="flex justify-between mb-1"><span>Nová splátka:</span> <strong class="text-green-600">${formatNumber(fixationDetails.futureScenario.optimistic.newMonthlyPayment)}</strong></div>
-                            <div class="flex justify-between"><span>Úspora:</span> <strong class="text-green-600">${formatNumber(fixationDetails.futureScenario.optimistic.monthlySavings)}/měs</strong></div>
-                        </div>
-                        
-                        <div class="bg-orange-50 p-3 rounded-lg border border-orange-200 text-xs relative group">
-                            <h5 class="font-bold mb-1 text-orange-800 flex items-center gap-1">
-                                📈 Scénář: Mírný růst
-                                <span class="info-icon scale-75" data-info-key="moderateScenario" data-info-text="Modelová situace, kdy ČNB zvýší sazby a úvěry zdraží.">?</span>
-                            </h5>
-                            <p class="text-gray-600 mb-2">Při růstu na ${fixationDetails.futureScenario.moderateIncrease.rate.toFixed(2)}%:</p>
-                            <div class="flex justify-between mb-1"><span>Nová splátka:</span> <strong class="text-orange-600">${formatNumber(fixationDetails.futureScenario.moderateIncrease.newMonthlyPayment)}</strong></div>
-                            <div class="flex justify-between"><span>Navýšení:</span> <strong class="text-orange-600">+${formatNumber(fixationDetails.futureScenario.moderateIncrease.monthlyIncrease)}/měs</strong></div>
+                    <div class="space-y-3">
+                        <div class="bg-blue-50 p-3 rounded-lg border border-blue-200 text-xs">
+                            <h5 class="font-bold mb-1">💡 Scénář: Pokles sazeb</h5>
+                            <p class="text-gray-600 mb-1">Pokud po ${currentFixation} letech klesne sazba na ${fixationDetails.futureScenario.optimistic.rate.toFixed(2)}%:</p>
+                            <div>Nová splátka: <strong class="text-green-600">${formatNumber(fixationDetails.futureScenario.optimistic.newMonthlyPayment)}</strong></div>
                         </div>
                     </div>
                 ` : ''}
-                
-                <div class="mt-2 text-center">
-                    <button class="nav-btn bg-purple-600 hover:bg-purple-700 text-white text-sm py-2 px-4 shadow-md transition-transform hover:scale-105" 
-                            data-action="discuss-fixation-with-ai">
-                        💬 Probrat scénáře fixace s AI
-                    </button>
+                 <div class="mt-4 text-center">
+                    <button class="nav-btn bg-purple-600 hover:bg-purple-700 text-white text-sm py-2 px-4" data-action="discuss-fixation-with-ai">💬 Probrat fixaci s AI</button>
                 </div>
             </div>
         `;
     }
 
-    // 7. Graf (placeholder)
-    const chartHTML = `
-        <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-lg mb-6">
-            <h4 class="text-lg font-bold mb-4 flex items-center"><span class="text-2xl mr-2">📈</span> Vývoj splácení v čase</h4>
-            <div class="relative h-60 sm:h-80"><canvas id="resultsChart"></canvas></div>
-        </div>
-    `;
-
-    // 8. CTA Box
-    const ctaBoxHTML = `
-        <div class="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 rounded-xl shadow-xl text-white text-center mb-6">
-            <h3 class="text-xl font-bold mb-2">Líbí se vám optimální varianta?</h3>
-            <p class="text-blue-100 text-sm mb-4">Náš expert vám pomůže dosáhnout na tuto úrokovou sazbu.</p>
-            <button class="nav-btn bg-white text-blue-700 hover:bg-blue-50 font-bold px-8 py-3" data-action="show-lead-form">
-                📞 Ověřit dostupnost nabídky
-            </button>
-        </div>
-    `;
-
-    // Sestavení finálního HTML
     container.innerHTML = `
         <div>
-            <h3 class="text-2xl sm:text-3xl font-bold mb-6 text-gray-900">✅ Výsledky analýzy</h3>
-            ${offersHTML}
-            ${ctaBoxHTML}
+            <h3 class="text-2xl sm:text-3xl font-bold mb-6">✅ Vaše výsledky</h3>
+            ${bestOfferHTML}
+            ${allOffersHTML}
+            ${megaCTAHTML}
+            <h4 class="text-base font-bold mb-3 text-center text-gray-600">Nebo raději:</h4>
+            ${alternativesHTML}
             ${scoreSectionHTML}
             ${fixationDetailsHTML}
             ${chartHTML}
+            ${bottomCTAHTML}
         </div>
     `;
 
-    // Vykreslení grafu a listenery
     if (chartData && typeof Chart !== 'undefined') {
         setTimeout(() => {
-            if (state.chart) try { state.chart.destroy(); } catch(e) {}
+            if (state.chart) { try { state.chart.destroy(); } catch(e) {} }
             renderChart('resultsChart', chartData);
         }, 50);
     }
 
     addOfferCardListeners();
-    addV22EventListeners(); // Obnovení listenerů pro nová tlačítka
+    addV22EventListeners();
 
     if (!container.dataset.renderedOnce) {
         setTimeout(() => scrollToTarget('#results-container'), 150);
@@ -1566,21 +1586,8 @@ const renderResults = () => {
             });
         }
         
-        // 5. Event listener for discuss score with AI
-        document.querySelectorAll('[data-action="discuss-score-with-ai"]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                switchMode('ai', true); // true = load context
-                setTimeout(() => {
-                    const input = document.getElementById('permanent-chat-input');
-                    if (input) {
-                        // Velmi specifický prompt
-                        input.value = `Zanalyzuj prosím mé skóre schvalovatelnosti z kalkulace (LTV: ${state.calculation?.approvability?.ltv}%, DSTI: ${state.calculation?.approvability?.dsti}%). Jsou tam nějaká rizika zamítnutí? Co mám udělat pro vylepšení?`;
-                        handleChatMessageSend(input.value); // Rovnou odešleme
-                        input.value = '';
-                    }
-                }, 500);
-            });
-        });
+        // 5. OPRAVENO: Odstraněny duplicitní listenery pro discuss-with-ai a switch-to-guided,
+        // protože je řeší globální handleClick
         
         // 6. Bottom CTA scroll to form
         const scrollToFormBtn = document.querySelector('[data-action="scroll-to-form"]');
@@ -1602,21 +1609,8 @@ const renderResults = () => {
             });
         }
         
-        // 7. NOVÉ: Discuss Fixation with FULL CONTEXT
-        document.querySelectorAll('[data-action="discuss-fixation-with-ai"]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                switchMode('ai', true); // true = load context
-                setTimeout(() => {
-                    const input = document.getElementById('permanent-chat-input');
-                    if (input) {
-                        // Velmi specifický prompt pro fixaci
-                        input.value = `Podívej se na mou kalkulaci a detaily fixace. Zaujaly mě scénáře poklesu a růstu sazeb. Který scénář je pravděpodobnější a jakou fixaci bys mi doporučil zvolit, abych minimalizoval riziko?`;
-                        handleChatMessageSend(input.value); // Rovně odešleme
-                        input.value = '';
-                    }
-                }, 500);
-            });
-        });
+        // 7. OPRAVENO: Probrat fixaci s AI - explicitní listener není potřeba, řeší handleClick
     }
-
+    
+    // Znovu zavoláme init pro jistotu, ale je voláno už nahoře
 });

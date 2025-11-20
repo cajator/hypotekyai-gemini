@@ -357,17 +357,12 @@ const findQuickResponse = (message) => {
         }
         
         return `
-            <style>
-                @media (min-width: 1024px) {
-                    #sidebar-container {
-                        width: 400px !important;
-                        flex: none !important;
-                    }
-                }
-            </style>
             <div class="flex flex-col lg:flex-row gap-6 items-start w-full">
                 
-                <div id="ai-chat-desktop-wrapper" class="flex-1 min-w-0 w-full bg-white rounded-2xl shadow-xl border flex flex-col" style="min-height: calc(85vh - 100px);">
+                <div id="ai-chat-desktop-wrapper" 
+                     class="bg-white rounded-2xl shadow-xl border flex flex-col" 
+                     style="flex: 1; min-width: 0; min-height: calc(85vh - 100px);">
+                    
                     <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-t-2xl border-b">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center">
@@ -388,7 +383,11 @@ const findQuickResponse = (message) => {
                     <div id="chat-input-footer" class="p-4 border-t bg-white rounded-b-2xl"></div>
                 </div>
                 
-                <div id="sidebar-container" class="w-full lg:sticky top-28"></div>
+                <div id="sidebar-container" 
+                     class="lg:sticky top-28 hidden lg:block"
+                     style="width: 400px; min-width: 400px; flex: 0 0 400px;"></div>
+                     
+                <div id="sidebar-container-mobile" class="w-full lg:hidden"></div>
             </div>`;
     };
     

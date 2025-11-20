@@ -380,7 +380,7 @@ const findQuickResponse = (message) => {
                     <div id="chat-input-footer" class="p-4 border-t bg-white rounded-b-2xl"></div>
                 </div>
                 
-                <div id="sidebar-container" class="w-full lg:w-96 flex-none lg:sticky top-28"></div>
+                <div id="sidebar-container" class="w-full lg:w-96 lg:max-w-sm flex-none lg:sticky top-28"></div>
             </div>`;
     };
     

@@ -501,6 +501,11 @@ const findQuickResponse = (message) => {
         <div id="express-form" class="space-y-8" style="max-width: 100%; overflow: hidden;">
             ${createSlider('propertyValue','Hodnota nemovitosti',state.formData.propertyValue,500000,30000000,100000, '', 'Cena nemovitosti, kterou kupujete.')}
             ${createSlider('loanAmount','Chci si půjčit',state.formData.loanAmount,200000,20000000,100000, '', 'Částka, kterou si potřebujete půjčit.')}
+            
+            <div class="text-center font-bold text-lg text-gray-700 transition-colors duration-300" id="ltv-display">
+                Aktuální LTV: ${Math.round((state.formData.loanAmount / state.formData.propertyValue) * 100)}%
+            </div>
+            
             ${createSlider('income','Měsíční čistý příjem',state.formData.income,15000,300000,1000, '', 'Váš průměrný čistý příjem.')}
             ${createSlider('loanTerm','Délka splatnosti',state.formData.loanTerm,5,30,1, '', 'Na jak dlouho si chcete půjčit (max 30 let).')}
             <div class="flex justify-center" style="padding-top: 1rem;">

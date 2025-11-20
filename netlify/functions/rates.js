@@ -20,9 +20,9 @@ const ALL_OFFERS = [
         id: 'offer-1',
         title: "🏆 Premium + Pojištění",
         description: "Výhodná sazba při sjednání pojištění nemovitosti a schopnosti splácet. Nejoblíbenější volba.",
-        highlights: ["Sleva za pojištění", "Rychlé čerpání", "Odhad zdarma"], // Upraveno "Komplexní krytí" na něco konkrétního
-        max_ltv: 80, 
-        targetGroup: "Maximální úsporu", // Opraveno "Slevu za pojištění" -> dává smysl ve větě "Vhodné pro Maximální úsporu"
+        highlights: ["Sleva za pojištění", "Rychlé čerpání", "Odhad zdarma"],
+        max_ltv: 90, // <--- ZMĚNA ZDE (bylo 80). Nyní pustí i 90%, logika uvnitř handleru pak určí cenu.
+        targetGroup: "Maximální úsporu",
         rates: {
             '3': { rate_ltv70: 4.19, rate_ltv80: 4.19, rate_ltv90: 4.72 },
             '5': { rate_ltv70: 4.29, rate_ltv80: 4.29, rate_ltv90: 4.89 },

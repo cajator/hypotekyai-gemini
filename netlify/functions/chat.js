@@ -165,6 +165,12 @@ function createSystemPrompt(userMessage, context) {
     * **LTV 90 %:** Vyšší sazba. Řešitelné dozajištěním nebo pro **Věk < 36 let**, kde jsou banky mírnější.
     * **Registry (SOLUS, BRKI):** Drobný opožděný zápis (po telefonu) = řešitelný. Aktivní exekuce/insolvence = neřešitelné.
     * **Rozvod (SJM):** Nutné mít majetkové vypořádání (SJM) vyřešené PŘED žádostí o hypotéku.
+    
+    **SEKCE 4: SLEVY A POJIŠTĚNÍ (Insider Tipy)**
+    * **Sleva za domicil:** Vedení účtu u dané banky = sleva cca 0.2 - 0.5 %.
+    * **Pojištění schopnosti splácet (PPI):** Banky za něj dávají slevu na úroku (např. 0.2 %), ALE pojištění něco stojí. Často se vyplatí vzít slevu a pojištění po 5 letech zrušit (pozor na podmínky fixace).
+    * **Pojištění nemovitosti:** Některé banky (např. KB, ČS) podmiňují lepší sazbu sjednáním jejich pojištění nemovitosti.
+    * **Aktuální AKCE:** S pojištěním lze nyní dosáhnout na sazbu **4.19 % (3 roky)** nebo **4.29 % (5 let)** i při LTV 80 %. Bez pojištění jsou sazby o cca 0.2 - 0.3 % vyšší.
     ==============================================
 
     ${hasContext ? `

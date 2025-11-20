@@ -478,11 +478,21 @@ const findQuickResponse = (message) => {
         return `
             <div class="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-2xl border border-purple-200">
                 <h3 class="text-xl font-bold mb-4 flex items-center"><span class="text-2xl mr-2">🎯</span> Rychlý start</h3>
-                <div class="space-y-3 mb-4">
-                    <button class="w-full text-left p-3 bg-white rounded-lg hover:shadow-md transition-shadow" data-quick-question="Kolik si můžu půjčit s příjmem 50 tisíc?"><span class="text-purple-600 font-semibold">💰</span><span class="text-sm ml-2">Kolik si můžu půjčit?</span></button>
-                    <button class="w-full text-left p-3 bg-white rounded-lg hover:shadow-md transition-shadow" data-quick-question="Můžu dostat hypotéku jako OSVČ?"><span class="text-purple-600 font-semibold">🏢</span><span class="text-sm ml-2">Hypotéka pro OSVČ</span></button>
+                <div class="space-y-2.5 mb-4">
+                    <button class="w-full text-left p-3 bg-white rounded-lg hover:shadow-md transition-all border border-transparent hover:border-purple-200" data-quick-question="Kolik si můžu půjčit s příjmem 50 tisíc?">
+                        <span class="text-purple-600 font-semibold mr-2">💰</span><span class="text-sm font-medium">Kolik si můžu půjčit?</span>
+                    </button>
+                    <button class="w-full text-left p-3 bg-white rounded-lg hover:shadow-md transition-all border border-transparent hover:border-purple-200" data-quick-question="Jaké jsou podmínky hypotéky pro OSVČ?">
+                        <span class="text-purple-600 font-semibold mr-2">🏢</span><span class="text-sm font-medium">Hypotéka pro OSVČ</span>
+                    </button>
+                    <button class="w-full text-left p-3 bg-white rounded-lg hover:shadow-md transition-all border border-transparent hover:border-purple-200" data-quick-question="Vyplatí se mi refinancovat hypotéku?">
+                        <span class="text-purple-600 font-semibold mr-2">🔄</span><span class="text-sm font-medium">Refinancování</span>
+                    </button>
+                    <button class="w-full text-left p-3 bg-white rounded-lg hover:shadow-md transition-all border border-transparent hover:border-purple-200" data-quick-question="Mám záznam v registru, dostanu hypotéku?">
+                        <span class="text-purple-600 font-semibold mr-2">📋</span><span class="text-sm font-medium">Záznam v registrech</span>
+                    </button>
                 </div>
-                <button class="nav-btn bg-purple-600 hover:bg-purple-700 w-full mb-2" data-action="go-to-calculator">📢 Spočítat hypotéku</button>
+                <button class="nav-btn bg-purple-600 hover:bg-purple-700 w-full mb-2 shadow-lg transform transition hover:-translate-y-0.5" data-action="go-to-calculator">📢 Spočítat hypotéku</button>
             </div>`;
     };
     
@@ -603,20 +613,14 @@ const renderResults = () => {
     // UPRAVENO: Odstraněno tlačítko pro rozbalení, nabídky budou vidět rovnou
     const bestOfferHTML = selectedOffer ? `
         <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-5 sm:p-6 rounded-xl border-2 border-green-300 shadow-lg mb-6">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-xl sm:text-2xl font-bold text-green-900 flex items-center"><span class="text-2xl mr-2">✅</span> Nejlepší nabídka pro vás</h3>
-            </div>
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 bg-white p-4 rounded-lg mb-3">
-                <div><p class="text-xs text-gray-500 mb-1">💰 Měsíční splátka</p><p class="text-xl sm:text-2xl font-bold text-gray-900">${formatNumber(selectedOffer.monthlyPayment)}</p></div>
-                <div><p class="text-xs text-gray-500 mb-1">📊 Úroková sazba</p><p class="text-xl sm:text-2xl font-bold text-blue-600">${selectedOffer.rate?.toFixed(2)}%</p></div>
-                <div><p class="text-xs text-gray-500 mb-1">💵 Celkem zaplatíte</p><p class="text-xl sm:text-2xl font-bold text-gray-700">${formatNumber(selectedOffer.totalPayment || selectedOffer.monthlyPayment * (state.formData.loanTerm || 30) * 12)}</p></div>
-            </div>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs bg-white p-3 rounded-lg">
                 <div class="flex items-center"><span class="text-base mr-1">🔒</span><div><p class="text-gray-500">Fixace</p><p class="font-semibold">${currentFixation} let</p></div></div>
                 <div class="flex items-center"><span class="text-base mr-1">🏠</span><div><p class="text-gray-500">LTV</p><p class="font-semibold">${ltvPercentage}%</p></div></div>
                 <div class="flex items-center"><span class="text-base mr-1">⏳</span><div><p class="text-gray-500">Splatnost</p><p class="font-semibold">${state.formData.loanTerm || 30} let</p></div></div>
-                <div class="flex items-center"><span class="text-base mr-1">👤</span><div><p class="text-gray-500">Vhodné pro</p><p class="font-semibold">${employment === 'osvč' ? 'OSVČ' : 'Zaměstnance'}</p></div></div>
+                
+                <div class="flex items-center"><span class="text-base mr-1">👤</span><div><p class="text-gray-500">Vhodné pro</p><p class="font-semibold text-green-700">${targetAudience}</p></div></div>
             </div>
+            
             ${selectedOffer.highlights ? `<div class="flex flex-wrap gap-2 mt-3">${selectedOffer.highlights.map(h => `<span class="inline-block px-3 py-1 text-xs bg-green-100 text-green-700 rounded-full font-semibold">${h}</span>`).join('')}</div>` : ''}
         </div>
     ` : '';

@@ -3,59 +3,62 @@
 
 const ALL_OFFERS = [
     {
-        id: 'offer-premium', // Přesunuto nahoru jako nejlepší
-        title: "💎 VIP Sazba 3.99%", // Upraven název
-        description: "Exkluzivní sazba 3.99% pro bonitní klienty s LTV do 70% a 3letou fixací.",
-        highlights: ["Sazba 3.99%", "LTV do 70%", "Fixace 3 roky"],
-        max_ltv: 70, // Striktně do 70%
-        rates: { // Pouze 3letá fixace s touto sazbou
+        id: 'offer-premium',
+        title: "💎 VIP Sazba 3.99%",
+        description: "Exkluzivní sazba pro bonitní klienty. Podmínkou je aktivní využívání účtu a pojištění schopnosti splácet.",
+        highlights: ["Sazba 3.99%", "Sleva za pojištění", "Fixace 3 roky"],
+        max_ltv: 70,
+        targetGroup: "Bonitní klienty", // Nový parametr pro UI
+        rates: {
             '3': { rate_ltv70: 3.99 },
-            // Ostatní VIP sazby pro LTV70
-             '5': { rate_ltv70: 4.19 },
-             '7': { rate_ltv70: 4.39 },
-             '10': { rate_ltv70: 4.49 }
+            '5': { rate_ltv70: 4.19 },
+            '7': { rate_ltv70: 4.39 },
+            '10': { rate_ltv70: 4.49 }
         }
     },
     {
         id: 'offer-1',
-        title: "🏆 Premium AI výběr",
-        description: "Výhodná sazba vybraná AI z 19+ bank. Ideální pro klienty s LTV do 80%.",
-        highlights: ["Schválení do 5 dnů", "Výhodný úrok", "Online podání"],
-        max_ltv: 90, // Max LTV 90%
-        rates: { // Sazby začínají výše než VIP
-            '3': { rate_ltv70: 4.19, rate_ltv80: 4.29, rate_ltv90: 4.72 },
-            '5': { rate_ltv70: 4.24, rate_ltv80: 4.34, rate_ltv90: 4.89 },
-            '7': { rate_ltv70: 4.59, rate_ltv80: 4.69, rate_ltv90: 4.99 },
-            '10': { rate_ltv70: 4.69, rate_ltv80: 4.79, rate_ltv90: 5.09 }
+        title: "🏆 Premium + Pojištění",
+        description: "Výhodná sazba při sjednání pojištění nemovitosti/životního pojištění. Ideální balíček.",
+        highlights: ["Sleva za pojištění", "Nízká sazba", "Komplexní krytí"],
+        max_ltv: 80, 
+        targetGroup: "Slevu za pojištění", // Nový parametr pro UI
+        rates: {
+            // Aktualizované sazby dle vašeho zadání (<=80% LTV)
+            '3': { rate_ltv70: 4.19, rate_ltv80: 4.19, rate_ltv90: 4.72 },
+            '5': { rate_ltv70: 4.29, rate_ltv80: 4.29, rate_ltv90: 4.89 },
+            '7': { rate_ltv70: 4.59, rate_ltv80: 4.59, rate_ltv90: 4.99 },
+            '10': { rate_ltv70: 4.69, rate_ltv80: 4.69, rate_ltv90: 5.09 }
         }
     },
     {
         id: 'offer-2',
-        title: "⚖️ Optimální poměr",
-        description: "Vyvážená nabídka s flexibilními podmínkami. Rychlé schválení i pro OSVČ.",
-        highlights: ["Flexibilní podmínky", "OSVČ friendly", "Bez skrytých poplatků"],
-        max_ltv: 90, // Max LTV 90%
+        title: "⚖️ Flexibilní / OSVČ",
+        description: "Nabídka s benevolentnějším posuzováním příjmů (obratové hypotéky).",
+        highlights: ["Akceptace obratu", "OSVČ friendly", "Bez zbytečných poplatků"],
+        max_ltv: 90,
+        targetGroup: "OSVČ a podnikatele", // Nový parametr pro UI
         rates: {
-            '3': { rate_ltv70: 4.29, rate_ltv80: 4.39, rate_ltv90: 4.73 },
-            '5': { rate_ltv70: 4.34, rate_ltv80: 4.59, rate_ltv90: 4.89 },
-            '7': { rate_ltv70: 4.69, rate_ltv80: 4.79, rate_ltv90: 5.04 },
-            '10': { rate_ltv70: 4.69, rate_ltv80: 4.89, rate_ltv90: 5.14 }
+            '3': { rate_ltv70: 4.39, rate_ltv80: 4.49, rate_ltv90: 4.89 },
+            '5': { rate_ltv70: 4.49, rate_ltv80: 4.59, rate_ltv90: 4.99 },
+            '7': { rate_ltv70: 4.79, rate_ltv80: 4.89, rate_ltv90: 5.19 },
+            '10': { rate_ltv70: 4.89, rate_ltv80: 4.99, rate_ltv90: 5.29 }
         }
     },
     {
         id: 'offer-3',
-        title: "🚀 Dostupná hypotéka",
-        description: "Vstřícné podmínky až do 90% LTV.", // Max LTV 90%
-        highlights: ["LTV až 90%", "Věk do 70 let", "Mimořádné splátky"], // Max LTV 90%
-        max_ltv: 90, // Max LTV 90%
-        rates: { // Sazby pro LTV 90 jsou relevantní
-            '3': { rate_ltv70: 4.44, rate_ltv80: 4.79, rate_ltv90: 4.94 },
-            '5': { rate_ltv70: 4.59, rate_ltv80: 4.74, rate_ltv90: 4.99 },
-            '7': { rate_ltv70: 4.69, rate_ltv80: 4.89, rate_ltv90: 5.29 },
-            '10': { rate_ltv70: 4.84, rate_ltv80: 5.09, rate_ltv90: 5.49 }
+        title: "🚀 Dostupná (LTV 90)",
+        description: "Řešení pro klienty s minimem vlastních zdrojů (stačí 10 %).",
+        highlights: ["LTV až 90%", "Akceptace diet", "Mimořádné splátky"],
+        max_ltv: 90,
+        targetGroup: "Nízké vlastní zdroje", // Nový parametr pro UI
+        rates: {
+            '3': { rate_ltv70: 4.54, rate_ltv80: 4.89, rate_ltv90: 5.04 },
+            '5': { rate_ltv70: 4.69, rate_ltv80: 4.84, rate_ltv90: 5.19 },
+            '7': { rate_ltv70: 4.79, rate_ltv80: 4.99, rate_ltv90: 5.39 },
+            '10': { rate_ltv70: 4.94, rate_ltv80: 5.19, rate_ltv90: 5.59 }
         }
     }
-    // Odebrali jsme nabídku s max_ltv 95%, protože už není relevantní
 ];
 
 // ===== KOMPLETNÍ FUNKCE calculateMonthlyPayment =====

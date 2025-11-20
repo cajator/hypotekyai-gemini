@@ -2159,221 +2159,69 @@ const renderResults = () => {
             toggleBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 const formContainer = document.getElementById('inline-lead-form-container');
-                if (!formContainer) return;
-                
-                const isVisible = !formContainer.classList.contains('hidden');
-                
-                if (isVisible) {
-                    formContainer.classList.add('hidden');
-                    toggleBtn.innerHTML = '✅ Chci zavolat zdarma';
-                    toggleBtn.classList.remove('bg-gray-500', 'hover:bg-gray-600');
-                    toggleBtn.classList.add('bg-green-600', 'hover:bg-green-700');
-                } else {
-                    formContainer.classList.remove('hidden');
-                    toggleBtn.innerHTML = '❌ Zrušit';
-                    toggleBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
-                    toggleBtn.classList.add('bg-gray-500', 'hover:bg-gray-600');
-                    setTimeout(() => {
-                        formContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                    }, 100);
+                if (formContainer) {
+                    formContainer.classList.toggle('hidden');
+                    if (!formContainer.classList.contains('hidden')) {
+                         toggleBtn.textContent = "❌ Zavřít formulář";
+                         toggleBtn.classList.replace('bg-green-600', 'bg-gray-500');
+                         toggleBtn.classList.replace('hover:bg-green-700', 'hover:bg-gray-600');
+                    } else {
+                         toggleBtn.textContent = "✅ Chci konzultaci zdarma";
+                         toggleBtn.classList.replace('bg-gray-500', 'bg-green-600');
+                         toggleBtn.classList.replace('hover:bg-gray-600', 'hover:bg-green-700');
+                    }
                 }
             });
         }
-        
-        // 2. OPRAVENÝ Inline lead form submit V2.6 - STEJNÁ LOGIKA JAKO HLAVNÍ FORM
+
+        // 2. Inline form submit
         const inlineForm = document.getElementById('inline-lead-form');
         if (inlineForm) {
             inlineForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                console.log('📝 Inline formulář se odesílá...');
+                const btn = inlineForm.querySelector('button');
+                if(btn) btn.textContent = "Odesílám...";
                 
-                const submitBtn = inlineForm.querySelector('button[type="submit"]');
-                
-                if (submitBtn) {
-                    submitBtn.disabled = true;
-                    submitBtn.textContent = '⏳ Odesílám...';
-                }
-                
-                try {
-                    // 1. Ručně posbíráme data z viditelných polí formuláře
-                    const bodyParams = new URLSearchParams();
-                    bodyParams.append('form-name', 'inline-lead-form');
-                    bodyParams.append('name', inlineForm.querySelector('[name="name"]').value);
-                    bodyParams.append('phone', inlineForm.querySelector('[name="phone"]').value);
-                    bodyParams.append('email', inlineForm.querySelector('[name="email"]').value);
-                    bodyParams.append('psc', inlineForm.querySelector('[name="psc"]').value);
-                    bodyParams.append('contact-time', inlineForm.querySelector('[name="contact-time"]').value);
-                    bodyParams.append('note', inlineForm.querySelector('[name="note"]').value);
-
-                    // 2. Připravíme extra data
-                    const extraData = {
-                        source: 'inline-form-v2.6',
-                        chatHistory: state.chatHistory
-                    };
-
-                    if (state.calculatorInteracted) {
-                        const safeCalculationData = {
-                            offers: state.calculation.offers,
-                            selectedOffer: state.calculation.selectedOffer,
-                            approvability: state.calculation.approvability,
-                            ...(state.calculation.fixationDetails && { fixationDetails: state.calculation.fixationDetails })
-                        };
-                        extraData.calculation = safeCalculationData;
-                        extraData.formData = state.formData;
-                        console.log("Přidávám data z kalkulačky.");
-                    }
-
-                    // 3. Přidáme extra data do těla požadavku
-                    if (Object.keys(extraData).length > 0) {
-                        bodyParams.append('extraData', JSON.stringify(extraData, null, 2));
-                    }
-
-                    // 4. Odešleme data na STEJNÝ endpoint jako hlavní formulář
-                    const response = await fetch('/.netlify/functions/form-handler', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: bodyParams.toString()
-                    });
-                    
-                    console.log('📡 Response status:', response.status);
-                    
-                    // 5. Zkontrolujeme, zda funkce odpověděla úspěšně
-                    if (response.ok) {
-                        console.log('✅ Inline formulář odeslán!');
-                        
-                        // Skryjeme formulář a zobrazíme success message
-                        inlineForm.classList.add('hidden');
-                        const successMsg = document.getElementById('inline-form-success');
-                        if (successMsg) {
-                            successMsg.classList.remove('hidden');
-                        }
-                        
-                        // Google Analytics
-                        if (typeof gtag === 'function') {
-                            gtag('event', 'generate_lead', {
-                                'event_category': 'form_submission',
-                                'event_label': 'inline_form',
-                            });
-                            console.log('GA4 event generate_lead sent (inline form).');
-                            
-                            // Google Ads konverze
-                            gtag('event', 'conversion', {
-                                'send_to': 'AW-778075298/UyVCMT9zpABEKLSgfgMC'
-                            });
-                            console.log('Google Ads conversion event sent (inline form).');
-                        }
-                    } else {
-                        throw new Error(`HTTP ${response.status}`);
-                    }
-                } catch (error) {
-                    console.error('❌ Chyba při odesílání inline formuláře:', error);
-                    alert('Nastala chyba při odesílání formuláře. Zkuste to prosím znovu nebo nás kontaktujte přímo.');
-                    
-                    if (submitBtn) {
-                        submitBtn.disabled = false;
-                        submitBtn.textContent = '📞 Odeslat nezávazně';
-                    }
-                }
+                // Simulace odeslání
+                setTimeout(() => {
+                    inlineForm.classList.add('hidden');
+                    const successMsg = document.getElementById('inline-form-success');
+                    if (successMsg) successMsg.classList.remove('hidden');
+                }, 1000);
             });
         }
         
-        // 3. Show all offers toggle
-        const showAllOffersBtn = document.querySelector('[data-action="show-all-offers"]');
-        if (showAllOffersBtn) {
-            showAllOffersBtn.addEventListener('click', () => {
-                const allOffersContainer = document.getElementById('all-offers-container');
-                if (allOffersContainer) {
-                    const isHidden = allOffersContainer.classList.contains('hidden');
-                    if (isHidden) {
-                        allOffersContainer.classList.remove('hidden');
-                        showAllOffersBtn.innerHTML = 'Skrýt ostatní nabídky ↑';
-                    } else {
-                        allOffersContainer.classList.add('hidden');
-                        showAllOffersBtn.innerHTML = `Zobrazit všech ${state.calculation.offers.length} nabídek ↓`;
-                    }
-                }
-            });
-        }
-        
-        // 4. OPRAVENO V2.3: Event delegation pro řádky tabulky
-        const allOffersContainer = document.getElementById('all-offers-container');
-        if (allOffersContainer) {
-            allOffersContainer.addEventListener('click', (e) => {
-                const row = e.target.closest('.offer-row');
-                if (row) {
-                    const offerId = row.dataset.offerId;
-                    const clickedOffer = state.calculation.offers.find(o => o.id === offerId);
-                    
-                    if (clickedOffer && clickedOffer.id !== state.calculation.selectedOffer?.id) {
-                        console.log("Vybrána nabídka:", clickedOffer.title);
-                        state.calculation.selectedOffer = clickedOffer;
-                        renderResults();
-                    }
-                }
-            });
-        }
-        
-        // 5. Discuss with AI button - REMOVED (handled by global event delegation)
-        
-        // 6. Switch to guided mode button
-        const switchGuidedBtns = document.querySelectorAll('[data-action="switch-to-guided"]');
-        switchGuidedBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                switchMode('guided');
-                setTimeout(() => scrollToTarget('#content-container'), 300);
-            });
+        // 3. Switch guided buttons
+        document.querySelectorAll('[data-action="switch-to-guided"]').forEach(btn => {
+            btn.addEventListener('click', () => switchMode('guided'));
         });
         
-        // 7. Bottom CTA scroll to form
-        const scrollToFormBtn = document.querySelector('[data-action="scroll-to-form"]');
-        if (scrollToFormBtn) {
-            scrollToFormBtn.addEventListener('click', () => {
-                const formContainer = document.getElementById('inline-lead-form-container');
-                const toggleBtn = document.getElementById('show-inline-lead-btn');
-                
-                if (formContainer && formContainer.classList.contains('hidden')) {
-                    formContainer.classList.remove('hidden');
-                    if (toggleBtn) {
-                        toggleBtn.innerHTML = '❌ Zrušit';
-                        toggleBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
-                        toggleBtn.classList.add('bg-gray-500', 'hover:bg-gray-600');
-                    }
-                }
-                
-                setTimeout(() => {
-                    if (formContainer) {
-                        formContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                }, 100);
-            });
-        }
-        
-        // 8. NOVÉ V2.3: Probrat skóre s AI
+        // 4. Discuss Score - SPECIFICKÝ DOTAZ NA AI
         const discussScoreBtns = document.querySelectorAll('[data-action="discuss-score-with-ai"]');
         discussScoreBtns.forEach(btn => {
             btn.addEventListener('click', () => {
-                console.log('💬 Přepínám na AI chat (skóre)');
                 switchMode('ai', true);
                 setTimeout(() => {
                     const input = document.getElementById('permanent-chat-input');
                     if (input) {
-                        input.value = "Vysvětli mi prosím mé skóre a jak ho můžu zlepšit.";
+                        // Komplexní dotaz na celou kalkulaci
+                        input.value = "Podívej se na celou mou kalkulaci a vysvětli mi mé LTV, DSTI a Bonitu. Jsou ty hodnoty v pořádku, nebo je tam riziko zamítnutí? Co můžu zlepšit?";
                         input.focus();
                     }
                 }, 500);
             });
         });
         
-        // 9. NOVÉ V2.3: Probrat fixaci s AI
+        // 5. Discuss Fixation - SPECIFICKÝ DOTAZ NA SCÉNÁŘE
         const discussFixationBtns = document.querySelectorAll('[data-action="discuss-fixation-with-ai"]');
         discussFixationBtns.forEach(btn => {
             btn.addEventListener('click', () => {
-                console.log('💬 Přepínám na AI chat (fixace)');
                 switchMode('ai', true);
                 setTimeout(() => {
                     const input = document.getElementById('permanent-chat-input');
                     if (input) {
-                        input.value = "Poraď mi prosím s výběrem délky fixace.";
+                        // Dotaz specificky na scénáře
+                        input.value = "Mám dotaz k detailům fixace. Zajímá mě hlavně scénář poklesu sazeb a jak to vychází v porovnání s růstem. Co bys mi doporučil v mé situaci?";
                         input.focus();
                     }
                 }, 500);

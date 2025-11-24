@@ -588,6 +588,7 @@ const renderResults = () => {
         state.calculation.selectedOffer = selectedOffer;
     }
 
+    // --- 1. PŘÍPRAVA DAT PRO GRAFY A SCORING ---
     let chartData = null;
     let fixationDetails = null;
     
@@ -615,16 +616,55 @@ const renderResults = () => {
     const { loanAmount, propertyValue, landValue, purpose } = state.formData;
     const effectiveValue = (purpose === 'výstavba' && landValue > 0) ? propertyValue + landValue : propertyValue;
     const ltvPercentage = effectiveValue > 0 ? Math.round((loanAmount / effectiveValue) * 100) : 0;
-    // ====================
+    
+    // --- 2. VYTVOŘENÍ HTML PRO SKÓRE (Nyní dříve, abychom mohli použít hodnotu v kartě) ---
+    let scoreSectionHTML = '';
+    let totalScoreValue = 0; // Proměnná pro % v hlavičce
 
+    if (approvability) {
+        const ltvExplanation = approvability.ltv > 85 ? 'Optimální LTV.' : approvability.ltv > 70 ? 'Dobré LTV.' : 'Hraniční LTV.';
+        const dstiExplanation = approvability.dsti > 80 ? 'Výborné DSTI.' : approvability.dsti > 60 ? 'Dostatečná rezerva.' : 'Nižší rezerva.';
+        const bonitaExplanation = approvability.bonita > 85 ? 'Excelentní bonita.' : approvability.bonita > 70 ? 'Velmi dobrá bonita.' : 'Standardní bonita.';
+        totalScoreValue = (typeof approvability.total === 'number' && !isNaN(approvability.total)) ? approvability.total : 0;
+        
+        // Upravený design bloku skóre - kompaktnější, aby pasoval pod kartu
+        scoreSectionHTML = `
+            <div class="bg-white p-4 sm:p-5 rounded-xl border border-blue-200 shadow-md mb-6 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-2 h-full bg-blue-500"></div>
+                <h4 class="text-lg font-bold mb-3 flex items-center pl-2">
+                    <span class="text-xl mr-2">🎯</span> Detail vašeho skóre
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    ${scoreHTML('LTV', approvability.ltv, 'bg-green-500', '🏠', ltvExplanation, 'LTV (Loan-to-Value) ukazuje poměr výše úvěru k hodnotě nemovitosti.')}
+                    ${scoreHTML('DSTI', approvability.dsti, 'bg-yellow-500', '💰', dstiExplanation, 'DSTI porovnává tvé splátky s příjmem.')}
+                    ${scoreHTML('Bonita', approvability.bonita, 'bg-blue-500', '⭐', bonitaExplanation, 'Bonita hodnotí tvou celkovou spolehlivost.')}
+                </div>
+            </div>`;
+    }
+
+    // --- 3. VYTVOŘENÍ KARTY NEJLEPŠÍ NABÍDKY (S integrovaným skóre) ---
     const currentFixation = state.formData.fixation || 3;
     const employment = state.formData.employment || 'zaměstnanec';
     const targetAudience = selectedOffer?.targetGroup || (employment === 'osvč' ? 'OSVČ' : 'Zaměstnance');
 
+    // Barva badge podle skóre
+    const scoreColorClass = totalScoreValue >= 80 ? 'bg-green-100 text-green-800 border-green-200' : (totalScoreValue >= 60 ? 'bg-yellow-100 text-yellow-800 border-yellow-200' : 'bg-red-100 text-red-800 border-red-200');
+
     const bestOfferHTML = selectedOffer ? `
-        <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-5 sm:p-6 rounded-xl border-2 border-green-300 shadow-lg mb-6">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-xl sm:text-2xl font-bold text-green-900 flex items-center"><span class="text-2xl mr-2">✅</span> Nejlepší nabídka pro vás</h3>
+        <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-5 sm:p-6 rounded-xl border-2 border-green-300 shadow-lg mb-4 relative">
+            
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-2">
+                <h3 class="text-xl sm:text-2xl font-bold text-green-900 flex items-center">
+                    <span class="text-2xl mr-2">✅</span> Nejlepší nabídka pro vás
+                </h3>
+                ${totalScoreValue > 0 ? `
+                <div class="flex items-center px-3 py-1.5 rounded-full border ${scoreColorClass} shadow-sm">
+                    <span class="text-lg mr-1.5">🎯</span>
+                    <div class="flex flex-col leading-tight">
+                        <span class="text-[10px] uppercase font-bold tracking-wider opacity-80">Šance na schválení</span>
+                        <span class="text-lg font-extrabold">${totalScoreValue}%</span>
+                    </div>
+                </div>` : ''}
             </div>
             
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white p-4 rounded-lg mb-3 border border-green-100 shadow-sm">
@@ -651,11 +691,9 @@ const renderResults = () => {
         </div>
     ` : '';
 
-    // UPRAVENO: Odstraněn class="hidden", změněn nadpis a přidán kontextový popis
     const allOffersHTML = offers.length > 1 ? `
         <div id="all-offers-container" class="mb-6">
-            <h4 class="text-lg font-bold mb-1 text-gray-800">🧠 Porovnání strategických variant</h4>
-            <p class="text-xs text-gray-600 mb-3">Níže vidíte další varianty na základě stress testu. Nejde jen o nejnižší sazbu, ale o vhodnost pro různé situace (refinancování, OSVČ, flexibilita).</p>
+            <h4 class="text-lg font-bold mb-1 text-gray-800">🧠 Porovnání dalších variant</h4>
             <div class="overflow-x-auto">
                 <table class="w-full bg-white rounded-lg shadow-md text-sm">
                     <thead class="bg-gray-100">
@@ -671,7 +709,6 @@ const renderResults = () => {
                             <tr class="border-t hover:bg-blue-50 cursor-pointer offer-row ${o.id === selectedOffer?.id ? 'bg-blue-50 border-l-4 border-blue-600' : ''}" data-offer-id="${o.id}">
                                 <td class="px-4 py-3">
                                     <div class="font-bold text-blue-700">${idx === 0 ? '🏆 ' : ''}${o.title || 'Nabídka ' + (idx + 1)}</div>
-                                    <div class="text-xs text-gray-500">${o.description || ''}</div>
                                 </td>
                                 <td class="px-4 py-3 text-center"><div class="font-bold text-lg">${formatNumber(o.monthlyPayment)}</div></td>
                                 <td class="px-4 py-3 text-center"><div class="font-semibold text-blue-600">${o.rate?.toFixed(2)}%</div></td>
@@ -749,28 +786,6 @@ const renderResults = () => {
         </div>
     `;
 
-    let scoreSectionHTML = '';
-    if (approvability) {
-        const ltvExplanation = approvability.ltv > 85 ? 'Optimální LTV.' : approvability.ltv > 70 ? 'Dobré LTV.' : 'Hraniční LTV.';
-        const dstiExplanation = approvability.dsti > 80 ? 'Výborné DSTI.' : approvability.dsti > 60 ? 'Dostatečná rezerva.' : 'Nižší rezerva.';
-        const bonitaExplanation = approvability.bonita > 85 ? 'Excelentní bonita.' : approvability.bonita > 70 ? 'Velmi dobrá bonita.' : 'Standardní bonita.';
-        const totalScoreValue = (typeof approvability.total === 'number' && !isNaN(approvability.total)) ? approvability.total : 0;
-        
-        scoreSectionHTML = `
-            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 sm:p-5 rounded-xl border border-blue-200 shadow-lg mb-6">
-                <h4 class="text-lg sm:text-xl font-bold mb-4 flex items-center"><span class="text-2xl mr-2">🎯</span> Skóre vaší žádosti</h4>
-                <div class="space-y-3">
-                    ${scoreHTML('LTV', approvability.ltv, 'bg-green-500', '🏠', ltvExplanation, 'LTV (Loan-to-Value) ukazuje poměr výše úvěru k hodnotě nemovitosti. Čím nižší LTV, tím lepší podmínky od banky. AI ti poradí, jak ho optimalizovat.')}
-                    ${scoreHTML('DSTI', approvability.dsti, 'bg-yellow-500', '💰', dstiExplanation, 'DSTI (Debt Service-to-Income) porovnává tvé splátky s příjmem. Banka hlídá, aby ti po splatk zůstalo dost na život. AI ti poradí, jak na to.')}
-                    ${scoreHTML('Bonita', approvability.bonita, 'bg-blue-500', '⭐', bonitaExplanation, 'Bonita hodnotí tvou celkovou spolehlivost jako klienta banky. Zahrnuje příjmy, stabilitu zaměstnání a další faktory. AI ti poradí, jak ji zvýšit.')}
-                </div>
-                <div class="mt-5 p-4 bg-white rounded-xl text-center">
-                    <h5 class="text-sm font-bold mb-2">Celková šance na schválení:</h5>
-                    <div class="text-3xl sm:text-4xl font-bold text-green-600">${totalScoreValue}%</div>
-                </div>
-            </div>`;
-    }
-
     const chartHTML = `
         <div class="bg-white p-4 sm:p-5 rounded-xl border border-gray-200 shadow-lg mb-6">
             <h4 class="text-lg sm:text-xl font-bold mb-4 flex items-center"><span class="text-2xl mr-2">📈</span> Vývoj splácení v čase</h4>
@@ -786,7 +801,6 @@ const renderResults = () => {
         </div>
     `;
 
-    // UPRAVENO: Přidány info ikony ke každému labelu v Detailu fixace
     let fixationDetailsHTML = '';
     if (fixationDetails) {
         const currentFixation = state.formData.fixation || 3;
@@ -830,15 +844,17 @@ const renderResults = () => {
         `;
     }
 
+    // --- 4. SESTAVENÍ VÝSLEDNÉHO HTML (Nové pořadí elementů) ---
+    // ZMĚNA POŘADÍ: Best Offer -> Score Details (hned pod to) -> All Offers -> CTA ...
     container.innerHTML = `
         <div>
             <h3 class="text-2xl sm:text-3xl font-bold mb-6">✅ Vaše výsledky</h3>
             ${bestOfferHTML}
+            ${scoreSectionHTML}
             ${allOffersHTML}
             ${megaCTAHTML}
             <h4 class="text-base font-bold mb-3 text-center text-gray-600">Nebo raději:</h4>
             ${alternativesHTML}
-            ${scoreSectionHTML}
             ${fixationDetailsHTML}
             ${chartHTML}
             ${bottomCTAHTML}
@@ -1261,15 +1277,16 @@ const renderResults = () => {
     const handleFormSubmit = async (e) => {
         e.preventDefault();
         const form = e.target;
-        const btn = document.getElementById('submit-lead-btn'); 
+        const btn = form.querySelector('button[type="submit"]'); // Robustnější selektor
 
         if (!btn) {
             alert('Došlo k chybě při odesílání, zkuste to prosím znovu.');
             return; 
         }
         
+        const originalBtnText = btn.textContent;
         btn.disabled = true;
-        btn.textContent = '📤 Odesláno 👌'; 
+        btn.textContent = '📤 Odesílám...'; 
 
         try {
             const bodyParams = new URLSearchParams();
@@ -1280,7 +1297,6 @@ const renderResults = () => {
             bodyParams.append('psc', form.querySelector('input[name="psc"]').value);
             bodyParams.append('contact-time', form.querySelector('select[name="contact-time"]').value);
             
-            // Poznámka může být volitelná nebo chybět
             const noteInput = form.querySelector('textarea[name="note"]');
             if (noteInput) bodyParams.append('note', noteInput.value);
 
@@ -1308,35 +1324,51 @@ const renderResults = () => {
             });
             
             if (response.ok) {
-            form.style.display = 'none';
-            
-            // Zobrazení success zprávy - liší se pro inline a main form
-            const successId = form.id === 'inline-lead-form' ? 'inline-form-success' : 'form-success';
-            const successMessage = document.getElementById(successId);
-            if (successMessage) {
-                 successMessage.style.display = 'block';
-                 successMessage.classList.remove('hidden');
-            }
-            
-            if (form.id !== 'inline-lead-form') {
-                setTimeout(() => scrollToTarget('#kontakt'), 100);
-            }
+                form.style.display = 'none';
+                
+                // Zobrazení success zprávy
+                const successId = form.id === 'inline-lead-form' ? 'inline-form-success' : 'form-success';
+                const successMessage = document.getElementById(successId);
+                if (successMessage) {
+                     successMessage.style.display = 'block';
+                     successMessage.classList.remove('hidden');
+                }
+                
+                if (form.id !== 'inline-lead-form') {
+                    setTimeout(() => scrollToTarget('#kontakt'), 100);
+                }
 
-             if (typeof gtag === 'function') {
-                 gtag('event', 'generate_lead', { 'event_category': 'form_submission', 'event_label': form.id });
-                 gtag('event', 'conversion', { 'send_to': 'AW-778075298/UyVCMT9zpABEKLSgfgMC' });
-             }
+                // --- GOOGLE ANALYTICS & ADS TRACKING FIX ---
+                if (typeof gtag === 'function') {
+                    console.log('Odesílám konverze pro formulář:', form.id);
+                    
+                    // 1. Obecný event pro GA4
+                    gtag('event', 'generate_lead', { 
+                        'event_category': 'form_submission', 
+                        'event_label': form.id 
+                    });
 
-        } else {
-             throw new Error(`Odeslání selhalo: ${response.status}`);
-        }
+                    // 2. Google Ads Konverze
+                    // Pokud je potřeba rozlišit formuláře, lze zde přidat podmínku, 
+                    // ale obvykle se používá stejný conversion ID pro "Lead"
+                    gtag('event', 'conversion', { 
+                        'send_to': 'AW-778075298/UyVCMT9zpABEKLSgfgMC' 
+                    });
+                } else {
+                    console.warn('Google Tag Manager (gtag) nebyl nalezen.');
+                }
+                // -------------------------------------------
+
+            } else {
+                 throw new Error(`Odeslání selhalo: ${response.status}`);
+            }
 
         } catch (error) { 
             console.error('Chyba při odesílání formuláře:', error);
             alert('Odeslání se nezdařilo. Zkuste to prosím znovu, nebo nás kontaktujte přímo.');
             if (btn) {
                 btn.disabled = false;
-                btn.textContent = '📞 Odeslat nezávazně';
+                btn.textContent = originalBtnText || '📞 Odeslat nezávazně';
             }
         }
     };

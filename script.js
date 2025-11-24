@@ -1691,6 +1691,9 @@ const renderResults = () => {
                 }, 100);
             });
         }
-    } // Konec funkce addV22EventListeners
+    }
 
-}); // Konec DOMContentLoaded - toto je úplný konec souboru
+    // DŮLEŽITÉ: Zavoláme funkci pro aktivaci listenerů
+    addV22EventListeners();
+
+});

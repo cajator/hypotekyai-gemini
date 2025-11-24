@@ -1633,7 +1633,6 @@ const renderResults = () => {
         // 2. Inline lead form submit
         const inlineForm = document.getElementById('inline-lead-form');
         if (inlineForm) {
-            // Zde stačí jen přidat listener, element se překreslil
             inlineForm.addEventListener('submit', handleFormSubmit);
         }
         
@@ -1643,7 +1642,6 @@ const renderResults = () => {
             showAllOffersBtn.addEventListener('click', () => {
                 const allOffersContainer = document.getElementById('all-offers-container');
                 if (allOffersContainer) {
-                    // Logika pro zobrazení (zde zkráceno, protože není kritická pro běh)
                     allOffersContainer.classList.remove('hidden');
                 }
             });
@@ -1693,7 +1691,6 @@ const renderResults = () => {
                 }, 100);
             });
         }
-    }
-    
-    // Znovu zavoláme init pro jistotu, ale je voláno už nahoře
-});
+    } // Konec funkce addV22EventListeners
+
+}); // Konec DOMContentLoaded - toto je úplný konec souboru

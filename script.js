@@ -588,7 +588,7 @@ const renderResults = () => {
         state.calculation.selectedOffer = selectedOffer;
     }
 
-    // --- 1. PŘÍPRAVA DAT PRO GRAFY A SCORING ---
+    // --- 1. PŘÍPRAVA DAT ---
     let chartData = null;
     let fixationDetails = null;
     
@@ -617,9 +617,9 @@ const renderResults = () => {
     const effectiveValue = (purpose === 'výstavba' && landValue > 0) ? propertyValue + landValue : propertyValue;
     const ltvPercentage = effectiveValue > 0 ? Math.round((loanAmount / effectiveValue) * 100) : 0;
     
-    // --- 2. VYTVOŘENÍ HTML PRO SKÓRE (Nyní dříve, abychom mohli použít hodnotu v kartě) ---
+    // --- 2. SKÓRE (PŘÍPRAVA HTML) ---
     let scoreSectionHTML = '';
-    let totalScoreValue = 0; // Proměnná pro % v hlavičce
+    let totalScoreValue = 0; 
 
     if (approvability) {
         const ltvExplanation = approvability.ltv > 85 ? 'Optimální LTV.' : approvability.ltv > 70 ? 'Dobré LTV.' : 'Hraniční LTV.';
@@ -627,7 +627,7 @@ const renderResults = () => {
         const bonitaExplanation = approvability.bonita > 85 ? 'Excelentní bonita.' : approvability.bonita > 70 ? 'Velmi dobrá bonita.' : 'Standardní bonita.';
         totalScoreValue = (typeof approvability.total === 'number' && !isNaN(approvability.total)) ? approvability.total : 0;
         
-        // Upravený design bloku skóre - kompaktnější, aby pasoval pod kartu
+        // Nový kompaktní blok pro skóre pod nabídku
         scoreSectionHTML = `
             <div class="bg-white p-4 sm:p-5 rounded-xl border border-blue-200 shadow-md mb-6 relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-2 h-full bg-blue-500"></div>
@@ -642,12 +642,12 @@ const renderResults = () => {
             </div>`;
     }
 
-    // --- 3. VYTVOŘENÍ KARTY NEJLEPŠÍ NABÍDKY (S integrovaným skóre) ---
+    // --- 3. KARTA NEJLEPŠÍ NABÍDKY (S INTEGROVANÝM SKÓRE) ---
     const currentFixation = state.formData.fixation || 3;
     const employment = state.formData.employment || 'zaměstnanec';
     const targetAudience = selectedOffer?.targetGroup || (employment === 'osvč' ? 'OSVČ' : 'Zaměstnance');
 
-    // Barva badge podle skóre
+    // Barva odznaku podle skóre
     const scoreColorClass = totalScoreValue >= 80 ? 'bg-green-100 text-green-800 border-green-200' : (totalScoreValue >= 60 ? 'bg-yellow-100 text-yellow-800 border-yellow-200' : 'bg-red-100 text-red-800 border-red-200');
 
     const bestOfferHTML = selectedOffer ? `
@@ -657,8 +657,9 @@ const renderResults = () => {
                 <h3 class="text-xl sm:text-2xl font-bold text-green-900 flex items-center">
                     <span class="text-2xl mr-2">✅</span> Nejlepší nabídka pro vás
                 </h3>
+                
                 ${totalScoreValue > 0 ? `
-                <div class="flex items-center px-3 py-1.5 rounded-full border ${scoreColorClass} shadow-sm">
+                <div class="flex items-center px-3 py-1.5 rounded-full border ${scoreColorClass} shadow-sm bg-white">
                     <span class="text-lg mr-1.5">🎯</span>
                     <div class="flex flex-col leading-tight">
                         <span class="text-[10px] uppercase font-bold tracking-wider opacity-80">Šance na schválení</span>
@@ -691,6 +692,7 @@ const renderResults = () => {
         </div>
     ` : '';
 
+    // Zbytek HTML (tabulka, CTA...)
     const allOffersHTML = offers.length > 1 ? `
         <div id="all-offers-container" class="mb-6">
             <h4 class="text-lg font-bold mb-1 text-gray-800">🧠 Porovnání dalších variant</h4>
@@ -844,13 +846,12 @@ const renderResults = () => {
         `;
     }
 
-    // --- 4. SESTAVENÍ VÝSLEDNÉHO HTML (Nové pořadí elementů) ---
-    // ZMĚNA POŘADÍ: Best Offer -> Score Details (hned pod to) -> All Offers -> CTA ...
+    // --- 4. ZMĚNA POŘADÍ - SKÓRE JE HNED POD NABÍDKOU ---
     container.innerHTML = `
         <div>
             <h3 class="text-2xl sm:text-3xl font-bold mb-6">✅ Vaše výsledky</h3>
             ${bestOfferHTML}
-            ${scoreSectionHTML}
+            ${scoreSectionHTML} 
             ${allOffersHTML}
             ${megaCTAHTML}
             <h4 class="text-base font-bold mb-3 text-center text-gray-600">Nebo raději:</h4>
@@ -1277,16 +1278,14 @@ const renderResults = () => {
     const handleFormSubmit = async (e) => {
         e.preventDefault();
         const form = e.target;
-        const btn = form.querySelector('button[type="submit"]'); // Robustnější selektor
+        const btn = form.querySelector('button[type="submit"]');
 
-        if (!btn) {
-            alert('Došlo k chybě při odesílání, zkuste to prosím znovu.');
-            return; 
+        let originalBtnText = 'Odeslat';
+        if (btn) {
+            originalBtnText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = '📤 Odesílám...';
         }
-        
-        const originalBtnText = btn.textContent;
-        btn.disabled = true;
-        btn.textContent = '📤 Odesílám...'; 
 
         try {
             const bodyParams = new URLSearchParams();
@@ -1326,7 +1325,6 @@ const renderResults = () => {
             if (response.ok) {
                 form.style.display = 'none';
                 
-                // Zobrazení success zprávy
                 const successId = form.id === 'inline-lead-form' ? 'inline-form-success' : 'form-success';
                 const successMessage = document.getElementById(successId);
                 if (successMessage) {
@@ -1338,26 +1336,23 @@ const renderResults = () => {
                     setTimeout(() => scrollToTarget('#kontakt'), 100);
                 }
 
-                // --- GOOGLE ANALYTICS & ADS TRACKING FIX ---
+                // --- OPRAVA TRACKINGU ---
                 if (typeof gtag === 'function') {
-                    console.log('Odesílám konverze pro formulář:', form.id);
-                    
-                    // 1. Obecný event pro GA4
+                    // GA4 Event
                     gtag('event', 'generate_lead', { 
                         'event_category': 'form_submission', 
                         'event_label': form.id 
                     });
 
-                    // 2. Google Ads Konverze
-                    // Pokud je potřeba rozlišit formuláře, lze zde přidat podmínku, 
-                    // ale obvykle se používá stejný conversion ID pro "Lead"
+                    // Google Ads Konverze (s hodnotou)
                     gtag('event', 'conversion', { 
-                        'send_to': 'AW-778075298/UyVCMT9zpABEKLSgfgMC' 
+                        'send_to': 'AW-778075298/UyVCMT9zpABEKLSgfgMC',
+                        'value': 1.0,
+                        'currency': 'CZK'
                     });
-                } else {
-                    console.warn('Google Tag Manager (gtag) nebyl nalezen.');
+                    console.log('Konverze odeslána do GA4 i Ads.');
                 }
-                // -------------------------------------------
+                // ------------------------
 
             } else {
                  throw new Error(`Odeslání selhalo: ${response.status}`);
@@ -1368,7 +1363,7 @@ const renderResults = () => {
             alert('Odeslání se nezdařilo. Zkuste to prosím znovu, nebo nás kontaktujte přímo.');
             if (btn) {
                 btn.disabled = false;
-                btn.textContent = originalBtnText || '📞 Odeslat nezávazně';
+                btn.textContent = originalBtnText;
             }
         }
     };

@@ -1344,13 +1344,15 @@ const renderResults = () => {
                         'event_label': form.id 
                     });
 
-                    // Google Ads Konverze
-                gtag('event', 'conversion', { 
-                    'send_to': 'AW-778075298/XZ1yCK60yc4bEKL5gfMC', 
-                    'value': 1.0,
-                    'currency': 'CZK'
-                });
-
+                    // Google Ads Konverze 
+                    gtag('event', 'conversion', { 
+                        'send_to': 'AW-778075298/XZ1yCK60yc4bEKL5gfMC', 
+                        'value': 1.0,
+                        'currency': 'CZK'
+                    });
+                    
+                    console.log('Konverze odeslána do GA4 i Ads.');
+                }
                 // ------------------------
 
             } else {

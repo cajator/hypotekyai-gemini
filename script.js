@@ -1301,8 +1301,6 @@ const renderResults = () => {
 
             const extraData = { chatHistory: state.chatHistory };
 
-            // === FILTROVÁNÍ PODLE REŽIMU KALKULAČKY ===
-            // Odešleme data hypotéky jen pokud existuje výpočet
             if (state.calculation && state.calculation.offers && state.calculation.offers.length > 0) {
                 
                 const safeCalculationData = {
@@ -1316,32 +1314,31 @@ const renderResults = () => {
                 // 1. Vytvoříme kopii dat
                 const dataToSend = { ...state.formData };
 
-                // 2. Podíváme se, v jakém režimu uživatel byl
+                // 2. Logika pro EXPRESNÍ REŽIM
                 if (state.mode === 'express') {
-                    // === EXPRESNÍ REŽIM ===
-                    // Uživatel nevidí pole pro věk, děti, závazky atd.
-                    // Proto tyto "fejkové" výchozí hodnoty NATVRDO MAŽEME.
-                    // Necháme jen to, co v expresním režimu skutečně je (Úvěr, Příjem, Splatnost).
-                    
-                    delete dataToSend.age;            // Věk v expresu není
-                    delete dataToSend.children;       // Děti v expresu nejsou
-                    delete dataToSend.liabilities;    // Závazky v expresu nejsou
-                    delete dataToSend.education;      // Vzdělání v expresu není
-                    delete dataToSend.employment;     // Typ zaměstnání v expresu není
-                    delete dataToSend.fixation;       // Fixace v expresu není
-                    delete dataToSend.purpose;        // Účel v expresu není
-                    delete dataToSend.propertyType;   // Typ nemovitosti v expresu není
+                    // A) Smažeme vše, co v expresním režimu vůbec není vidět (bezpodmínečně)
+                    delete dataToSend.age;
+                    delete dataToSend.children;
+                    delete dataToSend.liabilities;
+                    delete dataToSend.education;
+                    delete dataToSend.employment;
+                    delete dataToSend.fixation;
+                    delete dataToSend.purpose;
+                    delete dataToSend.propertyType;
                     delete dataToSend.landValue;
                     delete dataToSend.reconstructionValue;
-                    
-                    // V datech zůstane jen: loanAmount, propertyValue, income, loanTerm
+
+                    // B) Kontrola PŘÍJMU (který je vidět, ale může být defaultní)
+                    // Pokud uživatel nepohnul s posuvníkem a nechal tam 50 000, smažeme to.
+                    // Pokud nastavil cokoliv jiného, odešleme to.
+                    if (dataToSend.income === 50000) {
+                        delete dataToSend.income;
+                    }
                 } 
-                // Pokud je mode === 'guided' (Detailní), neděláme nic a pošleme vše,
-                // protože uživatel měl možnost všechna políčka vidět a upravit.
+                // V režimu 'guided' (Detailní) nic nemažeme, tam uživatel vyplňuje vše vědomě.
 
                 extraData.formData = dataToSend;
             }
-            // ===========================================
 
             if (Object.keys(extraData).length > 0) {
                 bodyParams.append('extraData', JSON.stringify(extraData, null, 2)); 

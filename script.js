@@ -1299,14 +1299,17 @@ const renderResults = () => {
             const noteInput = form.querySelector('textarea[name="note"]');
             if (noteInput) bodyParams.append('note', noteInput.value);
 
-            // Základní data navíc (historie chatu)
+            // Základní data (historie chatu) pošleme vždy
             const extraData = { chatHistory: state.chatHistory };
 
-            // === DŮLEŽITÁ ZMĚNA ZDE ===
-            // Data o hypotéce (příjem, věk, částka...) připojíme JEN tehdy, 
-            // pokud už proběhl výpočet a máme nějaké výsledky (offers).
-            // Pokud je pole offers prázdné, znamená to, že uživatel jen vyplnil kontakt bez kalkulace.
+            // === FILTR DAT: Zde se rozhoduje, zda poslat parametry hypotéky ===
+            // state.formData obsahuje ty "natvrdo" zadané hodnoty (35 let, 50k příjem...).
+            // Podmínka níže říká: "Připoj tato data JEN tehdy, pokud existují vypočítané nabídky."
+            // Pokud uživatel nekliknul na Spočítat, offers je prázdné pole a podmínka neplatí.
+            
             if (state.calculation && state.calculation.offers && state.calculation.offers.length > 0) {
+                console.log('✅ Uživatel provedl kalkulaci -> ODESÍLÁM i parametry hypotéky.');
+                
                 const safeCalculationData = {
                     offers: state.calculation.offers,
                     selectedOffer: state.calculation.selectedOffer,
@@ -1314,12 +1317,11 @@ const renderResults = () => {
                     ...(state.calculation.fixationDetails && { fixationDetails: state.calculation.fixationDetails })
                 };
                 extraData.calculation = safeCalculationData;
-                
-                // Toto jsou ty parametry (věk 35, příjem 50000 atd.)
-                // Teď se odešlou jen když je splněna podmínka výše.
-                extraData.formData = state.formData; 
+                extraData.formData = state.formData; // Tady se připojují ta data
+            } else {
+                console.log('⛔ Uživatel neprovedl kalkulaci -> NEODESÍLÁM výchozí data (věk, příjem atd.).');
             }
-            // ===========================
+            // ================================================================
 
             if (Object.keys(extraData).length > 0) {
                 bodyParams.append('extraData', JSON.stringify(extraData, null, 2)); 
@@ -1345,7 +1347,7 @@ const renderResults = () => {
                     setTimeout(() => scrollToTarget('#kontakt'), 100);
                 }
 
-                // --- MĚŘENÍ KONVERZÍ (Google Ads + GA4) ---
+                // --- MĚŘENÍ KONVERZÍ ---
                 if (typeof gtag === 'function') {
                     // GA4
                     gtag('event', 'generate_lead', { 
@@ -1362,7 +1364,7 @@ const renderResults = () => {
                     
                     console.log('Konverze odeslána do GA4 i Ads.');
                 }
-                // ------------------------------------------
+                // -----------------------
 
             } else {
                  throw new Error(`Odeslání selhalo: ${response.status}`);

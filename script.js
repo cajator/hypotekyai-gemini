@@ -1301,8 +1301,8 @@ const renderResults = () => {
 
             const extraData = { chatHistory: state.chatHistory };
 
-            // === NOVÁ LOGIKA: SELEKTIVNÍ FILTROVÁNÍ ===
-            // Pokud existuje výpočet, připravíme data k odeslání
+            // === FILTROVÁNÍ PODLE REŽIMU KALKULAČKY ===
+            // Odešleme data hypotéky jen pokud existuje výpočet
             if (state.calculation && state.calculation.offers && state.calculation.offers.length > 0) {
                 
                 const safeCalculationData = {
@@ -1313,20 +1313,32 @@ const renderResults = () => {
                 };
                 extraData.calculation = safeCalculationData;
 
-                // 1. Vytvoříme kopii dat z formuláře (abychom neupravovali originál)
+                // 1. Vytvoříme kopii dat
                 const dataToSend = { ...state.formData };
 
-                // 2. Definujeme, co považujeme za "fejková" osobní data
-                // Pokud se hodnota rovná těmto výchozím číslům, z odesílání ji smažeme.
-                if (dataToSend.income === 50000) delete dataToSend.income;         // Smaže příjem 50k
-                if (dataToSend.age === 35) delete dataToSend.age;                  // Smaže věk 35
-                if (dataToSend.liabilities === 0) delete dataToSend.liabilities;   // Smaže nulové závazky
-                if (dataToSend.children === 0) delete dataToSend.children;         // Smaže 0 dětí
+                // 2. Podíváme se, v jakém režimu uživatel byl
+                if (state.mode === 'express') {
+                    // === EXPRESNÍ REŽIM ===
+                    // Uživatel nevidí pole pro věk, děti, závazky atd.
+                    // Proto tyto "fejkové" výchozí hodnoty NATVRDO MAŽEME.
+                    // Necháme jen to, co v expresním režimu skutečně je (Úvěr, Příjem, Splatnost).
+                    
+                    delete dataToSend.age;            // Věk v expresu není
+                    delete dataToSend.children;       // Děti v expresu nejsou
+                    delete dataToSend.liabilities;    // Závazky v expresu nejsou
+                    delete dataToSend.education;      // Vzdělání v expresu není
+                    delete dataToSend.employment;     // Typ zaměstnání v expresu není
+                    delete dataToSend.fixation;       // Fixace v expresu není
+                    delete dataToSend.purpose;        // Účel v expresu není
+                    delete dataToSend.propertyType;   // Typ nemovitosti v expresu není
+                    delete dataToSend.landValue;
+                    delete dataToSend.reconstructionValue;
+                    
+                    // V datech zůstane jen: loanAmount, propertyValue, income, loanTerm
+                } 
+                // Pokud je mode === 'guided' (Detailní), neděláme nic a pošleme vše,
+                // protože uživatel měl možnost všechna políčka vidět a upravit.
 
-                // POZNÁMKA: loanAmount (výše úvěru) a propertyValue (hodnota) zde nemažeme.
-                // Ty se odešlou VŽDY, i když jsou výchozí (4M / 5M), přesně jak jste chtěl.
-
-                console.log('✅ Odesílám data hypotéky (bez fejkových osobních údajů):', dataToSend);
                 extraData.formData = dataToSend;
             }
             // ===========================================
@@ -1355,7 +1367,6 @@ const renderResults = () => {
                     setTimeout(() => scrollToTarget('#kontakt'), 100);
                 }
 
-                // --- TRACKING ---
                 if (typeof gtag === 'function') {
                     gtag('event', 'generate_lead', { 
                         'event_category': 'form_submission', 
@@ -1368,7 +1379,6 @@ const renderResults = () => {
                         'currency': 'CZK'
                     });
                 }
-                // ----------------
 
             } else {
                  throw new Error(`Odeslání selhalo: ${response.status}`);

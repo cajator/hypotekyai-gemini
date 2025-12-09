@@ -1299,16 +1299,11 @@ const renderResults = () => {
             const noteInput = form.querySelector('textarea[name="note"]');
             if (noteInput) bodyParams.append('note', noteInput.value);
 
-            // Základní data (historie chatu) pošleme vždy
             const extraData = { chatHistory: state.chatHistory };
 
-            // === FILTR DAT: Zde se rozhoduje, zda poslat parametry hypotéky ===
-            // state.formData obsahuje ty "natvrdo" zadané hodnoty (35 let, 50k příjem...).
-            // Podmínka níže říká: "Připoj tato data JEN tehdy, pokud existují vypočítané nabídky."
-            // Pokud uživatel nekliknul na Spočítat, offers je prázdné pole a podmínka neplatí.
-            
+            // === NOVÁ LOGIKA: SELEKTIVNÍ FILTROVÁNÍ ===
+            // Pokud existuje výpočet, připravíme data k odeslání
             if (state.calculation && state.calculation.offers && state.calculation.offers.length > 0) {
-                console.log('✅ Uživatel provedl kalkulaci -> ODESÍLÁM i parametry hypotéky.');
                 
                 const safeCalculationData = {
                     offers: state.calculation.offers,
@@ -1317,11 +1312,24 @@ const renderResults = () => {
                     ...(state.calculation.fixationDetails && { fixationDetails: state.calculation.fixationDetails })
                 };
                 extraData.calculation = safeCalculationData;
-                extraData.formData = state.formData; // Tady se připojují ta data
-            } else {
-                console.log('⛔ Uživatel neprovedl kalkulaci -> NEODESÍLÁM výchozí data (věk, příjem atd.).');
+
+                // 1. Vytvoříme kopii dat z formuláře (abychom neupravovali originál)
+                const dataToSend = { ...state.formData };
+
+                // 2. Definujeme, co považujeme za "fejková" osobní data
+                // Pokud se hodnota rovná těmto výchozím číslům, z odesílání ji smažeme.
+                if (dataToSend.income === 50000) delete dataToSend.income;         // Smaže příjem 50k
+                if (dataToSend.age === 35) delete dataToSend.age;                  // Smaže věk 35
+                if (dataToSend.liabilities === 0) delete dataToSend.liabilities;   // Smaže nulové závazky
+                if (dataToSend.children === 0) delete dataToSend.children;         // Smaže 0 dětí
+
+                // POZNÁMKA: loanAmount (výše úvěru) a propertyValue (hodnota) zde nemažeme.
+                // Ty se odešlou VŽDY, i když jsou výchozí (4M / 5M), přesně jak jste chtěl.
+
+                console.log('✅ Odesílám data hypotéky (bez fejkových osobních údajů):', dataToSend);
+                extraData.formData = dataToSend;
             }
-            // ================================================================
+            // ===========================================
 
             if (Object.keys(extraData).length > 0) {
                 bodyParams.append('extraData', JSON.stringify(extraData, null, 2)); 
@@ -1347,24 +1355,20 @@ const renderResults = () => {
                     setTimeout(() => scrollToTarget('#kontakt'), 100);
                 }
 
-                // --- MĚŘENÍ KONVERZÍ ---
+                // --- TRACKING ---
                 if (typeof gtag === 'function') {
-                    // GA4
                     gtag('event', 'generate_lead', { 
                         'event_category': 'form_submission', 
                         'event_label': form.id 
                     });
 
-                    // Google Ads (Váš kód)
                     gtag('event', 'conversion', { 
                         'send_to': 'AW-778075298/XZ1yCK60yc4bEKL5gfMC', 
                         'value': 1.0,
                         'currency': 'CZK'
                     });
-                    
-                    console.log('Konverze odeslána do GA4 i Ads.');
                 }
-                // -----------------------
+                // ----------------
 
             } else {
                  throw new Error(`Odeslání selhalo: ${response.status}`);

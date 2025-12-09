@@ -1299,13 +1299,14 @@ const renderResults = () => {
             const noteInput = form.querySelector('textarea[name="note"]');
             if (noteInput) bodyParams.append('note', noteInput.value);
 
-            // Vždy pošleme historii chatu, pokud existuje
+            // Základní data navíc (historie chatu)
             const extraData = { chatHistory: state.chatHistory };
 
-            // === NOVÁ LOGIKA: Odeslat data kalkulačky jen pokud jsou VÝSLEDKY ===
-            // Podmínka říká: Uživatel musel interagovat A ZÁROVEŇ musí existovat vypočítané nabídky.
-            // Pokud uživatel jen posouval posuvníky v Expres módu, ale nekliknul na "Spočítat", data se nepošlou.
-            if (state.calculatorInteracted && state.calculation && state.calculation.offers && state.calculation.offers.length > 0) {
+            // === DŮLEŽITÁ ZMĚNA ZDE ===
+            // Data o hypotéce (příjem, věk, částka...) připojíme JEN tehdy, 
+            // pokud už proběhl výpočet a máme nějaké výsledky (offers).
+            // Pokud je pole offers prázdné, znamená to, že uživatel jen vyplnil kontakt bez kalkulace.
+            if (state.calculation && state.calculation.offers && state.calculation.offers.length > 0) {
                 const safeCalculationData = {
                     offers: state.calculation.offers,
                     selectedOffer: state.calculation.selectedOffer,
@@ -1313,9 +1314,12 @@ const renderResults = () => {
                     ...(state.calculation.fixationDetails && { fixationDetails: state.calculation.fixationDetails })
                 };
                 extraData.calculation = safeCalculationData;
-                extraData.formData = state.formData;
+                
+                // Toto jsou ty parametry (věk 35, příjem 50000 atd.)
+                // Teď se odešlou jen když je splněna podmínka výše.
+                extraData.formData = state.formData; 
             }
-            // ====================================================================
+            // ===========================
 
             if (Object.keys(extraData).length > 0) {
                 bodyParams.append('extraData', JSON.stringify(extraData, null, 2)); 
@@ -1341,15 +1345,15 @@ const renderResults = () => {
                     setTimeout(() => scrollToTarget('#kontakt'), 100);
                 }
 
-                // --- OPRAVA TRACKINGU (včetně Google Ads) ---
+                // --- MĚŘENÍ KONVERZÍ (Google Ads + GA4) ---
                 if (typeof gtag === 'function') {
-                    // 1. GA4 Event
+                    // GA4
                     gtag('event', 'generate_lead', { 
                         'event_category': 'form_submission', 
                         'event_label': form.id 
                     });
 
-                    // 2. Google Ads Konverze (Opravená syntaxe a váš nový kód)
+                    // Google Ads (Váš kód)
                     gtag('event', 'conversion', { 
                         'send_to': 'AW-778075298/XZ1yCK60yc4bEKL5gfMC', 
                         'value': 1.0,
@@ -1358,7 +1362,7 @@ const renderResults = () => {
                     
                     console.log('Konverze odeslána do GA4 i Ads.');
                 }
-                // -------------------------------------------
+                // ------------------------------------------
 
             } else {
                  throw new Error(`Odeslání selhalo: ${response.status}`);

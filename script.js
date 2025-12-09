@@ -1299,9 +1299,13 @@ const renderResults = () => {
             const noteInput = form.querySelector('textarea[name="note"]');
             if (noteInput) bodyParams.append('note', noteInput.value);
 
+            // Vždy pošleme historii chatu, pokud existuje
             const extraData = { chatHistory: state.chatHistory };
 
-            if (state.calculatorInteracted) {
+            // === NOVÁ LOGIKA: Odeslat data kalkulačky jen pokud jsou VÝSLEDKY ===
+            // Podmínka říká: Uživatel musel interagovat A ZÁROVEŇ musí existovat vypočítané nabídky.
+            // Pokud uživatel jen posouval posuvníky v Expres módu, ale nekliknul na "Spočítat", data se nepošlou.
+            if (state.calculatorInteracted && state.calculation && state.calculation.offers && state.calculation.offers.length > 0) {
                 const safeCalculationData = {
                     offers: state.calculation.offers,
                     selectedOffer: state.calculation.selectedOffer,
@@ -1311,6 +1315,7 @@ const renderResults = () => {
                 extraData.calculation = safeCalculationData;
                 extraData.formData = state.formData;
             }
+            // ====================================================================
 
             if (Object.keys(extraData).length > 0) {
                 bodyParams.append('extraData', JSON.stringify(extraData, null, 2)); 
@@ -1336,15 +1341,15 @@ const renderResults = () => {
                     setTimeout(() => scrollToTarget('#kontakt'), 100);
                 }
 
-                // --- OPRAVA TRACKINGU ---
+                // --- OPRAVA TRACKINGU (včetně Google Ads) ---
                 if (typeof gtag === 'function') {
-                    // GA4 Event
+                    // 1. GA4 Event
                     gtag('event', 'generate_lead', { 
                         'event_category': 'form_submission', 
                         'event_label': form.id 
                     });
 
-                    // Google Ads Konverze 
+                    // 2. Google Ads Konverze (Opravená syntaxe a váš nový kód)
                     gtag('event', 'conversion', { 
                         'send_to': 'AW-778075298/XZ1yCK60yc4bEKL5gfMC', 
                         'value': 1.0,
@@ -1353,7 +1358,7 @@ const renderResults = () => {
                     
                     console.log('Konverze odeslána do GA4 i Ads.');
                 }
-                // ------------------------
+                // -------------------------------------------
 
             } else {
                  throw new Error(`Odeslání selhalo: ${response.status}`);

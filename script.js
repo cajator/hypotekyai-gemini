@@ -1311,7 +1311,8 @@ const renderResults = () => {
         try {
             const bodyParams = new URLSearchParams();
 
-            // --- 1. TEXTOVÁ DATA PRO E-MAIL (Netlify) ---
+            // --- 1. ZÁKLADNÍ ÚDAJE (Jméno, Email...) ---
+            // Tyto se posílají vždy
             bodyParams.append('form-name', form.getAttribute('name'));
             bodyParams.append('name', form.querySelector('input[name="name"]').value);
             bodyParams.append('phone', form.querySelector('input[name="phone"]').value);
@@ -1319,13 +1320,15 @@ const renderResults = () => {
             bodyParams.append('psc', form.querySelector('input[name="psc"]').value);
             bodyParams.append('contact-time', form.querySelector('select[name="contact-time"]').value);
 
-            // Získání hodnot z políček (Jako TEXT pro e-mail)
+            // --- 2. ZPRACOVÁNÍ FINANCÍ (Ruční zadání) ---
             const inputLoan = form.querySelector('input[name="form_loan_amount"]');
             const inputProperty = form.querySelector('input[name="form_property_value"]');
-            
+
+            // Získání textu z políček (např. "5 000 000")
             const rawLoan = inputLoan ? inputLoan.value : '';
             const rawProperty = inputProperty ? inputProperty.value : '';
 
+            // Přidání do e-mailu jako text (aby to bylo čitelné v mailu)
             if (rawLoan) bodyParams.append('form_loan_amount', rawLoan);
             if (rawProperty) bodyParams.append('form_property_value', rawProperty);
 
@@ -1333,47 +1336,48 @@ const renderResults = () => {
             if (noteInput) bodyParams.append('note', noteInput.value);
 
 
-            // --- 2. DATA PRO EXPORT (JSON / CRM) ---
+            // --- 3. PŘÍPRAVA DAT PRO EXPORT (JSON) ---
             
-            // A) Začneme s PRÁZDNÝM objektem (aby se neposílaly nesmysly jako "Věk: N/A")
-            let finalFormData = {};
+            // A) Start: Začínáme s prázdným objektem. 
+            // Pokud nic nevyplnil a nepoužil kalkulačku, vše bude N/A.
+            let exportFormData = {};
 
-            // B) Pokud uživatel POUŽIL kalkulačku (máme výsledky), natáhneme její data (příjem, věk atd.)
+            // B) Pokud použil kalkulačku (máme výsledky), vezmeme je jako základ.
             if (state.calculation && state.calculation.offers && state.calculation.offers.length > 0) {
-                finalFormData = { ...state.formData };
+                exportFormData = { ...state.formData };
             }
 
-            // C) ZPRACOVÁNÍ RUČNÍCH VSTUPŮ (TOHLE JE TO HLAVNÍ)
-            // Funkce, která z textu "5 000 000 Kč" udělá číslo 5000000
-            const parseMoney = (str) => {
-                if (!str) return null;
-                // Regulární výraz \D odstraní všechno, co není číslice (mezery, Kč, tečky...)
-                const clean = str.replace(/\D/g, '');
-                const num = parseInt(clean, 10);
-                return isNaN(num) ? null : num;
+            // C) ČIŠTĚNÍ A PŘEPSÁNÍ DAT Z RUČNÍCH POLÍČEK
+            // Funkce, která z "5 000 000 Kč" udělá číslo 5000000
+            const parseCleanNumber = (val) => {
+                if (!val) return 0;
+                // \D znamená "vše co není číslice". Nahradíme to prázdnem.
+                const cleanString = String(val).replace(/\D/g, ''); 
+                const num = parseInt(cleanString, 10);
+                return isNaN(num) ? 0 : num;
             };
 
-            const manualLoan = parseMoney(rawLoan);
-            const manualProperty = parseMoney(rawProperty);
+            const cleanLoan = parseCleanNumber(rawLoan);
+            const cleanProperty = parseCleanNumber(rawProperty);
 
-            // TEĎ TO HLAVNÍ: Pokud se podařilo přečíst číslo z formuláře,
-            // NATVRDO ho vložíme do objektu. Tím pádem tam BUDE, i když je zbytek prázdný.
-            if (manualLoan !== null && manualLoan > 0) {
-                finalFormData.loanAmount = manualLoan;
+            // D) NATVRDO VLOŽÍME HODNOTY
+            // Pokud v políčku něco bylo (číslo > 0), vložíme to do exportu.
+            // Tím to tam BUDE, i když kalkulačka nebyla použita.
+            if (cleanLoan > 0) {
+                exportFormData.loanAmount = cleanLoan;
             }
-            
-            if (manualProperty !== null && manualProperty > 0) {
-                finalFormData.propertyValue = manualProperty;
+            if (cleanProperty > 0) {
+                exportFormData.propertyValue = cleanProperty;
             }
 
-            // Sestavení balíčku extraData
+            // E) Zabalení do extraData
             const extraData = { 
-                formData: finalFormData, // Zde teď musí být { loanAmount: 5000000, propertyValue: ... }
+                formData: exportFormData, 
                 chatHistory: state.chatHistory 
             };
 
             // Pokud existuje kalkulace, přibalíme ji
-            if (state.calculation && state.calculation.offers && state.calculation.offers.length > 0) {
+            if (state.calculation && state.calculation.offers) {
                  extraData.calculation = {
                     offers: state.calculation.offers,
                     selectedOffer: state.calculation.selectedOffer,
@@ -1381,11 +1385,11 @@ const renderResults = () => {
                 };
             }
 
-            // Přidání JSONu do odesílaných dat
+            // Přidání JSONu k odeslání
             bodyParams.append('extraData', JSON.stringify(extraData, null, 2));
 
 
-            // --- 3. ODESLÁNÍ ---
+            // --- 4. ODESLÁNÍ ---
             const response = await fetch('/.netlify/functions/form-handler', { 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -1395,8 +1399,8 @@ const renderResults = () => {
             if (response.ok) {
                 form.style.display = 'none';
                 const successId = form.id === 'inline-lead-form' ? 'inline-form-success' : 'form-success';
-                const successMsg = document.getElementById(successId);
-                if (successMsg) successMsg.classList.remove('hidden');
+                const msg = document.getElementById(successId);
+                if (msg) msg.classList.remove('hidden');
                 
                 if (form.id !== 'inline-lead-form') setTimeout(() => scrollToTarget('#kontakt'), 100);
 
@@ -1409,8 +1413,8 @@ const renderResults = () => {
             }
 
         } catch (error) { 
-            console.error('Chyba odeslání:', error);
-            alert('Odeslání se nezdařilo. Zkuste to prosím znovu.');
+            console.error('Chyba:', error);
+            alert('Odeslání se nezdařilo.');
             if (btn) {
                 btn.disabled = false;
                 btn.textContent = originalBtnText;

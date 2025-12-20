@@ -1311,7 +1311,7 @@ const renderResults = () => {
         try {
             const bodyParams = new URLSearchParams();
 
-            // --- 1. ZÁKLADNÍ DATA DO E-MAILU (Netlify) ---
+            // --- 1. TEXTOVÁ DATA PRO E-MAIL (Netlify) ---
             bodyParams.append('form-name', form.getAttribute('name'));
             bodyParams.append('name', form.querySelector('input[name="name"]').value);
             bodyParams.append('phone', form.querySelector('input[name="phone"]').value);
@@ -1319,16 +1319,15 @@ const renderResults = () => {
             bodyParams.append('psc', form.querySelector('input[name="psc"]').value);
             bodyParams.append('contact-time', form.querySelector('select[name="contact-time"]').value);
 
-            // Získání hodnot z políček (Jako TEXT)
-            const rawLoanInput = form.querySelector('input[name="form_loan_amount"]');
-            const rawPropertyInput = form.querySelector('input[name="form_property_value"]');
+            // Získání hodnot z políček (Jako TEXT pro e-mail)
+            const inputLoan = form.querySelector('input[name="form_loan_amount"]');
+            const inputProperty = form.querySelector('input[name="form_property_value"]');
             
-            const rawLoanValue = rawLoanInput ? rawLoanInput.value.trim() : '';
-            const rawPropertyValue = rawPropertyInput ? rawPropertyInput.value.trim() : '';
+            const rawLoan = inputLoan ? inputLoan.value : '';
+            const rawProperty = inputProperty ? inputProperty.value : '';
 
-            // Přidání do e-mailu (pokud je něco vyplněno)
-            if (rawLoanValue) bodyParams.append('form_loan_amount', rawLoanValue);
-            if (rawPropertyValue) bodyParams.append('form_property_value', rawPropertyValue);
+            if (rawLoan) bodyParams.append('form_loan_amount', rawLoan);
+            if (rawProperty) bodyParams.append('form_property_value', rawProperty);
 
             const noteInput = form.querySelector('textarea[name="note"]');
             if (noteInput) bodyParams.append('note', noteInput.value);
@@ -1336,46 +1335,44 @@ const renderResults = () => {
 
             // --- 2. DATA PRO EXPORT (JSON / CRM) ---
             
-            // A) Začneme s čistým štítem = všechno je N/A
+            // A) Začneme s PRÁZDNÝM objektem (aby se neposílaly nesmysly jako "Věk: N/A")
             let finalFormData = {};
 
-            // B) Pokud uživatel POUŽIL kalkulačku (jsou tam výsledky), vezmeme její data jako základ
+            // B) Pokud uživatel POUŽIL kalkulačku (máme výsledky), natáhneme její data (příjem, věk atd.)
             if (state.calculation && state.calculation.offers && state.calculation.offers.length > 0) {
                 finalFormData = { ...state.formData };
             }
 
-            // C) ZPRACOVÁNÍ RUČNÍCH VSTUPŮ
-            // Funkce pro čištění čísla (odstraní mezery "5 000 000" -> 5000000)
-            const cleanNumber = (val) => {
-                if (!val) return 0;
-                // Nahradí všechny mezery prázdným znakem a pak vyhodí vše co není číslo
-                const clean = String(val).replace(/\s/g, '').replace(/[^0-9]/g, '');
-                return parseInt(clean, 10);
+            // C) ZPRACOVÁNÍ RUČNÍCH VSTUPŮ (TOHLE JE TO HLAVNÍ)
+            // Funkce, která z textu "5 000 000 Kč" udělá číslo 5000000
+            const parseMoney = (str) => {
+                if (!str) return null;
+                // Regulární výraz \D odstraní všechno, co není číslice (mezery, Kč, tečky...)
+                const clean = str.replace(/\D/g, '');
+                const num = parseInt(clean, 10);
+                return isNaN(num) ? null : num;
             };
 
-            // Pokud je v políčku "Výše úvěru" text, PŘEPÍŠEME/NASTAVÍME ho do dat
-            if (rawLoanValue !== '') {
-                const num = cleanNumber(rawLoanValue);
-                if (!isNaN(num)) {
-                    finalFormData.loanAmount = num;
-                }
+            const manualLoan = parseMoney(rawLoan);
+            const manualProperty = parseMoney(rawProperty);
+
+            // TEĎ TO HLAVNÍ: Pokud se podařilo přečíst číslo z formuláře,
+            // NATVRDO ho vložíme do objektu. Tím pádem tam BUDE, i když je zbytek prázdný.
+            if (manualLoan !== null && manualLoan > 0) {
+                finalFormData.loanAmount = manualLoan;
+            }
+            
+            if (manualProperty !== null && manualProperty > 0) {
+                finalFormData.propertyValue = manualProperty;
             }
 
-            // Pokud je v políčku "Cena nemovitosti" text, PŘEPÍŠEME/NASTAVÍME ho do dat
-            if (rawPropertyValue !== '') {
-                const num = cleanNumber(rawPropertyValue);
-                if (!isNaN(num)) {
-                    finalFormData.propertyValue = num;
-                }
-            }
-
-            // Sestavení extraData
+            // Sestavení balíčku extraData
             const extraData = { 
-                formData: finalFormData,
+                formData: finalFormData, // Zde teď musí být { loanAmount: 5000000, propertyValue: ... }
                 chatHistory: state.chatHistory 
             };
 
-            // Přibalení detailů kalkulace pro kontext (pokud existuje)
+            // Pokud existuje kalkulace, přibalíme ji
             if (state.calculation && state.calculation.offers && state.calculation.offers.length > 0) {
                  extraData.calculation = {
                     offers: state.calculation.offers,

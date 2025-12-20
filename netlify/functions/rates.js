@@ -1,19 +1,20 @@
 // netlify/functions/rates.js
-// FINÁLNÍ KOMPLETNÍ VERZE S 3.99%, MAX LTV 90%, DEFAULT 30 LET
+// FINÁLNÍ KOMPLETNÍ VERZE S 4.09%, MAX LTV 90%, DEFAULT 30 LET
+// UPRAVENO: Všechny sazby zvýšeny o +0.1% (20.12.2025)
 
 const ALL_OFFERS = [
     {
         id: 'offer-premium',
-        title: "💎 VIP Sazba 3.99%",
+        title: "💎 VIP Sazba 4.09%", // Upraven titulek
         description: "Exkluzivní sazba pro bonitní klienty. Podmínkou je aktivní využívání účtu a pojištění.",
-        highlights: ["Nejnižší sazba na trhu", "Sleva za domicil", "Osobní bankéř"], // Upraveno
+        highlights: ["Nejnižší sazba na trhu", "Sleva za domicil", "Osobní bankéř"],
         max_ltv: 70,
-        targetGroup: "Bonitní klienty", // Opraveno
+        targetGroup: "Bonitní klienty",
         rates: {
-            '3': { rate_ltv70: 3.99 },
-            '5': { rate_ltv70: 4.19 },
-            '7': { rate_ltv70: 4.39 },
-            '10': { rate_ltv70: 4.49 }
+            '3': { rate_ltv70: 4.09 }, // +0.1
+            '5': { rate_ltv70: 4.29 }, // +0.1
+            '7': { rate_ltv70: 4.49 }, // +0.1
+            '10': { rate_ltv70: 4.59 } // +0.1
         }
     },
     {
@@ -21,13 +22,13 @@ const ALL_OFFERS = [
         title: "🏆 Premium + Pojištění",
         description: "Výhodná sazba při sjednání pojištění nemovitosti a schopnosti splácet. Nejoblíbenější volba.",
         highlights: ["Sleva za pojištění", "Rychlé čerpání", "Odhad zdarma"],
-        max_ltv: 90, // <--- ZMĚNA ZDE (bylo 80). Nyní pustí i 90%, logika uvnitř handleru pak určí cenu.
+        max_ltv: 90,
         targetGroup: "Maximální úsporu",
         rates: {
-            '3': { rate_ltv70: 4.19, rate_ltv80: 4.19, rate_ltv90: 4.72 },
-            '5': { rate_ltv70: 4.29, rate_ltv80: 4.29, rate_ltv90: 4.89 },
-            '7': { rate_ltv70: 4.59, rate_ltv80: 4.59, rate_ltv90: 4.99 },
-            '10': { rate_ltv70: 4.69, rate_ltv80: 4.69, rate_ltv90: 5.09 }
+            '3': { rate_ltv70: 4.29, rate_ltv80: 4.29, rate_ltv90: 4.82 }, // +0.1 všude
+            '5': { rate_ltv70: 4.39, rate_ltv80: 4.39, rate_ltv90: 4.99 },
+            '7': { rate_ltv70: 4.69, rate_ltv80: 4.69, rate_ltv90: 5.09 },
+            '10': { rate_ltv70: 4.79, rate_ltv80: 4.79, rate_ltv90: 5.19 }
         }
     },
     {
@@ -36,12 +37,12 @@ const ALL_OFFERS = [
         description: "Nabídka s benevolentnějším posuzováním příjmů (obratové hypotéky).",
         highlights: ["Akceptace obratu", "OSVČ friendly", "Bez poplatků"],
         max_ltv: 90,
-        targetGroup: "Podnikatele a OSVČ", // Opraveno
+        targetGroup: "Podnikatele a OSVČ",
         rates: {
-            '3': { rate_ltv70: 4.39, rate_ltv80: 4.49, rate_ltv90: 4.89 },
-            '5': { rate_ltv70: 4.49, rate_ltv80: 4.59, rate_ltv90: 4.99 },
-            '7': { rate_ltv70: 4.79, rate_ltv80: 4.89, rate_ltv90: 5.19 },
-            '10': { rate_ltv70: 4.89, rate_ltv80: 4.99, rate_ltv90: 5.29 }
+            '3': { rate_ltv70: 4.49, rate_ltv80: 4.59, rate_ltv90: 4.99 }, // +0.1 všude
+            '5': { rate_ltv70: 4.59, rate_ltv80: 4.69, rate_ltv90: 5.09 },
+            '7': { rate_ltv70: 4.89, rate_ltv80: 4.99, rate_ltv90: 5.29 },
+            '10': { rate_ltv70: 4.99, rate_ltv80: 5.09, rate_ltv90: 5.39 }
         }
     },
     {
@@ -52,10 +53,10 @@ const ALL_OFFERS = [
         max_ltv: 90,
         targetGroup: "Nízké vlastní zdroje",
         rates: {
-            '3': { rate_ltv70: 4.54, rate_ltv80: 4.89, rate_ltv90: 5.04 },
-            '5': { rate_ltv70: 4.69, rate_ltv80: 4.84, rate_ltv90: 5.19 },
-            '7': { rate_ltv70: 4.79, rate_ltv80: 4.99, rate_ltv90: 5.39 },
-            '10': { rate_ltv70: 4.94, rate_ltv80: 5.19, rate_ltv90: 5.59 }
+            '3': { rate_ltv70: 4.64, rate_ltv80: 4.99, rate_ltv90: 5.14 }, // +0.1 všude
+            '5': { rate_ltv70: 4.79, rate_ltv80: 4.94, rate_ltv90: 5.29 },
+            '7': { rate_ltv70: 4.89, rate_ltv80: 5.09, rate_ltv90: 5.49 },
+            '10': { rate_ltv70: 5.04, rate_ltv80: 5.29, rate_ltv90: 5.69 }
         }
     }
 ];

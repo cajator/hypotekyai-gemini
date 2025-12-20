@@ -1301,7 +1301,6 @@ const renderResults = () => {
         const form = e.target;
         const btn = form.querySelector('button[type="submit"]');
 
-        // Uložení původního textu tlačítka
         let originalBtnText = 'Odeslat';
         if (btn) {
             originalBtnText = btn.textContent;
@@ -1311,90 +1310,66 @@ const renderResults = () => {
 
         try {
             const bodyParams = new URLSearchParams();
-            
-            // --- 1. ZÁKLADNÍ DATA DO E-MAILU (Netlify) ---
-            // Tyto údaje uvidíš přímo v textu e-mailu
+
+            // --- 1. ZÁKLADNÍ KONTAKTNÍ ÚDAJE ---
             bodyParams.append('form-name', form.getAttribute('name'));
             bodyParams.append('name', form.querySelector('input[name="name"]').value);
             bodyParams.append('phone', form.querySelector('input[name="phone"]').value);
             bodyParams.append('email', form.querySelector('input[name="email"]').value);
             bodyParams.append('psc', form.querySelector('input[name="psc"]').value);
-
-            // Získání hodnot z manuálních políček financí
-            const loanInput = form.querySelector('input[name="form_loan_amount"]');
-            const propertyInput = form.querySelector('input[name="form_property_value"]');
-            
-            // Pokud jsou vyplněna, přidáme je do e-mailu
-            if (loanInput && loanInput.value) bodyParams.append('form_loan_amount', loanInput.value);
-            if (propertyInput && propertyInput.value) bodyParams.append('form_property_value', propertyInput.value);
-
             bodyParams.append('contact-time', form.querySelector('select[name="contact-time"]').value);
             
             const noteInput = form.querySelector('textarea[name="note"]');
             if (noteInput) bodyParams.append('note', noteInput.value);
 
+            // --- 2. ZPRACOVÁNÍ FINANCÍ (Ruční vstup) ---
+            const loanInput = form.querySelector('input[name="form_loan_amount"]');
+            const propertyInput = form.querySelector('input[name="form_property_value"]');
 
-            // --- 2. CHYTRÁ DATA PRO EXPORT (JSON / CRM) ---
-            const extraData = { chatHistory: state.chatHistory };
+            // Pokud jsou vyplněna, pošleme je jako samostatná pole pro e-mail (Netlify)
+            if (loanInput && loanInput.value) bodyParams.append('form_loan_amount', loanInput.value);
+            if (propertyInput && propertyInput.value) bodyParams.append('form_property_value', propertyInput.value);
 
-            // Převedeme ruční vstupy na čísla (např. "5 000 000" -> 5000000)
-            const manualLoan = loanInput && loanInput.value ? parseNumber(loanInput.value) : null;
-            const manualProperty = propertyInput && propertyInput.value ? parseNumber(propertyInput.value) : null;
 
-            // Kdy posíláme data? 
-            // Buď když existuje kalkulace, NEBO když uživatel vyplnil finance ručně.
-            if ((state.calculation && state.calculation.offers && state.calculation.offers.length > 0) || manualLoan || manualProperty) {
-                
-                // Uložíme data o nabídkách (pokud existují)
-                const safeCalculationData = {
-                    offers: state.calculation?.offers || [],
-                    selectedOffer: state.calculation?.selectedOffer || null,
-                    approvability: state.calculation?.approvability || null,
-                    ...(state.calculation?.fixationDetails && { fixationDetails: state.calculation.fixationDetails })
+            // --- 3. PŘÍPRAVA DAT PRO JSON EXPORT (CRM) ---
+            // Začneme s výchozím stavem (aby tam nebylo N/A)
+            let dataToSend = { ...state.formData };
+
+            // Získáme číselné hodnoty z formuláře
+            const manualLoan = loanInput && loanInput.value ? parseNumber(loanInput.value) : 0;
+            const manualProperty = propertyInput && propertyInput.value ? parseNumber(propertyInput.value) : 0;
+
+            // !! ZDE JE TA OPRAVA !!
+            // Pokud uživatel zadal něco ručně, NATVRDO to přepíšeme v datech pro export.
+            // Tím pádem 5 000 000 přepíše cokoliv, co bylo v kalkulačce.
+            if (manualLoan > 0) {
+                dataToSend.loanAmount = manualLoan;
+            }
+            if (manualProperty > 0) {
+                dataToSend.propertyValue = manualProperty;
+            }
+
+            // Sestavení objektu extraData
+            const extraData = { 
+                formData: dataToSend, // Zde jsou nyní tvoje ruční čísla
+                chatHistory: state.chatHistory 
+            };
+
+            // Pokud existuje i výpočet kalkulačky (nabídky), přibalíme ho
+            if (state.calculation && state.calculation.offers && state.calculation.offers.length > 0) {
+                 extraData.calculation = {
+                    offers: state.calculation.offers,
+                    selectedOffer: state.calculation.selectedOffer,
+                    approvability: state.calculation.approvability,
+                    fixationDetails: state.calculation.fixationDetails
                 };
-                extraData.calculation = safeCalculationData;
-
-                // --- PŘÍPRAVA DAT O KLIENTOVI ---
-                // Vezmeme základ (defaults z kalkulačky)
-                let dataToSend = { ...state.formData };
-
-                // 1. PRIORITA: RUČNÍ VSTUPY
-                // Pokud uživatel napsal číslo ručně, MÁ PŘEDNOST před kalkulačkou
-                if (manualLoan) {
-                    dataToSend.loanAmount = manualLoan;
-                }
-                if (manualProperty) {
-                    dataToSend.propertyValue = manualProperty;
-                }
-
-                // 2. ČIŠTĚNÍ NESMYSLŮ (pokud uživatel nesahal na kalkulačku)
-                // Pokud uživatel neinteragoval s posuvníky, nechceme posílat defaultní hodnoty (Příjem 50k, Věk 35...)
-                // Chceme poslat jen to, co opravdu vyplnil (Loan, Property).
-                if (!state.calculatorInteracted && !state.calculation?.offers?.length) {
-                    delete dataToSend.income;       // Smazat default 50 000
-                    delete dataToSend.liabilities;  // Smazat default 0
-                    delete dataToSend.age;          // Smazat default 35
-                    delete dataToSend.children;     // Smazat default 0
-                    delete dataToSend.education;
-                    delete dataToSend.employment;
-                    delete dataToSend.fixation;
-                    delete dataToSend.purpose;
-                    delete dataToSend.propertyType;
-                    delete dataToSend.landValue;
-                    delete dataToSend.reconstructionValue;
-                }
-                // (Poznámka: loanAmount a propertyValue v dataToSend zůstanou, protože jsme je tam vložili v kroku 1)
-
-                extraData.formData = dataToSend;
             }
 
-            // Přidání JSON balíčku do odesílky
-            if (Object.keys(extraData).length > 0) {
-                bodyParams.append('extraData', JSON.stringify(extraData, null, 2)); 
-            }
+            // Přidání do odesílaných dat
+            bodyParams.append('extraData', JSON.stringify(extraData, null, 2));
 
 
-            // --- 3. ODESLÁNÍ ---
+            // --- 4. ODESLÁNÍ ---
             const response = await fetch('/.netlify/functions/form-handler', { 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -1403,7 +1378,6 @@ const renderResults = () => {
             
             if (response.ok) {
                 form.style.display = 'none';
-                
                 const successId = form.id === 'inline-lead-form' ? 'inline-form-success' : 'form-success';
                 const successMessage = document.getElementById(successId);
                 if (successMessage) {
@@ -1415,27 +1389,17 @@ const renderResults = () => {
                     setTimeout(() => scrollToTarget('#kontakt'), 100);
                 }
 
-                // Tracking
                 if (typeof gtag === 'function') {
-                    gtag('event', 'generate_lead', { 
-                        'event_category': 'form_submission', 
-                        'event_label': form.id 
-                    });
-
-                    gtag('event', 'conversion', { 
-                        'send_to': 'AW-778075298/XZ1yCK60yc4bEKL5gfMC', 
-                        'value': 1.0,
-                        'currency': 'CZK'
-                    });
+                    gtag('event', 'generate_lead', { 'event_category': 'form_submission', 'event_label': form.id });
+                    gtag('event', 'conversion', { 'send_to': 'AW-778075298/XZ1yCK60yc4bEKL5gfMC', 'value': 1.0, 'currency': 'CZK' });
                 }
-
             } else {
                  throw new Error(`Odeslání selhalo: ${response.status}`);
             }
 
         } catch (error) { 
             console.error('Chyba při odesílání formuláře:', error);
-            alert('Odeslání se nezdařilo. Zkuste to prosím znovu, nebo nás kontaktujte přímo.');
+            alert('Odeslání se nezdařilo. Zkuste to prosím znovu.');
             if (btn) {
                 btn.disabled = false;
                 btn.textContent = originalBtnText;

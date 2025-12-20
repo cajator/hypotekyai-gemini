@@ -1309,7 +1309,7 @@ const renderResults = () => {
         }
 
         try {
-            // --- DEBUG: Vypíšeme, co vidíme ve formuláři ---
+            // --- DEBUG: Kontrola, co vidíme ve formuláři ---
             const inputLoan = form.querySelector('input[name="form_loan_amount"]');
             const inputProperty = form.querySelector('input[name="form_property_value"]');
             
@@ -1319,7 +1319,7 @@ const renderResults = () => {
 
             const bodyParams = new URLSearchParams();
 
-            // 1. ZÁKLADNÍ DATA (Jméno, Email...)
+            // 1. ZÁKLADNÍ ÚDAJE (Textové, pro Netlify e-mail)
             bodyParams.append('form-name', form.getAttribute('name'));
             bodyParams.append('name', form.querySelector('input[name="name"]').value);
             bodyParams.append('phone', form.querySelector('input[name="phone"]').value);
@@ -1327,7 +1327,7 @@ const renderResults = () => {
             bodyParams.append('psc', form.querySelector('input[name="psc"]').value);
             bodyParams.append('contact-time', form.querySelector('select[name="contact-time"]').value);
 
-            // Získání textových hodnot
+            // Získání textových hodnot z manuálních políček
             const rawLoan = inputLoan ? inputLoan.value : '';
             const rawProperty = inputProperty ? inputProperty.value : '';
 
@@ -1339,18 +1339,23 @@ const renderResults = () => {
             if (noteInput) bodyParams.append('note', noteInput.value);
 
 
-            // 2. PŘÍPRAVA DAT PRO EXPORT (JSON)
+            // 2. PŘÍPRAVA DAT PRO EXPORT (JSON / CRM)
             
-            // A) Start: Začínáme s PRÁZDNÝM objektem (= vše bude N/A)
-            let exportFormData = {};
+            // A) Vezmeme kompletní strukturu klíčů z výchozího stavu
+            let exportFormData = { ...state.formData };
 
-            // B) Pokud uživatel použil kalkulačku (jsou tam nabídky), vezmeme její data jako základ
-            // (Zkopírujeme příjem, věk, děti atd.)
-            if (state.calculation && state.calculation.offers && state.calculation.offers.length > 0) {
-                console.log("Používám data z kalkulačky jako základ.");
-                exportFormData = { ...state.formData };
+            // B) Logika "Čistý štít":
+            // Pokud uživatel NEPOUŽIL kalkulačku (nemáme nabídky), musíme "vymazat" defaultní hodnoty (50k příjem),
+            // ale musíme ZACHOVAT KLÍČE, aby backend nespadl. Nastavíme je na null/0.
+            if (!state.calculation || !state.calculation.offers || state.calculation.offers.length === 0) {
+                console.log("Kalkulačka nepoužita -> Nuluji defaultní hodnoty, zachovávám strukturu.");
+                Object.keys(exportFormData).forEach(key => {
+                    exportFormData[key] = null; // Nastavíme na null, aby backend viděl klíč, ale hodnotu N/A
+                });
+                // Nastavíme zpět nějaké technické minimum, pokud je potřeba (např. doba splatnosti default 30)
+                exportFormData.loanTerm = 30; 
             } else {
-                console.log("Kalkulačka nepoužita = základ je prázdný (N/A).");
+                console.log("Používám data z kalkulačky.");
             }
 
             // C) ČIŠTĚNÍ A PŘEPSÁNÍ DAT Z RUČNÍCH POLÍČEK
@@ -1368,8 +1373,7 @@ const renderResults = () => {
             console.log("Čistá čísla k odeslání:", { cleanLoan, cleanProperty });
 
             // D) NATVRDO VLOŽÍME HODNOTY (OVERRIDE)
-            // Pokud je v políčku číslo > 0, vložíme ho tam. 
-            // Tím se buď doplní do prázdného objektu, nebo přepíše to z kalkulačky.
+            // Tím přepíšeme buď null (z kroku B), nebo hodnotu z kalkulačky.
             if (cleanLoan > 0) {
                 exportFormData.loanAmount = cleanLoan;
             }

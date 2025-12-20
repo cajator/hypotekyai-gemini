@@ -519,6 +519,19 @@
                                    class="modern-input">
                         </div>
                     </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="form_loan_amount" class="form-label">Požadovaná výše úvěru</label>
+                            <input type="text" id="form_loan_amount" name="form_loan_amount" 
+                                   placeholder="Např. 4 000 000" class="modern-input">
+                        </div>
+                        <div>
+                            <label for="form_property_value" class="form-label">Odhad ceny nemovitosti</label>
+                            <input type="text" id="form_property_value" name="form_property_value" 
+                                   placeholder="Např. 5 500 000" class="modern-input">
+                        </div>
+                    </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label for="email" class="form-label">E-mail *</label>
@@ -608,6 +621,8 @@
         <input name="name" />
         <input name="phone" />
         <input name="email" />
+        <input name="form_loan_amount" />
+        <input name="form_property_value" />
         <input name="psc" />
         <input name="contact-time" />
         <input name="note" />

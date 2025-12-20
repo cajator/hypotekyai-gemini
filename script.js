@@ -1309,36 +1309,25 @@ const renderResults = () => {
         }
 
         try {
-            // --- 1. PŘÍPRAVA A ČIŠTĚNÍ DAT Z FORMULÁŘE ---
-            const loanInput = form.querySelector('input[name="form_loan_amount"]');
-            const propertyInput = form.querySelector('input[name="form_property_value"]');
+            const bodyParams = new URLSearchParams();
 
-            // Pomocná funkce: Odstraní mezery (např. "5 000 000" -> 5000000)
-            const parseCleanNumber = (val) => {
+            // --- 1. ZÍSKÁNÍ A ČIŠTĚNÍ HODNOT Z FORMULÁŘE ---
+            // Funkce pro bezpečné převedení "5 000 000" -> 5000000
+            const parseUserNumber = (val) => {
                 if (!val) return 0;
-                // Nahradí všechny mezery a nedělitelné mezery prázdným znakem
-                const cleanString = val.toString().replace(/\s/g, '').replace(/\u00A0/g, '');
-                return parseFloat(cleanString) || 0;
+                // Odstraníme mezery a vše co není číslo
+                const clean = String(val).replace(/\s/g, '').replace(/[^0-9]/g, '');
+                return parseInt(clean, 10) || 0;
             };
 
-            const manualLoan = loanInput ? parseCleanNumber(loanInput.value) : 0;
-            const manualProperty = propertyInput ? parseCleanNumber(propertyInput.value) : 0;
+            const rawLoan = form.querySelector('input[name="form_loan_amount"]')?.value || '';
+            const rawProperty = form.querySelector('input[name="form_property_value"]')?.value || '';
 
-            // --- KLÍČOVÝ KROK: AKTUALIZACE STAVU APLIKACE ---
-            // Pokud uživatel zadal data ručně, tváříme se, jako by je zadal do kalkulačky.
-            // Tím zajistíme, že v exportu budou správná čísla, ne N/A.
-            if (manualLoan > 0) {
-                state.formData.loanAmount = manualLoan;
-                state.calculatorInteracted = true; // Tváříme se, že proběhla interakce
-            }
-            if (manualProperty > 0) {
-                state.formData.propertyValue = manualProperty;
-                state.calculatorInteracted = true;
-            }
+            const manualLoan = parseUserNumber(rawLoan);
+            const manualProperty = parseUserNumber(rawProperty);
 
 
-            // --- 2. DATA PRO E-MAIL (Netlify - klasický formulář) ---
-            const bodyParams = new URLSearchParams();
+            // --- 2. DATA PRO E-MAIL (Netlify - textová podoba) ---
             bodyParams.append('form-name', form.getAttribute('name'));
             bodyParams.append('name', form.querySelector('input[name="name"]').value);
             bodyParams.append('phone', form.querySelector('input[name="phone"]').value);
@@ -1346,46 +1335,37 @@ const renderResults = () => {
             bodyParams.append('psc', form.querySelector('input[name="psc"]').value);
             bodyParams.append('contact-time', form.querySelector('select[name="contact-time"]').value);
             
-            // Do e-mailu pošleme textovou hodnotu (i s mezerami, jak to uživatel napsal)
-            if (loanInput && loanInput.value) bodyParams.append('form_loan_amount', loanInput.value);
-            if (propertyInput && propertyInput.value) bodyParams.append('form_property_value', propertyInput.value);
+            // Do e-mailu pošleme to, co uživatel vidí (i s mezerami)
+            if (rawLoan) bodyParams.append('form_loan_amount', rawLoan);
+            if (rawProperty) bodyParams.append('form_property_value', rawProperty);
 
             const noteInput = form.querySelector('textarea[name="note"]');
             if (noteInput) bodyParams.append('note', noteInput.value);
 
 
             // --- 3. DATA PRO EXPORT (JSON / CRM) ---
-            const extraData = { chatHistory: state.chatHistory };
+            // ZDE JE JÁDRO OPRAVY:
+            
+            // A) Vezmeme základní data (state.formData má vždy nějaké hodnoty, např. defaultní příjem)
+            // Použijeme spread operator, abychom vytvořili kopii a neměnili originál
+            let finalFormData = { ...state.formData };
 
-            // Vezmeme aktuální stav (který jsme v kroku 1 aktualizovali o ruční vstupy)
-            let dataToSend = { ...state.formData };
-
-            // ČIŠTĚNÍ DEFAULTNÍCH HODNOT
-            // Pokud uživatel vyplnil jen formulář (neklikal na kalkulačku),
-            // nechceme posílat defaultní nesmysly jako "Příjem 50 000", pokud je sám nezadal.
-            if (!state.calculatorInteracted) {
-                // Pokud nebyla interakce, pošleme jen Loan a Property (pokud jsme je nastavili)
-                // Ostatní smažeme, aby nebyly zavádějící.
-                delete dataToSend.income;
-                delete dataToSend.liabilities;
-                delete dataToSend.age;
-                delete dataToSend.children;
-                delete dataToSend.education;
-                delete dataToSend.employment;
-                delete dataToSend.fixation;
-                delete dataToSend.purpose;
-                delete dataToSend.propertyType;
-                delete dataToSend.landValue;
-                delete dataToSend.reconstructionValue;
+            // B) Pokud uživatel zadal data ručně, PŘEPÍŠEME jimi ta defaultní/kalkulačková
+            // Tím simulujeme, "jako by je zadal přes kalkulačku"
+            if (manualLoan > 0) {
+                finalFormData.loanAmount = manualLoan;
+            }
+            if (manualProperty > 0) {
+                finalFormData.propertyValue = manualProperty;
             }
 
-            // Pokud jsme "vyčistili" všechno a zbyl prázdný objekt, ale máme manuální vstupy, musíme je tam vrátit
-            if (manualLoan > 0) dataToSend.loanAmount = manualLoan;
-            if (manualProperty > 0) dataToSend.propertyValue = manualProperty;
+            // C) Sestavíme extraData
+            const extraData = { 
+                formData: finalFormData, // Zde už jsou správná čísla (buď z posuvníků, nebo přepsaná z políček)
+                chatHistory: state.chatHistory 
+            };
 
-            extraData.formData = dataToSend;
-
-            // Pokud existuje i výpočet kalkulačky (nabídky), přibalíme ho
+            // D) Pokud máme i vypočtené nabídky, přibalíme je (pro kontext)
             if (state.calculation && state.calculation.offers && state.calculation.offers.length > 0) {
                  extraData.calculation = {
                     offers: state.calculation.offers,
@@ -1394,7 +1374,7 @@ const renderResults = () => {
                 };
             }
 
-            // Přidání do odesílaných dat
+            // E) Přidání do odesílaných dat
             bodyParams.append('extraData', JSON.stringify(extraData, null, 2));
 
 
@@ -1423,7 +1403,7 @@ const renderResults = () => {
 
         } catch (error) { 
             console.error('Chyba:', error);
-            alert('Odeslání se nezdařilo.');
+            alert('Odeslání se nezdařilo. Zkuste to prosím znovu.');
             if (btn) {
                 btn.disabled = false;
                 btn.textContent = originalBtnText;

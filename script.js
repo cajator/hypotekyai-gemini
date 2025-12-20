@@ -745,6 +745,11 @@ const renderResults = () => {
                         <div><label class="form-label text-sm">Jméno a příjmení *</label><input type="text" name="name" required pattern="^[A-Za-zÀ-ž\\s]{2,}(\\s[A-Za-zÀ-ž\\s]{2,})?$" class="modern-input text-sm"></div>
                         <div><label class="form-label text-sm">Telefon *</label><input type="tel" name="phone" required pattern="^(\\+420)? ?[1-9][0-9]{2} ?[0-9]{3} ?[0-9]{3}$" class="modern-input text-sm"></div>
                     </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div><label class="form-label text-sm">Výše úvěru</label><input type="text" name="form_loan_amount" placeholder="Např. 4 000 000" class="modern-input text-sm"></div>
+                        <div><label class="form-label text-sm">Cena nemovitosti</label><input type="text" name="form_property_value" placeholder="Např. 5 500 000" class="modern-input text-sm"></div>
+                    </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div><label class="form-label text-sm">E-mail *</label><input type="email" name="email" required class="modern-input text-sm"></div>
                         <div><label class="form-label text-sm">PSČ *</label><input type="text" name="psc" required pattern="^\\d{3} ?\\d{2}$" placeholder="např. 110 00" class="modern-input text-sm"></div>
@@ -1678,6 +1683,23 @@ const renderResults = () => {
                     toggleBtn.classList.remove('bg-gray-500', 'hover:bg-gray-600');
                     toggleBtn.classList.add('bg-green-600', 'hover:bg-green-700');
                 } else {
+                    // --- NOVÉ: Předvyplnění inline formuláře ---
+                    if (state.formData) {
+                        const inlineForm = document.getElementById('inline-lead-form');
+                        if (inlineForm) {
+                            const loanInput = inlineForm.querySelector('input[name="form_loan_amount"]');
+                            const propertyInput = inlineForm.querySelector('input[name="form_property_value"]');
+                            
+                            if (loanInput && !loanInput.value && state.formData.loanAmount) {
+                                loanInput.value = formatNumber(state.formData.loanAmount, false);
+                            }
+                            if (propertyInput && !propertyInput.value && state.formData.propertyValue) {
+                                propertyInput.value = formatNumber(state.formData.propertyValue, false);
+                            }
+                        }
+                    }
+                    // ------------------------------------------
+
                     formContainer.classList.remove('hidden');
                     toggleBtn.innerHTML = '❌ Zrušit';
                     toggleBtn.classList.remove('bg-green-600', 'hover:bg-green-700');

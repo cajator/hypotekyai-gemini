@@ -1311,11 +1311,8 @@ const renderResults = () => {
         try {
             const bodyParams = new URLSearchParams();
 
-            // 1. ZÍSKÁNÍ HODNOT Z FORMULÁŘE (TEXTOVÉ)
-            const rawLoan = form.querySelector('input[name="form_loan_amount"]')?.value || '';
-            const rawProperty = form.querySelector('input[name="form_property_value"]')?.value || '';
-            
-            // 2. DATA PRO E-MAIL (Netlify - posíláme přesně to, co uživatel napsal)
+            // 1. ZÁKLADNÍ TEXTOVÁ DATA Z FORMULÁŘE (Jméno, Email...)
+            // Toto jde do těla e-mailu od Netlify
             bodyParams.append('form-name', form.getAttribute('name'));
             bodyParams.append('name', form.querySelector('input[name="name"]').value);
             bodyParams.append('phone', form.querySelector('input[name="phone"]').value);
@@ -1323,44 +1320,50 @@ const renderResults = () => {
             bodyParams.append('psc', form.querySelector('input[name="psc"]').value);
             bodyParams.append('contact-time', form.querySelector('select[name="contact-time"]').value);
             
-            if (rawLoan) bodyParams.append('form_loan_amount', rawLoan);
-            if (rawProperty) bodyParams.append('form_property_value', rawProperty);
-
             const noteInput = form.querySelector('textarea[name="note"]');
             if (noteInput) bodyParams.append('note', noteInput.value);
 
+            // 2. NAČTENÍ HODNOT ÚVĚRU A NEMOVITOSTI Z FORMULÁŘE
+            const rawLoanInput = form.querySelector('input[name="form_loan_amount"]');
+            const rawPropertyInput = form.querySelector('input[name="form_property_value"]');
+            
+            // Pokud je něco vyplněno, přidáme to do e-mailu (jako text)
+            if (rawLoanInput && rawLoanInput.value) bodyParams.append('form_loan_amount', rawLoanInput.value);
+            if (rawPropertyInput && rawPropertyInput.value) bodyParams.append('form_property_value', rawPropertyInput.value);
 
-            // 3. DATA PRO EXPORT (JSON / CRM) - TADY BYL PROBLÉM
-            // Vezmeme výchozí data (aby tam byl aspoň příjem atd.)
-            let finalFormData = { ...state.formData };
 
-            // Pomocná funkce pro převod "5 000 000" -> 5000000
-            const cleanNumber = (str) => {
-                if (!str) return 0;
-                // Odstraní vše kromě čísel (hlavně mezery!)
-                const clean = String(str).replace(/\s/g, '').replace(/[^0-9]/g, '');
-                return parseInt(clean, 10) || 0;
+            // 3. PŘÍPRAVA DAT PRO EXPORT (JSON) - TOTO JE KLÍČOVÁ ČÁST
+            // Začneme kopií aktuálního stavu kalkulačky (aby tam byly defaulty jako příjem atd.)
+            let dataForExport = { ...state.formData };
+
+            // Pomocná funkce: převede "5 000 000" na 5000000 (číslo)
+            const parseMoneyInput = (input) => {
+                if (!input || !input.value) return 0;
+                // Odstraní mezery a vše co není číslo
+                const cleanString = input.value.toString().replace(/\s/g, '').replace(/[^0-9]/g, '');
+                return parseInt(cleanString, 10) || 0;
             };
 
-            const numLoan = cleanNumber(rawLoan);
-            const numProperty = cleanNumber(rawProperty);
+            const manualLoanAmount = parseMoneyInput(rawLoanInput);
+            const manualPropertyValue = parseMoneyInput(rawPropertyInput);
 
-            // NATVRDO PŘEPÍŠEME DATA Z KALKULAČKY TÍM, CO JE VE FORMULÁŘI
-            // I kdyby tam byla 0, tak ji tam dáme, pokud ji uživatel napsal.
-            if (rawLoan.trim() !== "") {
-                finalFormData.loanAmount = numLoan;
+            // !! TADY TO PŘEPISUJEME !!
+            // Pokud uživatel zadal číslo do formuláře, tváříme se, že je to hodnota kalkulačky.
+            // Tím zmizí "N/A", protože systém uvidí validní číslo v 'loanAmount'.
+            if (manualLoanAmount > 0) {
+                dataForExport.loanAmount = manualLoanAmount;
             }
-            if (rawProperty.trim() !== "") {
-                finalFormData.propertyValue = numProperty;
+            if (manualPropertyValue > 0) {
+                dataForExport.propertyValue = manualPropertyValue;
             }
 
-            // Sestavení balíčku extraData
+            // Sestavení finálního objektu
             const extraData = { 
-                formData: finalFormData,
+                formData: dataForExport, // Tady už jsou tvoje čísla (např. 5 000 000)
                 chatHistory: state.chatHistory 
             };
 
-            // Pokud existuje kalkulace, přibalíme ji taky
+            // Pokud existuje i výpočet (nabídky), přibalíme ho
             if (state.calculation && state.calculation.offers) {
                  extraData.calculation = {
                     offers: state.calculation.offers,
@@ -1369,8 +1372,9 @@ const renderResults = () => {
                 };
             }
 
-            // Přidání do odesílaných dat
+            // Přidání JSON balíčku do odesílky
             bodyParams.append('extraData', JSON.stringify(extraData, null, 2));
+
 
             // 4. ODESLÁNÍ
             const response = await fetch('/.netlify/functions/form-handler', { 

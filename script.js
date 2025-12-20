@@ -1301,6 +1301,7 @@ const renderResults = () => {
         const form = e.target;
         const btn = form.querySelector('button[type="submit"]');
 
+        // Uložení původního textu tlačítka pro případ chyby
         let originalBtnText = 'Odeslat';
         if (btn) {
             originalBtnText = btn.textContent;
@@ -1310,51 +1311,57 @@ const renderResults = () => {
 
         try {
             const bodyParams = new URLSearchParams();
+            
+            // 1. ZÁKLADNÍ ÚDAJE DO E-MAILU (NETLIFY)
             bodyParams.append('form-name', form.getAttribute('name'));
             bodyParams.append('name', form.querySelector('input[name="name"]').value);
             bodyParams.append('phone', form.querySelector('input[name="phone"]').value);
             bodyParams.append('email', form.querySelector('input[name="email"]').value);
             bodyParams.append('psc', form.querySelector('input[name="psc"]').value);
 
+            // --- NOVÉ: Přidání financí do e-mailu, pokud jsou vyplněny ---
             const loanInput = form.querySelector('input[name="form_loan_amount"]');
             const propertyInput = form.querySelector('input[name="form_property_value"]');
             
             if (loanInput && loanInput.value) bodyParams.append('form_loan_amount', loanInput.value);
             if (propertyInput && propertyInput.value) bodyParams.append('form_property_value', propertyInput.value);
+            // -------------------------------------------------------------
 
             bodyParams.append('contact-time', form.querySelector('select[name="contact-time"]').value);
             
             const noteInput = form.querySelector('textarea[name="note"]');
             if (noteInput) bodyParams.append('note', noteInput.value);
 
+            // 2. DATA PRO EXPORT (JSON / CRM)
             const extraData = { chatHistory: state.chatHistory };
 
-            if (state.calculation && state.calculation.offers && state.calculation.offers.length > 0) {
+            // Pokud existuje kalkulace NEBO uživatel zadal čísla ručně
+            if ((state.calculation && state.calculation.offers && state.calculation.offers.length > 0) || (loanInput && loanInput.value)) {
                 
+                // Bezpečné uložení výsledků kalkulace
                 const safeCalculationData = {
-                    offers: state.calculation.offers,
-                    selectedOffer: state.calculation.selectedOffer,
-                    approvability: state.calculation.approvability,
-                    ...(state.calculation.fixationDetails && { fixationDetails: state.calculation.fixationDetails })
+                    offers: state.calculation?.offers || [],
+                    selectedOffer: state.calculation?.selectedOffer || null,
+                    approvability: state.calculation?.approvability || null,
+                    ...(state.calculation?.fixationDetails && { fixationDetails: state.calculation.fixationDetails })
                 };
                 extraData.calculation = safeCalculationData;
 
-                // 1. Vytvoříme kopii dat
+                // Vytvoříme kopii dat z formuláře (posuvníků)
                 const dataToSend = { ...state.formData };
 
-                // --- FIX: Propsání ručně zadaných hodnot do dat pro export ---
-                // Pokud uživatel vyplnil pole ručně, přepíšeme tím data z kalkulačky
+                // --- DŮLEŽITÉ: Přepsání dat z posuvníků ručně zadanými hodnotami ---
                 if (loanInput && loanInput.value) {
                     dataToSend.loanAmount = parseNumber(loanInput.value);
                 }
                 if (propertyInput && propertyInput.value) {
                     dataToSend.propertyValue = parseNumber(propertyInput.value);
                 }
-                // -------------------------------------------------------------
+                // -------------------------------------------------------------------
 
-                // 2. Logika pro EXPRESNÍ REŽIM
+                // Logika pro EXPRESNÍ REŽIM (Původní logika čištění dat)
                 if (state.mode === 'express') {
-                    // A) Smažeme vše, co v expresním režimu vůbec není vidět (bezpodmínečně)
+                    // Smažeme vše, co v expresním režimu uživatel neviděl/nevyplňoval
                     delete dataToSend.age;
                     delete dataToSend.children;
                     delete dataToSend.liabilities;
@@ -1366,22 +1373,22 @@ const renderResults = () => {
                     delete dataToSend.landValue;
                     delete dataToSend.reconstructionValue;
 
-                    // B) Kontrola PŘÍJMU (který je vidět, ale může být defaultní)
-                    // Pokud uživatel nepohnul s posuvníkem a nechal tam 50 000, smažeme to.
-                    // Pokud nastavil cokoliv jiného, odešleme to.
-                    if (dataToSend.income === 50000) {
-                        delete dataToSend.income;
+                    // Pokud uživatel nehnul s příjmem (je tam default), taky ho neposíláme, pokud není relevantní
+                    if (dataToSend.income === 50000 && !state.calculatorInteracted) {
+                         // Volitelné: zde můžeme nechat, nebo smazat. Necháme pro jistotu.
                     }
                 } 
-                // V režimu 'guided' (Detailní) nic nemažeme, tam uživatel vyplňuje vše vědomě.
+                // V režimu 'guided' nic nemažeme, tam je vše relevantní.
 
                 extraData.formData = dataToSend;
             }
 
+            // Přidání JSON dat do odesílky
             if (Object.keys(extraData).length > 0) {
                 bodyParams.append('extraData', JSON.stringify(extraData, null, 2)); 
             }
 
+            // 3. ODESLÁNÍ NA NETLIFY
             const response = await fetch('/.netlify/functions/form-handler', { 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -1389,6 +1396,7 @@ const renderResults = () => {
             });
             
             if (response.ok) {
+                // UI Změny po úspěchu
                 form.style.display = 'none';
                 
                 const successId = form.id === 'inline-lead-form' ? 'inline-form-success' : 'form-success';
@@ -1402,6 +1410,7 @@ const renderResults = () => {
                     setTimeout(() => scrollToTarget('#kontakt'), 100);
                 }
 
+                // Google Analytics (Původní tracking)
                 if (typeof gtag === 'function') {
                     gtag('event', 'generate_lead', { 
                         'event_category': 'form_submission', 

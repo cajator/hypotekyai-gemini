@@ -1226,6 +1226,22 @@ const renderResults = () => {
         }
         else if (action === 'show-lead-form') {
             if (isMobile()) toggleMobileSidebar();
+            
+            // --- NOVÉ: Předvyplnění formuláře daty z kalkulačky ---
+            if (state.formData) {
+                const loanInput = document.getElementById('form_loan_amount');
+                const propertyInput = document.getElementById('form_property_value');
+                
+                // Předvyplníme jen pokud máme data a pole jsou prázdná
+                if (loanInput && !loanInput.value && state.formData.loanAmount) {
+                    loanInput.value = formatNumber(state.formData.loanAmount, false);
+                }
+                if (propertyInput && !propertyInput.value && state.formData.propertyValue) {
+                    propertyInput.value = formatNumber(state.formData.propertyValue, false);
+                }
+            }
+            // ------------------------------------------------------
+
             DOMElements.leadFormContainer.classList.remove('hidden');
             scrollToTarget('#kontakt');
         }
@@ -1294,6 +1310,13 @@ const renderResults = () => {
             bodyParams.append('phone', form.querySelector('input[name="phone"]').value);
             bodyParams.append('email', form.querySelector('input[name="email"]').value);
             bodyParams.append('psc', form.querySelector('input[name="psc"]').value);
+
+            const loanInput = form.querySelector('input[name="form_loan_amount"]');
+            const propertyInput = form.querySelector('input[name="form_property_value"]');
+            
+            if (loanInput && loanInput.value) bodyParams.append('form_loan_amount', loanInput.value);
+            if (propertyInput && propertyInput.value) bodyParams.append('form_property_value', propertyInput.value);
+
             bodyParams.append('contact-time', form.querySelector('select[name="contact-time"]').value);
             
             const noteInput = form.querySelector('textarea[name="note"]');

@@ -1309,10 +1309,17 @@ const renderResults = () => {
         }
 
         try {
+            // --- DEBUG: Vypíšeme, co vidíme ve formuláři ---
+            const inputLoan = form.querySelector('input[name="form_loan_amount"]');
+            const inputProperty = form.querySelector('input[name="form_property_value"]');
+            
+            console.log("--- DEBUG START ---");
+            console.log("Input Úvěr (raw):", inputLoan ? inputLoan.value : "NENALEZEN");
+            console.log("Input Nemovitost (raw):", inputProperty ? inputProperty.value : "NENALEZEN");
+
             const bodyParams = new URLSearchParams();
 
-            // --- 1. ZÁKLADNÍ ÚDAJE (Jméno, Email...) ---
-            // Tyto se posílají vždy
+            // 1. ZÁKLADNÍ DATA (Jméno, Email...)
             bodyParams.append('form-name', form.getAttribute('name'));
             bodyParams.append('name', form.querySelector('input[name="name"]').value);
             bodyParams.append('phone', form.querySelector('input[name="phone"]').value);
@@ -1320,15 +1327,11 @@ const renderResults = () => {
             bodyParams.append('psc', form.querySelector('input[name="psc"]').value);
             bodyParams.append('contact-time', form.querySelector('select[name="contact-time"]').value);
 
-            // --- 2. ZPRACOVÁNÍ FINANCÍ (Ruční zadání) ---
-            const inputLoan = form.querySelector('input[name="form_loan_amount"]');
-            const inputProperty = form.querySelector('input[name="form_property_value"]');
-
-            // Získání textu z políček (např. "5 000 000")
+            // Získání textových hodnot
             const rawLoan = inputLoan ? inputLoan.value : '';
             const rawProperty = inputProperty ? inputProperty.value : '';
 
-            // Přidání do e-mailu jako text (aby to bylo čitelné v mailu)
+            // Přidání do e-mailu (pokud nejsou prázdné)
             if (rawLoan) bodyParams.append('form_loan_amount', rawLoan);
             if (rawProperty) bodyParams.append('form_property_value', rawProperty);
 
@@ -1336,22 +1339,24 @@ const renderResults = () => {
             if (noteInput) bodyParams.append('note', noteInput.value);
 
 
-            // --- 3. PŘÍPRAVA DAT PRO EXPORT (JSON) ---
+            // 2. PŘÍPRAVA DAT PRO EXPORT (JSON)
             
-            // A) Start: Začínáme s prázdným objektem. 
-            // Pokud nic nevyplnil a nepoužil kalkulačku, vše bude N/A.
+            // A) Start: Začínáme s PRÁZDNÝM objektem (= vše bude N/A)
             let exportFormData = {};
 
-            // B) Pokud použil kalkulačku (máme výsledky), vezmeme je jako základ.
+            // B) Pokud uživatel použil kalkulačku (jsou tam nabídky), vezmeme její data jako základ
+            // (Zkopírujeme příjem, věk, děti atd.)
             if (state.calculation && state.calculation.offers && state.calculation.offers.length > 0) {
+                console.log("Používám data z kalkulačky jako základ.");
                 exportFormData = { ...state.formData };
+            } else {
+                console.log("Kalkulačka nepoužita = základ je prázdný (N/A).");
             }
 
             // C) ČIŠTĚNÍ A PŘEPSÁNÍ DAT Z RUČNÍCH POLÍČEK
-            // Funkce, která z "5 000 000 Kč" udělá číslo 5000000
+            // Funkce vyhodí vše co není číslo (např. mezery v "5 000 000")
             const parseCleanNumber = (val) => {
                 if (!val) return 0;
-                // \D znamená "vše co není číslice". Nahradíme to prázdnem.
                 const cleanString = String(val).replace(/\D/g, ''); 
                 const num = parseInt(cleanString, 10);
                 return isNaN(num) ? 0 : num;
@@ -1360,15 +1365,19 @@ const renderResults = () => {
             const cleanLoan = parseCleanNumber(rawLoan);
             const cleanProperty = parseCleanNumber(rawProperty);
 
-            // D) NATVRDO VLOŽÍME HODNOTY
-            // Pokud v políčku něco bylo (číslo > 0), vložíme to do exportu.
-            // Tím to tam BUDE, i když kalkulačka nebyla použita.
+            console.log("Čistá čísla k odeslání:", { cleanLoan, cleanProperty });
+
+            // D) NATVRDO VLOŽÍME HODNOTY (OVERRIDE)
+            // Pokud je v políčku číslo > 0, vložíme ho tam. 
+            // Tím se buď doplní do prázdného objektu, nebo přepíše to z kalkulačky.
             if (cleanLoan > 0) {
                 exportFormData.loanAmount = cleanLoan;
             }
             if (cleanProperty > 0) {
                 exportFormData.propertyValue = cleanProperty;
             }
+
+            console.log("Finální objekt pro export:", exportFormData);
 
             // E) Zabalení do extraData
             const extraData = { 
@@ -1389,7 +1398,7 @@ const renderResults = () => {
             bodyParams.append('extraData', JSON.stringify(extraData, null, 2));
 
 
-            // --- 4. ODESLÁNÍ ---
+            // 3. ODESLÁNÍ
             const response = await fetch('/.netlify/functions/form-handler', { 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -1397,6 +1406,7 @@ const renderResults = () => {
             });
             
             if (response.ok) {
+                console.log("Odesláno úspěšně!");
                 form.style.display = 'none';
                 const successId = form.id === 'inline-lead-form' ? 'inline-form-success' : 'form-success';
                 const msg = document.getElementById(successId);
@@ -1413,7 +1423,7 @@ const renderResults = () => {
             }
 
         } catch (error) { 
-            console.error('Chyba:', error);
+            console.error('Chyba odeslání:', error);
             alert('Odeslání se nezdařilo.');
             if (btn) {
                 btn.disabled = false;

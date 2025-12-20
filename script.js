@@ -1342,6 +1342,16 @@ const renderResults = () => {
                 // 1. Vytvoříme kopii dat
                 const dataToSend = { ...state.formData };
 
+                // --- FIX: Propsání ručně zadaných hodnot do dat pro export ---
+                // Pokud uživatel vyplnil pole ručně, přepíšeme tím data z kalkulačky
+                if (loanInput && loanInput.value) {
+                    dataToSend.loanAmount = parseNumber(loanInput.value);
+                }
+                if (propertyInput && propertyInput.value) {
+                    dataToSend.propertyValue = parseNumber(propertyInput.value);
+                }
+                // -------------------------------------------------------------
+
                 // 2. Logika pro EXPRESNÍ REŽIM
                 if (state.mode === 'express') {
                     // A) Smažeme vše, co v expresním režimu vůbec není vidět (bezpodmínečně)

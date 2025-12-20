@@ -745,11 +745,6 @@ const renderResults = () => {
                         <div><label class="form-label text-sm">Jméno a příjmení *</label><input type="text" name="name" required pattern="^[A-Za-zÀ-ž\\s]{2,}(\\s[A-Za-zÀ-ž\\s]{2,})?$" class="modern-input text-sm"></div>
                         <div><label class="form-label text-sm">Telefon *</label><input type="tel" name="phone" required pattern="^(\\+420)? ?[1-9][0-9]{2} ?[0-9]{3} ?[0-9]{3}$" class="modern-input text-sm"></div>
                     </div>
-                    
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div><label class="form-label text-sm">Výše úvěru</label><input type="text" name="form_loan_amount" placeholder="Např. 4 000 000" class="modern-input text-sm"></div>
-                        <div><label class="form-label text-sm">Cena nemovitosti</label><input type="text" name="form_property_value" placeholder="Např. 5 500 000" class="modern-input text-sm"></div>
-                    </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div><label class="form-label text-sm">E-mail *</label><input type="email" name="email" required class="modern-input text-sm"></div>
                         <div><label class="form-label text-sm">PSČ *</label><input type="text" name="psc" required pattern="^\\d{3} ?\\d{2}$" placeholder="např. 110 00" class="modern-input text-sm"></div>
@@ -1231,22 +1226,6 @@ const renderResults = () => {
         }
         else if (action === 'show-lead-form') {
             if (isMobile()) toggleMobileSidebar();
-            
-            // --- NOVÉ: Předvyplnění formuláře daty z kalkulačky ---
-            if (state.formData) {
-                const loanInput = document.getElementById('form_loan_amount');
-                const propertyInput = document.getElementById('form_property_value');
-                
-                // Předvyplníme jen pokud máme data a pole jsou prázdná
-                if (loanInput && !loanInput.value && state.formData.loanAmount) {
-                    loanInput.value = formatNumber(state.formData.loanAmount, false);
-                }
-                if (propertyInput && !propertyInput.value && state.formData.propertyValue) {
-                    propertyInput.value = formatNumber(state.formData.propertyValue, false);
-                }
-            }
-            // ------------------------------------------------------
-
             DOMElements.leadFormContainer.classList.remove('hidden');
             scrollToTarget('#kontakt');
         }
@@ -1309,95 +1288,62 @@ const renderResults = () => {
         }
 
         try {
-            // DEBUG: Výpis pro kontrolu
-            const inputLoan = form.querySelector('input[name="form_loan_amount"]');
-            const inputProperty = form.querySelector('input[name="form_property_value"]');
-            
-            console.log("--- DEBUG START ---");
-            console.log("Input Úvěr (raw):", inputLoan ? inputLoan.value : "NENALEZEN");
-            console.log("Input Nemovitost (raw):", inputProperty ? inputProperty.value : "NENALEZEN");
-
             const bodyParams = new URLSearchParams();
-
-            // 1. ZÁKLADNÍ ÚDAJE (Textové)
             bodyParams.append('form-name', form.getAttribute('name'));
             bodyParams.append('name', form.querySelector('input[name="name"]').value);
             bodyParams.append('phone', form.querySelector('input[name="phone"]').value);
             bodyParams.append('email', form.querySelector('input[name="email"]').value);
             bodyParams.append('psc', form.querySelector('input[name="psc"]').value);
             bodyParams.append('contact-time', form.querySelector('select[name="contact-time"]').value);
-
-            // Získání a odeslání textových hodnot (pro e-mail)
-            const rawLoan = inputLoan ? inputLoan.value : '';
-            const rawProperty = inputProperty ? inputProperty.value : '';
-
-            if (rawLoan) bodyParams.append('form_loan_amount', rawLoan);
-            if (rawProperty) bodyParams.append('form_property_value', rawProperty);
-
+            
             const noteInput = form.querySelector('textarea[name="note"]');
             if (noteInput) bodyParams.append('note', noteInput.value);
 
+            const extraData = { chatHistory: state.chatHistory };
 
-            // 2. DATA PRO EXPORT (JSON)
-            
-            // A) Vezmeme kompletní strukturu
-            let exportFormData = { ...state.formData };
-
-            // B) Pokud uživatel NEPOUŽIL kalkulačku -> VYNULUJEME VŠE
-            if (!state.calculation || !state.calculation.offers || state.calculation.offers.length === 0) {
-                console.log("Kalkulačka nepoužita -> Nuluji VŠECHNY hodnoty na N/A.");
-                Object.keys(exportFormData).forEach(key => {
-                    exportFormData[key] = null; 
-                });
-                // ZDE BYLA CHYBA: Odstranil jsem řádek "exportFormData.loanTerm = 30;"
-                // Teď zůstane loanTerm = null (tedy N/A).
-            } else {
-                console.log("Používám data z kalkulačky.");
-            }
-
-            // C) ZPRACOVÁNÍ RUČNÍCH VSTUPŮ
-            const parseCleanNumber = (val) => {
-                if (!val) return 0;
-                const cleanString = String(val).replace(/\D/g, ''); 
-                const num = parseInt(cleanString, 10);
-                return isNaN(num) ? 0 : num;
-            };
-
-            const cleanLoan = parseCleanNumber(rawLoan);
-            const cleanProperty = parseCleanNumber(rawProperty);
-
-            console.log("Čistá čísla k odeslání:", { cleanLoan, cleanProperty });
-
-            // D) PŘEPIS JEN TĚCHTO DVOU HODNOT
-            // V exportFormData je teď všechno null (pokud nebyla kalkulačka).
-            // Tímto tam vrátíme jen ty dvě čísla, co uživatel zadal.
-            if (cleanLoan > 0) {
-                exportFormData.loanAmount = cleanLoan;
-            }
-            if (cleanProperty > 0) {
-                exportFormData.propertyValue = cleanProperty;
-            }
-
-            console.log("Finální objekt pro export:", exportFormData);
-
-            // E) Zabalení do extraData
-            const extraData = { 
-                formData: exportFormData, 
-                chatHistory: state.chatHistory 
-            };
-
-            if (state.calculation && state.calculation.offers) {
-                 extraData.calculation = {
+            if (state.calculation && state.calculation.offers && state.calculation.offers.length > 0) {
+                
+                const safeCalculationData = {
                     offers: state.calculation.offers,
                     selectedOffer: state.calculation.selectedOffer,
-                    approvability: state.calculation.approvability
+                    approvability: state.calculation.approvability,
+                    ...(state.calculation.fixationDetails && { fixationDetails: state.calculation.fixationDetails })
                 };
+                extraData.calculation = safeCalculationData;
+
+                // 1. Vytvoříme kopii dat
+                const dataToSend = { ...state.formData };
+
+                // 2. Logika pro EXPRESNÍ REŽIM
+                if (state.mode === 'express') {
+                    // A) Smažeme vše, co v expresním režimu vůbec není vidět (bezpodmínečně)
+                    delete dataToSend.age;
+                    delete dataToSend.children;
+                    delete dataToSend.liabilities;
+                    delete dataToSend.education;
+                    delete dataToSend.employment;
+                    delete dataToSend.fixation;
+                    delete dataToSend.purpose;
+                    delete dataToSend.propertyType;
+                    delete dataToSend.landValue;
+                    delete dataToSend.reconstructionValue;
+
+                    // B) Kontrola PŘÍJMU (který je vidět, ale může být defaultní)
+                    // Pokud uživatel nepohnul s posuvníkem a nechal tam 50 000, smažeme to.
+                    // Pokud nastavil cokoliv jiného, odešleme to.
+                    if (dataToSend.income === 50000) {
+                        delete dataToSend.income;
+                    }
+                } 
+                // V režimu 'guided' (Detailní) nic nemažeme, tam uživatel vyplňuje vše vědomě.
+
+                extraData.formData = dataToSend;
             }
 
-            bodyParams.append('extraData', JSON.stringify(extraData, null, 2));
+            if (Object.keys(extraData).length > 0) {
+                bodyParams.append('extraData', JSON.stringify(extraData, null, 2)); 
+            }
 
-
-            // 3. ODESLÁNÍ
             const response = await fetch('/.netlify/functions/form-handler', { 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -1405,25 +1351,39 @@ const renderResults = () => {
             });
             
             if (response.ok) {
-                console.log("Odesláno úspěšně!");
                 form.style.display = 'none';
-                const successId = form.id === 'inline-lead-form' ? 'inline-form-success' : 'form-success';
-                const msg = document.getElementById(successId);
-                if (msg) msg.classList.remove('hidden');
                 
-                if (form.id !== 'inline-lead-form') setTimeout(() => scrollToTarget('#kontakt'), 100);
+                const successId = form.id === 'inline-lead-form' ? 'inline-form-success' : 'form-success';
+                const successMessage = document.getElementById(successId);
+                if (successMessage) {
+                     successMessage.style.display = 'block';
+                     successMessage.classList.remove('hidden');
+                }
+                
+                if (form.id !== 'inline-lead-form') {
+                    setTimeout(() => scrollToTarget('#kontakt'), 100);
+                }
 
                 if (typeof gtag === 'function') {
-                    gtag('event', 'generate_lead', { 'event_category': 'form_submission', 'event_label': form.id });
-                    gtag('event', 'conversion', { 'send_to': 'AW-778075298/XZ1yCK60yc4bEKL5gfMC', 'value': 1.0, 'currency': 'CZK' });
+                    gtag('event', 'generate_lead', { 
+                        'event_category': 'form_submission', 
+                        'event_label': form.id 
+                    });
+
+                    gtag('event', 'conversion', { 
+                        'send_to': 'AW-778075298/XZ1yCK60yc4bEKL5gfMC', 
+                        'value': 1.0,
+                        'currency': 'CZK'
+                    });
                 }
+
             } else {
-                 throw new Error(`Status: ${response.status}`);
+                 throw new Error(`Odeslání selhalo: ${response.status}`);
             }
 
         } catch (error) { 
-            console.error('Chyba odeslání:', error);
-            alert('Odeslání se nezdařilo.');
+            console.error('Chyba při odesílání formuláře:', error);
+            alert('Odeslání se nezdařilo. Zkuste to prosím znovu, nebo nás kontaktujte přímo.');
             if (btn) {
                 btn.disabled = false;
                 btn.textContent = originalBtnText;
@@ -1695,23 +1655,6 @@ const renderResults = () => {
                     toggleBtn.classList.remove('bg-gray-500', 'hover:bg-gray-600');
                     toggleBtn.classList.add('bg-green-600', 'hover:bg-green-700');
                 } else {
-                    // --- NOVÉ: Předvyplnění inline formuláře ---
-                    if (state.formData) {
-                        const inlineForm = document.getElementById('inline-lead-form');
-                        if (inlineForm) {
-                            const loanInput = inlineForm.querySelector('input[name="form_loan_amount"]');
-                            const propertyInput = inlineForm.querySelector('input[name="form_property_value"]');
-                            
-                            if (loanInput && !loanInput.value && state.formData.loanAmount) {
-                                loanInput.value = formatNumber(state.formData.loanAmount, false);
-                            }
-                            if (propertyInput && !propertyInput.value && state.formData.propertyValue) {
-                                propertyInput.value = formatNumber(state.formData.propertyValue, false);
-                            }
-                        }
-                    }
-                    // ------------------------------------------
-
                     formContainer.classList.remove('hidden');
                     toggleBtn.innerHTML = '❌ Zrušit';
                     toggleBtn.classList.remove('bg-green-600', 'hover:bg-green-700');

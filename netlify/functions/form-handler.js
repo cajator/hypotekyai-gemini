@@ -212,16 +212,30 @@ exports.handler = async (event) => {
                 formDataSummaryText = `Manuální poptávka - Úvěr: ${sumLoan}, Nemovitost: ${sumProp}`;
             } else {
                 // Varianta pro KALKULAČKU (používáme data ze state)
-                // Pokud je hodnota null/undefined, vypíšeme '?', jinak formátujeme
                 const txtUcel = form.purpose || 'Standardní'; 
                 const txtTyp = form.propertyType || 'Standardní';
                 const txtPrijem = form.income !== undefined && form.income !== null ? formatNumber(form.income) : '?';
-                const txtZam = form.employment || '';
-                const txtVek = form.age || '?';
-                const txtDeti = form.children !== undefined && form.children !== null ? form.children : '?';
-                const txtZavazky = form.liabilities !== undefined && form.liabilities !== null ? formatNumber(form.liabilities) : '0 Kč';
+                
+                // Úprava: Pokud je zaměstnanec (default) nebo prázdné, schováme to. Jinak dáme do závorky.
+                const rawZam = form.employment || '';
+                const txtZamDisplay = (rawZam === 'zaměstnanec' || rawZam === '') ? '' : `(${rawZam})`;
 
-                formDataSummaryText = `Účel: ${txtUcel}, Typ: ${txtTyp}, Příjem: ${txtPrijem} (${txtZam}), Věk: ${txtVek} let, Děti: ${txtDeti}, Závazky: ${txtZavazky}`;
+                const txtVek = form.age || '?';
+                
+                // Úprava: Pokud je 0, vypíšeme "neuvedeno"
+                let txtDeti = (form.children === 0 || form.children === '0') ? 'neuvedeno' : form.children;
+                if (txtDeti === null || txtDeti === undefined) txtDeti = '?';
+
+                // Úprava: Pokud je 0, vypíšeme "neuvedeno"
+                let txtZavazky;
+                if (form.liabilities === 0 || form.liabilities === '0' || form.liabilities === null || form.liabilities === undefined) {
+                    txtZavazky = 'neuvedeno';
+                } else {
+                    txtZavazky = formatNumber(form.liabilities);
+                }
+
+                // Sestavení textu (pozor, odstranil jsem závorky kolem txtZamDisplay, protože jsou už v proměnné)
+                formDataSummaryText = `Účel: ${txtUcel}, Typ: ${txtTyp}, Příjem: ${txtPrijem} ${txtZamDisplay}, Věk: ${txtVek} let, Děti: ${txtDeti}, Závazky: ${txtZavazky}`;
             }
 
             // Souhrn VÝSLEDKŮ kalkulace
@@ -242,7 +256,7 @@ exports.handler = async (event) => {
                 calculationSummaryText = '';
             }
         }
-        
+
         console.log(">>> KONTROLA PŘEDÁNÍ: Proměnná 'psc' má hodnotu:", psc);
         // Sestavení finálních dat pro zápis
         const sheetData = {

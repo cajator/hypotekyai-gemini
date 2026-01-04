@@ -182,6 +182,9 @@ exports.handler = async (event) => {
         if (extraData.formData) {
             const form = extraData.formData;
             formDataForJson = form;
+            
+            // Základní mapování hodnot (pokud existují)
+            loanAmountValue = form.loanAmount || null; // Tady se zapíše Úvěr do tabulky
             fixationValue = form.fixation || null;
             loanTermValue = form.loanTerm || null;
             purposeValue = form.purpose || '';
@@ -191,19 +194,46 @@ exports.handler = async (event) => {
             liabilitiesValue = form.liabilities || null;
             ageValue = form.age || null;
             childrenValue = form.children === undefined ? null : form.children;
-            formDataSummaryText = `Účel: ${form.purpose || '?'}, Typ: ${form.propertyType || '?'}, Příjem: ${formatNumber(form.income || 0)} (${form.employment || '?'}), Věk: ${form.age || '?'} let, Děti: ${form.children === undefined ? '?' : form.children}, Závazky: ${formatNumber(form.liabilities || 0)}`;
 
+            // Výpočet hodnoty nemovitosti (ošetření pro manuální zadání bez účelu)
+            if (form.propertyValue || form.landValue) {
+                if (form.purpose === 'výstavba') {
+                    effectivePropValue = (form.propertyValue || 0) + (form.landValue || 0);
+                } else {
+                    effectivePropValue = form.propertyValue || 0;
+                }
+            }
+
+            // --- OPRAVA SOUHRNU PARAMETRŮ ---
+            // Pokud je to manuální zadání (poznáme podle flagu NEBO podle chybějících dat),
+            // vygenerujeme hezký souhrn bez otazníků.
+            if (form.isManualEntry) {
+                const sumLoan = form.loanAmount ? formatNumber(form.loanAmount) : 'Nezadáno';
+                const sumProp = form.propertyValue ? formatNumber(form.propertyValue) : 'Nezadáno';
+                formDataSummaryText = `Manuální poptávka - Úvěr: ${sumLoan}, Nemovitost: ${sumProp}`;
+            } else {
+                // Standardní souhrn pro kalkulačku
+                formDataSummaryText = `Účel: ${form.purpose || '?'}, Typ: ${form.propertyType || '?'}, Příjem: ${formatNumber(form.income || 0)} (${form.employment || '?'}), Věk: ${form.age || '?'} let, Děti: ${form.children === undefined ? '?' : form.children}, Závazky: ${formatNumber(form.liabilities || 0)}`;
+            }
+
+            // Zpracování kalkulace (nabídky)
             if (extraData.calculation && extraData.calculation.selectedOffer) {
                 const calc = extraData.calculation;
                 const offer = calc.selectedOffer;
-                loanAmountValue = form.loanAmount || 0;
-                effectivePropValue = form.purpose === 'výstavba' ? (form.propertyValue || 0) + (form.landValue || 0) : (form.propertyValue || 0);
-                monthlyPaymentValue = offer.monthlyPayment || 0;
-                rateValue = offer.rate || 0;
+                
+                // Přepíšeme hodnoty, pokud jsou v kalkulaci přesnější
+                // Ale pro manuální zadání calculation nemáme, takže toto se přeskočí
+                if (!form.isManualEntry) {
+                    monthlyPaymentValue = offer.monthlyPayment || 0;
+                    rateValue = offer.rate || 0;
+                }
+                
                 calculationSummaryText = `Nabídka: ${offer.title || '?'}. Skóre: ${calc.approvability ? calc.approvability.total + '%' : '?'} (LTV:${calc.approvability ? calc.approvability.ltv : '?'}, DSTI:${calc.approvability ? calc.approvability.dsti : '?'}, Bon:${calc.approvability ? calc.approvability.bonita : '?'}).`;
                 if (calc.fixationDetails) {
                     calculationSummaryText += ` Fixace ${form.fixation} let: Úroky ${formatNumber(calc.fixationDetails.totalInterestForFixation)}`;
                 }
+            } else {
+                calculationSummaryText = ''; // Pokud není kalkulace, souhrn výsledků bude prázdný
             }
         }
         console.log(">>> KONTROLA PŘEDÁNÍ: Proměnná 'psc' má hodnotu:", psc);

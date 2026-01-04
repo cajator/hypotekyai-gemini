@@ -1319,7 +1319,7 @@ const renderResults = () => {
             bodyParams.append('psc', getName('psc'));
             bodyParams.append('contact-time', getSelect('contact-time'));
             
-            // Poznámka - bereme jen to, co uživatel napsal. NIC NEPŘIDÁVÁME.
+            // Poznámka - jen to, co uživatel napsal
             let noteValue = form.querySelector('textarea[name="note"]')?.value || '';
             bodyParams.append('note', noteValue);
 
@@ -1328,12 +1328,11 @@ const renderResults = () => {
             
             let dataToSend = {};
 
-            // --- VARIANTA A: Uživatel má kalkulaci (odesíláme vše) ---
+            // --- VARIANTA A: Uživatel má kalkulaci ---
             if (hasCalculation) {
-                // 1. Data formuláře
                 dataToSend = { ...state.formData };
-
-                // 2. Data výpočtu (Tohle spouští "Souhrn výsledků" v emailu)
+                
+                // Pošleme i objekt calculation (to spouští "Souhrn výsledků" v CRM)
                 extraData.calculation = {
                     offers: state.calculation.offers,
                     selectedOffer: state.calculation.selectedOffer,
@@ -1341,7 +1340,7 @@ const renderResults = () => {
                     ...(state.calculation.fixationDetails && { fixationDetails: state.calculation.fixationDetails })
                 };
 
-                // Pročištění pro Express režim
+                // Úklid pro express režim
                 if (state.mode === 'express') {
                     delete dataToSend.age;
                     delete dataToSend.children;
@@ -1364,28 +1363,23 @@ const renderResults = () => {
                 const mLoanVal = manualLoanEl ? parseNumber(manualLoanEl.value) : 0;
                 const mPropVal = manualPropEl ? parseNumber(manualPropEl.value) : 0;
 
-                // 1. Nastavíme POUZE ta data, která chceme v horní tabulce "Klíčové parametry"
+                // 1. Nastavíme jen klíčová data pro tabulku
                 if (mLoanVal > 0) dataToSend.loanAmount = mLoanVal;
                 if (mPropVal > 0) dataToSend.propertyValue = mPropVal;
                 
-                // 2. Nastavíme příznak manuálního zadání
+                // 2. Přidáme příznak manuálního zadání (pro form-handler.js)
                 dataToSend.isManualEntry = true;
 
-                // 3. DŮLEŽITÉ: Neposíláme 'calculation' objekt.
-                // Tím zajistíme, že sekce "Souhrn výsledků" (ta dolní přeškrtnutá) se vůbec nevygeneruje (pokud je šablona chytrá).
-                
-                // 4. Ostatní parametry NEPOSÍLÁME vůbec.
-                // Backend si s tím poradí (budou null/undefined).
+                // 3. DŮLEŽITÉ: Neposíláme 'calculation' -> tím zmizí sekce "Souhrn výsledků"
+                // 4. Neposíláme age, income atd. -> tím form-handler pozná, že má vypsat jiný souhrn
             }
 
-            // Přiřadíme do extraData
             extraData.formData = dataToSend;
 
             if (Object.keys(extraData).length > 0) {
                 bodyParams.append('extraData', JSON.stringify(extraData, null, 2)); 
             }
 
-            // Debug
             console.log('Odesílám data:', extraData);
 
             const response = await fetch('/.netlify/functions/form-handler', { 

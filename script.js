@@ -1212,6 +1212,7 @@ const renderResults = () => {
         if (targetId) {
             if (action === 'show-lead-form' || action === 'show-lead-form-direct') {
                 DOMElements.leadFormContainer.classList.remove('hidden');
+                updateLeadFormVisibility(); // NOVÉ: Zkontrolovat, zda zobrazit inputy
             }
             scrollToTarget(targetId);
             if (DOMElements.mobileMenu && !DOMElements.mobileMenu.classList.contains('hidden')) {
@@ -1274,7 +1275,27 @@ const renderResults = () => {
             state.calculation.selectedOffer = state.calculation.offers.find(o => o.id === target.dataset.offerId);
         }
     };
-  
+    // NOVÉ: Funkce pro kontrolu viditelnosti finančních polí ve formuláři
+    const updateLeadFormVisibility = () => {
+        const manualFields = document.getElementById('manual-financial-fields');
+        if (!manualFields) return;
+
+        // Zjistíme, jestli má uživatel už spočítanou kalkulaci (jsou tam nabídky)
+        const hasCalculation = state.calculation && state.calculation.offers && state.calculation.offers.length > 0;
+
+        if (hasCalculation) {
+            // Pokud má kalkulaci, pole skryjeme (použijeme data z kalkulace)
+            manualFields.classList.add('hidden');
+            // Zrušíme required, aby to neblokovalo odeslání
+            manualFields.querySelectorAll('input').forEach(input => input.required = false);
+        } else {
+            // Pokud nemá kalkulaci, pole zobrazíme
+            manualFields.classList.remove('hidden');
+            // Můžeme nastavit jako required, pokud chceme data vynutit
+            // manualFields.querySelectorAll('input').forEach(input => input.required = true);
+        }
+    };
+
     const handleFormSubmit = async (e) => {
         e.preventDefault();
         const form = e.target;
@@ -1299,10 +1320,17 @@ const renderResults = () => {
             const noteInput = form.querySelector('textarea[name="note"]');
             if (noteInput) bodyParams.append('note', noteInput.value);
 
+            // Získání manuálně zadaných hodnot (pokud jsou viditelné a vyplněné)
+            const manualLoanInput = form.querySelector('input[name="manual_loan_amount"]');
+            const manualPropertyInput = form.querySelector('input[name="manual_property_value"]');
+            
+            // Zjistíme, jestli máme kalkulaci
+            const hasCalculation = state.calculation && state.calculation.offers && state.calculation.offers.length > 0;
+            
             const extraData = { chatHistory: state.chatHistory };
 
-            if (state.calculation && state.calculation.offers && state.calculation.offers.length > 0) {
-                
+            // SCÉNÁŘ A: Uživatel má kalkulaci -> Bereme data ze state (priorita)
+            if (hasCalculation) {
                 const safeCalculationData = {
                     offers: state.calculation.offers,
                     selectedOffer: state.calculation.selectedOffer,
@@ -1311,12 +1339,11 @@ const renderResults = () => {
                 };
                 extraData.calculation = safeCalculationData;
 
-                // 1. Vytvoříme kopii dat
+                // Vytvoříme kopii dat
                 const dataToSend = { ...state.formData };
 
-                // 2. Logika pro EXPRESNÍ REŽIM
+                // Logika pro EXPRESNÍ REŽIM (pročištění dat)
                 if (state.mode === 'express') {
-                    // A) Smažeme vše, co v expresním režimu vůbec není vidět (bezpodmínečně)
                     delete dataToSend.age;
                     delete dataToSend.children;
                     delete dataToSend.liabilities;
@@ -1328,16 +1355,31 @@ const renderResults = () => {
                     delete dataToSend.landValue;
                     delete dataToSend.reconstructionValue;
 
-                    // B) Kontrola PŘÍJMU (který je vidět, ale může být defaultní)
-                    // Pokud uživatel nepohnul s posuvníkem a nechal tam 50 000, smažeme to.
-                    // Pokud nastavil cokoliv jiného, odešleme to.
                     if (dataToSend.income === 50000) {
                         delete dataToSend.income;
                     }
                 } 
-                // V režimu 'guided' (Detailní) nic nemažeme, tam uživatel vyplňuje vše vědomě.
-
                 extraData.formData = dataToSend;
+            
+            } 
+            // SCÉNÁŘ B: Uživatel NEMÁ kalkulaci, ale vyplnil ruční pole
+            else if (manualLoanInput && manualPropertyInput && (manualLoanInput.value || manualPropertyInput.value)) {
+                
+                const mLoan = parseNumber(manualLoanInput.value);
+                const mProp = parseNumber(manualPropertyInput.value);
+
+                // Vytvoříme falešný formData objekt, aby to API/Email pochopil stejně
+                extraData.formData = {
+                    loanAmount: mLoan > 0 ? mLoan : null,
+                    propertyValue: mProp > 0 ? mProp : null,
+                    // Přidáme příznak, že jde o ruční zadání bez kalkulace
+                    isManualEntry: true
+                };
+
+                // Přidáme to i do poznámky pro jistotu, kdyby export neuměl číst JSON
+                const formattedLoan = mLoan ? formatNumber(mLoan) : 'Neuvedeno';
+                const formattedProp = mProp ? formatNumber(mProp) : 'Neuvedeno';
+                bodyParams.append('financial_summary', `Poptávka: ${formattedLoan}, Nemovitost: ${formattedProp}`);
             }
 
             if (Object.keys(extraData).length > 0) {

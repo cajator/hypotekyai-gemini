@@ -1299,7 +1299,6 @@ const renderResults = () => {
         const form = e.target;
         const btn = form.querySelector('button[type="submit"]');
 
-        // Uložíme původní text tlačítka pro případ chyby
         let originalBtnText = 'Odeslat';
         if (btn) {
             originalBtnText = btn.textContent;
@@ -1311,7 +1310,6 @@ const renderResults = () => {
             const bodyParams = new URLSearchParams();
             bodyParams.append('form-name', form.getAttribute('name'));
             
-            // Bezpečné získání hodnot (ošetření proti null)
             const getName = (name) => form.querySelector(`input[name="${name}"]`)?.value || '';
             const getSelect = (name) => form.querySelector(`select[name="${name}"]`)?.value || '';
             
@@ -1321,19 +1319,19 @@ const renderResults = () => {
             bodyParams.append('psc', getName('psc'));
             bodyParams.append('contact-time', getSelect('contact-time'));
             
-            // Získání poznámky
             let noteValue = form.querySelector('textarea[name="note"]')?.value || '';
 
-            // LOGIKA: Máme kalkulaci?
             const hasCalculation = state.calculation && state.calculation.offers && state.calculation.offers.length > 0;
             const extraData = { chatHistory: state.chatHistory };
             
-            // --- VARIANTA A: Uživatel má kalkulaci (odesíláme vše) ---
-            if (hasCalculation) {
-                // 1. Vezmeme kompletní data z kalkulačky
-                let dataToSend = { ...state.formData };
+            // Objekt, který pošleme na backend. Musí mít přesnou strukturu, aby CRM tabulka fungovala.
+            let dataToSend = {};
 
-                // 2. Přidáme výsledky kalkulace
+            // --- VARIANTA A: Kalkulace existuje ---
+            if (hasCalculation) {
+                // Vezmeme všechna data (včetně věku, příjmu atd.)
+                dataToSend = { ...state.formData };
+
                 extraData.calculation = {
                     offers: state.calculation.offers,
                     selectedOffer: state.calculation.selectedOffer,
@@ -1341,7 +1339,7 @@ const renderResults = () => {
                     ...(state.calculation.fixationDetails && { fixationDetails: state.calculation.fixationDetails })
                 };
 
-                // 3. Pročistíme data pro expresní režim (aby tam nebyly zbytečnosti)
+                // Pročištění pro Express režim
                 if (state.mode === 'express') {
                     delete dataToSend.age;
                     delete dataToSend.children;
@@ -1355,48 +1353,48 @@ const renderResults = () => {
                     delete dataToSend.reconstructionValue;
                     if (dataToSend.income === 50000) delete dataToSend.income;
                 }
-                
-                extraData.formData = dataToSend;
             } 
-            // --- VARIANTA B: Uživatel NEMÁ kalkulaci (odesíláme jen manuální vstup) ---
+            // --- VARIANTA B: Manuální zadání (Bez kalkulace) ---
             else {
-                // 1. Získáme hodnoty z nových políček (bezpečně s ?.)
+                // 1. Získáme čísla z formuláře
                 const manualLoanEl = form.querySelector('input[name="manual_loan_amount"]');
                 const manualPropEl = form.querySelector('input[name="manual_property_value"]');
                 
                 const mLoanVal = manualLoanEl ? parseNumber(manualLoanEl.value) : 0;
                 const mPropVal = manualPropEl ? parseNumber(manualPropEl.value) : 0;
 
-                // 2. Vytvoříme ČISTÝ objekt jen s těmito daty (žádné zděděné defaults)
-                const simpleData = {
-                    isManualEntry: true,
-                    loanAmount: mLoanVal || null,
-                    propertyValue: mPropVal || null
-                };
+                // 2. NATVRDO přepíšeme klíčové parametry pro CRM tabulku
+                dataToSend.loanAmount = mLoanVal > 0 ? mLoanVal : null;
+                dataToSend.propertyValue = mPropVal > 0 ? mPropVal : null;
 
-                extraData.formData = simpleData;
-
-                // 3. POJISTKA PRO EMAIL: Připíšeme to do poznámky
-                // Pokud backend neumí číst JSON extraData, uvidíš to v textu emailu
-                if (mLoanVal > 0 || mPropVal > 0) {
-                    const txtLoan = mLoanVal ? formatNumber(mLoanVal) : '(nevyplněno)';
-                    const txtProp = mPropVal ? formatNumber(mPropVal) : '(nevyplněno)';
-                    const summary = `\n\n[MANUÁLNÍ ZADÁNÍ]\nPoptávka: ${txtLoan}\nNemovitost: ${txtProp}`;
-                    noteValue += summary;
-                }
+                // 3. Ostatní parametry nastavíme na NULL, aby v souhrnu nebyly vymyšlené hodnoty (jako Věk 35)
+                dataToSend.age = null;
+                dataToSend.income = null;
+                dataToSend.children = null;
+                dataToSend.liabilities = null;
+                dataToSend.loanTerm = null;
+                dataToSend.fixation = null;
+                dataToSend.purpose = null;
+                dataToSend.propertyType = null;
+                
+                // Příznak, kdyby to backend chtěl poznat
+                dataToSend.isManualEntry = true;
             }
 
-            // Přidáme (případně upravenou) poznámku do odesílaných dat
+            // DŮLEŽITÉ: Přiřadíme připravený objekt do extraData.formData
+            // Tím zajistíme, že backend najde "loanAmount" tam, kde ho čeká.
+            extraData.formData = dataToSend;
+
+            // Uložíme poznámku
             bodyParams.append('note', noteValue);
 
-            // Přidáme JSON data
             if (Object.keys(extraData).length > 0) {
                 bodyParams.append('extraData', JSON.stringify(extraData, null, 2)); 
             }
 
-            console.log('Odesílám data:', extraData); // Pro kontrolu v konzoli
+            // Debug
+            console.log('Odesílám data (checkni loanAmount):', dataToSend);
 
-            // Odeslání na Netlify Functions
             const response = await fetch('/.netlify/functions/form-handler', { 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -1405,33 +1403,26 @@ const renderResults = () => {
             
             if (response.ok) {
                 form.style.display = 'none';
-                
                 const successId = form.id === 'inline-lead-form' ? 'inline-form-success' : 'form-success';
                 const successMessage = document.getElementById(successId);
                 if (successMessage) {
                      successMessage.style.display = 'block';
                      successMessage.classList.remove('hidden');
                 }
-                
                 if (form.id !== 'inline-lead-form') {
                     setTimeout(() => scrollToTarget('#kontakt'), 100);
                 }
-                
-                // Analytics
                 if (typeof gtag === 'function') {
                     gtag('event', 'generate_lead', { 'event_category': 'form_submission', 'event_label': form.id });
                     gtag('event', 'conversion', { 'send_to': 'AW-778075298/XZ1yCK60yc4bEKL5gfMC', 'value': 1.0, 'currency': 'CZK' });
                 }
-
             } else {
-                 throw new Error(`Server odpověděl chybou: ${response.status}`);
+                 throw new Error(`Chyba serveru: ${response.status}`);
             }
 
         } catch (error) { 
-            console.error('CRITICAL ERROR při odesílání:', error);
-            alert('Omlouváme se, odeslání se nezdařilo. Zkontrolujte připojení a zkuste to znovu.');
-            
-            // Důležité: Vrátíme tlačítko do původního stavu, aby to uživatel mohl zkusit znovu
+            console.error('Chyba odesílání:', error);
+            alert('Odeslání se nezdařilo. Zkuste to prosím znovu.');
             if (btn) {
                 btn.disabled = false;
                 btn.textContent = originalBtnText;

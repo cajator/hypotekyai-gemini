@@ -1319,20 +1319,21 @@ const renderResults = () => {
             bodyParams.append('psc', getName('psc'));
             bodyParams.append('contact-time', getSelect('contact-time'));
             
-            // Poznámka - už do ní NEPŘIPISUJEME manuální data, aby to nebylo duplicitní
+            // Poznámka - bereme jen to, co uživatel napsal. NIC NEPŘIDÁVÁME.
             let noteValue = form.querySelector('textarea[name="note"]')?.value || '';
             bodyParams.append('note', noteValue);
 
             const hasCalculation = state.calculation && state.calculation.offers && state.calculation.offers.length > 0;
             const extraData = { chatHistory: state.chatHistory };
             
-            // Objekt dat, který pošleme
             let dataToSend = {};
 
-            // --- VARIANTA A: Uživatel má reálnou kalkulaci ---
+            // --- VARIANTA A: Uživatel má kalkulaci (odesíláme vše) ---
             if (hasCalculation) {
+                // 1. Data formuláře
                 dataToSend = { ...state.formData };
-                
+
+                // 2. Data výpočtu (Tohle spouští "Souhrn výsledků" v emailu)
                 extraData.calculation = {
                     offers: state.calculation.offers,
                     selectedOffer: state.calculation.selectedOffer,
@@ -1340,7 +1341,7 @@ const renderResults = () => {
                     ...(state.calculation.fixationDetails && { fixationDetails: state.calculation.fixationDetails })
                 };
 
-                // Úklid pro express režim
+                // Pročištění pro Express režim
                 if (state.mode === 'express') {
                     delete dataToSend.age;
                     delete dataToSend.children;
@@ -1355,7 +1356,7 @@ const renderResults = () => {
                     if (dataToSend.income === 50000) delete dataToSend.income;
                 }
             } 
-            // --- VARIANTA B: Manuální zadání (Vytvoříme falešnou kalkulaci pro CRM) ---
+            // --- VARIANTA B: Manuální zadání (Bez kalkulace) ---
             else {
                 const manualLoanEl = form.querySelector('input[name="manual_loan_amount"]');
                 const manualPropEl = form.querySelector('input[name="manual_property_value"]');
@@ -1363,36 +1364,18 @@ const renderResults = () => {
                 const mLoanVal = manualLoanEl ? parseNumber(manualLoanEl.value) : 0;
                 const mPropVal = manualPropEl ? parseNumber(manualPropEl.value) : 0;
 
-                // 1. Nastavíme data pro formData (aby CRM vidělo vstupy)
-                dataToSend.loanAmount = mLoanVal > 0 ? mLoanVal : null;
-                dataToSend.propertyValue = mPropVal > 0 ? mPropVal : null;
+                // 1. Nastavíme POUZE ta data, která chceme v horní tabulce "Klíčové parametry"
+                if (mLoanVal > 0) dataToSend.loanAmount = mLoanVal;
+                if (mPropVal > 0) dataToSend.propertyValue = mPropVal;
+                
+                // 2. Nastavíme příznak manuálního zadání
                 dataToSend.isManualEntry = true;
 
-                // 2. Nastavíme ostatní pole explicitně na null, aby v "Souhrnu" nebyly nesmysly
-                dataToSend.age = null;
-                dataToSend.children = null;
-                dataToSend.income = null;
-                dataToSend.liabilities = null;
-                dataToSend.loanTerm = null;
-                dataToSend.fixation = null;
-                dataToSend.purpose = null; 
-                dataToSend.propertyType = null;
-                dataToSend.education = null;
-                dataToSend.employment = null;
-
-                // 3. TRIK: Vytvoříme "falešný" objekt calculation.
-                // Některé šablony čtou tabulku "Klíčové parametry" právě odtud.
-                // Tím, že sem dáme loanAmount a propertyValue, donutíme tabulku se vyplnit.
-                extraData.calculation = {
-                    isManualMock: true,
-                    // Tady duplikujeme hodnoty, aby si je šablona našla ať kouká kamkoliv
-                    loanAmount: mLoanVal > 0 ? mLoanVal : null,
-                    propertyValue: mPropVal > 0 ? mPropVal : null,
-                    monthlyPayment: null, // Aby v tabulce bylo N/A nebo prázdno, ne 0
-                    rate: null,
-                    offers: [],
-                    selectedOffer: null
-                };
+                // 3. DŮLEŽITÉ: Neposíláme 'calculation' objekt.
+                // Tím zajistíme, že sekce "Souhrn výsledků" (ta dolní přeškrtnutá) se vůbec nevygeneruje (pokud je šablona chytrá).
+                
+                // 4. Ostatní parametry NEPOSÍLÁME vůbec.
+                // Backend si s tím poradí (budou null/undefined).
             }
 
             // Přiřadíme do extraData
@@ -1402,7 +1385,8 @@ const renderResults = () => {
                 bodyParams.append('extraData', JSON.stringify(extraData, null, 2)); 
             }
 
-            console.log('Odesílám data (CRM Fix):', extraData);
+            // Debug
+            console.log('Odesílám data:', extraData);
 
             const response = await fetch('/.netlify/functions/form-handler', { 
                 method: 'POST',

@@ -1324,12 +1324,12 @@ const renderResults = () => {
             const hasCalculation = state.calculation && state.calculation.offers && state.calculation.offers.length > 0;
             const extraData = { chatHistory: state.chatHistory };
             
-            // Objekt, který pošleme na backend. Musí mít přesnou strukturu, aby CRM tabulka fungovala.
+            // Objekt pro CRM data
             let dataToSend = {};
 
-            // --- VARIANTA A: Kalkulace existuje ---
+            // --- SCÉNÁŘ A: Uživatel má kalkulaci ---
             if (hasCalculation) {
-                // Vezmeme všechna data (včetně věku, příjmu atd.)
+                // Vezmeme všechna data z kalkulačky
                 dataToSend = { ...state.formData };
 
                 extraData.calculation = {
@@ -1339,7 +1339,7 @@ const renderResults = () => {
                     ...(state.calculation.fixationDetails && { fixationDetails: state.calculation.fixationDetails })
                 };
 
-                // Pročištění pro Express režim
+                // Pročištění nepotřebných dat pro Express režim
                 if (state.mode === 'express') {
                     delete dataToSend.age;
                     delete dataToSend.children;
@@ -1354,35 +1354,33 @@ const renderResults = () => {
                     if (dataToSend.income === 50000) delete dataToSend.income;
                 }
             } 
-            // --- VARIANTA B: Manuální zadání (Bez kalkulace) ---
+            // --- SCÉNÁŘ B: Manuální zadání (Bez kalkulace) ---
             else {
                 // 1. Získáme čísla z formuláře
                 const manualLoanEl = form.querySelector('input[name="manual_loan_amount"]');
                 const manualPropEl = form.querySelector('input[name="manual_property_value"]');
                 
+                // ParseNumber zajistí převod "4 000 000" -> 4000000 (number)
                 const mLoanVal = manualLoanEl ? parseNumber(manualLoanEl.value) : 0;
                 const mPropVal = manualPropEl ? parseNumber(manualPropEl.value) : 0;
 
-                // 2. NATVRDO přepíšeme klíčové parametry pro CRM tabulku
-                dataToSend.loanAmount = mLoanVal > 0 ? mLoanVal : null;
-                dataToSend.propertyValue = mPropVal > 0 ? mPropVal : null;
-
-                // 3. Ostatní parametry nastavíme na NULL, aby v souhrnu nebyly vymyšlené hodnoty (jako Věk 35)
-                dataToSend.age = null;
-                dataToSend.income = null;
-                dataToSend.children = null;
-                dataToSend.liabilities = null;
-                dataToSend.loanTerm = null;
-                dataToSend.fixation = null;
-                dataToSend.purpose = null;
-                dataToSend.propertyType = null;
+                // 2. Vytvoříme objekt POUZE s těmito dvěma klíči.
+                // Nedáváme tam age, income, nic jiného. Aby to backend nemátlo.
+                if (mLoanVal > 0) dataToSend.loanAmount = mLoanVal;
+                if (mPropVal > 0) dataToSend.propertyValue = mPropVal;
                 
-                // Příznak, kdyby to backend chtěl poznat
+                // Přidáme příznak manuálního zadání
                 dataToSend.isManualEntry = true;
+
+                // 3. (Volitelné) Pokud chcete jistotu, že se to propíše do tabulky i kdyby selhalo parsování,
+                // pošleme to i v poznámce, ale čistě.
+                if (mLoanVal > 0 || mPropVal > 0) {
+                     const txtSummary = `\n[Poptávka: ${formatNumber(mLoanVal)}, Nemovitost: ${formatNumber(mPropVal)}]`;
+                     noteValue += txtSummary;
+                }
             }
 
-            // DŮLEŽITÉ: Přiřadíme připravený objekt do extraData.formData
-            // Tím zajistíme, že backend najde "loanAmount" tam, kde ho čeká.
+            // DŮLEŽITÉ: Přiřadíme objekt do extraData.formData
             extraData.formData = dataToSend;
 
             // Uložíme poznámku
@@ -1392,8 +1390,8 @@ const renderResults = () => {
                 bodyParams.append('extraData', JSON.stringify(extraData, null, 2)); 
             }
 
-            // Debug
-            console.log('Odesílám data (checkni loanAmount):', dataToSend);
+            // Debug pro kontrolu (uvidíš v F12 Console)
+            console.log('Final dataToSend:', dataToSend);
 
             const response = await fetch('/.netlify/functions/form-handler', { 
                 method: 'POST',

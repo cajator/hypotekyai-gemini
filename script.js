@@ -1320,16 +1320,16 @@ const renderResults = () => {
             const noteInput = form.querySelector('textarea[name="note"]');
             if (noteInput) bodyParams.append('note', noteInput.value);
 
-            // Získání manuálně zadaných hodnot (pokud jsou viditelné a vyplněné)
-            const manualLoanInput = form.querySelector('input[name="manual_loan_amount"]');
-            const manualPropertyInput = form.querySelector('input[name="manual_property_value"]');
-            
             // Zjistíme, jestli máme kalkulaci
             const hasCalculation = state.calculation && state.calculation.offers && state.calculation.offers.length > 0;
             
             const extraData = { chatHistory: state.chatHistory };
+            
+            // PŘÍPRAVA DAT (Zde byla chyba - musíme vždy poslat strukturu formData)
+            // Vezmeme základní strukturu ze stavu aplikace (aby tam byly klíče jako loanTerm, income atd.)
+            let dataToSend = { ...state.formData };
 
-            // SCÉNÁŘ A: Uživatel má kalkulaci -> Bereme data ze state (priorita)
+            // SCÉNÁŘ A: Uživatel MÁ kalkulaci
             if (hasCalculation) {
                 const safeCalculationData = {
                     offers: state.calculation.offers,
@@ -1339,10 +1339,7 @@ const renderResults = () => {
                 };
                 extraData.calculation = safeCalculationData;
 
-                // Vytvoříme kopii dat
-                const dataToSend = { ...state.formData };
-
-                // Logika pro EXPRESNÍ REŽIM (pročištění dat)
+                // Logika pro EXPRESNÍ REŽIM (pročištění nepotřebných dat)
                 if (state.mode === 'express') {
                     delete dataToSend.age;
                     delete dataToSend.children;
@@ -1355,32 +1352,42 @@ const renderResults = () => {
                     delete dataToSend.landValue;
                     delete dataToSend.reconstructionValue;
 
-                    if (dataToSend.income === 50000) {
-                        delete dataToSend.income;
-                    }
+                    if (dataToSend.income === 50000) { delete dataToSend.income; }
                 } 
-                extraData.formData = dataToSend;
-            
             } 
-            // SCÉNÁŘ B: Uživatel NEMÁ kalkulaci, ale vyplnil ruční pole
-            else if (manualLoanInput && manualPropertyInput && (manualLoanInput.value || manualPropertyInput.value)) {
+            // SCÉNÁŘ B: Uživatel NEMÁ kalkulaci (Manual inputs)
+            else {
+                // Najdeme manuální inputy
+                const manualLoanInput = form.querySelector('input[name="manual_loan_amount"]');
+                const manualPropertyInput = form.querySelector('input[name="manual_property_value"]');
+
+                // Pokud existují a mají hodnotu, přepíšeme data v dataToSend
+                if (manualLoanInput && manualLoanInput.value) {
+                    dataToSend.loanAmount = parseNumber(manualLoanInput.value);
+                } else {
+                    dataToSend.loanAmount = null; // Aby neposílalo defaultní hodnotu, pokud nic nevyplnil
+                }
+
+                if (manualPropertyInput && manualPropertyInput.value) {
+                    dataToSend.propertyValue = parseNumber(manualPropertyInput.value);
+                } else {
+                    dataToSend.propertyValue = null;
+                }
                 
-                const mLoan = parseNumber(manualLoanInput.value);
-                const mProp = parseNumber(manualPropertyInput.value);
-
-                // Vytvoříme falešný formData objekt, aby to API/Email pochopil stejně
-                extraData.formData = {
-                    loanAmount: mLoan > 0 ? mLoan : null,
-                    propertyValue: mProp > 0 ? mProp : null,
-                    // Přidáme příznak, že jde o ruční zadání bez kalkulace
-                    isManualEntry: true
-                };
-
-                // Přidáme to i do poznámky pro jistotu, kdyby export neuměl číst JSON
-                const formattedLoan = mLoan ? formatNumber(mLoan) : 'Neuvedeno';
-                const formattedProp = mProp ? formatNumber(mProp) : 'Neuvedeno';
-                bodyParams.append('financial_summary', `Poptávka: ${formattedLoan}, Nemovitost: ${formattedProp}`);
+                // Přidáme příznak, že jde o ruční zadání
+                dataToSend.isManualEntry = true;
+                
+                // Vynulujeme ostatní parametry, aby v emailu nebyly nesmyslné defaulty
+                dataToSend.income = null;
+                dataToSend.liabilities = null;
+                // Splatnost a fixaci necháme defaultní nebo null, podle toho co chceme
             }
+
+            // Důležité: Tady přiřadíme upravený objekt do extraData
+            extraData.formData = dataToSend;
+
+            // Debug pro tebe (uvidíš v konzoli prohlížeče F12 co se posílá)
+            console.log('Odesílám formData:', dataToSend);
 
             if (Object.keys(extraData).length > 0) {
                 bodyParams.append('extraData', JSON.stringify(extraData, null, 2)); 

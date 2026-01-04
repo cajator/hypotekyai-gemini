@@ -183,8 +183,8 @@ exports.handler = async (event) => {
             const form = extraData.formData;
             formDataForJson = form;
             
-            // Základní mapování hodnot (pokud existují)
-            loanAmountValue = form.loanAmount || null; // Tady se zapíše Úvěr do tabulky
+            // Základní mapování
+            loanAmountValue = form.loanAmount || null;
             fixationValue = form.fixation || null;
             loanTermValue = form.loanTerm || null;
             purposeValue = form.purpose || '';
@@ -195,7 +195,7 @@ exports.handler = async (event) => {
             ageValue = form.age || null;
             childrenValue = form.children === undefined ? null : form.children;
 
-            // Výpočet hodnoty nemovitosti (ošetření pro manuální zadání bez účelu)
+            // Výpočet hodnoty nemovitosti
             if (form.propertyValue || form.landValue) {
                 if (form.purpose === 'výstavba') {
                     effectivePropValue = (form.propertyValue || 0) + (form.landValue || 0);
@@ -204,25 +204,31 @@ exports.handler = async (event) => {
                 }
             }
 
-            // --- OPRAVA SOUHRNU PARAMETRŮ ---
-            // Pokud je to manuální zadání (poznáme podle flagu NEBO podle chybějících dat),
-            // vygenerujeme hezký souhrn bez otazníků.
+            // SOUHRN PARAMETRŮ
             if (form.isManualEntry) {
+                // Varianta pro MANUÁLNÍ zadání
                 const sumLoan = form.loanAmount ? formatNumber(form.loanAmount) : 'Nezadáno';
                 const sumProp = form.propertyValue ? formatNumber(form.propertyValue) : 'Nezadáno';
                 formDataSummaryText = `Manuální poptávka - Úvěr: ${sumLoan}, Nemovitost: ${sumProp}`;
             } else {
-                // Standardní souhrn pro kalkulačku
-                formDataSummaryText = `Účel: ${form.purpose || '?'}, Typ: ${form.propertyType || '?'}, Příjem: ${formatNumber(form.income || 0)} (${form.employment || '?'}), Věk: ${form.age || '?'} let, Děti: ${form.children === undefined ? '?' : form.children}, Závazky: ${formatNumber(form.liabilities || 0)}`;
+                // Varianta pro KALKULAČKU (používáme data ze state)
+                // Pokud je hodnota null/undefined, vypíšeme '?', jinak formátujeme
+                const txtUcel = form.purpose || 'Standardní'; 
+                const txtTyp = form.propertyType || 'Standardní';
+                const txtPrijem = form.income !== undefined && form.income !== null ? formatNumber(form.income) : '?';
+                const txtZam = form.employment || '';
+                const txtVek = form.age || '?';
+                const txtDeti = form.children !== undefined && form.children !== null ? form.children : '?';
+                const txtZavazky = form.liabilities !== undefined && form.liabilities !== null ? formatNumber(form.liabilities) : '0 Kč';
+
+                formDataSummaryText = `Účel: ${txtUcel}, Typ: ${txtTyp}, Příjem: ${txtPrijem} (${txtZam}), Věk: ${txtVek} let, Děti: ${txtDeti}, Závazky: ${txtZavazky}`;
             }
 
-            // Zpracování kalkulace (nabídky)
+            // Souhrn VÝSLEDKŮ kalkulace
             if (extraData.calculation && extraData.calculation.selectedOffer) {
                 const calc = extraData.calculation;
                 const offer = calc.selectedOffer;
                 
-                // Přepíšeme hodnoty, pokud jsou v kalkulaci přesnější
-                // Ale pro manuální zadání calculation nemáme, takže toto se přeskočí
                 if (!form.isManualEntry) {
                     monthlyPaymentValue = offer.monthlyPayment || 0;
                     rateValue = offer.rate || 0;
@@ -233,9 +239,10 @@ exports.handler = async (event) => {
                     calculationSummaryText += ` Fixace ${form.fixation} let: Úroky ${formatNumber(calc.fixationDetails.totalInterestForFixation)}`;
                 }
             } else {
-                calculationSummaryText = ''; // Pokud není kalkulace, souhrn výsledků bude prázdný
+                calculationSummaryText = '';
             }
         }
+        
         console.log(">>> KONTROLA PŘEDÁNÍ: Proměnná 'psc' má hodnotu:", psc);
         // Sestavení finálních dat pro zápis
         const sheetData = {

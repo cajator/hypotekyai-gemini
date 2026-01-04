@@ -1319,7 +1319,7 @@ const renderResults = () => {
             bodyParams.append('psc', getName('psc'));
             bodyParams.append('contact-time', getSelect('contact-time'));
             
-            // Poznámka - jen to, co uživatel napsal
+            // Poznámka
             let noteValue = form.querySelector('textarea[name="note"]')?.value || '';
             bodyParams.append('note', noteValue);
 
@@ -1330,30 +1330,18 @@ const renderResults = () => {
 
             // --- VARIANTA A: Uživatel má kalkulaci ---
             if (hasCalculation) {
+                // 1. Vezmeme kompletní data z kalkulačky
+                // OPRAVA: Už nic nemažeme. Necháme tam i defaultní hodnoty (Věk 35, Účel Koupě),
+                // protože s nimi kalkulačka reálně počítala, takže v souhrnu mají být.
                 dataToSend = { ...state.formData };
-                
-                // Pošleme i objekt calculation (to spouští "Souhrn výsledků" v CRM)
+
+                // 2. Data výpočtu
                 extraData.calculation = {
                     offers: state.calculation.offers,
                     selectedOffer: state.calculation.selectedOffer,
                     approvability: state.calculation.approvability,
                     ...(state.calculation.fixationDetails && { fixationDetails: state.calculation.fixationDetails })
                 };
-
-                // Úklid pro express režim
-                if (state.mode === 'express') {
-                    delete dataToSend.age;
-                    delete dataToSend.children;
-                    delete dataToSend.liabilities;
-                    delete dataToSend.education;
-                    delete dataToSend.employment;
-                    delete dataToSend.fixation;
-                    delete dataToSend.purpose;
-                    delete dataToSend.propertyType;
-                    delete dataToSend.landValue;
-                    delete dataToSend.reconstructionValue;
-                    if (dataToSend.income === 50000) delete dataToSend.income;
-                }
             } 
             // --- VARIANTA B: Manuální zadání (Bez kalkulace) ---
             else {
@@ -1363,17 +1351,15 @@ const renderResults = () => {
                 const mLoanVal = manualLoanEl ? parseNumber(manualLoanEl.value) : 0;
                 const mPropVal = manualPropEl ? parseNumber(manualPropEl.value) : 0;
 
-                // 1. Nastavíme jen klíčová data pro tabulku
+                // Nastavíme jen klíčová data pro tabulku
                 if (mLoanVal > 0) dataToSend.loanAmount = mLoanVal;
                 if (mPropVal > 0) dataToSend.propertyValue = mPropVal;
                 
-                // 2. Přidáme příznak manuálního zadání (pro form-handler.js)
+                // Příznak manuálního zadání
                 dataToSend.isManualEntry = true;
-
-                // 3. DŮLEŽITÉ: Neposíláme 'calculation' -> tím zmizí sekce "Souhrn výsledků"
-                // 4. Neposíláme age, income atd. -> tím form-handler pozná, že má vypsat jiný souhrn
             }
 
+            // Přiřadíme do extraData
             extraData.formData = dataToSend;
 
             if (Object.keys(extraData).length > 0) {

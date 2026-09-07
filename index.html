@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased font-['Inter']">
+<body class="bg-slate-50 text-slate-800 antialiased font-['Inter'] relative">
 
     <!-- Hlavička -->
     <header class="bg-white/90 backdrop-blur-md sticky top-0 z-50 shadow-sm border-b border-slate-200">
@@ -125,7 +125,7 @@
         </div>
     </section>
 
-    <!-- Mýty a Fakta (OBNOVENO V PLNÉM ZNĚNÍ) -->
+    <!-- Mýty a Fakta -->
     <section id="myty-fakta" class="bg-slate-900 py-20 text-white scroll-mt-24">
         <div class="container mx-auto px-4 max-w-6xl">
             <div class="text-center mb-12">
@@ -237,6 +237,18 @@
 
     <!-- Info Tooltip -->
     <div id="tooltip-container" class="absolute z-[100] hidden bg-slate-900 text-white text-xs font-semibold p-3 rounded-xl shadow-xl max-w-[250px] leading-relaxed pointer-events-none"></div>
+
+    <!-- COOKIE LIŠTA -->
+    <div id="cookie-banner" class="fixed bottom-0 left-0 w-full bg-slate-900 text-slate-300 py-4 px-6 text-sm z-[200] shadow-[0_-4px_25px_rgba(0,0,0,0.4)] transition-transform duration-500 translate-y-full hidden">
+        <div class="container mx-auto max-w-6xl flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="text-center md:text-left flex-1">
+                <p>Tato webová stránka používá soubory cookies pro nezbytný chod webu, analytiku a personalizaci reklam. <a href="podminky-pouziti.html" class="text-blue-400 hover:text-white underline font-semibold transition-colors">Více v Zásadách ochrany osobních údajů</a>.</p>
+            </div>
+            <button id="cookie-accept" class="bg-blue-600 hover:bg-blue-500 text-white font-extrabold py-2.5 px-6 rounded-xl transition-all whitespace-nowrap shadow-lg hover:-translate-y-0.5">
+                Rozumím a souhlasím
+            </button>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>

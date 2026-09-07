@@ -431,6 +431,18 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
     }
 });
 
+// FUNKCE PRO ODESLÁNÍ NÁVRHŮ Z CHATU
+window.sendChatSuggestion = (text) => {
+    const input = document.getElementById('chat-input');
+    const form = document.getElementById('chat-form');
+    input.value = text;
+    if (form.requestSubmit) {
+        form.requestSubmit();
+    } else {
+        form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+    }
+};
+
 const generateSuggestions = () => {
     const sug = document.getElementById('ai-suggestions');
     let texts = ["Vysvětli mi DSTI", "Mám záznam v registru", "Změnit fixaci", "Co je LTV?"];
@@ -443,7 +455,7 @@ const generateSuggestions = () => {
         texts = ["Jak se prokazují faktury?", "Lze ručit jen pozemkem?"];
     }
 
-    sug.innerHTML = texts.map(t => `<button type="button" class="text-xs font-bold bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-full whitespace-nowrap hover:border-blue-500 hover:text-blue-700 transition-all shadow-sm" onclick="document.getElementById('chat-input').value='${t}'; document.getElementById('chat-form').dispatchEvent(new Event('submit'))">${t}</button>`).join('');
+    sug.innerHTML = texts.map(t => `<button type="button" class="text-xs font-bold bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-full whitespace-nowrap hover:border-blue-500 hover:text-blue-700 transition-all shadow-sm" onclick="sendChatSuggestion('${t}')">${t}</button>`).join('');
 };
 
 const setupTooltips = () => {
@@ -514,6 +526,28 @@ const handleFormSubmit = async (e) => {
 
 document.getElementById('inline-lead-form')?.addEventListener('submit', handleFormSubmit);
 document.getElementById('modal-lead-form')?.addEventListener('submit', handleFormSubmit);
+
+// --- COOKIE BANNER LOGIKA ---
+document.addEventListener("DOMContentLoaded", () => {
+    const banner = document.getElementById('cookie-banner');
+    const acceptBtn = document.getElementById('cookie-accept');
+    
+    if (banner && acceptBtn) {
+        // Zkontrolujeme, zda uživatel již souhlasil
+        if (!localStorage.getItem('cookieConsent')) {
+            banner.classList.remove('hidden');
+            // Malé zpoždění pro plynulou animaci vyjetí zdola
+            setTimeout(() => banner.classList.remove('translate-y-full'), 50);
+        }
+        
+        // Akce po kliknutí na "Rozumím a souhlasím"
+        acceptBtn.addEventListener('click', () => {
+            localStorage.setItem('cookieConsent', 'true');
+            banner.classList.add('translate-y-full'); // Odjede dolů
+            setTimeout(() => banner.classList.add('hidden'), 500); // Schová se úplně po animaci
+        });
+    }
+});
 
 // INIT
 renderForm(); 

@@ -4,6 +4,6 @@
   "dependencies": {
     "google-auth-library": "^10.4.2",
     "google-spreadsheet": "^5.0.2",
-    "nodemailer": "^6.9.13"
+    "nodemailer": "^6.10.1"
   }
 }

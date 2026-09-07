@@ -10,12 +10,44 @@ const formatNumber = (n, currency = true) => {
 
 exports.handler = async (event) => {
     if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'Method Not Allowed' };
+    
     try {
         const formData = new URLSearchParams(event.body);
         let extraData = {};
         try { extraData = JSON.parse(formData.get('extraData') || '{}'); } catch(e){}
 
-        // Zápis do Google Sheets
+        // ZPRACOVÁNÍ HISTORIE CHATU A SOUHRNU (z původního kódu)
+        let chatHistoryText = 'Žádná historie chatu.';
+        if (extraData.chatHistory && extraData.chatHistory.length > 0) {
+            chatHistoryText = extraData.chatHistory.map(msg => {
+                const sender = msg.sender === 'user' ? 'Klient' : 'AI';
+                const safeText = String(msg.text || '').replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]*>/g, '');
+                return `${sender}: ${safeText}`;
+            }).join('\n------\n');
+        }
+
+        let formDataSummaryText = 'Nezadáno';
+        let calculationSummaryText = 'Nekalkulováno';
+        const form = extraData.formData || {};
+        
+        if (form.loanAmount) {
+            const txtUcel = form.purpose || 'Standardní'; 
+            const txtTyp = form.propertyType || 'Standardní';
+            const txtPrijem = form.income ? formatNumber(form.income) : '?';
+            const txtZam = form.employment || '';
+            const txtVek = form.age || '?';
+            const txtDeti = form.children || '0';
+            const txtZavazky = form.liabilities ? formatNumber(form.liabilities) : '0';
+            formDataSummaryText = `Účel: ${txtUcel}, Typ: ${txtTyp}, Příjem: ${txtPrijem} (${txtZam}), Věk: ${txtVek} let, Děti: ${txtDeti}, Závazky: ${txtZavazky}`;
+        }
+
+        if (extraData.calculation && extraData.calculation.selectedOffer) {
+            const calc = extraData.calculation;
+            const offer = calc.selectedOffer;
+            calculationSummaryText = `Nabídka: ${offer.title}. Skóre: ${calc.approvability ? calc.approvability.total + '%' : '?'} (LTV:${calc.approvability ? calc.approvability.ltv : '?'}, DSTI:${calc.approvability ? calc.approvability.dsti : '?'})`;
+        }
+
+        // 1. ZÁPIS DO GOOGLE SHEETS
         if(process.env.GOOGLE_SHEET_ID && process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
             try {
                 const privateKey = process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n');
@@ -25,26 +57,45 @@ exports.handler = async (event) => {
                 const sheet = doc.sheetsByIndex[0];
                 await sheet.addRow({
                     'Datum a čas': new Date().toLocaleString('cs-CZ'),
-                    'Jméno': formData.get('name') || '', 'Telefon': formData.get('phone') || '', 'E-mail': formData.get('email') || '',
-                    'PSČ': formData.get('psc') || '', 'Úvěr': extraData.formData?.loanAmount || formData.get('manual_loan') || '',
+                    'Jméno': formData.get('name') || '', 
+                    'Telefon': formData.get('phone') || '', 
+                    'E-mail': formData.get('email') || '',
+                    'PSČ': formData.get('psc') || '', 
+                    'Úvěr': extraData.formData?.loanAmount || formData.get('manual_loan') || '',
                     'Hodnota nemovitosti': extraData.formData?.propertyValue || formData.get('manual_prop') || '',
-                    'Preferovaný čas': formData.get('contact-time') || '', 'Poznámka': formData.get('note') || ''
+                    'Měsíční splátka': extraData.calculation?.selectedOffer?.monthlyPayment || '',
+                    'Úroková sazba': extraData.calculation?.selectedOffer?.rate ? `${extraData.calculation.selectedOffer.rate} %` : '',
+                    'Čistý příjem (Kč)': extraData.formData?.income || '', 
+                    'Poznámka': formData.get('note') || '',
+                    'Preferovaný čas': formData.get('contact-time') || '',
+                    'Historie chatu': chatHistoryText,
+                    'Parametry (souhrn)': formDataSummaryText,
+                    'Výsledky (souhrn)': calculationSummaryText
                 });
-            } catch (err) { console.error("Chyba Sheets:", err); }
+                console.log("Úspěšně zapsáno do tabulky.");
+            } catch (sheetError) {
+                console.error("Chyba při zápisu do Google Sheets:", sheetError);
+            }
         }
 
-        // Odeslání e-mailu KLIENTOVI přes Gmail
+        // 2. ODESLÁNÍ E-MAILU KLIENTOVI PŘES GMAIL (Nodemailer s plnou konfigurací)
         if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
             try {
+                // Přidána plná konfigurace pro Gmail SMTP
                 const transporter = nodemailer.createTransport({
-                    service: 'gmail',
-                    auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD }
+                    host: 'smtp.gmail.com',
+                    port: 465,
+                    secure: true,
+                    auth: {
+                        user: process.env.GMAIL_USER,
+                        pass: process.env.GMAIL_APP_PASSWORD
+                    }
                 });
 
-                const clientName = formData.get('name') || '';
-                
-                await transporter.sendMail({
-                    from: `"Tým Hypoteky Ai" <info@hypotekyai.cz>`,
+                const clientName = formData.get('name') || 'kliente';
+
+                const mailOptions = {
+                    from: `"Tým Hypoteky Ai" <${process.env.GMAIL_USER}>`,
                     replyTo: "info@hypotekyai.cz",
                     to: formData.get('email'),
                     subject: "Potvrzení vaší poptávky | Hypoteky Ai",
@@ -64,10 +115,21 @@ exports.handler = async (event) => {
                             </div>
                         </div>
                     `
-                });
-            } catch (err) { console.error("Chyba Gmail:", err); }
+                };
+
+                await transporter.sendMail(mailOptions);
+                console.log("E-mail klientovi úspěšně odeslán přes Gmail.");
+
+            } catch (emailError) {
+                console.error("Chyba při odesílání e-mailu klientovi:", emailError);
+            }
+        } else {
+            console.log("E-mail klientovi nebyl odeslán, chybí GMAIL_USER nebo GMAIL_APP_PASSWORD.");
         }
 
         return { statusCode: 200, body: 'Form processed successfully' };
-    } catch (error) { return { statusCode: 500, body: `Server Error: ${error.message}` }; }
+    } catch (error) { 
+        console.error("Kritická chyba v celém procesu form-handleru:", error);
+        return { statusCode: 500, body: `Server Error: ${error.message}` }; 
+    }
 };

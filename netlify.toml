@@ -1,21 +1,5 @@
-# netlify.toml
-
 [build]
-  command = "# No build command needed for static site"
-  publish = "/" # Adresář s vaším webem (použijte "/" nebo "." podle vaší struktury)
-  functions = "netlify/functions" # Cesta k vašim Netlify funkcím
-
-# Jediná sekce [functions] obsahující obě nastavení
+  publish = "/"
+  functions = "netlify/functions"
 [functions]
   node_bundler = "esbuild"
-  
-[dev]
-  command = "echo 'Starting local dev server'"
-  targetPort = 8888
-  publish = "."
-  framework = "#static"
-
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
-  status = 200

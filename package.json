@@ -1,16 +1,8 @@
 {
-  "name": "hypoteky-ai-serverless",
-  "version": "3.0.0",
-  "description": "Serverless functions with direct API call",
+  "name": "hypotekyai-v18-original",
+  "version": "1.0.0",
   "dependencies": {
     "google-auth-library": "^10.4.2",
     "google-spreadsheet": "^5.0.2"
-  },
-  "scripts": {
-    "test": "echo \"No tests specified\" && exit 0"
-  },
-  "main": "script.js",
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+  }
 }

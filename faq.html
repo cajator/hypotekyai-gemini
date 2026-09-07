@@ -4,633 +4,212 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Často kladené otázky o hypotékách | Hypoteky Ai</title>
-    <meta name="description" content="Odpovědi na nejčastější otázky o hypotékách podle aktuálních nařízení ČNB 2025 - LTV limity, předčasné splacení, podmínky a další.">
-
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=6.0">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💡</text></svg>">
-
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        "mainEntity": [
-            {
-                "@type": "Question",
-                "name": "Co je to hypotéka a jak funguje?",
-                "acceptedAnswer": { "@type": "Answer", "text": "Hypotéka je účelový úvěr zajištěný zástavním právem k nemovitosti, určený k financování bydlení. Díky zajištění nemovitostí nabízejí banky nižší úrokové sazby než u běžných spotřebitelských úvěrů. Hypotéku lze použít na koupi bytu, domu, pozemku, výstavbu nebo rekonstrukci. Typická doba splatnosti je 15 až 30 let." }
-            },
-            {
-                "@type": "Question",
-                "name": "Jaké jsou aktuální podmínky ČNB pro získání hypotéky?",
-                "acceptedAnswer": { "@type": "Answer", "text": "Česká národní banka stanovuje závazný limit LTV (poměr úvěru k hodnotě nemovitosti): maximálně 80% pro žadatele nad 36 let a 90% pro žadatele do 36 let. Limity DTI a DSTI již nejsou závazné - ČNB je zrušila (DTI od 1.1.2024, DSTI od července 2023). Banky však stále posuzují bonitu klienta podle interních kritérií." }
-            },
-            {
-                "@type": "Question",
-                "name": "Co je to LTV a jak ovlivňuje hypotéku?",
-                "acceptedAnswer": { "@type": "Answer", "text": "LTV (Loan To Value) vyjadřuje poměr výše úvěru k hodnotě zastavované nemovitosti v procentech. Například při koupi nemovitosti za 5 milionů Kč a úvěru 4 miliony je LTV 80%. Podle nařízení ČNB je maximální LTV 80% (nad 36 let) nebo 90% (do 36 let). Čím nižší LTV, tím příznivější úroková sazba." }
-            },
-            {
-                "@type": "Question",
-                "name": "Jak dlouho trvá vyřízení hypotéky?",
-                "acceptedAnswer": { "@type": "Answer", "text": "Proces vyřízení hypotéky obvykle trvá 3-8 týdnů. Zahrnuje přípravu dokumentace (1 týden), posouzení žádosti bankou (1-2 týdny), ocenění nemovitosti (1-2 týdny) a finální schválení s čerpáním (1-2 týdny). S hypotečním specialistou lze proces zkrátit." }
-            },
-            {
-                "@type": "Question",
-                "name": "Jaké dokumenty potřebuji k žádosti o hypotéku?",
-                "acceptedAnswer": { "@type": "Answer", "text": "Základní dokumenty: doklad totožnosti, potvrzení o příjmech (posledních 3 měsíce) nebo daňová přiznání za poslední 2-3 roky pro OSVČ, výpisy z bankovních účtů za 3 měsíce, dokumenty k nemovitosti (kupní smlouva, výpis z katastru nemovitostí). Konkrétní požadavky se liší podle banky." }
-            },
-            {
-                "@type": "Question",
-                "name": "Lze získat hypotéku bez vlastních úspor?",
-                "acceptedAnswer": { "@type": "Answer", "text": "Podle nařízení ČNB je maximální LTV 80% (nad 36 let) nebo 90% (do 36 let), takže minimálně 10-20% hodnoty nemovitosti musíte pokrýt vlastními prostředky. Hypotéka na 100% hodnoty nemovitosti je tedy možná pouze ve výjimečných případech s výbornou bonitou, vyšší úrokovou sazbou a za přísnějších podmínek." }
-            },
-            {
-                "@type": "Question",
-                "name": "Jaký je rozdíl mezi fixací úrokové sazby?",
-                "acceptedAnswer": { "@type": "Answer", "text": "Fixace určuje období, po které zůstane úroková sazba nezměněná. Nejčastější jsou fixace na 1, 3, 5 nebo 10 let. Kratší fixace obvykle nabízejí nižší sazby, ale vyšší riziko růstu po skončení fixace. Delší fixace poskytují jistotu stabilních splátek. Po skončení fixace můžete refinancovat nebo sjednat novou fixaci." }
-            },
-            {
-                "@type": "Question",
-                "name": "Mohu předčasně splatit hypotéku a jaké jsou podmínky od roku 2024?",
-                "acceptedAnswer": { "@type": "Answer", "text": "Od 1.9.2024 platí nová pravidla: 1) Mimořádná splátka až 25% jistiny jednou ročně (měsíc před výročím smlouvy) - ZDARMA. 2) Předčasné splacení během fixace: poplatek max. 0,25% z předčasně splacené částky za každý započatý rok do konce fixace, celkem max. 1%. 3) Zdarma: na konci fixace, při prodeji nemovitosti (po 2 letech), při rozvodu (vypořádání SJM po 2 letech), při závažné nemoci, invaliditě nebo úmrtí." }
-            },
-            {
-                "@type": "Question",
-                "name": "Co je to hypoteční kalkulačka?",
-                "acceptedAnswer": { "@type": "Answer", "text": "Hypoteční kalkulačka je online nástroj pro orientační výpočet měsíční splátky na základě výše úvěru, úrokové sazby a doby splatnosti. Pomůže odhadnout, jakou hypotéku si můžete dovolit. Naše AI kalkulačka navíc poskytuje personalizovaná doporučení a porovnává nabídky více bank." }
-            },
-            {
-                "@type": "Question",
-                "name": "Lze refinancovat stávající hypotéku?",
-                "acceptedAnswer": { "@type": "Answer", "text": "Ano, refinancování znamená převedení hypotéky k jiné bance s výhodnějšími podmínkami. Nejvýhodnější je refinancovat na konci fixace, kdy nehrozí sankce. Při refinancování během fixace platí od 1.9.2024 poplatek až 1% podle zbývající doby do konce fixace. Refinancování dává smysl při rozdílu sazeb alespoň 0,5 procentního bodu." }
-            },
-            {
-                "@type": "Question",
-                "name": "Jak AI pomáhá při výběru hypotéky?",
-                "acceptedAnswer": { "@type": "Answer", "text": "AI systém analyzuje vaši finanční situaci a srovnává nabídky všech bank v reálném čase. Zohledňuje aktuální úrokové sazby, poplatky, bonitu a doporučuje nejvhodnější produkty. Získáte personalizované doporučení během minut místo týdnů manuálního srovnávání." }
-            },
-            {
-                "@type": "Question",
-                "name": "Co je to RPSN a proč je důležité?",
-                "acceptedAnswer": { "@type": "Answer", "text": "RPSN (Roční Procentní Sazba Nákladů) vyjadřuje skutečné celkové náklady hypotéky včetně úroku a všech poplatků za rok. Na rozdíl od pouhé úrokové sazby zahrnuje poplatky za vyřízení, vedení účtu, ocenění nemovitosti a další. RPSN umožňuje objektivně porovnat nabídky různých bank. Vždy se ptejte na RPSN, ne pouze na úrokovou sazbu." }
-            },
-            {
-                "@type": "Question",
-                "name": "Mohu získat hypotéku jako OSVČ?",
-                "acceptedAnswer": { "@type": "Answer", "text": "Ano, OSVČ může získat hypotéku. Musíte doložit daňová přiznání za poslední 2-3 roky a prokázat stabilní příjem. Banky obvykle požadují minimálně 2 roky podnikání. Podmínky mohou být přísnější než u zaměstnanců (vyšší úroková sazba, nižší LTV). S hypotečním specialistou lze najít optimální nabídku." }
-            },
-            {
-                "@type": "Question",
-                "name": "Jaké pojištění je nutné k hypotéce?",
-                "acceptedAnswer": { "@type": "Answer", "text": "Povinné je pojištění nemovitosti proti škodám (požár, povodeň, živelné pohromy). Pojištění schopnosti splácet není ze zákona povinné, ale většina bank ho vyžaduje nebo za něj nabízí lepší úrokovou sazbu (slevu 0,1-0,3%). Pojištění schopnosti splácet chrání vás i rodinu při nemoci, úrazu, invaliditě nebo ztrátě zaměstnání." }
-            },
-            {
-                "@type": "Question",
-                "name": "Co se stane, když nevyčerpám celou hypotéku?",
-                "acceptedAnswer": { "@type": "Answer", "text": "Pokud nevyčerpáte celou schválenou výši hypotéky, může banka účtovat sankci až 5% z nevyčerpané částky. Některé banky neuplatňují poplatek, pokud vyčerpáte alespoň 80% z schválené výše. Doporučuje se žádat o realistickou výši úvěru odpovídající skutečným nákladům." }
-            },
-            {
-                "@type": "Question",
-                "name": "Lze hypotéku převést na jinou osobu?",
-                "acceptedAnswer": { "@type": "Answer", "text": "Převod hypotéky na jinou osobu (změna dlužníka) je možný pouze se souhlasem banky. Nový dlužník musí splňovat všechny podmínky bonity a projít schvalovacím procesem. Častější je refinancování - nový majitel si vezme vlastní hypotéku a splatí původní úvěr. Vždy je nutný souhlas banky." }
-            }
-        ]
-    }
-    </script>
-    
+    <link rel="stylesheet" href="style.css">
     <style>
-        .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out, padding 0.3s ease-out; padding-top: 0; padding-bottom: 0; }
+        .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out, padding 0.3s ease-out; }
         .faq-answer.active { max-height: 1000px; padding-top: 1.25rem; padding-bottom: 1.25rem; }
-        .faq-question svg { transition: transform 0.3s ease-out; }
-        .faq-question.active svg { transform: rotate(45deg); }
-        .prose p { margin-bottom: 1em; }
     </style>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "Jak funguje AI hypoteční stratég?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Náš AI stratég okamžitě analyzuje vaši finanční situaci a porovná ji s aktuálními podmínkami 19+ bank. Během několika sekund vám poskytne přehled nejvýhodnějších sazeb, odhad vaší bonity a návrhy na optimalizaci. Slouží jako rychlý analytický nástroj, který vám šetří čas."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Je tato služba opravdu zdarma?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Ano, veškeré poradenství, srovnání i využití AI nástrojů je pro vás zcela zdarma. Naši odměnu dostáváme formou provize od banky, u které se vám podaří úspěšně vyřídit hypotéku. Tato provize nemá žádný vliv na výši vaší úrokové sazby nebo poplatků."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Můžu získat hypotéku jako OSVČ?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Ano, je to jedna z našich specializací. Zatímco některé banky posuzují OSVČ pouze podle nízkého daňového základu, naši experti vědí, které banky umí počítat příjem z obratu (tzv. obratová metodika). Díky tomu často dosáhneme na hypotéku i pro klienty, kteří daňově optimalizují."
-          }
-        }
-        {
-                "@type": "Question",
-                "name": "Co je to hypoteční kalkulačka?",
-                "acceptedAnswer": { "@type": "Answer", "text": "Hypoteční kalkulačka je online nástroj pro orientační výpočet měsíční splátky na základě výše úvěru, úrokové sazby a doby splatnosti. Pomůže odhadnout, jakou hypotéku si můžete dovolit. Naše AI kalkulačka navíc poskytuje personalizovaná doporučení a porovnává nabídky více bank." }
-            },
-            {
-                "@type": "Question",
-                "name": "Lze refinancovat stávající hypotéku?",
-                "acceptedAnswer": { "@type": "Answer", "text": "Ano, refinancování znamená převedení hypotéky k jiné bance s výhodnějšími podmínkami. Nejvýhodnější je refinancovat na konci fixace, kdy nehrozí sankce. Při refinancování během fixace platí od 1.9.2024 poplatek až 1% podle zbývající doby do konce fixace. Refinancování dává smysl při rozdílu sazeb alespoň 0,5 procentního bodu." }
-            },
-            {
-                "@type": "Question",
-                "name": "Jak AI pomáhá při výběru hypotéky?",
-                "acceptedAnswer": { "@type": "Answer", "text": "AI systém analyzuje vaši finanční situaci a srovnává nabídky všech bank v reálném čase. Zohledňuje aktuální úrokové sazby, poplatky, bonitu a doporučuje nejvhodnější produkty. Získáte personalizované doporučení během minut místo týdnů manuálního srovnávání." }
-            },
-            {
-                "@type": "Question",
-                "name": "Co je to RPSN a proč je důležité?",
-                "acceptedAnswer": { "@type": "Answer", "text": "RPSN (Roční Procentní Sazba Nákladů) vyjadřuje skutečné celkové náklady hypotéky včetně úroku a všech poplatků za rok. Na rozdíl od pouhé úrokové sazby zahrnuje poplatky za vyřízení, vedení účtu, ocenění nemovitosti a další. RPSN umožňuje objektivně porovnat nabídky různých bank. Vždy se ptejte na RPSN, ne pouze na úrokovou sazbu." }
-            },
-            {
-                "@type": "Question",
-                "name": "Mohu získat hypotéku jako OSVČ?",
-                "acceptedAnswer": { "@type": "Answer", "text": "Ano, OSVČ může získat hypotéku. Musíte doložit daňová přiznání za poslední 2-3 roky a prokázat stabilní příjem. Banky obvykle požadují minimálně 2 roky podnikání. Podmínky mohou být přísnější než u zaměstnanců (vyšší úroková sazba, nižší LTV). S hypotečním specialistou lze najít optimální nabídku." }
-            },
-            {
-                "@type": "Question",
-                "name": "Jaké pojištění je nutné k hypotéce?",
-                "acceptedAnswer": { "@type": "Answer", "text": "Povinné je pojištění nemovitosti proti škodám (požár, povodeň, živelné pohromy). Pojištění schopnosti splácet není ze zákona povinné, ale většina bank ho vyžaduje nebo za něj nabízí lepší úrokovou sazbu (slevu 0,1-0,3%). Pojištění schopnosti splácet chrání vás i rodinu při nemoci, úrazu, invaliditě nebo ztrátě zaměstnání." }
-            },
-            {
-                "@type": "Question",
-                "name": "Co se stane, když nevyčerpám celou hypotéku?",
-                "acceptedAnswer": { "@type": "Answer", "text": "Pokud nevyčerpáte celou schválenou výši hypotéky, může banka účtovat sankci až 5% z nevyčerpané částky. Některé banky neuplatňují poplatek, pokud vyčerpáte alespoň 80% z schválené výše. Doporučuje se žádat o realistickou výši úvěru odpovídající skutečným nákladům." }
-            },
-            {
-                "@type": "Question",
-                "name": "Lze hypotéku převést na jinou osobu?",
-                "acceptedAnswer": { "@type": "Answer", "text": "Převod hypotéky na jinou osobu (změna dlužníka) je možný pouze se souhlasem banky. Nový dlužník musí splňovat všechny podmínky bonity a projít schvalovacím procesem. Častější je refinancování - nový majitel si vezme vlastní hypotéku a splatí původní úvěr. Vždy je nutný souhlas banky." }
-            }
-          ]
-    </script>
 </head>
-<body class="bg-gray-50 text-gray-800 antialiased">
+<body class="bg-slate-50 text-slate-800 antialiased font-['Inter']">
 
-    <header class="bg-white/95 backdrop-blur-lg sticky top-0 z-30 shadow-sm">
-        <nav class="container mx-auto px-4 sm:px-6 py-2.5 flex justify-between items-center">
-            
-            <a href="index.html" class="flex items-center">
-                <img src="logo.png" alt="Hypoteky Ai Logo" class="h-10 sm:h-12 w-auto">
-            </a>
-            
-            <div class="hidden md:flex items-center space-x-4 lg:space-x-6">
-                <a href="index.html#kalkulacka" class="nav-link text-sm">Kalkulačka</a>
-                <a href="index.html#premium-features" class="nav-link text-sm">Premium funkce</a>
-                <a href="faq.html" class="nav-link text-sm">FAQ</a> <a href="index.html#o-nas" class="nav-link text-sm">O nás</a>
-                <a href="index.html#pripadove-studie" class="nav-link text-sm">Příběhy</a>
-                <a href="index.html#myty-fakta" class="nav-link text-sm">Mýty</a>
-                <a href="index.html#partneri" class="nav-link text-sm">Partneři</a>
-            </div>
-            
-            <div class="flex items-center space-x-2 sm:space-x-4">
-                 <a href="index.html#kontakt" class="nav-btn text-sm px-3 sm:px-4 py-2">📞 Specialista</a>
-                 <button id="mobile-menu-button" class="md:hidden p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
-                 </button>
-            </div>
-        </nav>
-        
-        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200">
-            <a href="index.html#kalkulacka" class="block py-2.5 px-6 text-sm text-gray-700 hover:bg-gray-50">Kalkulačka</a>
-            <a href="index.html#premium-features" class="block py-2.5 px-6 text-sm text-gray-700 hover:bg-gray-50">Premium funkce</a>
-            <a href="faq.html" class="block py-2.5 px-6 text-sm text-gray-700 hover:bg-gray-50">FAQ</a> <a href="index.html#o-nas" class="block py-2.5 px-6 text-sm text-gray-700 hover:bg-gray-50">O nás</a>
-            <a href="index.html#pripadove-studie" class="block py-2.5 px-6 text-sm text-gray-700 hover:bg-gray-50">Příběhy klientů</a>
-            <a href="index.html#myty-fakta" class="block py-2.5 px-6 text-sm text-gray-700 hover:bg-gray-50">Mýty a fakta</a>
-            <a href="index.html#partneri" class="block py-2.5 px-6 text-sm text-gray-700 hover:bg-gray-50">Partneři</a>
-        </div>
-        
-        <div class="bg-blue-600 text-white py-1 border-t border-blue-700 shadow-inner hidden sm:flex sm:items-center sm:justify-center">
-            <div class="container mx-auto px-4 sm:px-6">
-                <div class="flex flex-row flex-wrap justify-center items-center gap-x-4 gap-y-1 sm:gap-x-5 text-xs sm:text-[13px] font-medium">
-                    <span class="flex items-center whitespace-nowrap"><span class="text-sm mr-1">🔒</span> Zabezpečeno SSL</span>
-                    <span class="flex items-center whitespace-nowrap"><span class="text-sm mr-1">✓</span> GDPR Compliant</span>
-                    <span class="flex items-center whitespace-nowrap"><span class="text-sm mr-1">📊</span> Real-time data</span>
-                </div>
-            </div>
-        </div>
+    <header class="bg-white shadow-sm border-b border-slate-200 px-6 py-4 flex items-center sticky top-0 z-50">
+        <a href="index.html" class="font-extrabold text-xl text-slate-900">Hypoteky<span class="text-blue-600">Ai</span></a>
+        <span class="ml-4 text-sm text-slate-500 font-medium">/ Časté dotazy</span>
     </header>
-    
-    <main class="container mx-auto px-4 sm:px-6 py-12 md:py-16">
-        
-        <header class="text-center mb-10 md:mb-12">
-            <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-3">❓ Často kladené otázky</h1>
-            <p class="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">Aktuální odpovědi podle nařízení ČNB a zákonů platných.</p>
+
+    <main class="container mx-auto px-4 py-12 max-w-4xl">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-extrabold text-slate-900 mb-3">❓ Často kladené otázky</h1>
         </header>
 
-        <div class="max-w-4xl mx-auto space-y-4">
-            
-            <!-- Otázka 1 -->
-            <div class="faq-item bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                <div class="faq-question flex justify-between items-center p-5 cursor-pointer bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition duration-150">
-                    <h2 class="text-base sm:text-lg font-semibold text-gray-800">Co je to hypotéka a jak funguje?</h2>
-                    <svg class="w-6 h-6 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"></path></svg>
-                </div>
-                <div class="faq-answer px-5 bg-white">
-                    <div class="prose prose-sm sm:prose-base max-w-none text-gray-700 py-5">
-                       <p>Hypotéka je účelový úvěr zajištěný zástavním právem k nemovitosti, určený k financování bydlení. Díky zajištění nemovitostí nabízejí banky nižší úrokové sazby než u běžných spotřebitelských úvěrů. Hypotéku lze použít na koupi bytu, domu, pozemku, výstavbu nebo rekonstrukci. Typická doba splatnosti je 15 až 30 let.</p>
-                    </div>
+        <div class="space-y-4">
+            <!-- Vložených 16 otázek -->
+            <div class="faq-item bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <button class="faq-question w-full flex justify-between items-center p-6 text-left focus:outline-none hover:bg-slate-50 transition-colors">
+                    <span class="font-bold text-lg text-slate-800">Co je to hypotéka a jak funguje?</span>
+                    <svg class="w-6 h-6 text-blue-600 transform transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                <div class="faq-answer px-6 bg-slate-50 text-slate-600 text-sm leading-relaxed border-t border-slate-100 hidden">
+                    <p>Hypotéka je účelový úvěr zajištěný zástavním právem k nemovitosti, určený k financování bydlení. Díky zajištění nemovitostí nabízejí banky nižší úrokové sazby než u běžných spotřebitelských úvěrů. Hypotéku lze použít na koupi bytu, domu, pozemku, výstavbu nebo rekonstrukci. Typická doba splatnosti je 15 až 30 let.</p>
                 </div>
             </div>
 
-            <!-- Otázka 2 -->
-            <div class="faq-item bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                <div class="faq-question flex justify-between items-center p-5 cursor-pointer bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition duration-150">
-                    <h2 class="text-base sm:text-lg font-semibold text-gray-800">Jaké jsou aktuální podmínky ČNB pro získání hypotéky?</h2>
-                    <svg class="w-6 h-6 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"></path></svg>
-                </div>
-                <div class="faq-answer px-5 bg-white">
-                     <div class="prose prose-sm sm:prose-base max-w-none text-gray-700 py-5">
-                       <p><strong>Česká národní banka stanovuje závazný limit LTV</strong> (poměr úvěru k hodnotě nemovitosti): maximálně <strong>80% pro žadatele nad 36 let</strong> a <strong>90% pro žadatele do 36 let</strong>.</p>
-                       <p>Limity DTI a DSTI již <strong>nejsou závazné</strong> - ČNB je zrušila (DTI od 1.1.2024, DSTI od července 2023). Banky však stále posuzují bonitu klienta podle interních kritérií.</p>
-                    </div>
+            <div class="faq-item bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <button class="faq-question w-full flex justify-between items-center p-6 text-left focus:outline-none hover:bg-slate-50 transition-colors">
+                    <span class="font-bold text-lg text-slate-800">Jaké jsou aktuální podmínky ČNB pro získání hypotéky?</span>
+                    <svg class="w-6 h-6 text-blue-600 transform transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                <div class="faq-answer px-6 bg-slate-50 text-slate-600 text-sm leading-relaxed border-t border-slate-100 hidden">
+                    <p>Česká národní banka stanovuje závazný limit LTV (poměr úvěru k hodnotě nemovitosti): maximálně 80% pro žadatele nad 36 let a 90% pro žadatele do 36 let. Limity DTI a DSTI již nejsou závazné - ČNB je zrušila. Banky však stále posuzují bonitu klienta podle interních kritérií.</p>
                 </div>
             </div>
 
-            <!-- Otázka 3 -->
-            <div class="faq-item bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                <div class="faq-question flex justify-between items-center p-5 cursor-pointer bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition duration-150">
-                    <h2 class="text-base sm:text-lg font-semibold text-gray-800">Co je to LTV a jak ovlivňuje hypotéku?</h2>
-                    <svg class="w-6 h-6 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"></path></svg>
-                </div>
-                <div class="faq-answer px-5 bg-white">
-                     <div class="prose prose-sm sm:prose-base max-w-none text-gray-700 py-5">
-                       <p>LTV (Loan To Value) vyjadřuje poměr výše úvěru k hodnotě zastavované nemovitosti v procentech. Například při koupi nemovitosti za 5 milionů Kč a úvěru 4 miliony je LTV 80%.</p>
-                       <p>Podle nařízení ČNB je <strong>maximální LTV 80%</strong> (nad 36 let) nebo <strong>90%</strong> (do 36 let). Čím nižší LTV, tím příznivější úroková sazba.</p>
-                    </div>
+            <div class="faq-item bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <button class="faq-question w-full flex justify-between items-center p-6 text-left focus:outline-none hover:bg-slate-50 transition-colors">
+                    <span class="font-bold text-lg text-slate-800">Co je to LTV a jak ovlivňuje hypotéku?</span>
+                    <svg class="w-6 h-6 text-blue-600 transform transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                <div class="faq-answer px-6 bg-slate-50 text-slate-600 text-sm leading-relaxed border-t border-slate-100 hidden">
+                    <p>LTV (Loan To Value) vyjadřuje poměr výše úvěru k hodnotě zastavované nemovitosti v procentech. Například při koupi nemovitosti za 5 milionů Kč a úvěru 4 miliony je LTV 80%. Podle nařízení ČNB je maximální LTV 80% (nad 36 let) nebo 90% (do 36 let). Čím nižší LTV, tím příznivější úroková sazba.</p>
                 </div>
             </div>
 
-            <!-- Otázka 4 -->
-            <div class="faq-item bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                <div class="faq-question flex justify-between items-center p-5 cursor-pointer bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition duration-150">
-                    <h2 class="text-base sm:text-lg font-semibold text-gray-800">Jak dlouho trvá vyřízení hypotéky?</h2>
-                    <svg class="w-6 h-6 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"></path></svg>
-                </div>
-                <div class="faq-answer px-5 bg-white">
-                     <div class="prose prose-sm sm:prose-base max-w-none text-gray-700 py-5">
-                       <p>Proces vyřízení hypotéky obvykle trvá <strong>3-8 týdnů</strong>. Zahrnuje přípravu dokumentace (1 týden), posouzení žádosti bankou (1-2 týdny), ocenění nemovitosti (1-2 týdny) a finální schválení s čerpáním (1-2 týdny). S hypotečním specialistou lze proces zkrátit.</p>
-                    </div>
+            <div class="faq-item bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <button class="faq-question w-full flex justify-between items-center p-6 text-left focus:outline-none hover:bg-slate-50 transition-colors">
+                    <span class="font-bold text-lg text-slate-800">Jak dlouho trvá vyřízení hypotéky?</span>
+                    <svg class="w-6 h-6 text-blue-600 transform transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                <div class="faq-answer px-6 bg-slate-50 text-slate-600 text-sm leading-relaxed border-t border-slate-100 hidden">
+                    <p>Proces vyřízení hypotéky obvykle trvá 3-8 týdnů. Zahrnuje přípravu dokumentace (1 týden), posouzení žádosti bankou (1-2 týdny), ocenění nemovitosti (1-2 týdny) a finální schválení s čerpáním (1-2 týdny). S hypotečním specialistou lze proces zkrátit.</p>
                 </div>
             </div>
 
-            <!-- Otázka 5 -->
-             <div class="faq-item bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                <div class="faq-question flex justify-between items-center p-5 cursor-pointer bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition duration-150">
-                    <h2 class="text-base sm:text-lg font-semibold text-gray-800">Jaké dokumenty potřebuji k žádosti o hypotéku?</h2>
-                    <svg class="w-6 h-6 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"></path></svg>
-                </div>
-                <div class="faq-answer px-5 bg-white">
-                     <div class="prose prose-sm sm:prose-base max-w-none text-gray-700 py-5">
-                        <p>Základní dokumenty: doklad totožnosti, potvrzení o příjmech (posledních 3 měsíce) nebo daňová přiznání za poslední 2-3 roky pro OSVČ, výpisy z bankovních účtů za 3 měsíce, dokumenty k nemovitosti (kupní smlouva, výpis z katastru nemovitostí). Konkrétní požadavky se liší podle banky.</p>
-                    </div>
+            <div class="faq-item bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <button class="faq-question w-full flex justify-between items-center p-6 text-left focus:outline-none hover:bg-slate-50 transition-colors">
+                    <span class="font-bold text-lg text-slate-800">Jaké dokumenty potřebuji k žádosti o hypotéku?</span>
+                    <svg class="w-6 h-6 text-blue-600 transform transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                <div class="faq-answer px-6 bg-slate-50 text-slate-600 text-sm leading-relaxed border-t border-slate-100 hidden">
+                    <p>Základní dokumenty: doklad totožnosti, potvrzení o příjmech (posledních 3 měsíce) nebo daňová přiznání za poslední 2-3 roky pro OSVČ, výpisy z bankovních účtů za 3 měsíce, dokumenty k nemovitosti (kupní smlouva, výpis z katastru nemovitostí). Konkrétní požadavky se liší podle banky.</p>
                 </div>
             </div>
 
-            <!-- Otázka 6 -->
-            <div class="faq-item bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                <div class="faq-question flex justify-between items-center p-5 cursor-pointer bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition duration-150">
-                    <h2 class="text-base sm:text-lg font-semibold text-gray-800">Lze získat hypotéku bez vlastních úspor?</h2>
-                    <svg class="w-6 h-6 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"></path></svg>
-                </div>
-                <div class="faq-answer px-5 bg-white">
-                     <div class="prose prose-sm sm:prose-base max-w-none text-gray-700 py-5">
-                        <p>Podle nařízení ČNB je maximální LTV <strong>80%</strong> (nad 36 let) nebo <strong>90%</strong> (do 36 let), takže minimálně <strong>10-20% hodnoty nemovitosti musíte pokrýt vlastními prostředky</strong>.</p>
-                        <p>Hypotéka na 100% hodnoty nemovitosti je možná pouze ve výjimečných případech s výbornou bonitou, vyšší úrokovou sazbou a za přísnějších podmínek.</p>
-                    </div>
+            <div class="faq-item bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <button class="faq-question w-full flex justify-between items-center p-6 text-left focus:outline-none hover:bg-slate-50 transition-colors">
+                    <span class="font-bold text-lg text-slate-800">Lze získat hypotéku bez vlastních úspor?</span>
+                    <svg class="w-6 h-6 text-blue-600 transform transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                <div class="faq-answer px-6 bg-slate-50 text-slate-600 text-sm leading-relaxed border-t border-slate-100 hidden">
+                    <p>Podle nařízení ČNB je maximální LTV 80% (nad 36 let) nebo 90% (do 36 let), takže minimálně 10-20% hodnoty nemovitosti musíte pokrýt vlastními prostředky. Hypotéka na 100% hodnoty nemovitosti je tedy možná pouze ve výjimečných případech s výbornou bonitou, vyšší úrokovou sazbou a za přísnějších podmínek.</p>
                 </div>
             </div>
 
-            <!-- Otázka 7 -->
-            <div class="faq-item bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                <div class="faq-question flex justify-between items-center p-5 cursor-pointer bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition duration-150">
-                    <h2 class="text-base sm:text-lg font-semibold text-gray-800">Jaký je rozdíl mezi fixací úrokové sazby?</h2>
-                    <svg class="w-6 h-6 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"></path></svg>
-                </div>
-                <div class="faq-answer px-5 bg-white">
-                     <div class="prose prose-sm sm:prose-base max-w-none text-gray-700 py-5">
-                        <p>Fixace určuje období, po které zůstane úroková sazba nezměněná. Nejčastější jsou fixace na 1, 3, 5 nebo 10 let.</p>
-                        <p>Kratší fixace obvykle nabízejí nižší sazby, ale vyšší riziko růstu po skončení fixace. Delší fixace poskytují jistotu stabilních splátek. Po skončení fixace můžete refinancovat nebo sjednat novou fixaci.</p>
-                    </div>
+            <div class="faq-item bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <button class="faq-question w-full flex justify-between items-center p-6 text-left focus:outline-none hover:bg-slate-50 transition-colors">
+                    <span class="font-bold text-lg text-slate-800">Jaký je rozdíl mezi fixací úrokové sazby?</span>
+                    <svg class="w-6 h-6 text-blue-600 transform transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                <div class="faq-answer px-6 bg-slate-50 text-slate-600 text-sm leading-relaxed border-t border-slate-100 hidden">
+                    <p>Fixace určuje období, po které zůstane úroková sazba nezměněná. Nejčastější jsou fixace na 1, 3, 5 nebo 10 let. Kratší fixace obvykle nabízejí nižší sazby, ale vyšší riziko růstu po skončení fixace. Delší fixace poskytují jistotu stabilních splátek. Po skončení fixace můžete refinancovat nebo sjednat novou fixaci.</p>
                 </div>
             </div>
 
-            <!-- Otázka 8 - AKTUALIZOVÁNO -->
-            <div class="faq-item bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                <div class="faq-question flex justify-between items-center p-5 cursor-pointer bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition duration-150">
-                    <h2 class="text-base sm:text-lg font-semibold text-gray-800">Mohu předčasně splatit hypotéku a jaké jsou podmínky od roku 2024?</h2>
-                    <svg class="w-6 h-6 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"></path></svg>
-                </div>
-                <div class="faq-answer px-5 bg-white">
-                     <div class="prose prose-sm sm:prose-base max-w-none text-gray-700 py-5">
-                        <p><strong>Od 1.9.2024 platí nová pravidla:</strong></p>
-                        <p><strong>1) Mimořádná splátka ZDARMA:</strong> Jednou ročně můžete splatit až <strong>25% zbývající jistiny</strong> bez poplatku (měsíc před výročím smlouvy).</p>
-                        <p><strong>2) Předčasné splacení během fixace:</strong> Poplatek max. <strong>0,25% z předčasně splacené částky za každý započatý rok</strong> do konce fixace, celkem max. <strong>1%</strong>.</p>
-                        <p><strong>3) Předčasné splacení ZDARMA:</strong> Na konci fixace (3 měsíce po sdělení nové sazby), při prodeji nemovitosti (po 2 letech), při rozvodu (vypořádání SJM po 2 letech), při závažné nemoci, invaliditě nebo úmrtí.</p>
-                    </div>
+            <div class="faq-item bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <button class="faq-question w-full flex justify-between items-center p-6 text-left focus:outline-none hover:bg-slate-50 transition-colors">
+                    <span class="font-bold text-lg text-slate-800">Mohu předčasně splatit hypotéku?</span>
+                    <svg class="w-6 h-6 text-blue-600 transform transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                <div class="faq-answer px-6 bg-slate-50 text-slate-600 text-sm leading-relaxed border-t border-slate-100 hidden">
+                    <p>Od 1.9.2024 platí nová pravidla: 1) Mimořádná splátka až 25% jistiny jednou ročně (měsíc před výročím smlouvy) - ZDARMA. 2) Předčasné splacení během fixace: poplatek max. 0,25% z předčasně splacené částky za každý započatý rok do konce fixace, celkem max. 1%. 3) Zdarma: na konci fixace, při prodeji nemovitosti (po 2 letech), při rozvodu (vypořádání SJM po 2 letech), při závažné nemoci, invaliditě nebo úmrtí.</p>
                 </div>
             </div>
 
-            <!-- Otázka 9 -->
-            <div class="faq-item bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                <div class="faq-question flex justify-between items-center p-5 cursor-pointer bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition duration-150">
-                    <h2 class="text-base sm:text-lg font-semibold text-gray-800">Co je to hypoteční kalkulačka?</h2>
-                    <svg class="w-6 h-6 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"></path></svg>
-                </div>
-                <div class="faq-answer px-5 bg-white">
-                     <div class="prose prose-sm sm:prose-base max-w-none text-gray-700 py-5">
-                        <p>Hypoteční kalkulačka je online nástroj pro orientační výpočet měsíční splátky na základě výše úvěru, úrokové sazby a doby splatnosti. Pomůže odhadnout, jakou hypotéku si můžete dovolit. Naše AI kalkulačka navíc poskytuje personalizovaná doporučení a porovnává nabídky více bank.</p>
-                    </div>
+            <div class="faq-item bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <button class="faq-question w-full flex justify-between items-center p-6 text-left focus:outline-none hover:bg-slate-50 transition-colors">
+                    <span class="font-bold text-lg text-slate-800">Co je to hypoteční kalkulačka?</span>
+                    <svg class="w-6 h-6 text-blue-600 transform transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                <div class="faq-answer px-6 bg-slate-50 text-slate-600 text-sm leading-relaxed border-t border-slate-100 hidden">
+                    <p>Hypoteční kalkulačka je online nástroj pro orientační výpočet měsíční splátky na základě výše úvěru, úrokové sazby a doby splatnosti. Pomůže odhadnout, jakou hypotéku si můžete dovolit. Naše AI kalkulačka navíc poskytuje personalizovaná doporučení a porovnává nabídky více bank.</p>
                 </div>
             </div>
 
-            <!-- Otázka 10 -->
-            <div class="faq-item bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                <div class="faq-question flex justify-between items-center p-5 cursor-pointer bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition duration-150">
-                    <h2 class="text-base sm:text-lg font-semibold text-gray-800">Lze refinancovat stávající hypotéku?</h2>
-                    <svg class="w-6 h-6 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"></path></svg>
-                </div>
-                <div class="faq-answer px-5 bg-white">
-                     <div class="prose prose-sm sm:prose-base max-w-none text-gray-700 py-5">
-                        <p>Ano, refinancování znamená převedení hypotéky k jiné bance s výhodnějšími podmínkami. Nejvýhodnější je refinancovat na konci fixace, kdy nehrozí sankce.</p>
-                        <p>Při refinancování během fixace platí od 1.9.2024 poplatek až 1% podle zbývající doby do konce fixace. Refinancování dává smysl při rozdílu sazeb alespoň 0,5 procentního bodu.</p>
-                    </div>
+            <div class="faq-item bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <button class="faq-question w-full flex justify-between items-center p-6 text-left focus:outline-none hover:bg-slate-50 transition-colors">
+                    <span class="font-bold text-lg text-slate-800">Lze refinancovat stávající hypotéku?</span>
+                    <svg class="w-6 h-6 text-blue-600 transform transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                <div class="faq-answer px-6 bg-slate-50 text-slate-600 text-sm leading-relaxed border-t border-slate-100 hidden">
+                    <p>Ano, refinancování znamená převedení hypotéky k jiné bance s výhodnějšími podmínkami. Nejvýhodnější je refinancovat na konci fixace, kdy nehrozí sankce. Při refinancování během fixace platí od 1.9.2024 poplatek až 1% podle zbývající doby do konce fixace. Refinancování dává smysl při rozdílu sazeb alespoň 0,5 procentního bodu.</p>
                 </div>
             </div>
 
-            <!-- Otázka 11 -->
-            <div class="faq-item bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                <div class="faq-question flex justify-between items-center p-5 cursor-pointer bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition duration-150">
-                    <h2 class="text-base sm:text-lg font-semibold text-gray-800">Jak AI pomáhá při výběru hypotéky?</h2>
-                    <svg class="w-6 h-6 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"></path></svg>
-                </div>
-                <div class="faq-answer px-5 bg-white">
-                     <div class="prose prose-sm sm:prose-base max-w-none text-gray-700 py-5">
-                        <p>AI systém analyzuje vaši finanční situaci a srovnává nabídky všech bank v reálném čase. Zohledňuje aktuální úrokové sazby, poplatky, bonitu a doporučuje nejvhodnější produkty. Získáte personalizované doporučení během minut místo týdnů manuálního srovnávání.</p>
-                    </div>
+            <div class="faq-item bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <button class="faq-question w-full flex justify-between items-center p-6 text-left focus:outline-none hover:bg-slate-50 transition-colors">
+                    <span class="font-bold text-lg text-slate-800">Jak AI pomáhá při výběru hypotéky?</span>
+                    <svg class="w-6 h-6 text-blue-600 transform transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                <div class="faq-answer px-6 bg-slate-50 text-slate-600 text-sm leading-relaxed border-t border-slate-100 hidden">
+                    <p>AI systém analyzuje vaši finanční situaci a srovnává nabídky všech bank v reálném čase. Zohledňuje aktuální úrokové sazby, poplatky, bonitu a doporučuje nejvhodnější produkty. Získáte personalizované doporučení během minut místo týdnů manuálního srovnávání.</p>
                 </div>
             </div>
 
-            <!-- Otázka 12 - NOVÁ -->
-            <div class="faq-item bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                <div class="faq-question flex justify-between items-center p-5 cursor-pointer bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition duration-150">
-                    <h2 class="text-base sm:text-lg font-semibold text-gray-800">Co je to RPSN a proč je důležité?</h2>
-                    <svg class="w-6 h-6 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"></path></svg>
-                </div>
-                <div class="faq-answer px-5 bg-white">
-                     <div class="prose prose-sm sm:prose-base max-w-none text-gray-700 py-5">
-                        <p>RPSN (Roční Procentní Sazba Nákladů) vyjadřuje skutečné celkové náklady hypotéky včetně úroku a všech poplatků za rok. Na rozdíl od pouhé úrokové sazby zahrnuje poplatky za vyřízení, vedení účtu, ocenění nemovitosti a další.</p>
-                        <p>RPSN umožňuje objektivně porovnat nabídky různých bank. <strong>Vždy se ptejte na RPSN, ne pouze na úrokovou sazbu.</strong></p>
-                    </div>
+            <div class="faq-item bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <button class="faq-question w-full flex justify-between items-center p-6 text-left focus:outline-none hover:bg-slate-50 transition-colors">
+                    <span class="font-bold text-lg text-slate-800">Co je to RPSN a proč je důležité?</span>
+                    <svg class="w-6 h-6 text-blue-600 transform transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                <div class="faq-answer px-6 bg-slate-50 text-slate-600 text-sm leading-relaxed border-t border-slate-100 hidden">
+                    <p>RPSN (Roční Procentní Sazba Nákladů) vyjadřuje skutečné celkové náklady hypotéky včetně úroku a všech poplatků za rok. Na rozdíl od pouhé úrokové sazby zahrnuje poplatky za vyřízení, vedení účtu, ocenění nemovitosti a další. RPSN umožňuje objektivně porovnat nabídky různých bank. Vždy se ptejte na RPSN, ne pouze na úrokovou sazbu.</p>
                 </div>
             </div>
 
-            <!-- Otázka 13 - NOVÁ -->
-            <div class="faq-item bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                <div class="faq-question flex justify-between items-center p-5 cursor-pointer bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition duration-150">
-                    <h2 class="text-base sm:text-lg font-semibold text-gray-800">Mohu získat hypotéku jako OSVČ?</h2>
-                    <svg class="w-6 h-6 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"></path></svg>
-                </div>
-                <div class="faq-answer px-5 bg-white">
-                     <div class="prose prose-sm sm:prose-base max-w-none text-gray-700 py-5">
-                        <p>Ano, OSVČ může získat hypotéku. Musíte doložit daňová přiznání za poslední <strong>2-3 roky</strong> a prokázat stabilní příjem. Banky obvykle požadují minimálně <strong>2 roky podnikání</strong>.</p>
-                        <p>Podmínky mohou být přísnější než u zaměstnanců (vyšší úroková sazba, nižší LTV). S hypotečním specialistou lze najít optimální nabídku.</p>
-                    </div>
+            <div class="faq-item bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <button class="faq-question w-full flex justify-between items-center p-6 text-left focus:outline-none hover:bg-slate-50 transition-colors">
+                    <span class="font-bold text-lg text-slate-800">Mohu získat hypotéku jako OSVČ?</span>
+                    <svg class="w-6 h-6 text-blue-600 transform transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                <div class="faq-answer px-6 bg-slate-50 text-slate-600 text-sm leading-relaxed border-t border-slate-100 hidden">
+                    <p>Ano, OSVČ může získat hypotéku. Musíte doložit daňová přiznání za poslední 2-3 roky a prokázat stabilní příjem. Banky obvykle požadují minimálně 2 roky podnikání. Podmínky mohou být přísnější než u zaměstnanců (vyšší úroková sazba, nižší LTV). S hypotečním specialistou lze najít optimální nabídku.</p>
                 </div>
             </div>
 
-            <!-- Otázka 14 - NOVÁ -->
-            <div class="faq-item bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                <div class="faq-question flex justify-between items-center p-5 cursor-pointer bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition duration-150">
-                    <h2 class="text-base sm:text-lg font-semibold text-gray-800">Jaké pojištění je nutné k hypotéce?</h2>
-                    <svg class="w-6 h-6 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"></path></svg>
-                </div>
-                <div class="faq-answer px-5 bg-white">
-                     <div class="prose prose-sm sm:prose-base max-w-none text-gray-700 py-5">
-                        <p><strong>Povinné</strong> je pojištění nemovitosti proti škodám (požár, povodeň, živelné pohromy).</p>
-                        <p>Pojištění schopnosti splácet není ze zákona povinné, ale většina bank ho vyžaduje nebo za něj nabízí lepší úrokovou sazbu (slevu 0,1-0,3%). Pojištění schopnosti splácet chrání vás i rodinu při nemoci, úrazu, invaliditě nebo ztrátě zaměstnání.</p>
-                    </div>
+            <div class="faq-item bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <button class="faq-question w-full flex justify-between items-center p-6 text-left focus:outline-none hover:bg-slate-50 transition-colors">
+                    <span class="font-bold text-lg text-slate-800">Jaké pojištění je nutné k hypotéce?</span>
+                    <svg class="w-6 h-6 text-blue-600 transform transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                <div class="faq-answer px-6 bg-slate-50 text-slate-600 text-sm leading-relaxed border-t border-slate-100 hidden">
+                    <p>Povinné je pojištění nemovitosti proti škodám (požár, povodeň, živelné pohromy). Pojištění schopnosti splácet není ze zákona povinné, ale většina bank ho vyžaduje nebo za něj nabízí lepší úrokovou sazbu (slevu 0,1-0,3%). Pojištění schopnosti splácet chrání vás i rodinu při nemoci, úrazu, invaliditě nebo ztrátě zaměstnání.</p>
                 </div>
             </div>
 
-            <!-- Otázka 15 - NOVÁ -->
-            <div class="faq-item bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                <div class="faq-question flex justify-between items-center p-5 cursor-pointer bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition duration-150">
-                    <h2 class="text-base sm:text-lg font-semibold text-gray-800">Co se stane, když nevyčerpám celou hypotéku?</h2>
-                    <svg class="w-6 h-6 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"></path></svg>
-                </div>
-                <div class="faq-answer px-5 bg-white">
-                     <div class="prose prose-sm sm:prose-base max-w-none text-gray-700 py-5">
-                        <p>Pokud nevyčerpáte celou schválenou výši hypotéky, může banka účtovat sankci <strong>až 5% z nevyčerpané částky</strong>.</p>
-                        <p>Některé banky neuplatňují poplatek, pokud vyčerpáte alespoň <strong>80% z schválené výše</strong>. Doporučuje se žádat o realistickou výši úvěru odpovídající skutečným nákladům.</p>
-                    </div>
+            <div class="faq-item bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <button class="faq-question w-full flex justify-between items-center p-6 text-left focus:outline-none hover:bg-slate-50 transition-colors">
+                    <span class="font-bold text-lg text-slate-800">Co se stane, když nevyčerpám celou hypotéku?</span>
+                    <svg class="w-6 h-6 text-blue-600 transform transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                <div class="faq-answer px-6 bg-slate-50 text-slate-600 text-sm leading-relaxed border-t border-slate-100 hidden">
+                    <p>Pokud nevyčerpáte celou schválenou výši hypotéky, může banka účtovat sankci až 5% z nevyčerpané částky. Některé banky neuplatňují poplatek, pokud vyčerpáte alespoň 80% z schválené výše. Doporučuje se žádat o realistickou výši úvěru odpovídající skutečným nákladům.</p>
                 </div>
             </div>
 
-            <!-- Otázka 16 - NOVÁ -->
-            <div class="faq-item bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                <div class="faq-question flex justify-between items-center p-5 cursor-pointer bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition duration-150">
-                    <h2 class="text-base sm:text-lg font-semibold text-gray-800">Lze hypotéku převést na jinou osobu?</h2>
-                    <svg class="w-6 h-6 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"></path></svg>
-                </div>
-                <div class="faq-answer px-5 bg-white">
-                     <div class="prose prose-sm sm:prose-base max-w-none text-gray-700 py-5">
-                        <p>Převod hypotéky na jinou osobu (změna dlužníka) je možný pouze se souhlasem banky. Nový dlužník musí splňovat všechny podmínky bonity a projít schvalovacím procesem.</p>
-                        <p>Častější je refinancování - nový majitel si vezme vlastní hypotéku a splatí původní úvěr. <strong>Vždy je nutný souhlas banky.</strong></p>
-                    </div>
+            <div class="faq-item bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <button class="faq-question w-full flex justify-between items-center p-6 text-left focus:outline-none hover:bg-slate-50 transition-colors">
+                    <span class="font-bold text-lg text-slate-800">Lze hypotéku převést na jinou osobu?</span>
+                    <svg class="w-6 h-6 text-blue-600 transform transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                <div class="faq-answer px-6 bg-slate-50 text-slate-600 text-sm leading-relaxed border-t border-slate-100 hidden">
+                    <p>Převod hypotéky na jinou osobu (změna dlužníka) je možný pouze se souhlasem banky. Nový dlužník musí splňovat všechny podmínky bonity a projít schvalovacím procesem. Častější je refinancování - nový majitel si vezme vlastní hypotéku a splatí původní úvěr. Vždy je nutný souhlas banky.</p>
                 </div>
             </div>
             
-            <div class="faq-item bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                <div class="faq-question flex justify-between items-center p-5 cursor-pointer bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition duration-150">
-                    <h2 class="text-base sm:text-lg font-semibold text-gray-800">Jak banka posuzuje můj příjem, když jsem OSVČ?</h2>
-                    <svg class="w-6 h-6 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"></path></svg>
-                </div>
-                <div class="faq-answer px-5 bg-white">
-                     <div class="prose prose-sm sm:prose-base max-w-none text-gray-700 py-5">
-                        <p>Banky se v tomto liší, což je naše velká výhoda. Standardní banky se dívají pouze na váš <strong>daňový základ (zisk)</strong> po optimalizaci, který může být nízký.</p>
-                        <p>Naši experti ale spolupracují s bankami, které umí bonitu vypočítat i z vašeho <strong>celkového obratu</strong> (např. 15-25 % z obratu). Díky tomu často dosáhnou na hypotéku i klienti, kteří by jinde neuspěli.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="faq-item bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                <div class="faq-question flex justify-between items-center p-5 cursor-pointer bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition duration-150">
-                    <h2 class="text-base sm:text-lg font-semibold text-gray-800">Mám záznam v registru (SOLUS/BRKI). Dostanu hypotéku?</h2>
-                    <svg class="w-6 h-6 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"></path></svg>
-                </div>
-                <div class="faq-answer px-5 bg-white">
-                     <div class="prose prose-sm sm:prose-base max-w-none text-gray-700 py-5">
-                        <p>Záleží na závažnosti záznamu. Pokud se jedná o starý, uhrazený "prohřešek" (např. opožděná faktura za telefon), většina bank to po vysvětlení akceptuje.</p>
-                        <p>Problém nastává u aktivních exekucí, insolvence nebo dluhů po splatnosti 30+ dní – to je téměř vždy stopka. Náš specialista umí váš záznam zdarma posoudit a říct, zda je situace řešitelná.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="faq-item bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                <div class="faq-question flex justify-between items-center p-5 cursor-pointer bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition duration-150">
-                    <h2 class="text-base sm:text-lg font-semibold text-gray-800">Proč je odhad nemovitosti od banky nižší než kupní cena?</h2>
-                    <svg class="w-6 h-6 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"></path></svg>
-                </div>
-                <div class="faq-answer px-5 bg-white">
-                     <div class="prose prose-sm sm:prose-base max-w-none text-gray-700 py-5">
-                        <p>Toto je velmi častý problém. Kupní cena je tržní hodnota (co jste ochotni zaplatit), ale <strong>odhadní cena</strong> je pro banku "jistota" (cena, za kterou se nemovitost rychle prodá, kdybyste nespláceli). Odhadci jsou z principu opatrní.</p>
-                        <p><strong>Hodnota specialisty:</strong> Náš expert ví, která banka má pro jakou lokalitu vstřícnější odhadce (interní vs. externí). Pokud odhad vyjde špatně, umíme také podat žádost o <strong>supervizi (přezkoumání)</strong> a odhad často vylepšit.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="faq-item bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                <div class="faq-question flex justify-between items-center p-5 cursor-pointer bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition duration-150">
-                    <h2 class="text-base sm:text-lg font-semibold text-gray-800">Co přesně znamená LTV 80 % vs 90 %?</h2>
-                    <svg class="w-6 h-6 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"></path></svg>
-                </div>
-                <div class="faq-answer px-5 bg-white">
-                     <div class="prose prose-sm sm:prose-base max-w-none text-gray-700 py-5">
-                        <p>LTV (Loan-to-Value) je poměr výše úvěru k odhadní hodnotě nemovitosti.</p>
-                        <ul class="list-disc pl-5">
-                            <li><strong>LTV do 80 %:</strong> Znamená, že máte alespoň 20 % vlastních zdrojů. Pro banku jste méně rizikový klient a dostanete <strong>nejlepší úrokové sazby</strong> na trhu.</li>
-                            <li><strong>LTV 90 %:</strong> Znamená, že máte jen 10 % vlastních zdrojů. Banka podstupuje vyšší riziko, a proto je taková hypotéka <strong>vždy dražší</strong> (má vyšší úrokovou sazbu, často o 0.5 % - 1.0 % více).</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-        
-        <div class="text-center mt-12 md:mt-16">
-            <p class="text-gray-600 mb-4">Máte jasno? Vyzkoušejte naše nástroje:</p>
-            <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                 <a href="index.html#kalkulacka" class="nav-btn bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800">
-                    🚀 Spustit AI Kalkulačku
-                </a>
-                <a href="index.html#kalkulacka" data-mode="ai" class="nav-btn bg-white hover:bg-gray-50 text-blue-600 border-2 border-blue-600 scroll-to" data-target="#kalkulacka">
-                    💬 Zeptat se AI Asistenta
-                </a>
-            </div>
         </div>
 
-        <div class="contact-box text-center mt-12 md:mt-16">
-            <h2 class="text-2xl font-bold mb-3">Nenašli jste odpověď?</h2>
-            <p class="text-gray-600 mb-6">Náš tým hypotečních specialistů vám rád poradí.</p>
-            <button data-action="show-faq-contact" class="inline-block px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow hover:bg-blue-700 transition duration-150">
-                📞 Kontaktujte specialistu
-            </button>
+        <div class="text-center mt-12">
+            <a href="index.html" class="inline-block bg-slate-900 hover:bg-blue-600 text-white font-bold px-8 py-3 rounded-xl transition-colors">
+                ← Zpět na AI Kalkulačku
+            </a>
         </div>
-
-        <section id="kontakt" class="hidden mt-16 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 sm:p-8 md:p-10 rounded-xl sm:rounded-2xl border-blue-200 border scroll-mt-20">
-             <div class="text-center max-w-2xl mx-auto">
-                <h2 class="text-2xl sm:text-3xl font-bold mb-2">Získejte osobní nabídku od specialisty</h2>
-                <p class="text-sm sm:text-base text-gray-600 mb-6">Naše služby jsou pro vás zcela zdarma. Ozveme se do 24 hodin.</p>
-                 <form id="lead-form" class="space-y-4 text-left" name="lead-form" data-netlify="true" netlify-honeypot="bot-field">
-                    <input type="hidden" name="form-name" value="lead-form" />
-                    <p class="hidden"><label>Nevyplňujte: <input name="bot-field" /></label></p>
-                    <input type="hidden" name="extraData" />
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div><label for="name" class="form-label">Jméno a příjmení *</label><input type="text" id="name" name="name" required pattern="^[A-Za-zÀ-ž\s]{2,}(\s[A-Za-zÀ-ž\s]{2,})?$" title="Zadejte platné jméno." class="modern-input"></div>
-                        <div><label for="phone" class="form-label">Telefon *</label><input type="tel" id="phone" name="phone" required pattern="^(\+420)? ?[1-9][0-9]{2} ?[0-9]{3} ?[0-9]{3}$" title="Zadejte platné 9místné číslo." class="modern-input"></div>
-                        <div class="md:col-span-2"><label for="email" class="form-label">E-mail *</label><input type="email" id="email" name="email" required class="modern-input"></div>
-                        <div class="md:col-span-2"><label for="contact-time" class="form-label">Kdy vás můžeme kontaktovat?</label><select id="contact-time" name="contact-time" class="modern-select"><option value="kdykoliv">Kdykoliv</option><option value="rano">Ráno</option><option value="odpoledne">Odpoledne</option><option value="vecer">Večer</option></select></div>
-                        <div class="md:col-span-2"><label for="note" class="form-label">Poznámka</label><textarea id="note" name="note" rows="3" class="modern-input" placeholder="Např. mám zájem o refinancování, potřebuji poradit s výběrem..."></textarea></div>
-                    </div>
-                     <div class="pt-2 text-center">
-                        <p class="text-xs text-gray-500 mb-4">Odesláním souhlasíte se <a href="podminky-pouziti.html" class="underline hover:text-blue-600">zpracováním osobních údajů</a>.</p>
-                        <button type="submit" id="submit-lead-btn" class="w-full md:w-auto nav-btn bg-green-600 hover:bg-green-700 text-base sm:text-lg">📞 Odeslat nezávazně</button>
-                    </div>
-                </form>
-                <div id="form-success" class="hidden mt-6 text-center p-4 bg-green-100 text-green-800 rounded-lg">
-                    <h3 class="font-bold">✅ Děkujeme!</h3><p>Ozveme se vám co nejdříve.</p>
-                </div>
-             </div>
-        </section>
-
     </main>
-    
-    <footer class="bg-gray-800 text-white mt-16">
-        <div class="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
-             <div class="text-center text-xs sm:text-sm text-gray-400">
-                <p>&copy; 2025 Hypoteky Ai. Všechna práva vyhrazena.</p>
-                <div class="mt-3 sm:mt-4">
-                    <a href="podminky-pouziti.html" class="hover:underline">Ochrana osobních údajů</a>
-                    <span class="mx-2">|</span>
-                    <a href="podminky-pouziti.html" class="hover:underline">Obchodní podmínky</a>
-                </div>
-            </div>
-        </div>
-    </footer>
 
-    <div id="cookie-banner-wrapper" class="hidden fixed bottom-0 left-0 right-0 bg-gray-900 text-white z-50 transition-all duration-300">
-        <div class="p-3 sm:p-4 flex flex-wrap md:flex-nowrap justify-between items-center gap-3 sm:gap-4">
-            <p class="text-xs sm:text-sm">Tato webová stránka používá cookies. <button id="cookie-more-info-btn" class="underline hover:text-blue-400 focus:outline-none">Více informací</button></p>
-            <button id="cookie-accept" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-xs sm:text-sm whitespace-nowrap flex-shrink-0">Rozumím</button>
-        </div>
-        <div id="cookie-details" class="hidden p-4 border-t border-gray-700 text-xs text-gray-300">
-            <p class="mb-2">Používáme cookies pro zlepšení vašeho uživatelského zážitku a analýzu návštěvnosti webu.</p>
-        </div>
-    </div>
-
-    <script src="script.js?v=6.0" defer></script> 
-    
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // FAQ Accordion
-            const faqQuestions = document.querySelectorAll('.faq-question');
-            faqQuestions.forEach(question => {
-                question.addEventListener('click', function() {
-                    const answer = this.nextElementSibling;
-                    const isActive = this.classList.contains('active');
-                    this.classList.toggle('active', !isActive);
-                    answer?.classList.toggle('active', !isActive); 
-                    const iconPath = this.querySelector('svg path');
-                    if(iconPath) iconPath.setAttribute('d', isActive ? 'M12 6v12m6-6H6' : 'M18 12H6');
-                });
-            });
-
-            // Zobrazení kontaktního formuláře
-            const showContactBtn = document.querySelector('[data-action="show-faq-contact"]');
-            const contactSection = document.getElementById('kontakt');
-            if (showContactBtn && contactSection) {
-                showContactBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    contactSection.classList.remove('hidden');
-                    const header = document.querySelector('header');
-                    const headerHeight = header ? header.offsetHeight : 0;
-                    const targetPosition = contactSection.getBoundingClientRect().top + window.pageYOffset - headerHeight - 20;
-                    window.scrollTo({ top: targetPosition, behavior: 'smooth' });
-                });
-            }
-
-            // Cookie banner
-            const cookieBanner = document.getElementById('cookie-banner-wrapper');
-            const cookieAccept = document.getElementById('cookie-accept');
-            const cookieMoreInfo = document.getElementById('cookie-more-info-btn');
-            const cookieDetails = document.getElementById('cookie-details');
-
-            if (!localStorage.getItem('cookiesAccepted')) {
-                cookieBanner?.classList.remove('hidden');
-            }
-
-            cookieAccept?.addEventListener('click', () => {
-                localStorage.setItem('cookiesAccepted', 'true');
-                cookieBanner?.classList.add('hidden');
-            });
-
-            cookieMoreInfo?.addEventListener('click', () => {
-                cookieDetails?.classList.toggle('hidden');
+        document.querySelectorAll('.faq-question').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const answer = btn.nextElementSibling;
+                const icon = btn.querySelector('svg');
+                
+                if (answer.classList.contains('hidden')) {
+                    answer.classList.remove('hidden');
+                    answer.classList.add('active');
+                    icon.classList.add('rotate-180');
+                } else {
+                    answer.classList.add('hidden');
+                    answer.classList.remove('active');
+                    icon.classList.remove('rotate-180');
+                }
             });
         });
     </script>

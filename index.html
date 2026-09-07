@@ -4,646 +4,191 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hypoteky Ai - Premium Hypoteční Stratég s AI</title>
-    <meta name="description" content="AI Hypoteční Stratég: Okamžité odpovědi + experti na dosah. Stress testy, refinancovací analýza, dlouhodobá strategie.">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=6.0">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💡</text></svg>">
-
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-W89NM98KYS"></script> 
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-W89NM98KYS');
-      gtag('config', 'AW-778075298');
-    </script>
-    <script type="application/ld+json">
-        {
-          "@context": "https://schema.org",
-          "@type": "FinancialService",
-          "name": "Hypoteky Ai",
-          "url": "https://www.hypotekyai.cz/",
-          "serviceType": "Hypoteční poradenství",
-          "description": "Získejte nejlepší hypotéku s pomocí AI a expertů. Online kalkulačka, srovnání 19+ bank, stress testy a individuální sazby pro OSVČ i zaměstnance. Zdarma.",
-          "areaServed": {
-            "@type": "Country",
-            "name": "CZ"
-          },
-          
-          "address": {
-            "@type": "PostalAddress",
-            "streetAddress": "Opletalova 1417/25",
-            "addressLocality": "Praha 1",
-            "postalCode": "110 00",
-            "addressCountry": "CZ"
-          },
-          
-          "provider": {
-            "@type": "Organization",
-            "name": "Hypoteky Ai",
-            "address": {
-              "@type": "PostalAddress",
-              "streetAddress": "Opletalova 1417/25",
-              "addressLocality": "Praha 1",
-              "postalCode": "110 00",
-              "addressCountry": "CZ"
-            }
-          }
-        }
-        </script>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-gray-50 text-gray-800 antialiased">
+<body class="bg-slate-50 text-slate-800 antialiased font-['Inter']">
 
-    <header class="bg-white/95 backdrop-blur-lg sticky top-0 z-30 shadow-sm">
-        <nav class="container mx-auto px-4 sm:px-6 py-2.5 flex justify-between items-center">
-            <a href="#" class="flex items-center scroll-to" data-target="#top">
-                <img src="logo.png" alt="Hypoteky Ai Logo" class="h-10 sm:h-12 w-auto">
+    <!-- Hlavička -->
+    <header class="bg-white/90 backdrop-blur-md sticky top-0 z-50 shadow-sm border-b border-slate-200">
+        <nav class="container mx-auto px-4 lg:px-8 py-4 flex justify-between items-center">
+            <a href="index.html" class="flex items-center gap-2">
+                <span class="text-3xl">💡</span>
+                <span class="font-extrabold text-2xl tracking-tight text-slate-900">Hypoteky<span class="text-blue-600">Ai</span></span>
             </a>
-            <div class="hidden md:flex items-center space-x-4 lg:space-x-6">
-                <a href="#kalkulacka" data-target="#kalkulacka" class="nav-link text-sm scroll-to">Kalkulačka</a>
-                <a href="#premium-features" data-target="#premium-features" class="nav-link text-sm scroll-to">Premium funkce</a>
-                <a href="faq.html" class="nav-link text-sm">FAQ</a>
-                <a href="#o-nas" data-target="#o-nas" class="nav-link text-sm scroll-to">O nás</a>
-                <a href="#pripadove-studie" data-target="#pripadove-studie" class="nav-link text-sm scroll-to">Příběhy</a>
-                <a href="#myty-fakta" data-target="#myty-fakta" class="nav-link text-sm scroll-to">Mýty</a>
-                <a href="#partneri" data-target="#partneri" class="nav-link text-sm scroll-to">Partneři</a>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#kalkulacka" class="text-sm font-semibold text-slate-600 hover:text-blue-600 transition-colors">Nástroj</a>
+                <a href="#premium-features" class="text-sm font-semibold text-slate-600 hover:text-blue-600 transition-colors">Funkce</a>
+                <a href="#myty-fakta" class="text-sm font-semibold text-slate-600 hover:text-blue-600 transition-colors">Mýty a fakta</a>
+                <a href="faq.html" class="text-sm font-semibold text-slate-600 hover:text-blue-600 transition-colors">FAQ</a>
             </div>
-            <div class="flex items-center space-x-2 sm:space-x-4">
-                 <a href="#kontakt" class="nav-btn text-sm px-3 sm:px-4 py-2 scroll-to" data-action="show-lead-form-direct" data-target="#kontakt">📞 Specialista</a>
-                 <button id="mobile-menu-button" class="md:hidden p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
-                 </button>
-            </div>
+            <button onclick="document.getElementById('lead-modal').classList.remove('hidden')" class="bg-slate-900 hover:bg-blue-600 text-white text-sm px-6 py-2.5 rounded-full font-bold shadow-lg transition-all transform hover:-translate-y-0.5">
+                Ověřit s expertem
+            </button>
         </nav>
-        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200">
-            <a href="#kalkulacka" data-target="#kalkulacka" class="block py-2.5 px-6 text-sm text-gray-700 hover:bg-gray-50 scroll-to">Kalkulačka</a>
-            <a href="#premium-features" data-target="#premium-features" class="block py-2.5 px-6 text-sm text-gray-700 hover:bg-gray-50 scroll-to">Premium funkce</a>
-            <a href="faq.html" class="block py-2.5 px-6 text-sm text-gray-700 hover:bg-gray-50">FAQ</a>
-            <a href="#o-nas" data-target="#o-nas" class="block py-2.5 px-6 text-sm text-gray-700 hover:bg-gray-50 scroll-to">O nás</a>
-            <a href="#pripadove-studie" data-target="#pripadove-studie" class="block py-2.5 px-6 text-sm text-gray-700 hover:bg-gray-50 scroll-to">Příběhy klientů</a>
-            <a href="#myty-fakta" data-target="#myty-fakta" class="block py-2.5 px-6 text-sm text-gray-700 hover:bg-gray-50 scroll-to">Mýty a fakta</a>
-            <a href="#partneri" data-target="#partneri" class="block py-2.5 px-6 text-sm text-gray-700 hover:bg-gray-50 scroll-to">Partneři</a>
-        </div>
-        <div class="bg-blue-600 text-white py-1 border-t border-blue-700 shadow-inner hidden sm:flex sm:items-center sm:justify-center">
-                <div class="container mx-auto px-4 sm:px-6">
-                    <div class="flex flex-row flex-wrap justify-center items-center gap-x-4 gap-y-1 sm:gap-x-5 text-xs sm:text-[13px] font-medium">
-                        <span class="flex items-center whitespace-nowrap"><span class="text-sm mr-1">🔒</span> Zabezpečeno SSL</span>
-                        <span class="flex items-center whitespace-nowrap"><span class="text-sm mr-1">✓</span> GDPR Compliant</span>
-                        <span class="flex items-center whitespace-nowrap"><span class="text-sm mr-1">📊</span> Real-time data</span>
-                    </div>
-                </div>
-            </div>
     </header>
 
-    <div id="top"></div>
-
-    <main class="container mx-auto px-4 sm:px-6 py-6 md:py-8">
-        <!-- Hero sekce - KOMPAKTNĚJŠÍ V2 -->
-        <section class="text-center mb-8 md:mb-10">
-            <div class="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-xl p-4 sm:p-5 mb-6 border border-blue-100 shadow-sm">
-                <div class="flex justify-center items-center divide-x divide-gray-300">
-                    <div class="px-3 sm:px-6 lg:px-8">
-                        <p class="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">8.4 mld</p>
-                        <p class="text-xs text-gray-600">Zprostředkováno</p>
-                    </div>
-                    <div class="px-3 sm:px-6 lg:px-8">
-                        <p class="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent">136 013 Kč</p>
-                        <p class="text-xs text-gray-600">Průměrná úspora</p>
-                    </div>
-                    <div class="px-3 sm:px-6 lg:px-8">
-                        <p class="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-purple-600 to-purple-700 bg-clip-text text-transparent">12 847</p>
-                        <p class="text-xs text-gray-600">Klientů</p>
-                    </div>
-                </div>
-            </div>
-
-            <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-3 leading-tight">
-                <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">🤖 AI Asistent</span>
-                <span class="text-gray-900"> + </span>
-                <span class="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">👨‍💼 Profesionálové</span>
-            </h2>
-            <p class="text-sm sm:text-base md:text-lg text-gray-600 max-w-2xl mx-auto mb-5">
-                Okamžité AI odpovědi na běžné otázky + lidští experti pro složité případy. <strong>Nejlepší z obou světů.</strong>
-            </p>
-
-            <!-- NOVÉ: Pouze 3 větší benefity -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-5 max-w-4xl mx-auto">
-                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 px-4 py-4 rounded-xl border-2 border-blue-200 shadow-sm">
-                    <div class="text-3xl mb-2">🤖 + 👨‍💼</div>
-                    <div class="text-sm font-bold text-blue-900 mb-1">AI + Lidé společně</div>
-                    <div class="text-xs text-gray-600">Nejlepší z obou světů</div>
-                </div>
-                <div class="bg-gradient-to-br from-green-50 to-emerald-50 px-4 py-4 rounded-xl border-2 border-green-200 shadow-sm">
-                    <div class="text-3xl mb-2">⚡</div>
-                    <div class="text-sm font-bold text-green-900 mb-1">Odpovědi za 30 sekund</div>
-                    <div class="text-xs text-gray-600">Kalkulace + AI analýza</div>
-                </div>
-                <div class="bg-gradient-to-br from-purple-50 to-pink-50 px-4 py-4 rounded-xl border-2 border-purple-200 shadow-sm">
-                    <div class="text-3xl mb-2">✅</div>
-                    <div class="text-sm font-bold text-purple-900 mb-1">100% Zdarma</div>
-                    <div class="text-xs text-gray-600">19+ bank v porovnání</div>
-                </div>
-            </div>
-
-            <div class="flex flex-col sm:flex-row gap-2.5 sm:gap-3 justify-center items-center mb-3">
-                <a href="#kalkulacka" data-target="#kalkulacka" class="w-full sm:w-auto nav-btn bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-base sm:text-lg font-semibold px-6 sm:px-10 py-3 sm:py-4 scroll-to shadow-lg hover:shadow-xl transition-all">
-                    🚀 Spočítat hypotéku zdarma
-                </a>
-                <a href="#kalkulacka" data-target="#kalkulacka" data-mode="ai" class="w-full sm:w-auto nav-btn bg-white hover:bg-gray-50 text-blue-600 border-2 border-blue-600 text-base sm:text-lg font-semibold px-6 sm:px-10 py-3 sm:py-4 scroll-to transition-all">
-                    💬 Chci AI asistenta
-                </a>
-            </div>
-
-            <p class="text-xs text-gray-500">
-                <span class="inline-block w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse mr-1"></span>
-                <span id="active-users-counter">143 lidí právě používá naše nástroje</span>
-            </p>
-        </section>
-
-        <!-- KALKULAČKA - HNED POD HERO (V2 změna!) -->
-        <div id="kalkulacka" class="mb-16 scroll-mt-20">
-            <div class="text-center mb-6">
-            <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 mb-3">💰 Hypoteční kalkulačka</h2>
-            <p class="text-sm sm:text-base md:text-lg text-gray-600">Spočítejte si nezávazně nejlepší nabídku hypotéky online za 30 sekund.</p>
+    <!-- Hero Sekce -->
+    <section class="container mx-auto px-4 pt-12 pb-8 text-center max-w-4xl relative">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-xs font-bold uppercase tracking-wider mb-6">
+            <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span></span>
+            Srovnání 19+ bank v reálném čase
         </div>
-            <section class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 items-stretch">
-                 <div class="mode-card active" data-mode="express">
-                    <div class="badge badge-yellow !text-yellow-800 !bg-yellow-200">⚡ Rychle za 30 sekund</div>
-                    <h3 class="font-bold text-lg sm:text-xl mb-2">Expresní scoring</h3>
-                    <ul class="space-y-1.5 text-xs sm:text-sm text-gray-600 flex-grow">
-                        <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Okamžitý výpočet</li>
-                        <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Porovnání 19+ partnerů</li>
-                        <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Rychlá analýza</li>
-                    </ul>
-                </div>
-                <div class="mode-card" data-mode="guided">
-                    <div class="badge badge-blue">📊 Doporučeno</div>
-                    <h3 class="font-bold text-lg sm:text-xl mb-2">Detailní analýza</h3>
-                    <ul class="space-y-1.5 text-xs sm:text-sm text-gray-600 flex-grow">
-                        <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Komplexní scoring podle metodik</li>
-                        <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Stress test ČNB a DSTI</li>
-                        <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Inteligentní analýza fixace</li>
-                    </ul>
-                </div>
-                <div class="mode-card mode-card-dark" data-mode="ai">
-                     <div class="badge badge-purple !text-purple-800 !bg-purple-200">🤖 AI Powered</div>
-                    <h3 class="font-bold text-lg sm:text-xl mb-2 text-white">Premium AI Stratég</h3>
-                    <ul class="space-y-1.5 text-xs sm:text-sm text-gray-300 flex-grow">
-                         <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-purple-300 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Okamžité odpovědi (30s)</li>
-                         <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-purple-300 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Stress testy a scénáře</li>
-                         <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-purple-300 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Strategický plán na 20 let</li>
-                    </ul>
-                </div>
-            </section>
+        <h1 class="text-4xl md:text-6xl font-extrabold text-slate-900 mb-6 leading-tight tracking-tight">
+            Chytřejší hypotéka díky <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">AI analýze</span> a expertům
+        </h1>
+        <p class="text-lg text-slate-500 mb-8 max-w-2xl mx-auto">Zadejte parametry a naše AI vám okamžitě ukáže reálné šance na schválení, odhalí rizika a navrhne strategii. Následně se o vás postará živý expert.</p>
+    </section>
 
-            <section id="content-container"></section>
-        </div>
-
-        <!-- NOVÁ SEKCE: Premium funkce - PŘESUNUTO POD KALKULAČKU (V2 změna!) -->
-        <section id="premium-features" class="my-12 md:my-16 scroll-mt-20">
-            <div class="text-center mb-8">
-                <div class="inline-block bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-1.5 rounded-full font-bold text-xs sm:text-sm mb-3">
-                    💎 PREMIUM FUNKCE
-                </div>
-                <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 mb-3">
-                    AI a lidská expertíza v jednom
-                </h2>
-                <p class="text-sm sm:text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
-                    Okamžité AI odpovědi + profesionální poradenství. Maximum za minimum času.
-                </p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-5 sm:p-6 md:p-7 rounded-xl sm:rounded-2xl border-2 border-blue-200 shadow-lg hover:shadow-xl transition-shadow flex flex-col"> <div class="text-4xl sm:text-5xl mb-3">🤖</div>
-                    <h3 class="text-xl sm:text-2xl font-bold mb-2 text-blue-900">AI Asistent 24/7</h3>
-                    <p class="text-sm sm:text-base text-gray-700 mb-4 flex-grow"> Získejte okamžité odpovědi na dotazy ohledně hypoték. AI rychle vysvětlí pojmy jako <strong>LTV, DSTI, bonita</strong>, porovná fixace nebo provede základní <strong>stress test</strong> vaší finanční situace. Odpovědi jsou dostupné nonstop. <strong>Bez čekání, bez volání.</strong>
-                    </p>
-                    <div class="bg-white p-3 sm:p-4 rounded-lg border border-blue-200 text-xs sm:text-sm mt-auto"> <p class="font-semibold mb-2">Typické odpovědi:</p>
-                        <ul class="space-y-1 text-gray-600">
-                            <li>✓ "Kolik si můžu půjčit?" - do 30 sekund</li>
-                            <li>✓ "Jaké dokumenty potřebuji?" - okamžitě</li>
-                            <li>✓ "Co když mi vzrostou sazby?" - rychlá analýza</li>
-                        </ul>
+    <!-- THE APP CORE -->
+    <section id="kalkulacka" class="container mx-auto px-4 mb-20 scroll-mt-24">
+        <div class="bg-white rounded-[2rem] shadow-2xl shadow-slate-200/50 border border-slate-100 flex flex-col lg:flex-row max-w-6xl mx-auto items-start relative">
+            
+            <!-- LEVÁ ČÁST: Kalkulačka, Výsledky a FORMULÁŘ -->
+            <div class="w-full lg:w-7/12 flex flex-col pb-10">
+                <div class="p-6 border-b border-slate-100 bg-slate-50/50 rounded-tl-[2rem]">
+                    <div class="flex bg-slate-200/50 p-1 rounded-xl w-max">
+                        <button class="px-6 py-2 text-sm font-bold bg-white text-slate-900 shadow-sm rounded-lg transition-all" id="mode-express">Rychlá kalkulace</button>
+                        <button class="px-6 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 transition-colors" id="mode-guided">Detailní analýza</button>
                     </div>
                 </div>
-
-                <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-5 sm:p-6 md:p-7 rounded-xl sm:rounded-2xl border-2 border-green-200 shadow-lg hover:shadow-xl transition-shadow flex flex-col"> <div class="text-4xl sm:text-5xl mb-3">👨‍💼</div>
-                    <h3 class="text-xl sm:text-2xl font-bold mb-2 text-green-900">Profesionální Poradci</h3>
-                    <p class="text-sm sm:text-base text-gray-700 mb-4 flex-grow"> Některé situace vyžadují lidský přístup. Naši experti se specializují na složité případy jako <strong>hypotéky pro OSVČ a jednatele s.r.o.</strong>, řešení nízké bonity nebo komplexní refinancování. Díky objemům dokáží vyjednat individuální sazby. <strong>Vyjednají nejlepší podmínky.</strong>
-                    </p>
-                    <div class="bg-white p-3 sm:p-4 rounded-lg border border-green-200 text-xs sm:text-sm mt-auto"> <p class="font-semibold mb-2">Co vyřeší expert:</p>
-                        <ul class="space-y-1 text-gray-600">
-                            <li>💼 Hypotéky pro OSVČ a jednatele</li>
-                            <li>💎 VIP sazby pro úvěry nad 7M Kč</li>
-                            <li>🔧 Řešení nízké bonity</li>
-                        </ul>
+                <div class="p-6 lg:p-8">
+                    <div id="calculator-form" class="space-y-6 mb-8"></div>
+                    <div id="calc-cta-container" class="text-center my-8">
+                        <button id="calc-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-lg px-8 py-4 rounded-xl shadow-lg transition-transform transform hover:-translate-y-1">Spočítat a najít nabídky</button>
                     </div>
-                </div>
-
-                <div class="bg-gradient-to-br from-purple-50 to-pink-50 p-5 sm:p-6 md:p-7 rounded-xl sm:rounded-2xl border-2 border-purple-200 shadow-lg hover:shadow-xl transition-shadow flex flex-col"> <div class="text-4xl sm:text-5xl mb-3">⚠️</div>
-                    <h3 class="text-xl sm:text-2xl font-bold mb-2 text-purple-900">Stress Testy a Scénáře</h3>
-                    <p class="text-sm sm:text-base text-gray-700 mb-4 flex-grow"> Co se stane, když <strong>vzrostou sazby o 2 %</strong>? Jak vás ovlivní <strong>ztráta příjmu</strong> nebo <strong>příchod dítěte</strong>? AI vám okamžitě ukáže různé scénáře. Lidský expert vám pak pomůže zvolit <strong>optimální strategii</strong> pro minimalizaci rizika. <strong>Buďte připraveni na všechno.</strong>
-                    </p>
-                    <div class="bg-white p-3 sm:p-4 rounded-lg border border-purple-200 text-xs sm:text-sm mt-auto"> <p class="font-semibold mb-2">Příklady scénářů:</p>
-                        <ul class="space-y-1 text-gray-600">
-                            <li>✓ Růst sazeb +2 % → splátka vzroste o 4 200 Kč</li>
-                            <li>✓ Ztráta příjmu → stačí úspory na 8 měsíců</li>
-                            <li>✓ Rodičovská dovolená → možnost odkladu splátek</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="bg-gradient-to-br from-orange-50 to-amber-50 p-5 sm:p-6 md:p-7 rounded-xl sm:rounded-2xl border-2 border-orange-200 shadow-lg hover:shadow-xl transition-shadow flex flex-col"> <div class="text-4xl sm:text-5xl mb-3">📅</div>
-                    <h3 class="text-xl sm:text-2xl font-bold mb-2 text-orange-900">Strategický Plán na 25 Let</h3>
-                    <p class="text-sm sm:text-base text-gray-700 mb-4 flex-grow"> Hypotéka je dlouhodobý závazek. Jaká bude vaše situace za 5, 10, 20 let? Pomůžeme vám naplánovat klíčové milníky, jako je refixace, mimořádné splátky nebo úplné doplacení úvěru. <strong>Vytvoříme kompletní časovou osu.</strong>
-                    </p>
-                    <div class="bg-white p-3 sm:p-4 rounded-lg border border-orange-200 text-xs sm:text-sm mt-auto"> <p class="font-semibold mb-2">Ukázka milníků:</p>
-                        <ul class="space-y-1 text-gray-600">
-                            <li>✓ Za 5 let: refixace (odhad úspory 136k Kč/rok)</li>
-                            <li>✓ Za 13 let: polovina jistiny splacena</li>
-                            <li>✓ Za 25 let: nemovitost je plně vaše!</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <div class="text-center mt-8">
-                <a href="#kalkulacka" data-target="#kalkulacka" class="nav-btn bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-base sm:text-lg px-8 sm:px-12 py-3 sm:py-4 scroll-to inline-block shadow-xl hover:shadow-2xl transition-all">
-                    🚀 Vyzkoušet Premium Analýzu Zdarma
-                </a>
-            </div>
-        </section>
-        
-        <!-- O nás -->
-        <section id="o-nas" class="my-16 scroll-mt-20">
-            <div class="text-center mb-8">
-                <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900">Proč si vybrat naši platformu?</h2>
-                <p class="mt-3 text-sm sm:text-base md:text-lg text-gray-600">Jedinečná kombinace AI a lidské expertízy.</p>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-                <div class="bg-white p-6 sm:p-8 rounded-xl sm:rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-shadow">
-                     <div class="text-3xl sm:text-4xl mb-3">⚡</div>
-                    <h3 class="text-lg sm:text-xl font-bold mb-2">Okamžité AI odpovědi</h3>
-                    <p class="text-sm sm:text-base text-gray-600">Získejte rychlé odpovědi na běžné dotazy ohledně <strong>procesu hypotéky</strong>, potřebných <strong>dokumentů</strong> nebo vysvětlení finančních pojmů. Naše AI je dostupná nonstop.</p>
-                </div>
-                <div class="bg-white p-6 sm:p-8 rounded-xl sm:rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-shadow">
-                    <div class="text-3xl sm:text-4xl mb-3">🤝</div>
-                    <h3 class="text-lg sm:text-xl font-bold mb-2">Expertní vyjednávání</h3>
-                    <p class="text-sm sm:text-base text-gray-600">Naši specialisté mají přehled o <strong>neveřejných nabídkách</strong> a metodikách bank. Pomohou vám s příjmy (<strong>OSVČ, s.r.o.</strong>) a pro VIP klienty vyjednají <strong>individuální slevy</strong>.</p>
-                </div>
-                <div class="bg-white p-6 sm:p-8 rounded-xl sm:rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-shadow">
-                    <div class="text-3xl sm:text-4xl mb-3">📈</div>
-                    <h3 class="text-lg sm:text-xl font-bold mb-2">Data, kterým můžete věřit</h3>
-                    <p class="text-sm sm:text-base text-gray-600">Naše AI i experti pracují s <strong>denně aktualizovanými sazbami</strong> a scoringovými modely 19+ bank. Získáte tak realistický odhad vaší <strong>bonity</strong> a nabídek.</p>
-                </div>
-            </div>
-
-            <div class="mt-12 md:mt-16">
-                <div class="bg-white p-6 sm:p-8 lg:p-10 rounded-xl sm:rounded-2xl shadow-xl border border-gray-200">
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-                        
-                        <div class="text-left">
-                            <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">Kdo stojí za Hypoteky Ai?</h3>
-                            <p class="text-base text-gray-600 mb-4">
-                                Nejsme jen anonymní online kalkulačka. Jsme tým certifikovaných hypotečních specialistů ze společnosti <strong>Premium Financial Services</strong>. Rozhodli jsme se využít sílu moderních technologií, aby vám zjednodušili cestu k hypotéce.
-                            </p>
-                            <p class="text-base text-gray-600 mb-6">
-                                Náš tým má na hypotečním trhu více než 15 let praxe. Dohlížíme na to, aby AI i naši lidští poradci pracovali vždy ve vašem nejlepším zájmu a aby naše srovnání bylo vždy 100% objektivní.
-                            </p>
-                            <a href="#kontakt" data-target="#kontakt" class="nav-btn bg-green-600 hover:bg-green-700 text-white scroll-to">
-                                📞 Kontaktovat experta
-                            </a>
-                        </div>
-                        
-                        <div class="p-6 sm:p-8 rounded-xl sm:rounded-2xl bg-gray-50 border border-gray-200">
-                            <h4 class="text-xl font-bold text-gray-800 mb-4">Naše filozofie</h4>
-                            <ul class="space-y-4">
-                                <li class="flex items-start">
-                                    <span class="text-xl mr-3 pt-1">🚀</span>
-                                    <div>
-                                        <h5 class="font-semibold text-gray-900">Rychlost díky AI</h5>
-                                        <p class="text-sm text-gray-600">Proč čekat dny na základní analýzu? Naše AI ji zvládne za 30 sekund.</p>
-                                    </div>
-                                </li>
-                                <li class="flex items-start">
-                                    <span class="text-xl mr-3 pt-1">🤝</span>
-                                    <div>
-                                        <h5 class="font-semibold text-gray-900">Jistota díky expertům</h5>
-                                        <p class="text-sm text-gray-600">Každý složitější případ (OSVČ, nízká bonita) přebírá člověk, který za vás vyjedná nejlepší podmínky.</p>
-                                    </div>
-                                </li>
-                                <li class="flex items-start">
-                                    <span class="text-xl mr-3 pt-1">💯</span>
-                                    <div>
-                                        <h5 class="font-semibold text-gray-900">Transparentnost</h5>
-                                        <p class="text-sm text-gray-600">Naše služba je a vždy bude zdarma. Jsme placeni provizí od banky, kterou si vyberete.</p>
-                                    </div>
-                                </li>
-                            </ul>
+                    <div id="results-wrapper" class="hidden">
+                        <hr class="border-slate-100 my-8">
+                        <div id="results-container" class="space-y-8 mb-12"></div>
+                        <hr class="border-slate-100 my-8">
+                        <div id="kontakt-form" class="bg-slate-50 p-6 sm:p-8 rounded-2xl border border-slate-200 scroll-mt-24">
+                            <h3 class="text-2xl font-extrabold text-slate-900 mb-2">Závazné ověření s expertem</h3>
+                            <p class="text-slate-500 mb-8 text-sm">Líbí se vám tato analýza? Nechte nám kontakt. Náš specialista zkontroluje vaše skóre a vyjedná nejlepší sazbu. Zcela zdarma.</p>
+                            <form id="inline-lead-form" class="space-y-5" name="inline-lead-form" data-netlify="true" netlify-honeypot="bot-field">
+                                <input type="hidden" name="form-name" value="inline-lead-form" />
+                                <p class="hidden"><label>Nevyplňujte: <input name="bot-field" /></label></p>
+                                <input type="hidden" name="extraData" class="extraDataInput" />
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div><label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase">Jméno a příjmení *</label><input type="text" name="name" required class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                                    <div><label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase">Telefon *</label><input type="tel" name="phone" required class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div><label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase">E-mail *</label><input type="email" name="email" required class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                                    <div><label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase">PSČ *</label><input type="text" name="psc" required placeholder="např. 110 00" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase">Kdy vás můžeme kontaktovat?</label>
+                                    <select name="contact-time" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option value="kdykoliv">Kdykoliv během dne</option><option value="rano">Ráno</option><option value="odpoledne">Odpoledne</option><option value="vecer">Večer</option>
+                                    </select>
+                                </div>
+                                <div><label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase">Doplňující informace (nepovinné)</label><textarea name="note" rows="2" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"></textarea></div>
+                                <button type="submit" class="w-full bg-slate-900 hover:bg-blue-600 text-white font-extrabold text-lg py-4 rounded-xl shadow-lg transition-colors mt-2 submit-btn">Odeslat nezávazně ke zpracování</button>
+                            </form>
+                            <div id="inline-form-success" class="hidden mt-6 p-6 bg-green-50 text-green-800 rounded-xl border border-green-200 text-center">
+                                <div class="text-4xl mb-2">✅</div><h4 class="font-extrabold text-xl mb-1">Požadavek odeslán</h4>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </section>
 
-        <!-- Případové studie -->
-        <section id="pripadove-studie" class="my-16 scroll-mt-20">
-            <div class="text-center mb-8">
-                <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900">Úspěšné příběhy našich klientů</h2>
-                <p class="mt-3 text-sm sm:text-base md:text-lg text-gray-600">Skutečné případy, které jsme pomohli vyřešit.</p>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="bg-white p-6 rounded-xl sm:rounded-2xl shadow-lg border border-gray-200">
-                    <div class="flex items-center mb-3">
-                        <div class="text-3xl mr-3">💼</div>
-                        <div>
-                            <h3 class="font-bold text-base">Jan, OSVČ</h3>
-                            <p class="text-xs text-gray-500">Hypotéka 4.5M Kč</p>
-                        </div>
-                    </div>
-                    <p class="text-sm text-gray-700 mb-3">"Jako živnostník jsem se bál, že nedostanu dobré podmínky. Hypoteky Ai mi pomohly najít banku, která akceptuje paušální daň. Ušetřil jsem 0,3 % oproti nabídce od jiného zprostředkovatele."</p>
-                    <div class="text-xs text-green-600 font-bold">✓ Úspora: ~68 000 Kč za 5 let</div>
-                </div>
-
-                <div class="bg-white p-6 rounded-xl sm:rounded-2xl shadow-lg border border-gray-200">
-                    <div class="flex items-center mb-3">
-                        <div class="text-3xl mr-3">👨‍👩‍👧</div>
-                        <div>
-                            <h3 class="font-bold text-base">Markéta a Pavel, mladá rodina</h3>
-                            <p class="text-xs text-gray-500">Refinancování 3.2M Kč</p>
-                        </div>
-                    </div>
-                    <p class="text-sm text-gray-700 mb-3">"Měli jsme 6% úrok z roku 2021. Díky Hypoteky Ai jsme refinancovali na 4,8 %. AI nám okamžitě spočítala úsporu a specialista zařídil vše bez starostí."</p>
-                    <div class="text-xs text-green-600 font-bold">✓ Úspora: ~3 200 Kč/měsíc (38 400 Kč/rok)</div>
-                </div>
-
-                <div class="bg-white p-6 rounded-xl sm:rounded-2xl shadow-lg border border-gray-200">
-                    <div class="flex items-center mb-3">
-                        <div class="text-3xl mr-3">💎</div>
-                        <div>
-                            <h3 class="font-bold text-base">Tomáš, VIP klient</h3>
-                            <p class="text-xs text-gray-500">Hypotéka 12M Kč</p>
-                        </div>
-                    </div>
-                    <p class="text-sm text-gray-700 mb-3">"Kupoval jsem luxusní byt za 15 mil. Náš expert vyjednal exkluzivní sazbu 4,59 % (běžná nabídka byla 4,99 %). Za pár telefonátů ušetřím 200 tisíc za 5 let."</p>
-                    <div class="text-xs text-green-600 font-bold">✓ Úspora: ~200 000 Kč za 5 let</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Mýty a fakta -->
-        <section id="myty-fakta" class="my-16 scroll-mt-20">
-            <div class="text-center mb-8">
-                <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900">Mýty vs. Fakta</h2>
-                <p class="mt-3 text-sm sm:text-base md:text-lg text-gray-600">Vyvrátíme nejčastější dezinformace o hypotékách. <strong>Klikněte na kartu pro zobrazení faktu.</strong></p>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                
-                <div class="myth-card relative cursor-pointer h-48 sm:h-56">
-                    <div class="myth-front absolute inset-0 bg-red-50 p-6 rounded-xl border border-red-300 transition-opacity duration-300 group-[.flipped]:opacity-0 flex flex-col justify-center">
-                        <div class="text-3xl mb-3">🏦</div>
-                        <h3 class="font-bold text-lg mb-2 text-red-800">Mýtus: Hypotéka jen v bance</h3>
-                        <p class="text-sm text-gray-600">"Hypotéku si musím vyřídit sám přímo v bance."</p>
-                        <span class="block mt-3 text-xs text-red-600 font-semibold group-hover:underline">Klikněte pro odhalení faktu →</span>
-                    </div>
-                    <div class="myth-back absolute inset-0 bg-red-100 p-6 rounded-xl border border-red-300 opacity-0 transition-opacity duration-300 group-[.flipped]:opacity-100 flex flex-col justify-center">
-                        <div class="text-3xl mb-3">💡</div>
-                        <h3 class="font-bold text-lg mb-2 text-red-900">Fakt: Zprostředkovatel je výhodnější</h3>
-                        <p class="text-sm text-gray-700">Zprostředkovatel má přístup k <strong>19+ bankám najednou</strong> a často vyjedná <strong>lepší podmínky</strong> díky objemům. Navíc je to pro vás <strong>zdarma</strong> – platí ho banka.</p>
-                        <span class="block mt-3 text-xs text-red-600 font-semibold cursor-pointer">← Zpět na mýtus</span>
+            <!-- PRAVÁ ČÁST: AI Chat (STICKY) -->
+            <div class="w-full lg:w-5/12 bg-slate-50 border-t lg:border-t-0 lg:border-l border-slate-100 flex flex-col lg:sticky lg:top-24 lg:h-[calc(100vh-8rem)] rounded-b-[2rem] lg:rounded-bl-none lg:rounded-tr-[2rem]">
+                <div class="bg-white p-5 border-b border-slate-100 flex items-center justify-between z-10 shadow-sm lg:rounded-tr-[2rem]">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-2xl shadow-lg shadow-blue-500/30">🤖</div>
+                        <div><h3 class="font-extrabold text-slate-900">AI Stratég</h3><p class="text-xs font-semibold text-green-500 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Vidí vaši kalkulaci</p></div>
                     </div>
                 </div>
-
-                <div class="myth-card relative cursor-pointer h-48 sm:h-56">
-                    <div class="myth-front absolute inset-0 bg-blue-50 p-6 rounded-xl border border-blue-300 transition-opacity duration-300 group-[.flipped]:opacity-0 flex flex-col justify-center">
-                        <div class="text-3xl mb-3">⏳</div>
-                        <h3 class="font-bold text-lg mb-2 text-blue-800">Mýtus: Dlouhé vyřizování</h3>
-                        <p class="text-sm text-gray-600">"Vyřízení hypotéky trvá měsíce."</p>
-                        <span class="block mt-3 text-xs text-blue-600 font-semibold group-hover:underline">Klikněte pro odhalení faktu →</span>
-                    </div>
-                    <div class="myth-back absolute inset-0 bg-blue-100 p-6 rounded-xl border border-blue-300 opacity-0 transition-opacity duration-300 group-[.flipped]:opacity-100 flex flex-col justify-center">
-                        <div class="text-3xl mb-3">💡</div>
-                        <h3 class="font-bold text-lg mb-2 text-blue-900">Fakt: Lze to za 2-3 týdny</h3>
-                        <p class="text-sm text-gray-700">S kompletními dokumenty a správným zprostředkovatelem můžete mít <strong>předschválení za 3-5 dnů</strong> a <strong>finální schválení za 2-3 týdny</strong>. Naše AI vám okamžitě ukáže, co připravit.</p>
-                        <span class="block mt-3 text-xs text-blue-600 font-semibold cursor-pointer">← Zpět na mýtus</span>
-                    </div>
-                </div>
-
-                <div class="myth-card relative cursor-pointer h-48 sm:h-56">
-                    <div class="myth-front absolute inset-0 bg-green-50 p-6 rounded-xl border border-green-300 transition-opacity duration-300 group-[.flipped]:opacity-0 flex flex-col justify-center">
-                        <div class="text-3xl mb-3">💸</div>
-                        <h3 class="font-bold text-lg mb-2 text-green-800">Mýtus: Nemám šanci na hypotéku</h3>
-                        <p class="text-sm text-gray-600">"Můj příjem je nízký, nemám šanci na hypotéku."</p>
-                        <span class="block mt-3 text-xs text-green-600 font-semibold group-hover:underline">Klikněte pro odhalení faktu →</span>
-                    </div>
-                    <div class="myth-back absolute inset-0 bg-green-100 p-6 rounded-xl border border-green-300 opacity-0 transition-opacity duration-300 group-[.flipped]:opacity-100 flex flex-col justify-center">
-                        <div class="text-3xl mb-3">💡</div>
-                        <h3 class="font-bold text-lg mb-2 text-green-900">Fakt: Existují řešení</h3>
-                        <p class="text-sm text-gray-700">I s nižším příjmem existují možnosti: <strong>spolužadatel, dotace, nebo nižší LTV</strong>. Každá banka má trochu jiné požadavky – náš specialista najde tu správnou pro vás.</p>
-                        <span class="block mt-3 text-xs text-green-600 font-semibold cursor-pointer">← Zpět na mýtus</span>
-                    </div>
-                </div>
-
-                <div class="myth-card relative cursor-pointer h-48 sm:h-56">
-                    <div class="myth-front absolute inset-0 bg-purple-50 p-6 rounded-xl border border-purple-300 transition-opacity duration-300 group-[.flipped]:opacity-0 flex flex-col justify-center">
-                        <div class="text-3xl mb-3">🔒</div>
-                        <h3 class="font-bold text-lg mb-2 text-purple-800">Mýtus: Fixace je past</h3>
-                        <p class="text-sm text-gray-600">"Když si vezmu fixaci, jsem na roky svázaný."</p>
-                        <span class="block mt-3 text-xs text-purple-600 font-semibold group-hover:underline">Klikněte pro odhalení faktu →</span>
-                    </div>
-                    <div class="myth-back absolute inset-0 bg-purple-100 p-6 rounded-xl border border-purple-300 opacity-0 transition-opacity duration-300 group-[.flipped]:opacity-100 flex flex-col justify-center">
-                        <div class="text-3xl mb-3">💡</div>
-                        <h3 class="font-bold text-lg mb-2 text-purple-900">Fakt: Flexibilní možnosti</h3>
-                        <p class="text-sm text-gray-700">Fixaci lze často <strong>předčasně ukončit za poplatek</strong>, nebo můžete provádět <strong>mimořádné splátky</strong>. Po skončení fixace máte plnou svobodu v rámci změny banky bez jakýchkoliv sankcí.</p>
-                        <span class="block mt-3 text-xs text-purple-600 font-semibold cursor-pointer">← Zpět na mýtus</span>
-                    </div>
-                </div>
-
-                <div class="myth-card relative cursor-pointer h-48 sm:h-56">
-                    <div class="myth-front absolute inset-0 bg-yellow-50 p-6 rounded-xl border border-yellow-300 transition-opacity duration-300 group-[.flipped]:opacity-0 flex flex-col justify-center">
-                        <div class="text-3xl mb-3">📄</div>
-                        <h3 class="font-bold text-lg mb-2 text-yellow-800">Mýtus: Hory dokumentů</h3>
-                        <p class="text-sm text-gray-600">"Potřebuji stohy dokumentů, které nemám."</p>
-                        <span class="block mt-3 text-xs text-yellow-600 font-semibold group-hover:underline">Klikněte pro odhalení faktu →</span>
-                    </div>
-                    <div class="myth-back absolute inset-0 bg-yellow-100 p-6 rounded-xl border border-yellow-300 opacity-0 transition-opacity duration-300 group-[.flipped]:opacity-100 flex flex-col justify-center">
-                        <div class="text-3xl mb-3">💡</div>
-                        <h3 class="font-bold text-lg mb-2 text-yellow-900">Fakt: Základní podklady stačí</h3>
-                        <p class="text-sm text-gray-700">Pro <strong>zaměstnance</strong> stačí často jen <strong>občanka, potvrzení o příjmu a výpisy z účtu</strong>. Pro <strong>OSVČ</strong> přibude daňové přiznání. Naše AI vám řekne přesně co, aby nic nechybělo.</p>
-                        <span class="block mt-3 text-xs text-yellow-600 font-semibold cursor-pointer">← Zpět na mýtus</span>
-                    </div>
-                </div>
-
-                <div class="myth-card relative cursor-pointer h-48 sm:h-56">
-                    <div class="myth-front absolute inset-0 bg-orange-50 p-6 rounded-xl border border-orange-300 transition-opacity duration-300 group-[.flipped]:opacity-0 flex flex-col justify-center">
-                        <div class="text-3xl mb-3">👨‍🦳</div>
-                        <h3 class="font-bold text-lg mb-2 text-orange-800">Mýtus: Jsem moc starý</h3>
-                        <p class="text-sm text-gray-600">"Je mi 50 let, hypotéku už mi nikdo nedá, protože bych ji nesplatil."</p>
-                        <span class="block mt-3 text-xs text-orange-600 font-semibold group-hover:underline">Klikněte pro odhalení faktu →</span>
-                    </div>
-                    <div class="myth-back absolute inset-0 bg-orange-100 p-6 rounded-xl border border-orange-300 opacity-0 transition-opacity duration-300 group-[.flipped]:opacity-100 flex flex-col justify-center">
-                        <div class="text-3xl mb-3">💡</div>
-                        <h3 class="font-bold text-lg mb-2 text-orange-900">Fakt: Důležitá je splatnost</h3>
-                        <p class="text-sm text-gray-700">Není problém věk, ale <strong>splatnost</strong>. Většina bank vyžaduje, aby byla hypotéka splacena do <strong>67 - 72 let věku</strong>. Pokud je vám 50, stále můžete získat hypotéku se splatností 20 let, pokud máte dostatečnou bonitu.</p>
-                        <span class="block mt-3 text-xs text-orange-600 font-semibold cursor-pointer">← Zpět na mýtus</span>
-                    </div>
-                </div>
-
-            </div> </div> </section>
-        <section id="kontakt" class="my-12 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 sm:p-8 md:p-10 rounded-xl sm:rounded-2xl border-blue-200 border scroll-mt-20">
-            <div class="text-center max-w-2xl mx-auto">
-                <h2 class="text-2xl sm:text-3xl font-bold mb-2">Získejte osobní nabídku od specialisty</h2>
-                <p class="text-sm sm:text-base text-gray-600 mb-6">Naše služby jsou pro vás zcela zdarma. Ozveme se do 24 hodin.</p>
-
-                <form id="lead-form" class="space-y-4 text-left" name="lead-form" data-netlify="true" netlify-honeypot="bot-field">
-                    <input type="hidden" name="form-name" value="lead-form" />
-                    <p class="hidden"><label>Nevyplňujte: <input name="bot-field" /></label></p>
-                    <input type="hidden" name="extraData" />
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="name" class="form-label">Jméno a příjmení *</label>
-                            <input type="text" id="name" name="name" required
-                                pattern="^[A-Za-zÀ-ž\s]{2,}(\s[A-Za-zÀ-ž\s]{2,})?$"
-                                title="Zadejte prosím platné jméno a příjmení (alespoň 2 znaky)."
-                                class="modern-input">
-                        </div>
-                        <div>
-                            <label for="phone" class="form-label">Telefon *</label>
-                            <input type="tel" id="phone" name="phone" required
-                                   pattern="^(\+420)? ?[1-9][0-9]{2} ?[0-9]{3} ?[0-9]{3}$"
-                                   title="Zadejte platné 9místné telefonní číslo (může začínat +420)."
-                                   class="modern-input">
-                        </div>
-                    </div>
-                    <div id="manual-financial-fields" class="grid grid-cols-1 md:grid-cols-2 gap-4 hidden">
-                        <div>
-                            <label for="manual_loan_amount" class="form-label">Požadovaná výše úvěru *</label>
-                            <input type="text" id="manual_loan_amount" name="manual_loan_amount" 
-                                   placeholder="Např. 4 000 000" class="modern-input"required>
-                        </div>
-                        <div>
-                            <label for="manual_property_value" class="form-label">Hodnota nemovitosti *</label>
-                            <input type="text" id="manual_property_value" name="manual_property_value" 
-                                   placeholder="Např. 5 500 000" class="modern-input" required>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="email" class="form-label">E-mail *</label>
-                            <input type="email" id="email" name="email" required class="modern-input">
-                        </div>
-                        <div>
-                            <label for="psc" class="form-label">PSČ *</label>
-                            <input type="text" id="psc" name="psc" required 
-                                   pattern="^\d{3} ?\d{2}$" 
-                                   title="Zadejte 5 číslic PSČ, např. 11000 nebo 110 00"
-                                   placeholder="např. 110 00"
-                                   class="modern-input">
-                        </div>
-                    </div>
-                    <div>
-                        <label for="contact-time" class="form-label">Kdy vás můžeme kontaktovat?</label>
-                        <select id="contact-time" name="contact-time" class="modern-select">
-                            <option value="kdykoliv">Kdykoliv během dne</option>
-                            <option value="rano">Ráno (8:00 - 12:00)</option>
-                            <option value="odpoledne">Odpoledne (12:00 - 17:00)</option>
-                            <option value="vecer">Večer (17:00 - 20:00)</option>
-                            <option value="vikend">Pouze o víkendu</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="note" class="form-label">Poznámka (nepovinné)</label>
-                        <textarea id="note" name="note" rows="3" class="modern-input" placeholder="Např. už mám předschválenou hypotéku, refinancuji, atd."></textarea>
-                    </div>
-                    <div class="pt-2 text-center">
-                        <p class="text-xs text-gray-500 mb-3 sm:mb-4">Odesláním formuláře souhlasíte se zpracováním osobních údajů.</p>
-                        <button type="submit" id="submit-lead-btn" class="w-full md:w-auto nav-btn bg-green-600 hover:bg-green-700 text-base sm:text-lg">📞 Odeslat nezávazně</button>
-                    </div>
+                <div id="chat-messages" class="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar"></div>
+                <div class="bg-white p-4 border-t border-slate-200 lg:rounded-br-[2rem]">
+                    <div id="ai-suggestions" class="flex gap-2 overflow-x-auto pb-3 mb-1 custom-scrollbar"></div>
+                    <form id="chat-form" class="flex gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200 focus-within:border-blue-500 focus-within:bg-white transition-all">
+                        <input type="text" id="chat-input" class="flex-1 bg-transparent px-3 py-2 text-sm outline-none text-slate-800" placeholder="Zeptejte se na strategii...">
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition-colors shadow-sm">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        </button>
                     </form>
-
-                <div id="form-success" class="hidden mt-6 text-center p-4 bg-green-100 text-green-800 rounded-lg">
-                    <h3 class="font-bold text-base sm:text-lg">✅ Děkujeme!</h3>
-                    <p class="text-sm sm:text-base">Váš požadavek byl úspěšně odeslán. Ozveme se vám ve vámi preferovaný čas.</p>
-                </div>
-            </div> </section>
-
-        <!-- Partneři -->
-        <section id="partneri" class="my-16 scroll-mt-20">
-            <div class="text-center mb-8">
-                <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900">Naši partneři</h2>
-                <p class="mt-3 text-sm sm:text-base text-gray-600">Porovnáváme nabídky z 19+ předních českých bank.</p>
-            </div>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex items-center justify-center h-20">
-                    <span class="text-xs sm:text-sm font-semibold text-gray-700 text-center">Česká spořitelna</span>
-                </div>
-                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex items-center justify-center h-20">
-                    <span class="text-xs sm:text-sm font-semibold text-gray-700 text-center">ČSOB</span>
-                </div>
-                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex items-center justify-center h-20">
-                    <span class="text-xs sm:text-sm font-semibold text-gray-700 text-center">Komerční banka</span>
-                </div>
-                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex items-center justify-center h-20">
-                    <span class="text-xs sm:text-sm font-semibold text-gray-700 text-center">Raiffeisenbank</span>
-                </div>
-                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex items-center justify-center h-20">
-                    <span class="text-xs sm:text-sm font-semibold text-gray-700 text-center">UniCredit Bank</span>
-                </div>
-                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex items-center justify-center h-20">
-                    <span class="text-xs sm:text-sm font-semibold text-gray-700 text-center">+ 14 dalších</span>
                 </div>
             </div>
-        </section>
-    </main>
-    
-    <footer class="bg-gray-800 text-white">
-    <div class="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <div class="text-center text-xs sm:text-sm text-gray-400">
-            <p>&copy; 2025 Hypoteky Ai. Všechna práva vyhrazena.</p>
-            <div class="mt-3 sm:mt-4">
-                <a href="podminky-pouziti.html#ochrana-udaju" class="hover:underline">Ochrana osobních údajů</a>
-                <span class="mx-2">|</span>
-                <a href="podminky-pouziti.html#obchodni-podminky" class="hover:underline">Obchodní podmínky</a>
-                </div>
+
+        </div>
+    </section>
+
+    <!-- Ostatní SEO sekce -->
+    <section id="premium-features" class="container mx-auto px-4 mb-20">
+        <div class="text-center mb-12"><h2 class="text-3xl font-extrabold mb-4">Proč jsme lepší než běžné srovnávače?</h2></div>
+        <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-lg transition-shadow"><div class="text-4xl mb-4">⚡</div><h3 class="font-bold text-xl mb-3">AI Scoring v reálném čase</h3><p class="text-slate-600 text-sm">Naše AI okamžitě zkontroluje metodiky bank a ukáže limity DSTI a LTV.</p></div>
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-lg transition-shadow"><div class="text-4xl mb-4">👨‍💼</div><h3 class="font-bold text-xl mb-3">Vyjednávání Expertů</h3><p class="text-slate-600 text-sm">Pokud jste OSVČ nebo jednatel, náš expert vyjedná VIP neveřejné sazby.</p></div>
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-lg transition-shadow"><div class="text-4xl mb-4">📈</div><h3 class="font-bold text-xl mb-3">Strategie Fixace</h3><p class="text-slate-600 text-sm">Analyzujeme, kolik přeplatíte za celou dobu fixace a připravíme scénáře.</p></div>
+        </div>
+    </section>
+
+    <footer id="o-nas" class="bg-slate-100 py-12">
+        <div class="container mx-auto px-4 text-center max-w-3xl">
+            <h2 class="text-2xl font-extrabold mb-4">Kdo stojí za Hypoteky Ai?</h2>
+            <p class="text-slate-600 mb-8">Jsme tým certifikovaných hypotečních specialistů ze společnosti <strong>Premium Financial Services</strong>. Na trhu působíme přes 15 let a rozhodli jsme se spojit naše vyjednávací schopnosti s moderní umělou inteligencí.</p>
+            <p class="text-slate-400 text-sm mb-6">&copy; 2026 Hypoteky Ai. Všechna práva vyhrazena.</p>
+            <div class="flex justify-center gap-6">
+                <a href="podminky-pouziti.html" class="text-sm font-semibold text-slate-500 hover:text-slate-900">Obchodní podmínky & GDPR</a>
+                <a href="faq.html" class="text-sm font-semibold text-slate-500 hover:text-slate-900">Časté dotazy (FAQ)</a>
             </div>
         </div>
     </footer>
 
-    <!-- Hidden form for Netlify Forms detection -->
-    <form name="inline-lead-form" data-netlify="true" netlify-honeypot="bot-field" hidden>
-        <input type="hidden" name="form-name" value="inline-lead-form" />
-        <input name="bot-field" />
-        <input name="name" />
-        <input name="phone" />
-        <input name="email" />
-        <input name="psc" />
-        <input name="contact-time" />
-        <input name="note" />
-        <input name="extraData" />
-    </form>
+    <!-- MODAL FORM -->
+    <div id="lead-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm hidden z-[100] overflow-y-auto">
+        <div class="min-h-screen px-4 py-10 text-center flex items-center justify-center">
+            <div class="bg-white rounded-3xl max-w-xl w-full p-8 text-left shadow-2xl relative">
+                <button onclick="document.getElementById('lead-modal').classList.add('hidden')" class="absolute top-5 right-5 text-slate-400 hover:text-slate-800 bg-slate-100 rounded-full p-2 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+                <h3 class="text-3xl font-extrabold text-slate-900 mb-2">Závazné ověření s expertem</h3>
+                <p class="text-slate-500 mb-8">Nechte nám kontakt. Náš specialista zkontroluje vaše skóre a vyjedná nejlepší sazbu. Zcela zdarma.</p>
+                <form id="modal-lead-form" class="space-y-5" name="lead-form" data-netlify="true" netlify-honeypot="bot-field">
+                    <input type="hidden" name="form-name" value="lead-form" />
+                    <p class="hidden"><label>Nevyplňujte: <input name="bot-field" /></label></p>
+                    <input type="hidden" name="extraData" class="extraDataInput" />
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <input type="text" name="name" required placeholder="Jméno a příjmení *" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                        <input type="tel" name="phone" required placeholder="Telefon *" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <input type="email" name="email" required placeholder="E-mail *" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                        <input type="text" name="psc" required placeholder="PSČ *" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    </div>
 
-    <!-- GDPR Cookie Banner -->
-    <div id="cookie-banner-wrapper" class="fixed bottom-0 left-0 right-0 bg-gray-900 text-white z-50 transition-all duration-300">
-        <div class="p-3 sm:p-4 flex flex-wrap md:flex-nowrap justify-between items-center gap-3 sm:gap-4">
-            <p class="text-xs sm:text-sm">Tato webová stránka používá soubory cookies k zajištění co nejlepšího zážitku. 
-                <button id="cookie-more-info-btn" class="underline hover:text-blue-400 focus:outline-none">Více informací</button>
-            </p>
-            <button id="cookie-accept" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-xs sm:text-sm whitespace-nowrap flex-shrink-0">Rozumím a souhlasím</button>
-        </div>
-        <div id="cookie-details" class="p-4 border-t border-gray-700 text-xs text-gray-300">            <h4 class="font-semibold text-sm text-white mb-2">Jaké cookies používáme?</h4>
-            <p class="mb-2">Používáme technické cookies nezbytné pro chod webu a analytické cookies, které nám pomáhají web vylepšovat.</p>
-            <ul class="list-disc list-inside space-y-1 mb-2">
-                <li><strong>Google Analytics:</strong> Anonymně sledujeme návštěvnost a chování uživatelů, abychom pochopili, jak je web využíván.</li>
-                <li><strong>Reklamní systémy (Google Ads, Facebook Pixel - pokud používáte):</strong> Můžeme používat cookies pro měření efektivity našich reklamních kampaní a cílení relevantní reklamy (remarketing). Tato data jsou anonymizovaná.</li>
-            </ul>
-            <p>Váš souhlas nám umožňuje tato data využívat. Svůj souhlas můžete kdykoli odvolat. <a href="/ochrana-udaju" class="underline hover:text-blue-400">Více v Zásadách ochrany osobních údajů</a>.</p>
+                    <div class="manual-financial-fields grid grid-cols-1 md:grid-cols-2 gap-5 bg-slate-100 p-5 rounded-xl border border-slate-200 hidden">
+                        <div><label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase">Výše úvěru</label><input type="number" name="manual_loan" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none"></div>
+                        <div><label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase">Hodnota nemovitosti</label><input type="number" name="manual_prop" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none"></div>
+                    </div>
+
+                    <select name="contact-time" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="kdykoliv">Kdykoliv během dne</option><option value="rano">Ráno (8:00 - 12:00)</option><option value="odpoledne">Odpoledne (12:00 - 17:00)</option><option value="vecer">Večer (17:00 - 20:00)</option>
+                    </select>
+
+                    <textarea name="note" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Jsem OSVČ, už mám vyhlédnutý dům..."></textarea>
+
+                    <button type="submit" class="w-full bg-slate-900 hover:bg-blue-600 text-white font-extrabold text-lg py-4 rounded-xl shadow-lg transition-colors mt-4 submit-btn">
+                        Odeslat nezávazně ke zpracování
+                    </button>
+                </form>
+                <div id="modal-form-success" class="hidden mt-6 p-6 bg-green-50 text-green-800 rounded-xl border border-green-200 text-center">
+                    <div class="text-4xl mb-2">✅</div>
+                    <h4 class="font-extrabold text-xl mb-1">Požadavek úspěšně odeslán</h4>
+                </div>
+            </div>
         </div>
     </div>
 
-    <script src="script.js?v=1.1" defer></script>
+    <!-- Info Tooltip -->
+    <div id="tooltip-container" class="absolute z-[100] hidden bg-slate-900 text-white text-xs font-semibold p-3 rounded-xl shadow-xl max-w-[250px] leading-relaxed pointer-events-none"></div>
+
+    <script src="script.js"></script>
 </body>
 </html>

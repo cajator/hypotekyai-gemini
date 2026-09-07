@@ -355,7 +355,7 @@ const appendChat = (text, sender) => {
     let pt = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
     
     if (pt.includes('showLeadForm')) {
-        pt = `Rád vás spojím s expertem. Formulář najdete hned pod výsledky, <strong><a href="#kontakt-form" class="text-blue-600 underline">případně klikněte zde</a></strong>.`;
+        pt = `Rád vás spojím s expertem. Otevírám formulář, nebo <strong><a href="#kontakt-form" class="text-blue-600 underline">klikněte zde</a></strong>.`;
         document.getElementById('lead-modal').classList.remove('hidden');
     }
     
@@ -474,8 +474,16 @@ document.getElementById('mode-guided').addEventListener('click', (e) => {
     if (state.hasCalculated) fetchRates();
 });
 
+// Plynulý posun po kliknutí na Spočítat
 document.getElementById('calc-btn')?.addEventListener('click', () => {
     fetchRates();
+    setTimeout(() => {
+        const resultsEl = document.getElementById('results-wrapper');
+        if (resultsEl) {
+            const y = resultsEl.getBoundingClientRect().top + window.scrollY - 100;
+            window.scrollTo({ top: y, behavior: 'smooth' });
+        }
+    }, 150);
 });
 
 // OBSLUHA OBOJÍCH FORMULÁŘŮ

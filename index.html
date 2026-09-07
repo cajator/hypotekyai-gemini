@@ -108,23 +108,82 @@
                     <div id="ai-suggestions" class="flex gap-2 overflow-x-auto pb-3 mb-1 custom-scrollbar"></div>
                     <form id="chat-form" class="flex gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200 focus-within:border-blue-500 focus-within:bg-white transition-all">
                         <input type="text" id="chat-input" class="flex-1 bg-transparent px-3 py-2 text-sm outline-none text-slate-800" placeholder="Zeptejte se na strategii...">
-                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition-colors shadow-sm">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                        </button>
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition-colors shadow-sm"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></button>
                     </form>
                 </div>
             </div>
-
         </div>
     </section>
 
-    <!-- Ostatní SEO sekce -->
-    <section id="premium-features" class="container mx-auto px-4 mb-20">
+    <!-- Funkce -->
+    <section id="premium-features" class="container mx-auto px-4 mb-20 scroll-mt-24">
         <div class="text-center mb-12"><h2 class="text-3xl font-extrabold mb-4">Proč jsme lepší než běžné srovnávače?</h2></div>
         <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-lg transition-shadow"><div class="text-4xl mb-4">⚡</div><h3 class="font-bold text-xl mb-3">AI Scoring v reálném čase</h3><p class="text-slate-600 text-sm">Naše AI okamžitě zkontroluje metodiky bank a ukáže limity DSTI a LTV.</p></div>
             <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-lg transition-shadow"><div class="text-4xl mb-4">👨‍💼</div><h3 class="font-bold text-xl mb-3">Vyjednávání Expertů</h3><p class="text-slate-600 text-sm">Pokud jste OSVČ nebo jednatel, náš expert vyjedná VIP neveřejné sazby.</p></div>
             <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-lg transition-shadow"><div class="text-4xl mb-4">📈</div><h3 class="font-bold text-xl mb-3">Strategie Fixace</h3><p class="text-slate-600 text-sm">Analyzujeme, kolik přeplatíte za celou dobu fixace a připravíme scénáře.</p></div>
+        </div>
+    </section>
+
+    <!-- Mýty a Fakta (OBNOVENO V PLNÉM ZNĚNÍ) -->
+    <section id="myty-fakta" class="bg-slate-900 py-20 text-white scroll-mt-24">
+        <div class="container mx-auto px-4 max-w-6xl">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-extrabold mb-4">Vyvracíme hypoteční mýty</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Karta 1 -->
+                <div class="myth-card cursor-pointer h-56 group">
+                    <div class="myth-front bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-center items-center text-center">
+                        <div class="text-4xl mb-4">🏦</div>
+                        <h3 class="font-bold text-lg text-slate-200">"Hypotéku si vyřídím nejlépe sám v mé bance."</h3>
+                        <p class="text-blue-400 text-sm font-semibold mt-4">Klikněte pro fakt →</p>
+                    </div>
+                    <div class="myth-back bg-blue-600 p-6 rounded-2xl shadow-xl flex flex-col justify-center items-center text-center">
+                        <div class="text-4xl mb-4">💡</div>
+                        <p class="font-semibold text-sm leading-relaxed">Zprostředkovatel má přístup do 19+ bank najednou a díky obrovským objemům pro vás vyjedná sazbu, kterou vám na pobočce nikdy nedají. Navíc je to zdarma.</p>
+                    </div>
+                </div>
+                <!-- Karta 2 -->
+                <div class="myth-card cursor-pointer h-56 group">
+                    <div class="myth-front bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-center items-center text-center">
+                        <div class="text-4xl mb-4">⏳</div>
+                        <h3 class="font-bold text-lg text-slate-200">"Vyřízení hypotéky trvá celé měsíce."</h3>
+                        <p class="text-blue-400 text-sm font-semibold mt-4">Klikněte pro fakt →</p>
+                    </div>
+                    <div class="myth-back bg-blue-600 p-6 rounded-2xl shadow-xl flex flex-col justify-center items-center text-center">
+                        <div class="text-4xl mb-4">💡</div>
+                        <p class="font-semibold text-sm leading-relaxed">S kompletními dokumenty a naší přípravou můžete mít předschválení za 3-5 dnů a finální schválení za 2-3 týdny.</p>
+                    </div>
+                </div>
+                <!-- Karta 3 -->
+                <div class="myth-card cursor-pointer h-56 group">
+                    <div class="myth-front bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-center items-center text-center">
+                        <div class="text-4xl mb-4">💼</div>
+                        <h3 class="font-bold text-lg text-slate-200">"Jako OSVČ nemám na dobrou hypotéku šanci."</h3>
+                        <p class="text-blue-400 text-sm font-semibold mt-4">Klikněte pro fakt →</p>
+                    </div>
+                    <div class="myth-back bg-blue-600 p-6 rounded-2xl shadow-xl flex flex-col justify-center items-center text-center">
+                        <div class="text-4xl mb-4">💡</div>
+                        <p class="font-semibold text-sm leading-relaxed">Máme partnery (banky), kteří umí počítat bonitu procentem z vašeho obratu, nikoliv jen z daňového základu. Pro OSVČ máme nejlepší schvalitelnost na trhu.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Partneři -->
+    <section class="py-12 bg-white border-y border-slate-200">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-8">Porovnáváme a sjednáváme úvěry u těchto partnerů</p>
+            <div class="flex flex-wrap justify-center items-center gap-x-10 gap-y-6 opacity-60">
+                <span class="text-lg font-black text-slate-600 hover:text-blue-600 transition-colors">Česká spořitelna</span>
+                <span class="text-lg font-black text-slate-600 hover:text-blue-600 transition-colors">ČSOB</span>
+                <span class="text-lg font-black text-slate-600 hover:text-blue-600 transition-colors">Komerční banka</span>
+                <span class="text-lg font-black text-slate-600 hover:text-blue-600 transition-colors">Raiffeisenbank</span>
+                <span class="text-lg font-black text-slate-600 hover:text-blue-600 transition-colors">UniCredit Bank</span>
+                <span class="text-lg font-black text-slate-600 hover:text-blue-600 transition-colors">mBank</span>
+            </div>
         </div>
     </section>
 
@@ -153,7 +212,6 @@
                     <input type="hidden" name="form-name" value="lead-form" />
                     <p class="hidden"><label>Nevyplňujte: <input name="bot-field" /></label></p>
                     <input type="hidden" name="extraData" class="extraDataInput" />
-                    
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <input type="text" name="name" required placeholder="Jméno a příjmení *" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
                         <input type="tel" name="phone" required placeholder="Telefon *" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
@@ -162,18 +220,14 @@
                         <input type="email" name="email" required placeholder="E-mail *" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
                         <input type="text" name="psc" required placeholder="PSČ *" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
                     </div>
-
                     <div class="manual-financial-fields grid grid-cols-1 md:grid-cols-2 gap-5 bg-slate-100 p-5 rounded-xl border border-slate-200 hidden">
                         <div><label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase">Výše úvěru</label><input type="number" name="manual_loan" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none"></div>
                         <div><label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase">Hodnota nemovitosti</label><input type="number" name="manual_prop" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none"></div>
                     </div>
-
                     <select name="contact-time" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="kdykoliv">Kdykoliv během dne</option><option value="rano">Ráno (8:00 - 12:00)</option><option value="odpoledne">Odpoledne (12:00 - 17:00)</option><option value="vecer">Večer (17:00 - 20:00)</option>
                     </select>
-
                     <textarea name="note" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Jsem OSVČ, už mám vyhlédnutý dům..."></textarea>
-
                     <button type="submit" class="w-full bg-slate-900 hover:bg-blue-600 text-white font-extrabold text-lg py-4 rounded-xl shadow-lg transition-colors mt-4 submit-btn">
                         Odeslat nezávazně ke zpracování
                     </button>

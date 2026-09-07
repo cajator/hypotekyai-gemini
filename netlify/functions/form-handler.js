@@ -1,6 +1,6 @@
+// netlify/functions/form-handler.js
 const { GoogleSpreadsheet } = require('google-spreadsheet');
 const { JWT } = require('google-auth-library');
-const nodemailer = require('nodemailer');
 
 const formatNumber = (n, currency = true) => {
     const num = Number(n);
@@ -10,13 +10,12 @@ const formatNumber = (n, currency = true) => {
 
 exports.handler = async (event) => {
     if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'Method Not Allowed' };
-    
     try {
         const formData = new URLSearchParams(event.body);
         let extraData = {};
         try { extraData = JSON.parse(formData.get('extraData') || '{}'); } catch(e){}
 
-        // ZPRACOVÁNÍ HISTORIE CHATU A SOUHRNU (z původního kódu)
+        // ZPRACOVÁNÍ HISTORIE CHATU A SOUHRNU
         let chatHistoryText = 'Žádná historie chatu.';
         if (extraData.chatHistory && extraData.chatHistory.length > 0) {
             chatHistoryText = extraData.chatHistory.map(msg => {
@@ -78,58 +77,37 @@ exports.handler = async (event) => {
             }
         }
 
-        // 2. ODESLÁNÍ E-MAILU KLIENTOVI PŘES GMAIL (Nodemailer s plnou konfigurací)
-        if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+        // 2. ODESLÁNÍ E-MAILU (NETLIFY EMAILS INTEGRATION)
+        if (process.env.NETLIFY_EMAILS_SECRET) {
             try {
-                // Přidána plná konfigurace pro Gmail SMTP
-                const transporter = nodemailer.createTransport({
-                    host: 'smtp.gmail.com',
-                    port: 465,
-                    secure: true,
-                    auth: {
-                        user: process.env.GMAIL_USER,
-                        pass: process.env.GMAIL_APP_PASSWORD
-                    }
+                const templateName = 'confirmation'; 
+                
+                await fetch(`${process.env.URL}/.netlify/functions/emails/${templateName}`, {
+                    method: 'POST',
+                    headers: {
+                        'netlify-emails-secret': process.env.NETLIFY_EMAILS_SECRET,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        from: "Tým Hypoteky Ai <info@hypotekyai.cz>", // Jméno a e-mail odesílatele
+                        to: formData.get('email'),
+                        subject: "Potvrzení vaší poptávky | Hypoteky Ai",
+                        parameters: {
+                            name: formData.get('name') || 'kliente'
+                        },
+                    }),
                 });
-
-                const clientName = formData.get('name') || 'kliente';
-
-                const mailOptions = {
-                    from: `"Tým Hypoteky Ai" <${process.env.GMAIL_USER}>`,
-                    replyTo: "info@hypotekyai.cz",
-                    to: formData.get('email'),
-                    subject: "Potvrzení vaší poptávky | Hypoteky Ai",
-                    html: `
-                        <div style="font-family: Arial, sans-serif; color: #1f2937; line-height: 1.6; max-width: 600px; margin: 0 auto; padding: 20px;">
-                            <h2 style="color: #1e3a8a; margin-top: 0; margin-bottom: 20px;">Potvrzení vaší poptávky | Hypoteky Ai</h2>
-                            <p style="margin-bottom: 16px;">Dobrý den ${clientName},</p>
-                            <p style="margin-bottom: 16px;">děkujeme, že jste využili naši platformu Hypoteky Ai pro vaši hypoteční kalkulaci a analýzu.</p>
-                            <p style="margin-bottom: 16px;">Váš požadavek jsme v pořádku přijali a <strong>co nejdříve</strong> (obvykle do 24 hodin v pracovní dny) se vám ozve jeden z našich <strong>zkušených hypotečních specialistů</strong>.</p>
-                            <p style="margin-bottom: 16px;">Projde s vámi detaily, zodpoví vaše dotazy a pomůže najít tu nejlepší možnou nabídku na trhu.</p>
-                            <p style="margin-bottom: 16px;">Pokud byste mezitím měli jakékoli dotazy, neváhejte nám odpovědět na tento e-mail.</p>
-                            <p style="margin-bottom: 24px;">Těšíme se na spolupráci!</p>
-                            <div style="color: #4b5563; font-size: 14px;">
-                                <p style="margin: 0;">S pozdravem,</p>
-                                <p style="margin: 0; font-weight: bold;">Tým Hypoteky Ai</p>
-                                <p style="margin: 0;"><a href="https://hypotekyai.cz" style="color: #2563eb; text-decoration: none;">hypotekyai.cz</a></p>
-                            </div>
-                        </div>
-                    `
-                };
-
-                await transporter.sendMail(mailOptions);
-                console.log("E-mail klientovi úspěšně odeslán přes Gmail.");
-
+                console.log("E-mail úspěšně odeslán přes Netlify Emails.");
             } catch (emailError) {
-                console.error("Chyba při odesílání e-mailu klientovi:", emailError);
+                console.error("Chyba při odesílání e-mailu přes Netlify Emails:", emailError);
             }
         } else {
-            console.log("E-mail klientovi nebyl odeslán, chybí GMAIL_USER nebo GMAIL_APP_PASSWORD.");
+            console.log("NETLIFY_EMAILS_SECRET nenalezen, email se neodeslal.");
         }
 
         return { statusCode: 200, body: 'Form processed successfully' };
     } catch (error) { 
-        console.error("Kritická chyba v celém procesu form-handleru:", error);
+        console.error("Critical error in form-handler:", error);
         return { statusCode: 500, body: `Server Error: ${error.message}` }; 
     }
 };

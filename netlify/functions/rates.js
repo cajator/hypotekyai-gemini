@@ -1,14 +1,16 @@
 // netlify/functions/rates.js
 const ALL_OFFERS = [
-    { id: 'offer-premium', title: "💎 VIP Sazba 4.89%", description: "Exkluzivní sazba pro bonitní klienty.", max_ltv: 70, rates: { '3': { rate_ltv70: 4.89 }, '5': { rate_ltv70: 4.89 }, '7': { rate_ltv70: 5.09 }, '10': { rate_ltv70: 5.19 } } },
-    { id: 'offer-1', title: "🏆 Premium + Pojištění", description: "Nejoblíbenější volba našich klientů.", max_ltv: 90, rates: { '3': { rate_ltv70: 5.09, rate_ltv80: 5.09, rate_ltv90: 5.62 }, '5': { rate_ltv70: 5.19, rate_ltv80: 5.19, rate_ltv90: 5.79 }, '7': { rate_ltv70: 5.49, rate_ltv80: 5.49, rate_ltv90: 5.89 }, '10': { rate_ltv70: 5.59, rate_ltv80: 5.59, rate_ltv90: 5.99 } } },
-    { id: 'offer-2', title: "⚖️ Flexibilní / OSVČ", description: "Obratové hypotéky pro podnikatele.", max_ltv: 90, rates: { '3': { rate_ltv70: 5.29, rate_ltv80: 5.39, rate_ltv90: 5.79 }, '5': { rate_ltv70: 5.39, rate_ltv80: 5.49, rate_ltv90: 5.89 }, '7': { rate_ltv70: 5.69, rate_ltv80: 5.79, rate_ltv90: 6.09 }, '10': { rate_ltv70: 5.79, rate_ltv80: 5.89, rate_ltv90: 6.19 } } }
+    { id: 'offer-premium', title: "💎 VIP Sazba 5.29%", description: "Exkluzivní sazba pro bonitní klienty.", max_ltv: 70, rates: { '3': { rate_ltv70: 5.29 }, '5': { rate_ltv70: 5.29 }, '7': { rate_ltv70: 5.49 }, '10': { rate_ltv70: 5.59 } } },
+    { id: 'offer-1', title: "🏆 Premium + Pojištění", description: "Nejoblíbenější volba našich klientů.", max_ltv: 90, rates: { '3': { rate_ltv70: 5.49, rate_ltv80: 5.49, rate_ltv90: 6.02 }, '5': { rate_ltv70: 5.59, rate_ltv80: 5.59, rate_ltv90: 6.19 }, '7': { rate_ltv70: 5.89, rate_ltv80: 5.89, rate_ltv90: 6.29 }, '10': { rate_ltv70: 5.99, rate_ltv80: 5.99, rate_ltv90: 6.39 } } },
+    { id: 'offer-2', title: "⚖️ Flexibilní / OSVČ", description: "Obratové hypotéky pro podnikatele.", max_ltv: 90, rates: { '3': { rate_ltv70: 5.69, rate_ltv80: 5.79, rate_ltv90: 6.19 }, '5': { rate_ltv70: 5.79, rate_ltv80: 5.89, rate_ltv90: 6.29 }, '7': { rate_ltv70: 6.09, rate_ltv80: 6.19, rate_ltv90: 6.49 }, '10': { rate_ltv70: 6.19, rate_ltv80: 6.29, rate_ltv90: 6.59 } } }
 ];
+
 const calculateMonthlyPayment = (p, r, t) => {
     const monthlyRate = r / 1200; const numberOfPayments = t * 12;
     if (monthlyRate === 0) return p / numberOfPayments;
     return (p * monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
 };
+
 const calculateFixationAnalysis = (loanAmount, propertyValue, rate, loanTerm, fixation) => {
     const monthlyPayment = calculateMonthlyPayment(loanAmount, rate, loanTerm);
     const monthlyRate = rate / 100 / 12; 
@@ -32,6 +34,7 @@ const calculateFixationAnalysis = (loanAmount, propertyValue, rate, loanTerm, fi
         }
     };
 };
+
 exports.handler = async (event) => {
     const headers = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
     if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers };
@@ -66,14 +69,15 @@ exports.handler = async (event) => {
             let rate = ltv <= 70 ? rates.rate_ltv70 : (ltv <= 80 ? (rates.rate_ltv80 || rates.rate_ltv70) : (isYoungApplicant ? (rates.rate_ltv80 || rates.rate_ltv70) + 0.1 : rates.rate_ltv90 || rates.rate_ltv80));
             if (!rate) return null; 
             
-            if (energyLabel === 'a_b') { rate = Math.max(3.99, rate - 0.1); }
+            // Sleva za štítek, ALE absolutní dno je 5.19 %
+            if (energyLabel === 'a_b') { rate = Math.max(5.19, rate - 0.1); }
             
             const payment = calculateMonthlyPayment(loanAmount, rate, effectiveTerm);
             const dsti = income > 0 ? ((payment + liabilities) / income) * 100 : Infinity;
             if (dsti > 55) return null;
             
             let title = o.title;
-            if(energyLabel === 'a_b') title += " (Zelená sleva)";
+            if(energyLabel === 'a_b' && rate >= 5.19) title += " (Zelená sleva)";
             
             return { id: o.id, rate: parseFloat(rate.toFixed(2)), monthlyPayment: Math.round(payment), dsti: Math.round(dsti), title: title, description: o.description };
         }).filter(Boolean).sort((a, b) => a.rate - b.rate);

@@ -5,6 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Často kladené otázky o hypotékách | Hypoteky Ai</title>
     
+    <!-- Google Consent Mode v2 -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      
+      // Zjistíme, jestli už uživatel dříve souhlasil na liště
+      var hasConsent = localStorage.getItem('cookieConsent') === 'true';
+      
+      // Výchozí stav (Pokud nesouhlasil, GA měří anonymně bez cookies)
+      gtag('consent', 'default', {
+        'ad_storage': hasConsent ? 'granted' : 'denied',
+        'ad_user_data': hasConsent ? 'granted' : 'denied',
+        'ad_personalization': hasConsent ? 'granted' : 'denied',
+        'analytics_storage': hasConsent ? 'granted' : 'denied'
+      });
+    </script>
+    
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-W89NM98KYS"></script>
     <script>

@@ -546,6 +546,36 @@ const handleFormSubmit = async (e) => {
 document.getElementById('inline-lead-form')?.addEventListener('submit', handleFormSubmit);
 document.getElementById('modal-lead-form')?.addEventListener('submit', handleFormSubmit);
 
+// --- COOKIE BANNER LOGIKA S GOOGLE CONSENT MODE ---
+document.addEventListener("DOMContentLoaded", () => {
+    const banner = document.getElementById('cookie-banner');
+    const acceptBtn = document.getElementById('cookie-accept');
+    
+    if (banner && acceptBtn) {
+        if (!localStorage.getItem('cookieConsent')) {
+            banner.classList.remove('hidden');
+            setTimeout(() => banner.classList.remove('translate-y-full'), 50);
+        }
+        acceptBtn.addEventListener('click', () => {
+            localStorage.setItem('cookieConsent', 'true');
+            
+            // Odemknutí Google Analytics do plného režimu
+            if (typeof gtag === 'function') {
+                gtag('consent', 'update', {
+                    'ad_storage': 'granted',
+                    'ad_user_data': 'granted',
+                    'ad_personalization': 'granted',
+                    'analytics_storage': 'granted'
+                });
+            }
+
+            banner.classList.add('translate-y-full'); 
+            setTimeout(() => banner.classList.add('hidden'), 500); 
+        });
+    }
+});
+
+// INIT
 renderForm(); 
 generateSuggestions();
 setTimeout(() => appendChat('Dobrý den! Jsem váš hypoteční stratég. Nastavte si vlevo parametry a klikněte na "Spočítat", abych mohl začít analyzovat.', 'ai'), 800);

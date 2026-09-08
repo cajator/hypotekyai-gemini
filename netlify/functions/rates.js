@@ -1,5 +1,5 @@
 const ALL_OFFERS = [
-    { id: 'offer-premium', title: "💎 VIP Sazba 5.09%", description: "Exkluzivní sazba pro bonitní klienty.", max_ltv: 70, rates: { '3': { rate_ltv70: 5.09 }, '5': { rate_ltv70: 5.29 }, '7': { rate_ltv70: 5.49 }, '10': { rate_ltv70: 5.59 } } },
+    { id: 'offer-premium', title: "💎 VIP Sazba 5.09%", description: "Exkluzivní sazba pro bonitní klienty.", max_ltv: 70, rates: { '3': { rate_ltv70: 5.09 }, '5': { rate_ltv70: 5.09 }, '7': { rate_ltv70: 5.29 }, '10': { rate_ltv70: 5.39 } } },
     { id: 'offer-1', title: "🏆 Premium + Pojištění", description: "Nejoblíbenější volba našich klientů.", max_ltv: 90, rates: { '3': { rate_ltv70: 5.29, rate_ltv80: 5.29, rate_ltv90: 5.82 }, '5': { rate_ltv70: 5.39, rate_ltv80: 5.39, rate_ltv90: 5.99 }, '7': { rate_ltv70: 5.69, rate_ltv80: 5.69, rate_ltv90: 6.09 }, '10': { rate_ltv70: 5.79, rate_ltv80: 5.79, rate_ltv90: 6.19 } } },
     { id: 'offer-2', title: "⚖️ Flexibilní / OSVČ", description: "Obratové hypotéky pro podnikatele.", max_ltv: 90, rates: { '3': { rate_ltv70: 5.49, rate_ltv80: 5.59, rate_ltv90: 5.99 }, '5': { rate_ltv70: 5.59, rate_ltv80: 5.69, rate_ltv90: 6.09 }, '7': { rate_ltv70: 5.89, rate_ltv80: 5.99, rate_ltv90: 6.29 }, '10': { rate_ltv70: 5.99, rate_ltv80: 6.09, rate_ltv90: 6.39 } } }
 ];

@@ -16,7 +16,7 @@ const state = {
 
 const QUICK_RESPONSES = {
     'dokumenty|potřebuji|doklady|podklady': `<strong>📋 Zde je seznam dokumentů:</strong><br>• Platný občanský průkaz<br>• Potvrzení o příjmu (nebo daňové přiznání)<br>• Výpisy z účtu za poslední 3 měsíce<br>• Návrh kupní smlouvy<br>💡 <em>Tip: S přípravou dokumentů vám rád pomůže náš specialista.</em>`,
-    'kolik.*půjčit|maximální.*úvěr|jakou.*částku': `<strong>💰 Kolik si můžete půjčit:</strong><br>Hrubý odhad je <strong>váš čistý měsíční příjem × 9 let</strong> (tedy x 108 měsíců).<br>Např. při příjmu 50 000 Kč dosáhnete cca na 4,5 mil. Kč.<br>💡 <em>Tip: Přesná částka závisí i na vašem věku a dalších půjčkách. Můžete si to otestovat přímo v naší detailní kalkulačce vlevo!</em>`,
+    'kolik.*půjčit|maximální.*úvěr|jakou.*částku': `<strong>💰 Kolik si můžete půjčit:</strong><br>Hrubý odhad je <strong>váš čistý měsíční příjem × 9 let</strong> (tedy x 108 měsíců).<br>Např. při příjmu 50 000 Kč dosáhnete cca na 4,5 mil. Kč.<br>💡 <em>Tip: Přesná částka závisí i na vašem věku a dalších půjčkách. Naše kalkulačka dole v detailním výpisu ukazuje přesný teoretický strop!</em>`,
     'osvč|podnikatel|živnost': `<strong>🏢 Hypotéka pro OSVČ:</strong><br>Standardně banky berou čistý zisk z daňového přiznání. My však umíme u vybraných bank zařídit <strong>výpočet z obratu (15-25%)</strong>. To je ideální pro ty, kteří legálně optimalizují daně paušálem.<br>💡 <em>Tip: Vyplňte formulář pod kalkulačkou a náš expert vám najde správnou banku.</em>`,
     'fixaci|změnit fixaci': `<strong>🔒 Jakou zvolit fixaci:</strong><br>Dnes se nejčastěji volí <strong>3 nebo 5 let</strong>. Umožňuje to flexibilně reagovat na případný pokles sazeb v budoucnu a hypotéku případně zdarma refinancovat.`,
     'dsti|co je dsti': `<strong>📊 Co je DSTI:</strong><br>Zkratka pro <em>Debt Service To Income</em>. Vyjadřuje, kolik procent z vašeho čistého příjmu spolkne splátka hypotéky a všech vašich ostatních úvěrů. Bezpečný limit bank je typicky 45 % až 50 %.`,
@@ -78,9 +78,9 @@ const renderForm = () => {
     } else {
         container.innerHTML = `
             <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
-                ${createSelect('employment', 'Typ příjmu', {'zaměstnanec':'Zaměstnanec', 'osvč':'OSVČ', 'jednatel':'Jednatel s.r.o.'}, state.formData.employment)}
-                ${createSelect('purpose', 'Účel hypotéky', {'koupě':'Koupě', 'výstavba':'Výstavba', 'rekonstrukce':'Rekonstrukce', 'refinancování':'Refinancování'}, state.formData.purpose)}
-                ${createSelect('propertyType', 'Typ nemovitosti', {'byt':'Byt', 'rodinný dům':'Rodinný dům', 'pozemek':'Pozemek'}, state.formData.propertyType)}
+                ${createSelect('employment', 'Typ příjmu', {'zaměstnanec':'Zaměstnanec', 'osvč':'OSVČ', 'jednatel':'Jednatel s.r.o.', 'jine':'Jiné (DPČ, Renta, atd.)'}, state.formData.employment)}
+                ${createSelect('purpose', 'Účel hypotéky', {'koupě':'Koupě', 'výstavba':'Výstavba', 'rekonstrukce':'Rekonstrukce', 'refinancování':'Refinancování', 'cokoliv': 'Na cokoliv (Americká)'}, state.formData.purpose)}
+                ${createSelect('propertyType', 'Typ nemovitosti', {'byt':'Byt', 'rodinný dům':'Rodinný dům', 'pozemek':'Pozemek', 'rekreacni': 'Rekreační objekt', 'bytovy_dum': 'Bytový dům', 'jine': 'Jiné'}, state.formData.propertyType)}
                 ${createSelect('education', 'Nejvyšší vzdělání', {'základní':'Základní', 'středoškolské':'Středoškolské', 'vysokoškolské':'Vysokoškolské'}, state.formData.education)}
             </div>
             <div class="mt-4 pt-6 border-t border-slate-200">
@@ -200,12 +200,12 @@ const renderResults = () => {
     const calc = state.calculation;
 
     if (calc && calc.error) {
-        res.innerHTML = `<div class="p-8 bg-red-50 border border-red-200 rounded-2xl text-center"><div class="text-4xl mb-3">⚠️</div><h3 class="font-extrabold text-red-900 text-lg mb-1">Nelze zafinancovat bankou</h3><p class="text-sm text-red-700 font-medium">Vaše zadání překračuje limity: buď LTV > 90 %, splátka je příliš vysoká k příjmům (DSTI), nebo celkové dluhy přesahují limit DTI.</p></div>`;
+        res.innerHTML = `<div class="p-8 bg-red-50 border border-red-200 rounded-2xl text-center"><div class="text-4xl mb-3">⚠️</div><h3 class="font-extrabold text-red-900 text-lg mb-1">Nelze zafinancovat bankou</h3><p class="text-sm text-red-700 font-medium">${calc.error}</p></div>`;
         return;
     }
 
     if (!calc || !calc.offers || calc.offers.length === 0) {
-        res.innerHTML = `<div class="p-8 bg-red-50 border border-red-200 rounded-2xl text-center"><div class="text-4xl mb-3">⚠️</div><h3 class="font-extrabold text-red-900 text-lg mb-1">Nelze zafinancovat bankou</h3><p class="text-sm text-red-700 font-medium">Vaše zadané LTV překračuje 90 % nebo je splátka příliš vysoká vůči příjmům (DSTI).</p></div>`;
+        res.innerHTML = `<div class="p-8 bg-red-50 border border-red-200 rounded-2xl text-center"><div class="text-4xl mb-3">⚠️</div><h3 class="font-extrabold text-red-900 text-lg mb-1">Nelze zafinancovat bankou</h3><p class="text-sm text-red-700 font-medium">Vaše zadané LTV překračuje limity nebo je splátka příliš vysoká vůči příjmům (DSTI).</p></div>`;
         return;
     }
 
@@ -213,11 +213,72 @@ const renderResults = () => {
     const best = state.calculation.selectedOffer || calc.offers[0];
     const fix = calc.fixationDetails;
 
+    // --- UPOZORNĚNÍ NA VĚK 70 LET ---
+    let ageWarningHTML = '';
+    const age = state.formData.age || 35;
+    const term = state.formData.loanTerm || 30;
+    if (state.mode === 'guided' && (age + term > 70)) {
+        const maxStandardTerm = Math.max(5, 70 - age);
+        ageWarningHTML = `
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 rounded-lg shadow-sm">
+                <div class="flex">
+                    <div class="flex-shrink-0"><span class="text-yellow-500 text-xl">⚠️</span></div>
+                    <div class="ml-3">
+                        <p class="text-sm text-yellow-800">
+                            <strong>Omezení splatnosti věkem:</strong> Standardní splatnost končí v 70 letech. Při vašem věku (${age} let) je standardní maximální splatnost <strong>${maxStandardTerm} let</strong>. Splatnost jsme pro tento model automaticky zkrátili. <br><br><em>Tip: Pouze na individuální výjimku banky a za přísnějších podmínek lze úvěr protáhnout do 72 nebo 75 let.</em>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // --- MAXIMÁLNÍ MOŽNÁ HYPOTÉKA (GRAFICKÝ BOX) ---
+    let maxMortgageHTML = '';
+    if (state.formData.income > 0 && best) {
+        const income = state.formData.income;
+        const liabilities = state.formData.liabilities || 0;
+        const totalDebt = state.formData.totalDebt || 0;
+        const ownedProperties = state.formData.ownedProperties || '0_1';
+        
+        const isYoung = age < 36;
+        const dtiLimit = ownedProperties === '2_plus' ? 7.0 : (isYoung ? 9.5 : 8.5);
+        const maxLoanDTI = Math.max(0, (income * 12 * dtiLimit) - totalDebt);
+        
+        const dstiLimit = 0.55;
+        const maxPayment = Math.max(0, (income * dstiLimit) - liabilities);
+        
+        let maxLoanDSTI = 0;
+        const r = best.rate / 1200;
+        const n = Math.min(term, Math.max(5, 70 - age)) * 12;
+        if (r > 0) { maxLoanDSTI = (maxPayment * (1 - Math.pow(1 + r, -n))) / r; }
+        
+        const absoluteMaxLoan = Math.min(maxLoanDTI, maxLoanDSTI);
+        
+        if (absoluteMaxLoan > 0) {
+            const limitingFactor = maxLoanDTI < maxLoanDSTI ? 'DTI (celkového limitu dluhu vůči ročnímu příjmu)' : 'DSTI (výše maximální povolené měsíční splátky)';
+            maxMortgageHTML = `
+                <div class="bg-gradient-to-br from-indigo-50 to-blue-50 p-5 sm:p-6 rounded-2xl border-2 border-indigo-200 shadow-md mb-8 relative overflow-hidden">
+                    <div class="absolute -right-4 -top-4 text-7xl opacity-10">🚀</div>
+                    <h4 class="text-xl font-extrabold text-indigo-900 mb-2">Váš maximální potenciál</h4>
+                    <p class="text-sm text-indigo-700 mb-4">Na základě vašich příjmů a výdajů jsme spočítali teoretický strop, kolik by vám banka na tuto splatnost mohla půjčit.</p>
+                    <div class="flex flex-col sm:flex-row items-center justify-between bg-white p-4 rounded-xl shadow-sm border border-indigo-100 gap-4">
+                        <span class="text-gray-600 font-semibold text-sm">Maximální výše úvěru:</span>
+                        <span class="text-2xl font-black text-indigo-600">${formatNumber(absoluteMaxLoan)}</span>
+                    </div>
+                    <p class="text-xs text-indigo-500 mt-3 text-center">Tento teoretický limit je nyní omezen pravidlem <strong>${limitingFactor}</strong>.</p>
+                </div>
+            `;
+        }
+    }
+
+
     const ltvColor = app.ltv > 80 ? 'bg-green-500' : (app.ltv > 50 ? 'bg-yellow-500' : 'bg-red-500');
     const dstiColor = app.dsti > 70 ? 'bg-blue-500' : 'bg-orange-500';
 
     let html = `
         <h3 class="text-2xl font-extrabold mb-4 text-slate-900">🎯 Skóre schvalitelnosti</h3>
+        ${ageWarningHTML}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 bg-slate-50 p-4 rounded-2xl border border-slate-100">
             ${renderScoreBar('LTV', app.ltv, 'Poměr úvěru k zástavě', ltvColor, '🏠')}
             ${renderScoreBar('DSTI', app.dsti, 'Zatížení příjmů splátkami', dstiColor, '💰')}
@@ -281,6 +342,8 @@ const renderResults = () => {
             </div>
         </div>`;
     }
+
+    html += maxMortgageHTML;
 
     res.innerHTML = html;
 
@@ -423,7 +486,7 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
     chatMsgs.scrollTop = chatMsgs.scrollHeight;
 
     try {
-        const payload = { message: msg, context: { formData: state.formData, calculation: state.calculation, chatHistory: state.chatHistory.slice(-6) } };
+        const payload = { message: msg, context: { mode: state.mode, formData: state.formData, calculation: state.calculation, chatHistory: state.chatHistory.slice(-6) } };
         const res = await fetch('/.netlify/functions/chat', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
         
         document.getElementById(tid).remove();
@@ -546,7 +609,6 @@ const handleFormSubmit = async (e) => {
 document.getElementById('inline-lead-form')?.addEventListener('submit', handleFormSubmit);
 document.getElementById('modal-lead-form')?.addEventListener('submit', handleFormSubmit);
 
-// --- COOKIE BANNER LOGIKA S GOOGLE CONSENT MODE ---
 document.addEventListener("DOMContentLoaded", () => {
     const banner = document.getElementById('cookie-banner');
     const acceptBtn = document.getElementById('cookie-accept');
@@ -558,8 +620,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         acceptBtn.addEventListener('click', () => {
             localStorage.setItem('cookieConsent', 'true');
-            
-            // Odemknutí Google Analytics do plného režimu
             if (typeof gtag === 'function') {
                 gtag('consent', 'update', {
                     'ad_storage': 'granted',
@@ -568,14 +628,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     'analytics_storage': 'granted'
                 });
             }
-
             banner.classList.add('translate-y-full'); 
             setTimeout(() => banner.classList.add('hidden'), 500); 
         });
     }
 });
 
-// INIT
 renderForm(); 
 generateSuggestions();
 setTimeout(() => appendChat('Dobrý den! Jsem váš hypoteční stratég. Nastavte si vlevo parametry a klikněte na "Spočítat", abych mohl začít analyzovat.', 'ai'), 800);

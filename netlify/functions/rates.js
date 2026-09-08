@@ -54,13 +54,19 @@ exports.handler = async (event) => {
         if (effectivePropertyValue <= 0) return { statusCode: 200, headers, body: JSON.stringify({ offers: [] }) };
         
         const ltv = (loanAmount / effectivePropertyValue) * 100;
-        if (ltv > 90) return { statusCode: 200, headers, body: JSON.stringify({ offers: [], error: "LTV > 90%" }) }; 
+        
+        // Zpracování americké hypotéky (na cokoliv) -> tvrdý limit LTV 70%
+        if (purpose === 'cokoliv' && ltv > 70) {
+            return { statusCode: 200, headers, body: JSON.stringify({ offers: [], error: "Americká hypotéka (Na cokoliv) má maximální možnou hodnotu LTV 70 %. Snižte požadovaný úvěr nebo zvyšte zástavu." }) };
+        }
+        if (ltv > 90) return { statusCode: 200, headers, body: JSON.stringify({ offers: [], error: "LTV přesahuje limit 90 %." }) }; 
         
         const isYoungApplicant = age < 36; 
         const dti = (loanAmount + totalDebt) / (income * 12);
         const maxDti = ownedProperties === '2_plus' ? 7.0 : (isYoungApplicant ? 9.5 : 8.5);
         if (dti > maxDti) return { statusCode: 200, headers, body: JSON.stringify({ offers: [], error: "DTI limit" }) }; 
 
+        // OMEZENÍ SPLATNOSTI NA VĚK 70 LET
         const effectiveTerm = Math.min(term, Math.max(5, 70 - age));
         
         const offers = ALL_OFFERS.filter(o => ltv <= o.max_ltv).map(o => {
@@ -69,7 +75,10 @@ exports.handler = async (event) => {
             let rate = ltv <= 70 ? rates.rate_ltv70 : (ltv <= 80 ? (rates.rate_ltv80 || rates.rate_ltv70) : (isYoungApplicant ? (rates.rate_ltv80 || rates.rate_ltv70) + 0.1 : rates.rate_ltv90 || rates.rate_ltv80));
             if (!rate) return null; 
             
-            // Sleva za štítek, ALE absolutní dno je 5.19 %
+            // Americká hypotéka má často drobnou přirážku na sazbě, pro zjednodušení dáme +0.5%
+            if (purpose === 'cokoliv') rate += 0.5;
+            
+            // Sleva za štítek, absolutní dno je 5.19 %
             if (energyLabel === 'a_b') { rate = Math.max(5.19, rate - 0.1); }
             
             const payment = calculateMonthlyPayment(loanAmount, rate, effectiveTerm);
@@ -77,7 +86,8 @@ exports.handler = async (event) => {
             if (dsti > 55) return null;
             
             let title = o.title;
-            if(energyLabel === 'a_b' && rate >= 5.19) title += " (Zelená sleva)";
+            if(purpose === 'cokoliv') title = title.replace('VIP Sazba', 'Americká hypotéka').replace('Premium', 'Americká');
+            if(energyLabel === 'a_b' && rate >= 5.19 && purpose !== 'cokoliv') title += " (Zelená sleva)";
             
             return { id: o.id, rate: parseFloat(rate.toFixed(2)), monthlyPayment: Math.round(payment), dsti: Math.round(dsti), title: title, description: o.description };
         }).filter(Boolean).sort((a, b) => a.rate - b.rate);

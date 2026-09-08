@@ -4,8 +4,9 @@ const state = {
     hasCalculated: false,
     formData: {
         propertyValue: 5000000, loanAmount: 4000000, income: 60000, 
-        loanTerm: 30, fixation: 5, age: 35, children: 0, liabilities: 0,
-        purpose: 'koupě', propertyType: 'byt', employment: 'zaměstnanec', education: 'středoškolské', landValue: 0, reconstructionValue: 0
+        loanTerm: 30, fixation: 5, age: 35, children: 0, liabilities: 0, totalDebt: 0,
+        purpose: 'koupě', propertyType: 'byt', employment: 'zaměstnanec', education: 'středoškolské', landValue: 0, reconstructionValue: 0,
+        energyLabel: 'c_worse', ownedProperties: '0_1'
     },
     calculation: null,
     chatHistory: [],
@@ -19,7 +20,9 @@ const QUICK_RESPONSES = {
     'osvč|podnikatel|živnost': `<strong>🏢 Hypotéka pro OSVČ:</strong><br>Standardně banky berou čistý zisk z daňového přiznání. My však umíme u vybraných bank zařídit <strong>výpočet z obratu (15-25%)</strong>. To je ideální pro ty, kteří legálně optimalizují daně paušálem.<br>💡 <em>Tip: Vyplňte formulář pod kalkulačkou a náš expert vám najde správnou banku.</em>`,
     'fixaci|změnit fixaci': `<strong>🔒 Jakou zvolit fixaci:</strong><br>Dnes se nejčastěji volí <strong>3 nebo 5 let</strong>. Umožňuje to flexibilně reagovat na případný pokles sazeb v budoucnu a hypotéku případně zdarma refinancovat.`,
     'dsti|co je dsti': `<strong>📊 Co je DSTI:</strong><br>Zkratka pro <em>Debt Service To Income</em>. Vyjadřuje, kolik procent z vašeho čistého příjmu spolkne splátka hypotéky a všech vašich ostatních úvěrů. Bezpečný limit bank je typicky 45 % až 50 %.`,
-    'ltv|co je ltv': `<strong>🏠 Co je LTV:</strong><br>Zkratka pro <em>Loan To Value</em> (Poměr úvěru k hodnotě nemovitosti). Pokud kupujete byt za 5 mil. Kč a máte 1 mil. Kč ze svého, půjčujete si 4 mil. Kč, což odpovídá LTV 80 % (ideální stav).`
+    'ltv|co je ltv': `<strong>🏠 Co je LTV:</strong><br>Zkratka pro <em>Loan To Value</em> (Poměr úvěru k hodnotě nemovitosti). Pokud kupujete byt za 5 mil. Kč a máte 1 mil. Kč ze svého, půjčujete si 4 mil. Kč, což odpovídá LTV 80 % (ideální stav).`,
+    'dti|nemovitost|limit': `<strong>⚖️ Limit DTI pro investory:</strong><br>Pokud vlastníte 2 a více nemovitostí, banky aplikují přísnější DTI limit. Váš celkový dluh nesmí přesáhnout <strong>7násobek</strong> vašeho čistého ročního příjmu (místo běžného 8,5násobku).`,
+    'zelená|štítek|sleva': `<strong>🌿 Zelená hypotéka:</strong><br>Pokud kupujete nebo stavíte nemovitost s energetickým štítkem <strong>A nebo B</strong>, získáte od nás automaticky slevu na úrokové sazbě ve výši <strong>0,1 %</strong> a často i odpuštění poplatku za odhad.`
 };
 
 const findQuickResponse = (msg) => {
@@ -86,10 +89,18 @@ const renderForm = () => {
                 ${createSlider('reconstructionValue', 'Rozsah rekonstrukce', state.formData.reconstructionValue, 0, 10000000, 50000, 'hidden')}
                 <div id="total-property-value-display" class="hidden text-center bg-slate-100 p-2 rounded-lg text-sm mb-4"></div>
                 ${createSlider('loanAmount', 'Požadovaná výše úvěru', state.formData.loanAmount, 500000, 30000000, 100000)}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 mt-6 p-4 bg-green-50 rounded-xl border border-green-100 mb-6">
+                    ${createSelect('energyLabel', 'Energetický štítek (PENB)', {'c_worse':'Třída C a horší / Nevím', 'a_b':'Třída A nebo B (Sleva 0,1 %)'}, state.formData.energyLabel)}
+                    ${createSelect('ownedProperties', 'Vlastněné nemovitosti k bydlení', {'0_1':'0 až 1 nemovitost', '2_plus':'2 a více nemovitostí (Přísnější DTI)'}, state.formData.ownedProperties)}
+                </div>
+
                 <div id="ltv-display" class="text-center font-extrabold text-lg mb-6 transition-colors duration-300"></div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-x-6">
                     ${createSlider('income', 'Čistý příjem', state.formData.income, 15000, 300000, 1000)}
                     ${createSlider('liabilities', 'Jiné splátky (úvěry)', state.formData.liabilities, 0, 100000, 500)}
+                    ${createSlider('totalDebt', 'Celkový dluh (Jistina)', state.formData.totalDebt, 0, 15000000, 50000, '', 'Důležité pro výpočet limitu DTI.')}
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-x-6">
                     ${createSlider('loanTerm', 'Splatnost', state.formData.loanTerm, 5, 30, 1)}
@@ -187,6 +198,11 @@ const renderScoreBar = (label, val, explanation, colorClass, icon) => `
 const renderResults = () => {
     const res = document.getElementById('results-container');
     const calc = state.calculation;
+
+    if (calc && calc.error) {
+        res.innerHTML = `<div class="p-8 bg-red-50 border border-red-200 rounded-2xl text-center"><div class="text-4xl mb-3">⚠️</div><h3 class="font-extrabold text-red-900 text-lg mb-1">Nelze zafinancovat bankou</h3><p class="text-sm text-red-700 font-medium">Vaše zadání překračuje limity: buď LTV > 90 %, splátka je příliš vysoká k příjmům (DSTI), nebo celkové dluhy přesahují limit DTI.</p></div>`;
+        return;
+    }
 
     if (!calc || !calc.offers || calc.offers.length === 0) {
         res.innerHTML = `<div class="p-8 bg-red-50 border border-red-200 rounded-2xl text-center"><div class="text-4xl mb-3">⚠️</div><h3 class="font-extrabold text-red-900 text-lg mb-1">Nelze zafinancovat bankou</h3><p class="text-sm text-red-700 font-medium">Vaše zadané LTV překračuje 90 % nebo je splátka příliš vysoká vůči příjmům (DSTI).</p></div>`;
@@ -341,7 +357,9 @@ const fetchRates = async () => {
         const res = await fetch(`/.netlify/functions/rates?${new URLSearchParams(state.formData).toString()}`);
         if (!res.ok) throw new Error('API');
         state.calculation = await res.json();
-        state.calculation.selectedOffer = state.calculation.offers[0];
+        if(state.calculation.offers && state.calculation.offers.length > 0) {
+            state.calculation.selectedOffer = state.calculation.offers[0];
+        }
         renderResults();
     } catch(e) {
         resContainer.innerHTML = `<div class="p-6 bg-red-50 text-red-700 rounded-xl font-bold border border-red-200 text-center">Chyba připojení k serveru. Nelze načíst sazby.</div>`;
@@ -453,6 +471,8 @@ const generateSuggestions = () => {
         texts = ["Jak dlouho dopředu řešit refinancování?", "Kdo platí odhad při refinancování?"];
     } else if (state.formData.purpose === 'výstavba') {
         texts = ["Jak se prokazují faktury?", "Lze ručit jen pozemkem?"];
+    } else if (state.mode === 'guided') {
+        texts = ["Sleva za štítek A/B?", "DTI pro více nemovitostí?", "Co je to fixace?"];
     }
 
     sug.innerHTML = texts.map(t => `<button type="button" class="text-xs font-bold bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-full whitespace-nowrap hover:border-blue-500 hover:text-blue-700 transition-all shadow-sm" onclick="sendChatSuggestion('${t}')">${t}</button>`).join('');
@@ -533,18 +553,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const acceptBtn = document.getElementById('cookie-accept');
     
     if (banner && acceptBtn) {
-        // Zkontrolujeme, zda uživatel již souhlasil
         if (!localStorage.getItem('cookieConsent')) {
             banner.classList.remove('hidden');
-            // Malé zpoždění pro plynulou animaci vyjetí zdola
             setTimeout(() => banner.classList.remove('translate-y-full'), 50);
         }
-        
-        // Akce po kliknutí na "Rozumím a souhlasím"
         acceptBtn.addEventListener('click', () => {
             localStorage.setItem('cookieConsent', 'true');
-            banner.classList.add('translate-y-full'); // Odjede dolů
-            setTimeout(() => banner.classList.add('hidden'), 500); // Schová se úplně po animaci
+            banner.classList.add('translate-y-full'); 
+            setTimeout(() => banner.classList.add('hidden'), 500); 
         });
     }
 });

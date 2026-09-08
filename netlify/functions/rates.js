@@ -1,3 +1,4 @@
+// netlify/functions/rates.js
 const ALL_OFFERS = [
     { id: 'offer-premium', title: "💎 VIP Sazba 5.09%", description: "Exkluzivní sazba pro bonitní klienty.", max_ltv: 70, rates: { '3': { rate_ltv70: 5.09 }, '5': { rate_ltv70: 5.09 }, '7': { rate_ltv70: 5.29 }, '10': { rate_ltv70: 5.39 } } },
     { id: 'offer-1', title: "🏆 Premium + Pojištění", description: "Nejoblíbenější volba našich klientů.", max_ltv: 90, rates: { '3': { rate_ltv70: 5.29, rate_ltv80: 5.29, rate_ltv90: 5.82 }, '5': { rate_ltv70: 5.39, rate_ltv80: 5.39, rate_ltv90: 5.99 }, '7': { rate_ltv70: 5.69, rate_ltv80: 5.69, rate_ltv90: 6.09 }, '10': { rate_ltv70: 5.79, rate_ltv80: 5.79, rate_ltv90: 6.19 } } },
@@ -38,30 +39,54 @@ exports.handler = async (event) => {
         const p = event.queryStringParameters;
         const loanAmount = parseInt(p.loanAmount) || 0; const propertyValue = parseInt(p.propertyValue) || 0; const landValue = parseInt(p.landValue) || 0;
         const income = parseInt(p.income) || 0; const liabilities = parseInt(p.liabilities) || 0;
+        const totalDebt = parseInt(p.totalDebt) || 0;
+        const energyLabel = p.energyLabel || 'c_worse';
+        const ownedProperties = p.ownedProperties || '0_1';
+        
         const term = parseInt(p.loanTerm) || 30; const fixationInput = parseInt(p.fixation) || 5; const age = parseInt(p.age) || 35;
         const purpose = p.purpose || 'koupě';
+        
         if (!loanAmount || !propertyValue || !income) return { statusCode: 200, headers, body: JSON.stringify({ offers: [] }) };
         const effectivePropertyValue = purpose === 'výstavba' ? propertyValue + landValue : propertyValue;
         if (effectivePropertyValue <= 0) return { statusCode: 200, headers, body: JSON.stringify({ offers: [] }) };
+        
         const ltv = (loanAmount / effectivePropertyValue) * 100;
         if (ltv > 90) return { statusCode: 200, headers, body: JSON.stringify({ offers: [], error: "LTV > 90%" }) }; 
-        const effectiveTerm = Math.min(term, Math.max(5, 70 - age));
+        
         const isYoungApplicant = age < 36; 
+        const dti = (loanAmount + totalDebt) / (income * 12);
+        const maxDti = ownedProperties === '2_plus' ? 7.0 : (isYoungApplicant ? 9.5 : 8.5);
+        if (dti > maxDti) return { statusCode: 200, headers, body: JSON.stringify({ offers: [], error: "DTI limit" }) }; 
+
+        const effectiveTerm = Math.min(term, Math.max(5, 70 - age));
+        
         const offers = ALL_OFFERS.filter(o => ltv <= o.max_ltv).map(o => {
             const rates = o.rates[fixationInput] || o.rates['5']; 
             if (!rates) return null;
             let rate = ltv <= 70 ? rates.rate_ltv70 : (ltv <= 80 ? (rates.rate_ltv80 || rates.rate_ltv70) : (isYoungApplicant ? (rates.rate_ltv80 || rates.rate_ltv70) + 0.1 : rates.rate_ltv90 || rates.rate_ltv80));
             if (!rate) return null; 
+            
+            // SLEVA ZA ZELENOU HYPOTÉKU
+            if (energyLabel === 'a_b') {
+                rate = Math.max(3.99, rate - 0.1); 
+            }
+            
             const payment = calculateMonthlyPayment(loanAmount, rate, effectiveTerm);
             const dsti = income > 0 ? ((payment + liabilities) / income) * 100 : Infinity;
             if (dsti > 55) return null;
-            return { id: o.id, rate: parseFloat(rate.toFixed(2)), monthlyPayment: Math.round(payment), dsti: Math.round(dsti), title: o.title, description: o.description };
+            
+            let title = o.title;
+            if(energyLabel === 'a_b') title += " (Zelená sleva)";
+            
+            return { id: o.id, rate: parseFloat(rate.toFixed(2)), monthlyPayment: Math.round(payment), dsti: Math.round(dsti), title: title, description: o.description };
         }).filter(Boolean).sort((a, b) => a.rate - b.rate);
+        
         if (offers.length === 0) return { statusCode: 200, headers, body: JSON.stringify({ offers: [] }) };
         const best = offers[0];
         const score = { ltv: Math.round(100 - Math.max(0, ltv - 50)*2), dsti: Math.round(100 - Math.max(0, best.dsti - 20)*2), bonita: 0 };
         score.bonita = Math.round((score.ltv + score.dsti)/2);
         score.total = Math.round(score.ltv * 0.3 + score.dsti * 0.4 + score.bonita * 0.3);
+        
         return { statusCode: 200, headers, body: JSON.stringify({ offers: offers.slice(0, 3), approvability: score, fixationDetails: calculateFixationAnalysis(loanAmount, effectivePropertyValue, best.rate, effectiveTerm, fixationInput) }) };
     } catch (error) { return { statusCode: 500, headers, body: JSON.stringify({ error: error.message }) }; }
 };

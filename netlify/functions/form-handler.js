@@ -15,7 +15,6 @@ exports.handler = async (event) => {
         let extraData = {};
         try { extraData = JSON.parse(formData.get('extraData') || '{}'); } catch(e){}
 
-        // ZPRACOVÁNÍ HISTORIE CHATU A SOUHRNU
         let chatHistoryText = 'Žádná historie chatu.';
         if (extraData.chatHistory && extraData.chatHistory.length > 0) {
             chatHistoryText = extraData.chatHistory.map(msg => {
@@ -35,9 +34,12 @@ exports.handler = async (event) => {
             const txtPrijem = form.income ? formatNumber(form.income) : '?';
             const txtZam = form.employment || '';
             const txtVek = form.age || '?';
-            const txtDeti = form.children || '0';
             const txtZavazky = form.liabilities ? formatNumber(form.liabilities) : '0';
-            formDataSummaryText = `Účel: ${txtUcel}, Typ: ${txtTyp}, Příjem: ${txtPrijem} (${txtZam}), Věk: ${txtVek} let, Děti: ${txtDeti}, Závazky: ${txtZavazky}`;
+            const txtDluh = form.totalDebt ? formatNumber(form.totalDebt) : '0';
+            const txtStitek = form.energyLabel === 'a_b' ? 'A/B' : 'C/Horší';
+            const txtNemov = form.ownedProperties === '2_plus' ? '2 a více' : '0-1';
+            
+            formDataSummaryText = `Účel: ${txtUcel}, Typ: ${txtTyp}, Štítek: ${txtStitek}, Nemovitostí: ${txtNemov}, Příjem: ${txtPrijem} (${txtZam}), Věk: ${txtVek} let, Závazky(měs): ${txtZavazky}, Dluh(celk): ${txtDluh}`;
         }
 
         if (extraData.calculation && extraData.calculation.selectedOffer) {
@@ -46,7 +48,6 @@ exports.handler = async (event) => {
             calculationSummaryText = `Nabídka: ${offer.title}. Skóre: ${calc.approvability ? calc.approvability.total + '%' : '?'} (LTV:${calc.approvability ? calc.approvability.ltv : '?'}, DSTI:${calc.approvability ? calc.approvability.dsti : '?'})`;
         }
 
-        // 1. ZÁPIS DO GOOGLE SHEETS
         if(process.env.GOOGLE_SHEET_ID && process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
             try {
                 const privateKey = process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n');
@@ -71,38 +72,27 @@ exports.handler = async (event) => {
                     'Parametry (souhrn)': formDataSummaryText,
                     'Výsledky (souhrn)': calculationSummaryText
                 });
-                console.log("Úspěšně zapsáno do tabulky.");
             } catch (sheetError) {
                 console.error("Chyba při zápisu do Google Sheets:", sheetError);
             }
         }
 
-        // 2. ODESLÁNÍ E-MAILU (NETLIFY EMAILS INTEGRATION)
         if (process.env.NETLIFY_EMAILS_SECRET) {
             try {
-                const templateName = 'confirmation'; 
-                
-                await fetch(`${process.env.URL}/.netlify/functions/emails/${templateName}`, {
+                await fetch(`${process.env.URL}/.netlify/functions/emails/confirmation`, {
                     method: 'POST',
                     headers: {
                         'netlify-emails-secret': process.env.NETLIFY_EMAILS_SECRET,
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        from: "Tým Hypoteky Ai <info@hypotekyai.cz>", // Jméno a e-mail odesílatele
+                        from: "Tým Hypoteky Ai <info@hypotekyai.cz>",
                         to: formData.get('email'),
                         subject: "Potvrzení vaší poptávky | Hypoteky Ai",
-                        parameters: {
-                            name: formData.get('name') || 'kliente'
-                        },
+                        parameters: { name: formData.get('name') || 'kliente' },
                     }),
                 });
-                console.log("E-mail úspěšně odeslán přes Netlify Emails.");
-            } catch (emailError) {
-                console.error("Chyba při odesílání e-mailu přes Netlify Emails:", emailError);
-            }
-        } else {
-            console.log("NETLIFY_EMAILS_SECRET nenalezen, email se neodeslal.");
+            } catch (emailError) {}
         }
 
         return { statusCode: 200, body: 'Form processed successfully' };

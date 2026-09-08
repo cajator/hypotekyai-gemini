@@ -1,8 +1,8 @@
 // netlify/functions/rates.js
 const ALL_OFFERS = [
-    { id: 'offer-premium', title: "💎 VIP Sazba 5.09%", description: "Exkluzivní sazba pro bonitní klienty.", max_ltv: 70, rates: { '3': { rate_ltv70: 5.09 }, '5': { rate_ltv70: 5.09 }, '7': { rate_ltv70: 5.29 }, '10': { rate_ltv70: 5.39 } } },
-    { id: 'offer-1', title: "🏆 Premium + Pojištění", description: "Nejoblíbenější volba našich klientů.", max_ltv: 90, rates: { '3': { rate_ltv70: 5.29, rate_ltv80: 5.29, rate_ltv90: 5.82 }, '5': { rate_ltv70: 5.39, rate_ltv80: 5.39, rate_ltv90: 5.99 }, '7': { rate_ltv70: 5.69, rate_ltv80: 5.69, rate_ltv90: 6.09 }, '10': { rate_ltv70: 5.79, rate_ltv80: 5.79, rate_ltv90: 6.19 } } },
-    { id: 'offer-2', title: "⚖️ Flexibilní / OSVČ", description: "Obratové hypotéky pro podnikatele.", max_ltv: 90, rates: { '3': { rate_ltv70: 5.49, rate_ltv80: 5.59, rate_ltv90: 5.99 }, '5': { rate_ltv70: 5.59, rate_ltv80: 5.69, rate_ltv90: 6.09 }, '7': { rate_ltv70: 5.89, rate_ltv80: 5.99, rate_ltv90: 6.29 }, '10': { rate_ltv70: 5.99, rate_ltv80: 6.09, rate_ltv90: 6.39 } } }
+    { id: 'offer-premium', title: "💎 VIP Sazba 4.89%", description: "Exkluzivní sazba pro bonitní klienty.", max_ltv: 70, rates: { '3': { rate_ltv70: 4.89 }, '5': { rate_ltv70: 4.89 }, '7': { rate_ltv70: 5.09 }, '10': { rate_ltv70: 5.19 } } },
+    { id: 'offer-1', title: "🏆 Premium + Pojištění", description: "Nejoblíbenější volba našich klientů.", max_ltv: 90, rates: { '3': { rate_ltv70: 5.09, rate_ltv80: 5.09, rate_ltv90: 5.62 }, '5': { rate_ltv70: 5.19, rate_ltv80: 5.19, rate_ltv90: 5.79 }, '7': { rate_ltv70: 5.49, rate_ltv80: 5.49, rate_ltv90: 5.89 }, '10': { rate_ltv70: 5.59, rate_ltv80: 5.59, rate_ltv90: 5.99 } } },
+    { id: 'offer-2', title: "⚖️ Flexibilní / OSVČ", description: "Obratové hypotéky pro podnikatele.", max_ltv: 90, rates: { '3': { rate_ltv70: 5.29, rate_ltv80: 5.39, rate_ltv90: 5.79 }, '5': { rate_ltv70: 5.39, rate_ltv80: 5.49, rate_ltv90: 5.89 }, '7': { rate_ltv70: 5.69, rate_ltv80: 5.79, rate_ltv90: 6.09 }, '10': { rate_ltv70: 5.79, rate_ltv80: 5.89, rate_ltv90: 6.19 } } }
 ];
 const calculateMonthlyPayment = (p, r, t) => {
     const monthlyRate = r / 1200; const numberOfPayments = t * 12;
@@ -66,10 +66,7 @@ exports.handler = async (event) => {
             let rate = ltv <= 70 ? rates.rate_ltv70 : (ltv <= 80 ? (rates.rate_ltv80 || rates.rate_ltv70) : (isYoungApplicant ? (rates.rate_ltv80 || rates.rate_ltv70) + 0.1 : rates.rate_ltv90 || rates.rate_ltv80));
             if (!rate) return null; 
             
-            // SLEVA ZA ZELENOU HYPOTÉKU
-            if (energyLabel === 'a_b') {
-                rate = Math.max(3.99, rate - 0.1); 
-            }
+            if (energyLabel === 'a_b') { rate = Math.max(3.99, rate - 0.1); }
             
             const payment = calculateMonthlyPayment(loanAmount, rate, effectiveTerm);
             const dsti = income > 0 ? ((payment + liabilities) / income) * 100 : Infinity;

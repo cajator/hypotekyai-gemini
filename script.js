@@ -404,7 +404,7 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
         
         setTimeout(() => {
             document.getElementById(tid).remove();
-            appendChat(quickRes, 'ai');
+            appendChat(quickRes.response || quickRes, 'ai');
             state.isAiTyping = false;
         }, 500);
         return;
@@ -449,16 +449,11 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
     }
 });
 
-// FUNKCE PRO ODESLÁNÍ NÁVRHŮ Z CHATU
 window.sendChatSuggestion = (text) => {
     const input = document.getElementById('chat-input');
     const form = document.getElementById('chat-form');
     input.value = text;
-    if (form.requestSubmit) {
-        form.requestSubmit();
-    } else {
-        form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-    }
+    if (form.requestSubmit) { form.requestSubmit(); } else { form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true })); }
 };
 
 const generateSuggestions = () => {
@@ -483,7 +478,8 @@ const setupTooltips = () => {
     const tooltip = document.getElementById('tooltip-container');
     icons.forEach(i => {
         i.addEventListener('mouseenter', (e) => {
-            tooltip.innerHTML = e.target.dataset.tooltip; tooltip.classList.remove('hidden');
+            tooltip.innerHTML = e.target.dataset.tooltip || e.target.dataset.infoText; 
+            tooltip.classList.remove('hidden');
             const rect = e.target.getBoundingClientRect();
             tooltip.style.left = `${rect.left + window.scrollX}px`; tooltip.style.top = `${rect.bottom + window.scrollY + 20}px`;
         });
@@ -506,7 +502,6 @@ document.getElementById('mode-guided').addEventListener('click', (e) => {
     if (state.hasCalculated) fetchRates();
 });
 
-// Plynulý posun po kliknutí na Spočítat
 document.getElementById('calc-btn')?.addEventListener('click', () => {
     fetchRates();
     setTimeout(() => {
@@ -518,7 +513,6 @@ document.getElementById('calc-btn')?.addEventListener('click', () => {
     }, 150);
 });
 
-// OBSLUHA OBOJÍCH FORMULÁŘŮ
 const handleFormSubmit = async (e) => {
     e.preventDefault();
     const btn = e.target.querySelector('.submit-btn');
@@ -538,6 +532,11 @@ const handleFormSubmit = async (e) => {
         e.target.classList.add('hidden');
         const successDiv = e.target.id === 'inline-lead-form' ? document.getElementById('inline-form-success') : document.getElementById('modal-form-success');
         if(successDiv) successDiv.classList.remove('hidden');
+        
+        if (typeof gtag === 'function') {
+            gtag('event', 'generate_lead', { 'event_category': 'form_submission', 'event_label': e.target.id });
+            gtag('event', 'conversion', { 'send_to': 'AW-778075298/XZ1yCK60yc4bEKL5gfMC', 'value': 1.0, 'currency': 'CZK' });
+        }
     } catch(err) {
         if (btn) { btn.disabled = false; btn.textContent = 'Odeslat nezávazně ke zpracování'; }
         alert('Chyba odeslání. Zkuste to prosím znovu.');
@@ -547,25 +546,6 @@ const handleFormSubmit = async (e) => {
 document.getElementById('inline-lead-form')?.addEventListener('submit', handleFormSubmit);
 document.getElementById('modal-lead-form')?.addEventListener('submit', handleFormSubmit);
 
-// --- COOKIE BANNER LOGIKA ---
-document.addEventListener("DOMContentLoaded", () => {
-    const banner = document.getElementById('cookie-banner');
-    const acceptBtn = document.getElementById('cookie-accept');
-    
-    if (banner && acceptBtn) {
-        if (!localStorage.getItem('cookieConsent')) {
-            banner.classList.remove('hidden');
-            setTimeout(() => banner.classList.remove('translate-y-full'), 50);
-        }
-        acceptBtn.addEventListener('click', () => {
-            localStorage.setItem('cookieConsent', 'true');
-            banner.classList.add('translate-y-full'); 
-            setTimeout(() => banner.classList.add('hidden'), 500); 
-        });
-    }
-});
-
-// INIT
 renderForm(); 
 generateSuggestions();
 setTimeout(() => appendChat('Dobrý den! Jsem váš hypoteční stratég. Nastavte si vlevo parametry a klikněte na "Spočítat", abych mohl začít analyzovat.', 'ai'), 800);

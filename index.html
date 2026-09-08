@@ -4,14 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hypoteky Ai - Premium Hypoteční Stratég s AI</title>
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-W89NM98KYS"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-W89NM98KYS');
+      gtag('config', 'AW-778075298');
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased font-['Inter'] relative">
-
-    <!-- Hlavička -->
     <header class="bg-white/90 backdrop-blur-md sticky top-0 z-50 shadow-sm border-b border-slate-200">
         <nav class="container mx-auto px-4 lg:px-8 py-4 flex justify-between items-center">
             <a href="index.html" class="flex items-center gap-2">
@@ -30,7 +40,6 @@
         </nav>
     </header>
 
-    <!-- Hero Sekce -->
     <section class="container mx-auto px-4 pt-12 pb-8 text-center max-w-4xl relative">
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-xs font-bold uppercase tracking-wider mb-6">
             <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span></span>
@@ -42,11 +51,8 @@
         <p class="text-lg text-slate-500 mb-8 max-w-2xl mx-auto">Zadejte parametry a naše AI vám okamžitě ukáže reálné šance na schválení, odhalí rizika a navrhne strategii. Následně se o vás postará živý expert.</p>
     </section>
 
-    <!-- THE APP CORE -->
     <section id="kalkulacka" class="container mx-auto px-4 mb-20 scroll-mt-24">
         <div class="bg-white rounded-[2rem] shadow-2xl shadow-slate-200/50 border border-slate-100 flex flex-col lg:flex-row max-w-6xl mx-auto items-start relative">
-            
-            <!-- LEVÁ ČÁST: Kalkulačka, Výsledky a FORMULÁŘ -->
             <div class="w-full lg:w-7/12 flex flex-col pb-10">
                 <div class="p-6 border-b border-slate-100 bg-slate-50/50 rounded-tl-[2rem]">
                     <div class="flex bg-slate-200/50 p-1 rounded-xl w-max">
@@ -95,7 +101,6 @@
                 </div>
             </div>
 
-            <!-- PRAVÁ ČÁST: AI Chat (STICKY) -->
             <div class="w-full lg:w-5/12 bg-slate-50 border-t lg:border-t-0 lg:border-l border-slate-100 flex flex-col lg:sticky lg:top-24 lg:h-[calc(100vh-8rem)] rounded-b-[2rem] lg:rounded-bl-none lg:rounded-tr-[2rem]">
                 <div class="bg-white p-5 border-b border-slate-100 flex items-center justify-between z-10 shadow-sm lg:rounded-tr-[2rem]">
                     <div class="flex items-center gap-3">
@@ -115,7 +120,6 @@
         </div>
     </section>
 
-    <!-- Funkce -->
     <section id="premium-features" class="container mx-auto px-4 mb-20 scroll-mt-24">
         <div class="text-center mb-12"><h2 class="text-3xl font-extrabold mb-4">Proč jsme lepší než běžné srovnávače?</h2></div>
         <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
@@ -125,7 +129,6 @@
         </div>
     </section>
 
-    <!-- Mýty a Fakta -->
     <section id="myty-fakta" class="bg-slate-900 py-20 text-white scroll-mt-24">
         <div class="container mx-auto px-4 max-w-6xl">
             <div class="text-center mb-12">
@@ -172,7 +175,6 @@
         </div>
     </section>
 
-    <!-- Partneři -->
     <section class="py-12 bg-white border-y border-slate-200">
         <div class="container mx-auto px-4 text-center">
             <p class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-8">Porovnáváme a sjednáváme úvěry u těchto partnerů</p>
@@ -237,18 +239,6 @@
 
     <!-- Info Tooltip -->
     <div id="tooltip-container" class="absolute z-[100] hidden bg-slate-900 text-white text-xs font-semibold p-3 rounded-xl shadow-xl max-w-[250px] leading-relaxed pointer-events-none"></div>
-
-    <!-- COOKIE LIŠTA -->
-    <div id="cookie-banner" class="fixed bottom-0 left-0 w-full bg-slate-900 text-slate-300 py-4 px-6 text-sm z-[200] shadow-[0_-4px_25px_rgba(0,0,0,0.4)] transition-transform duration-500 translate-y-full hidden">
-        <div class="container mx-auto max-w-6xl flex flex-col md:flex-row items-center justify-between gap-4">
-            <div class="text-center md:text-left flex-1">
-                <p>Tato webová stránka používá soubory cookies pro nezbytný chod webu, analytiku a personalizaci reklam. <a href="podminky-pouziti.html" class="text-blue-400 hover:text-white underline font-semibold transition-colors">Více v Zásadách ochrany osobních údajů</a>.</p>
-            </div>
-            <button id="cookie-accept" class="bg-blue-600 hover:bg-blue-500 text-white font-extrabold py-2.5 px-6 rounded-xl transition-all whitespace-nowrap shadow-lg hover:-translate-y-0.5">
-                Rozumím a souhlasím
-            </button>
-        </div>
-    </div>
 
     <script src="script.js"></script>
 </body>

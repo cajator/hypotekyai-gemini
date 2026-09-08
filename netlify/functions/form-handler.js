@@ -72,9 +72,7 @@ exports.handler = async (event) => {
                     'Parametry (souhrn)': formDataSummaryText,
                     'Výsledky (souhrn)': calculationSummaryText
                 });
-            } catch (sheetError) {
-                console.error("Chyba při zápisu do Google Sheets:", sheetError);
-            }
+            } catch (sheetError) {}
         }
 
         if (process.env.NETLIFY_EMAILS_SECRET) {
@@ -96,8 +94,5 @@ exports.handler = async (event) => {
         }
 
         return { statusCode: 200, body: 'Form processed successfully' };
-    } catch (error) { 
-        console.error("Critical error in form-handler:", error);
-        return { statusCode: 500, body: `Server Error: ${error.message}` }; 
-    }
+    } catch (error) { return { statusCode: 500, body: `Server Error: ${error.message}` }; }
 };

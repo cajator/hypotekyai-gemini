@@ -55,7 +55,6 @@ exports.handler = async (event) => {
         
         const ltv = (loanAmount / effectivePropertyValue) * 100;
         
-        // Zpracování americké hypotéky (na cokoliv) -> tvrdý limit LTV 70%
         if (purpose === 'cokoliv' && ltv > 70) {
             return { statusCode: 200, headers, body: JSON.stringify({ offers: [], error: "Americká hypotéka (Na cokoliv) má maximální možnou hodnotu LTV 70 %. Snižte požadovaný úvěr nebo zvyšte zástavu." }) };
         }
@@ -66,7 +65,6 @@ exports.handler = async (event) => {
         const maxDti = ownedProperties === '2_plus' ? 7.0 : (isYoungApplicant ? 9.5 : 8.5);
         if (dti > maxDti) return { statusCode: 200, headers, body: JSON.stringify({ offers: [], error: "DTI limit" }) }; 
 
-        // OMEZENÍ SPLATNOSTI NA VĚK 70 LET
         const effectiveTerm = Math.min(term, Math.max(5, 70 - age));
         
         const offers = ALL_OFFERS.filter(o => ltv <= o.max_ltv).map(o => {
@@ -75,10 +73,7 @@ exports.handler = async (event) => {
             let rate = ltv <= 70 ? rates.rate_ltv70 : (ltv <= 80 ? (rates.rate_ltv80 || rates.rate_ltv70) : (isYoungApplicant ? (rates.rate_ltv80 || rates.rate_ltv70) + 0.1 : rates.rate_ltv90 || rates.rate_ltv80));
             if (!rate) return null; 
             
-            // Americká hypotéka má často drobnou přirážku na sazbě, pro zjednodušení dáme +0.5%
             if (purpose === 'cokoliv') rate += 0.5;
-            
-            // Sleva za štítek, absolutní dno je 5.19 %
             if (energyLabel === 'a_b') { rate = Math.max(5.19, rate - 0.1); }
             
             const payment = calculateMonthlyPayment(loanAmount, rate, effectiveTerm);

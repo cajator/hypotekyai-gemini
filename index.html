@@ -5,23 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hypoteky Ai - Premium Hypoteční Stratég s AI</title>
     
-    <!-- Google Consent Mode v2 -->
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      
-      // Zjistíme, jestli už uživatel dříve souhlasil na liště
-      var hasConsent = localStorage.getItem('cookieConsent') === 'true';
-      
-      // Výchozí stav (Pokud nesouhlasil, GA měří anonymně bez cookies)
-      gtag('consent', 'default', {
-        'ad_storage': hasConsent ? 'granted' : 'denied',
-        'ad_user_data': hasConsent ? 'granted' : 'denied',
-        'ad_personalization': hasConsent ? 'granted' : 'denied',
-        'analytics_storage': hasConsent ? 'granted' : 'denied'
-      });
-    </script>
-    
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-W89NM98KYS"></script>
     <script>
@@ -39,23 +22,43 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased font-['Inter'] relative">
+    
     <header class="bg-white/90 backdrop-blur-md sticky top-0 z-50 shadow-sm border-b border-slate-200">
         <nav class="container mx-auto px-4 lg:px-8 py-4 flex justify-between items-center">
             <a href="index.html" class="flex items-center gap-2">
                 <span class="text-3xl">💡</span>
                 <span class="font-extrabold text-2xl tracking-tight text-slate-900">Hypoteky<span class="text-blue-600">Ai</span></span>
             </a>
+            
             <div class="hidden md:flex items-center space-x-8">
-                <a href="#kalkulacka" class="text-sm font-semibold text-slate-600 hover:text-blue-600 transition-colors">Nástroj</a>
+                <a href="index.html#kalkulacka" class="text-sm font-semibold text-slate-600 hover:text-blue-600 transition-colors">Nástroj</a>
                 <a href="pribehy-klientu.html" class="text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors">Příběhy klientů <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full ml-1">Nové</span></a>
-                <a href="#premium-features" class="text-sm font-semibold text-slate-600 hover:text-blue-600 transition-colors">Funkce</a>
-                <a href="#myty-fakta" class="text-sm font-semibold text-slate-600 hover:text-blue-600 transition-colors">Mýty a fakta</a>
+                <a href="index.html#premium-features" class="text-sm font-semibold text-slate-600 hover:text-blue-600 transition-colors">Funkce</a>
+                <a href="index.html#myty-fakta" class="text-sm font-semibold text-slate-600 hover:text-blue-600 transition-colors">Mýty a fakta</a>
             </div>
-            <button onclick="document.getElementById('lead-modal').classList.remove('hidden')" class="bg-slate-900 hover:bg-blue-600 text-white text-sm px-6 py-2.5 rounded-full font-bold shadow-lg transition-all transform hover:-translate-y-0.5">
-                Ověřit s expertem
-            </button>
+            
+            <div class="flex items-center gap-3">
+                <button onclick="document.getElementById('lead-modal').classList.remove('hidden')" class="bg-slate-900 hover:bg-blue-600 text-white text-sm px-4 lg:px-6 py-2.5 rounded-full font-bold shadow-lg transition-all transform hover:-translate-y-0.5 whitespace-nowrap">
+                    Ověřit <span class="hidden sm:inline">s expertem</span>
+                </button>
+                
+                <!-- MOBILE MENU BUTTON -->
+                <button id="mobile-menu-btn" class="md:hidden p-2 text-slate-600 hover:text-blue-600 focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+            </div>
         </nav>
+
+        <!-- MOBILE DROPDOWN MENU -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-slate-200 px-4 pt-2 pb-4 space-y-2 shadow-lg absolute w-full left-0">
+            <a href="index.html#kalkulacka" class="block px-4 py-2 text-base font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors">Nástroj</a>
+            <a href="pribehy-klientu.html" class="block px-4 py-2 text-base font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors">Příběhy klientů <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full ml-1">Nové</span></a>
+            <a href="index.html#premium-features" class="block px-4 py-2 text-base font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors">Funkce</a>
+            <a href="index.html#myty-fakta" class="block px-4 py-2 text-base font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors">Mýty a fakta</a>
+            <a href="faq.html" class="block px-4 py-2 text-base font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors">FAQ</a>
+        </div>
     </header>
+
 
     <section class="container mx-auto px-4 pt-12 pb-8 text-center max-w-4xl relative">
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-xs font-bold uppercase tracking-wider mb-6">
@@ -152,7 +155,6 @@
                 <h2 class="text-3xl font-extrabold mb-4">Vyvracíme hypoteční mýty</h2>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Karta 1 -->
                 <div class="myth-card cursor-pointer h-56 group">
                     <div class="myth-front bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-center items-center text-center">
                         <div class="text-4xl mb-4">🏦</div>
@@ -164,7 +166,6 @@
                         <p class="font-semibold text-sm leading-relaxed">Zprostředkovatel má přístup do 19+ bank najednou a díky obrovským objemům pro vás vyjedná sazbu, kterou vám na pobočce nikdy nedají. Navíc je to zdarma.</p>
                     </div>
                 </div>
-                <!-- Karta 2 -->
                 <div class="myth-card cursor-pointer h-56 group">
                     <div class="myth-front bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-center items-center text-center">
                         <div class="text-4xl mb-4">⏳</div>
@@ -176,7 +177,6 @@
                         <p class="font-semibold text-sm leading-relaxed">S kompletními dokumenty a naší přípravou můžete mít předschválení za 3-5 dnů a finální schválení za 2-3 týdny.</p>
                     </div>
                 </div>
-                <!-- Karta 3 -->
                 <div class="myth-card cursor-pointer h-56 group">
                     <div class="myth-front bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-center items-center text-center">
                         <div class="text-4xl mb-4">💼</div>
@@ -256,20 +256,6 @@
 
     <!-- Info Tooltip -->
     <div id="tooltip-container" class="absolute z-[100] hidden bg-slate-900 text-white text-xs font-semibold p-3 rounded-xl shadow-xl max-w-[250px] leading-relaxed pointer-events-none"></div>
-
-    
-    <!-- COOKIE LIŠTA -->
-    <div id="cookie-banner" class="fixed bottom-0 left-0 w-full bg-slate-900 text-slate-300 py-4 px-6 text-sm z-[200] shadow-[0_-4px_25px_rgba(0,0,0,0.4)] transition-transform duration-500 translate-y-full hidden">
-        <div class="container mx-auto max-w-6xl flex flex-col md:flex-row items-center justify-between gap-4">
-            <div class="text-center md:text-left flex-1">
-                <p>Tato webová stránka používá soubory cookies pro nezbytný chod webu, analytiku a personalizaci reklam. <a href="podminky-pouziti.html" class="text-blue-400 hover:text-white underline font-semibold transition-colors">Více v Zásadách ochrany osobních údajů</a>.</p>
-            </div>
-            <button id="cookie-accept" class="bg-blue-600 hover:bg-blue-500 text-white font-extrabold py-2.5 px-6 rounded-xl transition-all whitespace-nowrap shadow-lg hover:-translate-y-0.5">
-                Rozumím a souhlasím
-            </button>
-        </div>
-    </div>
-
 
     <script src="script.js"></script>
 </body>

@@ -12,7 +12,6 @@ exports.handler = async (event) => {
         const totalDebt = context.formData.totalDebt || 0;
         const dti = context.formData.income ? ((context.formData.loanAmount + totalDebt) / (context.formData.income * 12)).toFixed(1) : 0;
         
-        // Rozpoznání režimu
         const isExpress = context.mode === 'express';
         const modeInstructions = isExpress 
             ? `DŮLEŽITÉ PRAVIDLO: Klient použil "Rychlou kalkulaci", takže nezadal svůj věk, účel ani detaily příjmu. Tyto údaje v datech níže JSOU POUZE TVŮJ MODELOVÝ PŘEDPOKLAD. Pokud na ně narazíš nebo se klient zeptá, ODPOVĚZ PŘESNĚ TAKTO: "Jelikož jste vyplnil pouze rychlou kalkulaci, počítám s předem definovanými modelovými parametry (věk 35 let, bez dluhů, účel koupě). Pro přesný výpočet na míru prosím přepněte na Detailní analýzu vlevo nahoře."` 

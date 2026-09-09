@@ -15,14 +15,14 @@ const state = {
 };
 
 const QUICK_RESPONSES = {
-    'dokumenty|potřebuji|doklady|podklady': `<strong>📋 Zde je seznam dokumentů:</strong><br>• Platný občanský průkaz<br>• Potvrzení o příjmu (nebo daňové přiznání)<br>• Výpisy z účtu za poslední 3 měsíce<br>• Návrh kupní smlouvy<br>💡 <em>Tip: S přípravou dokumentů vám rád pomůže náš specialista.</em>`,
-    'kolik.*půjčit|maximální.*úvěr|jakou.*částku': `<strong>💰 Kolik si můžete půjčit:</strong><br>Hrubý odhad je <strong>váš čistý měsíční příjem × 9 let</strong> (tedy x 108 měsíců).<br>Např. při příjmu 50 000 Kč dosáhnete cca na 4,5 mil. Kč.<br>💡 <em>Tip: Přesná částka závisí i na vašem věku a dalších půjčkách. Naše kalkulačka dole v detailním výpisu ukazuje přesný teoretický strop!</em>`,
-    'osvč|podnikatel|živnost': `<strong>🏢 Hypotéka pro OSVČ:</strong><br>Standardně banky berou čistý zisk z daňového přiznání. My však umíme u vybraných bank zařídit <strong>výpočet z obratu (15-25%)</strong>. To je ideální pro ty, kteří legálně optimalizují daně paušálem.<br>💡 <em>Tip: Vyplňte formulář pod kalkulačkou a náš expert vám najde správnou banku.</em>`,
-    'fixaci|změnit fixaci': `<strong>🔒 Jakou zvolit fixaci:</strong><br>Dnes se nejčastěji volí <strong>3 nebo 5 let</strong>. Umožňuje to flexibilně reagovat na případný pokles sazeb v budoucnu a hypotéku případně zdarma refinancovat.`,
-    'dsti|co je dsti': `<strong>📊 Co je DSTI:</strong><br>Zkratka pro <em>Debt Service To Income</em>. Vyjadřuje, kolik procent z vašeho čistého příjmu spolkne splátka hypotéky a všech vašich ostatních úvěrů. Bezpečný limit bank je typicky 45 % až 50 %.`,
-    'ltv|co je ltv': `<strong>🏠 Co je LTV:</strong><br>Zkratka pro <em>Loan To Value</em> (Poměr úvěru k hodnotě nemovitosti). Pokud kupujete byt za 5 mil. Kč a máte 1 mil. Kč ze svého, půjčujete si 4 mil. Kč, což odpovídá LTV 80 % (ideální stav).`,
-    'dti|nemovitost|limit': `<strong>⚖️ Limit DTI pro investory:</strong><br>Pokud vlastníte 2 a více nemovitostí, banky aplikují přísnější DTI limit. Váš celkový dluh nesmí přesáhnout <strong>7násobek</strong> vašeho čistého ročního příjmu (místo běžného 8,5násobku).`,
-    'zelená|štítek|sleva': `<strong>🌿 Zelená hypotéka:</strong><br>Pokud kupujete nebo stavíte nemovitost s energetickým štítkem <strong>A nebo B</strong>, získáte od nás automaticky slevu na úrokové sazbě ve výši <strong>0,1 %</strong> a často i odpuštění poplatku za odhad.`
+    'dokumenty|potřebuji|doklady|podklady': `<strong>📋 Zde je seznam dokumentů:</strong><br>• Platný občanský průkaz<br>• Potvrzení o příjmu<br>• Výpisy z účtu za poslední 3 měsíce<br>• Návrh kupní smlouvy<br>💡 <em>Tip: S přípravou dokumentů vám rád pomůže náš specialista.</em>`,
+    'kolik.*půjčit|maximální.*úvěr|jakou.*částku': `<strong>💰 Kolik si můžete půjčit:</strong><br>Hrubý odhad je <strong>váš čistý měsíční příjem × 9 let</strong>.<br>💡 <em>Tip: Naše kalkulačka dole v detailním výpisu ukazuje přesný teoretický strop!</em>`,
+    'osvč|podnikatel|živnost': `<strong>🏢 Hypotéka pro OSVČ:</strong><br>Umíme u vybraných bank zařídit <strong>výpočet z obratu (15-25%)</strong>. To je ideální pro ty, kteří legálně optimalizují daně paušálem.`,
+    'fixaci|změnit fixaci': `<strong>🔒 Jakou zvolit fixaci:</strong><br>Dnes se nejčastěji volí <strong>3 nebo 5 let</strong>. Umožňuje to flexibilně reagovat na případný pokles sazeb v budoucnu.`,
+    'dsti|co je dsti': `<strong>📊 Co je DSTI:</strong><br>Zkratka pro <em>Debt Service To Income</em>. Vyjadřuje, kolik procent z vašeho čistého příjmu spolkne splátka hypotéky a všech vašich ostatních úvěrů. Limit je 45-50 %.`,
+    'ltv|co je ltv': `<strong>🏠 Co je LTV:</strong><br>Zkratka pro <em>Loan To Value</em> (Poměr úvěru k hodnotě nemovitosti). Půjčujete-li si 4 z 5 mil., je to LTV 80 %.`,
+    'dti|nemovitost|limit': `<strong>⚖️ Limit DTI pro investory:</strong><br>Pokud vlastníte 2 a více nemovitostí, banky aplikují přísnější DTI limit. Váš celkový dluh nesmí přesáhnout <strong>7násobek</strong> vašeho ročního příjmu.`,
+    'zelená|štítek|sleva': `<strong>🌿 Zelená hypotéka:</strong><br>Kupujete-li nemovitost se štítkem <strong>A nebo B</strong>, získáte slevu na úroku ve výši <strong>0,1 %</strong> a často i odpuštění poplatku za odhad.`
 };
 
 const findQuickResponse = (msg) => {
@@ -213,7 +213,6 @@ const renderResults = () => {
     const best = state.calculation.selectedOffer || calc.offers[0];
     const fix = calc.fixationDetails;
 
-    // --- UPOZORNĚNÍ NA VĚK 70 LET ---
     let ageWarningHTML = '';
     const age = state.formData.age || 35;
     const term = state.formData.loanTerm || 30;
@@ -233,7 +232,6 @@ const renderResults = () => {
         `;
     }
 
-    // --- MAXIMÁLNÍ MOŽNÁ HYPOTÉKA (GRAFICKÝ BOX) ---
     let maxMortgageHTML = '';
     if (state.formData.income > 0 && best) {
         const income = state.formData.income;
@@ -271,7 +269,6 @@ const renderResults = () => {
             `;
         }
     }
-
 
     const ltvColor = app.ltv > 80 ? 'bg-green-500' : (app.ltv > 50 ? 'bg-yellow-500' : 'bg-red-500');
     const dstiColor = app.dsti > 70 ? 'bg-blue-500' : 'bg-orange-500';
@@ -344,7 +341,6 @@ const renderResults = () => {
     }
 
     html += maxMortgageHTML;
-
     res.innerHTML = html;
 
     if (fix && typeof Chart !== 'undefined') {
@@ -381,10 +377,7 @@ const renderResults = () => {
             },
             options: { 
                 responsive:true, maintainAspectRatio:false, 
-                scales:{
-                    x:{stacked:true, grid:{display:false}}, 
-                    y:{stacked:true, display:false}
-                }, 
+                scales:{ x:{stacked:true, grid:{display:false}}, y:{stacked:true, display:false} }, 
                 plugins:{legend:{position:'bottom', labels:{boxWidth:12, font:{size:11}}}} 
             }
         });
@@ -429,7 +422,6 @@ const fetchRates = async () => {
     }
 };
 
-// --- CHAT LOGIC ---
 const appendChat = (text, sender) => {
     const w = document.createElement('div');
     w.className = `flex w-full ${sender === 'user' ? 'justify-end' : 'justify-start'}`;
@@ -467,7 +459,7 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
         
         setTimeout(() => {
             document.getElementById(tid).remove();
-            appendChat(quickRes.response || quickRes, 'ai');
+            appendChat(quickRes, 'ai');
             state.isAiTyping = false;
         }, 500);
         return;
@@ -610,26 +602,20 @@ document.getElementById('inline-lead-form')?.addEventListener('submit', handleFo
 document.getElementById('modal-lead-form')?.addEventListener('submit', handleFormSubmit);
 
 document.addEventListener("DOMContentLoaded", () => {
-    const banner = document.getElementById('cookie-banner');
-    const acceptBtn = document.getElementById('cookie-accept');
+    // --- Mobile Menu Toggle ---
+    const mobileBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
     
-    if (banner && acceptBtn) {
-        if (!localStorage.getItem('cookieConsent')) {
-            banner.classList.remove('hidden');
-            setTimeout(() => banner.classList.remove('translate-y-full'), 50);
-        }
-        acceptBtn.addEventListener('click', () => {
-            localStorage.setItem('cookieConsent', 'true');
-            if (typeof gtag === 'function') {
-                gtag('consent', 'update', {
-                    'ad_storage': 'granted',
-                    'ad_user_data': 'granted',
-                    'ad_personalization': 'granted',
-                    'analytics_storage': 'granted'
-                });
-            }
-            banner.classList.add('translate-y-full'); 
-            setTimeout(() => banner.classList.add('hidden'), 500); 
+    if (mobileBtn && mobileMenu) {
+        mobileBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        const mobileLinks = mobileMenu.querySelectorAll('a');
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
         });
     }
 });

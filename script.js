@@ -4,7 +4,7 @@ const state = {
     hasCalculated: false,
     formData: {
         propertyValue: 5000000, loanAmount: 4000000, income: 60000, 
-        loanTerm: 30, fixation: 5, age: 35, children: 0, liabilities: 0, totalDebt: 0,
+        loanTerm: 30, fixation: 3, age: 35, children: 0, liabilities: 0, totalDebt: 0,
         purpose: 'koupě', propertyType: 'byt', employment: 'zaměstnanec', education: 'středoškolské', landValue: 0, reconstructionValue: 0,
         energyLabel: 'c_worse', ownedProperties: '0_1'
     },
@@ -18,7 +18,7 @@ const QUICK_RESPONSES = {
     'dokumenty|potřebuji|doklady|podklady': `<strong>📋 Zde je seznam dokumentů:</strong><br>• Platný občanský průkaz<br>• Potvrzení o příjmu<br>• Výpisy z účtu za poslední 3 měsíce<br>• Návrh kupní smlouvy<br>💡 <em>Tip: S přípravou dokumentů vám rád pomůže náš specialista.</em>`,
     'kolik.*půjčit|maximální.*úvěr|jakou.*částku': `<strong>💰 Kolik si můžete půjčit:</strong><br>Hrubý odhad je <strong>váš čistý měsíční příjem × 9 let</strong>.<br>💡 <em>Tip: Naše kalkulačka dole v detailním výpisu ukazuje přesný teoretický strop!</em>`,
     'osvč|podnikatel|živnost': `<strong>🏢 Hypotéka pro OSVČ:</strong><br>Umíme u vybraných bank zařídit <strong>výpočet z obratu (15-25%)</strong>. To je ideální pro ty, kteří legálně optimalizují daně paušálem.`,
-    'fixaci|změnit fixaci': `<strong>🔒 Jakou zvolit fixaci:</strong><br>Dnes se nejčastěji volí <strong>3 nebo 5 let</strong>. Umožňuje to flexibilně reagovat na případný pokles sazeb v budoucnu.`,
+    'fixaci|změnit fixaci': `<strong>🔒 Jakou zvolit fixaci:</strong><br>Dnes se nejčastěji volí <strong>1, 3 nebo 5 let</strong>. Umožňuje to flexibilně reagovat na případný pokles sazeb v budoucnu.`,
     'dsti|co je dsti': `<strong>📊 Co je DSTI:</strong><br>Zkratka pro <em>Debt Service To Income</em>. Vyjadřuje, kolik procent z vašeho čistého příjmu spolkne splátka hypotéky a všech vašich ostatních úvěrů. Limit je 45-50 %.`,
     'ltv|co je ltv': `<strong>🏠 Co je LTV:</strong><br>Zkratka pro <em>Loan To Value</em> (Poměr úvěru k hodnotě nemovitosti). Půjčujete-li si 4 z 5 mil., je to LTV 80 %.`,
     'dti|nemovitost|limit': `<strong>⚖️ Limit DTI pro investory:</strong><br>Pokud vlastníte 2 a více nemovitostí, banky aplikují přísnější DTI limit. Váš celkový dluh nesmí přesáhnout <strong>7násobek</strong> vašeho ročního příjmu.`,
@@ -104,7 +104,7 @@ const renderForm = () => {
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-x-6">
                     ${createSlider('loanTerm', 'Splatnost', state.formData.loanTerm, 5, 30, 1)}
-                    ${createSlider('fixation', 'Fixace', state.formData.fixation, 3, 10, 1)}
+                    ${createSlider('fixation', 'Fixace', state.formData.fixation, 1, 10, 1)}
                     ${createSlider('age', 'Věk', state.formData.age, 18, 70, 1)}
                 </div>
                 ${createSlider('children', 'Počet dětí', state.formData.children, 0, 10, 1)}
@@ -323,10 +323,11 @@ const renderResults = () => {
     }
 
     if (fix) {
+        const currentFixation = state.formData.fixation || 3;
         html += `
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 shadow-sm">
-                <h4 class="font-extrabold text-slate-900 mb-4 flex items-center gap-2"><span class="text-xl">📊</span> Detail fixace na ${state.formData.fixation} let</h4>
+                <h4 class="font-extrabold text-slate-900 mb-4 flex items-center gap-2"><span class="text-xl">📊</span> Detail fixace na ${currentFixation} let</h4>
                 <div class="space-y-3">
                     <div class="flex justify-between text-sm font-semibold pb-3 border-b border-slate-200"><span class="text-slate-500">Zaplatíte celkem:</span> <strong class="text-slate-900">${formatNumber(fix.totalPaymentsInFixation)}</strong></div>
                     <div class="flex justify-between text-sm font-semibold pb-3 border-b border-slate-200"><span class="text-slate-500">Z toho čisté úroky:</span> <strong class="text-red-500">${formatNumber(fix.totalInterestForFixation)}</strong></div>
@@ -459,7 +460,7 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
         
         setTimeout(() => {
             document.getElementById(tid).remove();
-            appendChat(quickRes, 'ai');
+            appendChat(quickRes.response || quickRes, 'ai');
             state.isAiTyping = false;
         }, 500);
         return;
@@ -602,7 +603,6 @@ document.getElementById('inline-lead-form')?.addEventListener('submit', handleFo
 document.getElementById('modal-lead-form')?.addEventListener('submit', handleFormSubmit);
 
 document.addEventListener("DOMContentLoaded", () => {
-    // --- Mobile Menu Toggle ---
     const mobileBtn = document.getElementById('mobile-menu-btn');
     const mobileMenu = document.getElementById('mobile-menu');
     

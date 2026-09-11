@@ -1,8 +1,8 @@
 // netlify/functions/rates.js
 const ALL_OFFERS = [
-    { id: 'offer-premium', title: "💎 VIP Sazba 5.29%", description: "Exkluzivní sazba pro bonitní klienty.", max_ltv: 70, rates: { '3': { rate_ltv70: 5.29 }, '5': { rate_ltv70: 5.29 }, '7': { rate_ltv70: 5.49 }, '10': { rate_ltv70: 5.59 } } },
-    { id: 'offer-1', title: "🏆 Premium + Pojištění", description: "Nejoblíbenější volba našich klientů.", max_ltv: 90, rates: { '3': { rate_ltv70: 5.49, rate_ltv80: 5.49, rate_ltv90: 6.02 }, '5': { rate_ltv70: 5.59, rate_ltv80: 5.59, rate_ltv90: 6.19 }, '7': { rate_ltv70: 5.89, rate_ltv80: 5.89, rate_ltv90: 6.29 }, '10': { rate_ltv70: 5.99, rate_ltv80: 5.99, rate_ltv90: 6.39 } } },
-    { id: 'offer-2', title: "⚖️ Flexibilní / OSVČ", description: "Obratové hypotéky pro podnikatele.", max_ltv: 90, rates: { '3': { rate_ltv70: 5.69, rate_ltv80: 5.79, rate_ltv90: 6.19 }, '5': { rate_ltv70: 5.79, rate_ltv80: 5.89, rate_ltv90: 6.29 }, '7': { rate_ltv70: 6.09, rate_ltv80: 6.19, rate_ltv90: 6.49 }, '10': { rate_ltv70: 6.19, rate_ltv80: 6.29, rate_ltv90: 6.59 } } }
+    { id: 'offer-premium', title: "💎 VIP Sazba 5.09%", description: "Exkluzivní sazba pro bonitní klienty.", max_ltv: 70, rates: { '1': { rate_ltv70: 5.09 }, '2': { rate_ltv70: 5.09 }, '3': { rate_ltv70: 5.09 }, '5': { rate_ltv70: 5.09 }, '7': { rate_ltv70: 5.29 }, '10': { rate_ltv70: 5.39 } } },
+    { id: 'offer-1', title: "🏆 Premium + Pojištění", description: "Nejoblíbenější volba našich klientů.", max_ltv: 90, rates: { '1': { rate_ltv70: 5.29, rate_ltv80: 5.29, rate_ltv90: 5.82 }, '2': { rate_ltv70: 5.29, rate_ltv80: 5.29, rate_ltv90: 5.82 }, '3': { rate_ltv70: 5.29, rate_ltv80: 5.29, rate_ltv90: 5.82 }, '5': { rate_ltv70: 5.39, rate_ltv80: 5.39, rate_ltv90: 5.99 }, '7': { rate_ltv70: 5.69, rate_ltv80: 5.69, rate_ltv90: 6.09 }, '10': { rate_ltv70: 5.79, rate_ltv80: 5.79, rate_ltv90: 6.19 } } },
+    { id: 'offer-2', title: "⚖️ Flexibilní / OSVČ", description: "Obratové hypotéky pro podnikatele.", max_ltv: 90, rates: { '1': { rate_ltv70: 5.49, rate_ltv80: 5.59, rate_ltv90: 5.99 }, '2': { rate_ltv70: 5.49, rate_ltv80: 5.59, rate_ltv90: 5.99 }, '3': { rate_ltv70: 5.49, rate_ltv80: 5.59, rate_ltv90: 5.99 }, '5': { rate_ltv70: 5.59, rate_ltv80: 5.69, rate_ltv90: 6.09 }, '7': { rate_ltv70: 5.89, rate_ltv80: 5.99, rate_ltv90: 6.29 }, '10': { rate_ltv70: 5.99, rate_ltv80: 6.09, rate_ltv90: 6.39 } } }
 ];
 
 const calculateMonthlyPayment = (p, r, t) => {
@@ -46,7 +46,7 @@ exports.handler = async (event) => {
         const energyLabel = p.energyLabel || 'c_worse';
         const ownedProperties = p.ownedProperties || '0_1';
         
-        const term = parseInt(p.loanTerm) || 30; const fixationInput = parseInt(p.fixation) || 5; const age = parseInt(p.age) || 35;
+        const term = parseInt(p.loanTerm) || 30; const fixationInput = parseInt(p.fixation) || 3; const age = parseInt(p.age) || 35;
         const purpose = p.purpose || 'koupě';
         
         if (!loanAmount || !propertyValue || !income) return { statusCode: 200, headers, body: JSON.stringify({ offers: [] }) };
@@ -67,14 +67,23 @@ exports.handler = async (event) => {
 
         const effectiveTerm = Math.min(term, Math.max(5, 70 - age));
         
+        // Zajištění fallbacku fixace, pokud zadá něco nečekaného (4, 6, 8, 9)
+        let fixStr = String(fixationInput);
+        if (!ALL_OFFERS[0].rates[fixStr]) {
+            if (fixationInput <= 3) fixStr = '3';
+            else if (fixationInput <= 5) fixStr = '5';
+            else if (fixationInput <= 7) fixStr = '7';
+            else fixStr = '10';
+        }
+
         const offers = ALL_OFFERS.filter(o => ltv <= o.max_ltv).map(o => {
-            const rates = o.rates[fixationInput] || o.rates['5']; 
+            const rates = o.rates[fixStr]; 
             if (!rates) return null;
             let rate = ltv <= 70 ? rates.rate_ltv70 : (ltv <= 80 ? (rates.rate_ltv80 || rates.rate_ltv70) : (isYoungApplicant ? (rates.rate_ltv80 || rates.rate_ltv70) + 0.1 : rates.rate_ltv90 || rates.rate_ltv80));
             if (!rate) return null; 
             
             if (purpose === 'cokoliv') rate += 0.5;
-            if (energyLabel === 'a_b') { rate = Math.max(5.19, rate - 0.1); }
+            if (energyLabel === 'a_b') { rate = Math.max(4.99, rate - 0.1); }
             
             const payment = calculateMonthlyPayment(loanAmount, rate, effectiveTerm);
             const dsti = income > 0 ? ((payment + liabilities) / income) * 100 : Infinity;
@@ -82,7 +91,7 @@ exports.handler = async (event) => {
             
             let title = o.title;
             if(purpose === 'cokoliv') title = title.replace('VIP Sazba', 'Americká hypotéka').replace('Premium', 'Americká');
-            if(energyLabel === 'a_b' && rate >= 5.19 && purpose !== 'cokoliv') title += " (Zelená sleva)";
+            if(energyLabel === 'a_b' && rate >= 4.99 && purpose !== 'cokoliv') title += " (Zelená sleva)";
             
             return { id: o.id, rate: parseFloat(rate.toFixed(2)), monthlyPayment: Math.round(payment), dsti: Math.round(dsti), title: title, description: o.description };
         }).filter(Boolean).sort((a, b) => a.rate - b.rate);
